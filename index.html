@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#fdeef3">
+<title>TWIST RUSH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    --bg:#fdeef3; --panel:#ffffff; --ink:#3a2748; --muted:#8a7596; --line:#ecd3df;
+    --board:#fff7fa; --well:#f3e2ea; --gold:#f2b632; --danger:#e8455f; --mint:#34c6a0;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --bg:#241830; --panel:#33244a; --ink:#f6eafc; --muted:#b3a0c4; --line:#4a3663;
+      --board:#2b1e3d; --well:#221733;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#241830; --panel:#33244a; --ink:#f6eafc; --muted:#b3a0c4; --line:#4a3663;
+    --board:#2b1e3d; --well:#221733;
+  }
+  *,*::before,*::after{box-sizing:inherit;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;}
+  html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px);}
+  html,body{margin:0;}
+  body{height:100%;background:var(--bg);color:var(--ink);overflow:hidden;overscroll-behavior:none;touch-action:manipulation;
+    font-family:"M PLUS Rounded 1c","Hiragino Maru Gothic ProN","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;}
+  #app{max-width:460px;height:100%;margin:0 auto;display:flex;flex-direction:column;gap:10px;padding:10px 12px 12px;}
+
+  header{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .title{font-weight:800;font-size:17px;letter-spacing:.5px;}
+  .title .dot,.logo .dot{color:var(--gold);margin:0 1px;}
+  .overlay h1.logo{font-size:38px;letter-spacing:2px;}
+  .title small{font-weight:500;font-size:11px;color:var(--muted);margin-left:4px;}
+  .hud{display:flex;align-items:center;gap:8px;}
+  .score{font-weight:800;font-size:22px;min-width:64px;text-align:right;font-variant-numeric:tabular-nums;}
+  .score span{display:block;font-size:10px;font-weight:500;color:var(--muted);line-height:1;}
+  .iconbtn{border:2px solid var(--line);background:var(--panel);color:var(--ink);border-radius:10px;
+    font-family:inherit;font-weight:800;font-size:12px;padding:6px 9px;cursor:pointer;}
+  .iconbtn:focus-visible,.btn:focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
+
+  /* 積上げゲージ：盤面の上に横並び。キャラごとに1本 */
+  .stacks{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;}
+  .stk{background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:5px 5px 6px;
+    display:flex;flex-direction:column;align-items:center;gap:4px;transition:border-color .15s;}
+  .stk canvas{width:30px;height:30px;}
+  .stk .bar{width:100%;height:8px;background:var(--well);border-radius:6px;overflow:hidden;}
+  .stk .fill{height:100%;width:0;border-radius:6px;transition:width .12s linear;}
+  .stk .n{font-size:11px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1;}
+  .stk{position:relative;}
+  .stk .pop{position:absolute;top:-10px;right:2px;font-size:15px;font-weight:800;color:#1fa884;pointer-events:none;animation:pop .9s ease-out forwards;}
+  @keyframes pop{0%{opacity:0;transform:translateY(6px)}15%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-12px)}}
+  .stk.warn{border-color:var(--danger);animation:warn 0.8s ease-in-out infinite;}
+  @keyframes warn{0%,100%{background:var(--panel)}50%{background:#ffd9df}}
+  .stk.warn .n{color:var(--danger);}
+  .stk.dead{border-color:var(--danger);animation:dead .28s linear infinite;}
+  @keyframes dead{0%,100%{background:#ff5c74}50%{background:var(--panel)}}
+  .stk.hit{animation:hit .35s;}
+  @keyframes hit{0%{transform:translateY(0)}30%{transform:translateY(-3px)}100%{transform:translateY(0)}}
+
+  .board-wrap{position:relative;flex:1;min-height:0;display:flex;align-items:center;justify-content:center;}
+  canvas#game{display:block;touch-action:none;border-radius:18px;}
+
+  .overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+    text-align:center;padding:20px;background:color-mix(in srgb,var(--bg) 92%,transparent);border-radius:18px;z-index:5;}
+  .overlay.hidden{display:none;}
+  .overlay h1{margin:0;font-size:30px;font-weight:800;}
+  .overlay p{margin:0;color:var(--muted);font-size:13px;line-height:1.7;max-width:300px;}
+  .overlay .big{font-size:44px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;}
+  .btn{border:none;border-radius:14px;padding:13px 18px;width:100%;max-width:240px;cursor:pointer;
+    font-family:inherit;font-weight:800;font-size:16px;color:#3a2210;background:var(--gold);box-shadow:0 5px 0 #c98f14;}
+  .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #c98f14;}
+
+  .controls{display:flex;flex-direction:column;gap:6px;}
+  .combo{height:26px;text-align:center;font-weight:800;font-size:22px;line-height:26px;color:var(--gold);font-variant-numeric:tabular-nums;}
+  .combo small{font-size:13px;margin-left:2px;}
+  .hint{font-size:10px;color:var(--muted);text-align:center;line-height:1.5;}
+  .pad{display:flex;justify-content:space-between;align-items:center;padding:0 4px;}
+  /* ドラッグパッド：ゲーム機のスティック風 */
+  .dragpad{position:relative;width:124px;height:124px;border-radius:50%;touch-action:none;cursor:grab;flex:none;
+    margin-left:clamp(14px, 6vw, 34px);   /* 少し中央寄り */
+    background:radial-gradient(circle at 50% 42%, var(--panel) 0%, var(--panel) 52%, var(--well) 100%);
+    border:3px solid var(--line);box-shadow:inset 0 4px 10px rgba(58,39,72,.12), 0 4px 0 var(--line);}
+  .dragpad::before{content:"";position:absolute;inset:22%;border-radius:50%;border:2px dashed var(--line);pointer-events:none;}
+  .dragpad i{position:absolute;width:0;height:0;border:7px solid transparent;pointer-events:none;opacity:.55;}
+  .dragpad i.u{top:7px;left:50%;margin-left:-7px;border-bottom:9px solid var(--muted);border-top:0;}
+  .dragpad i.d{bottom:7px;left:50%;margin-left:-7px;border-top:9px solid var(--muted);border-bottom:0;}
+  .dragpad i.l{left:7px;top:50%;margin-top:-7px;border-right:9px solid var(--muted);border-left:0;}
+  .dragpad i.r{right:7px;top:50%;margin-top:-7px;border-left:9px solid var(--muted);border-right:0;}
+  .dragpad span{display:none;}
+  .knob{position:absolute;left:50%;top:50%;width:50px;height:50px;border-radius:50%;pointer-events:none;
+    background:radial-gradient(circle at 36% 30%, #fff6d6 0%, #f7cf55 38%, #e0a21e 100%);
+    box-shadow:0 5px 0 #b8810f, 0 8px 14px rgba(0,0,0,.18);
+    transform:translate(-50%,-50%);transition:transform .15s ease-out;}
+  .dragpad.on{cursor:grabbing;}
+  .dragpad.on .knob{box-shadow:0 2px 0 #b8810f, 0 4px 8px rgba(0,0,0,.18);}
+  .k,.rb{border:2px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer;touch-action:none;
+    font-family:inherit;font-weight:800;padding:0;-webkit-user-select:none;user-select:none;}
+  .k{border-radius:10px;font-size:15px;}
+  .k.up{grid-column:2;grid-row:1;} .k.left{grid-column:1;grid-row:2;} .k.right{grid-column:3;grid-row:2;} .k.down{grid-column:2;grid-row:3;}
+  .rots{display:flex;gap:14px;}
+  .rb{width:70px;height:70px;border-radius:50%;font-size:30px;line-height:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+    background:var(--ink);color:var(--bg);border-color:var(--ink);box-shadow:0 4px 0 rgba(0,0,0,.25);}
+  .rb small{font-size:10px;font-weight:800;}
+  .k:active,.k.on{background:var(--well);}
+  .rb:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.25);}
+  .k:focus-visible,.rb:focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
+
+  /* トップ画面では横バーと操作ボタンを隠す（場所は残して、開始時にふわっと出す） */
+  .stacks,.controls{transition:opacity .35s ease;}
+  body.on-menu .stacks, body.on-menu .controls{visibility:hidden;opacity:0;}
+  /* トップ画面：イラストを画面いっぱいに。ロゴは上、ボタンは下（キャラの顔を隠さない） */
+  #menu.overlay{position:fixed;inset:0;z-index:20;border-radius:0;justify-content:space-between;gap:0;
+    padding:calc(env(safe-area-inset-top,0px) + 26px) 22px calc(env(safe-area-inset-bottom,0px) + 30px);
+    background:
+      linear-gradient(180deg, rgba(24,10,48,.55) 0%, rgba(24,10,48,0) 20%, rgba(24,10,48,0) 58%, rgba(24,10,48,.82) 100%),
+      var(--title-img, url('/_blob/9b6a0dac2d723e28fbacf3f447ecb0d2')) center top / cover no-repeat, #2a1a4a;}
+  #menu h1.logo{color:#fff;font-size:clamp(32px, 10.5vw, 46px);letter-spacing:2px;white-space:nowrap;text-shadow:0 3px 0 #6b2fb3, 0 0 18px rgba(120,60,220,.9), 0 0 36px rgba(80,200,255,.6);}
+  #menu .menu-bottom{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;}
+  #menu p{color:#f4eeff;text-shadow:0 1px 6px rgba(0,0,0,.9);max-width:320px;}
+  #menu .btn{font-size:18px;padding:15px 18px;}
+  .btn.gray{background:var(--panel);color:var(--ink);box-shadow:0 4px 0 var(--line);border:2px solid var(--line);}
+  .btn.gray:active{box-shadow:0 1px 0 var(--line);}
+  #cont h1{font-size:32px;letter-spacing:2px;color:var(--gold);text-shadow:0 2px 0 #b8810f;}
+  #cont p b{color:var(--ink);}
+  #ad{background:rgba(12,6,24,.94);color:#fff;}
+  #ad .ad-label{color:#cbbfe6;font-weight:800;letter-spacing:1px;}
+  #ad .big{color:#fff;font-size:64px;}
+  .modesel{display:flex;align-items:center;gap:4px;background:rgba(20,10,40,.55);border:1px solid rgba(255,255,255,.35);
+    border-radius:12px;padding:4px;backdrop-filter:blur(4px);}
+  .modesel span{color:#e9deff;font-size:12px;font-weight:800;padding:0 8px;}
+  .modesel button{border:none;background:transparent;color:#e9deff;border-radius:9px;padding:8px 14px;cursor:pointer;
+    font-family:inherit;font-weight:800;font-size:13px;}
+  .modesel button[aria-pressed="true"]{background:#fff;color:#3a2748;}
+  .btn small{display:block;font-size:11px;font-weight:700;opacity:.8;margin-top:2px;}
+  .btn.practice{background:#7fd7ff;color:#0f2a45;box-shadow:0 5px 0 #3b9fcf;}
+  .btn.practice:active{box-shadow:0 2px 0 #3b9fcf;}
+  .btn.half{max-width:170px;margin:0 5px;}
+  .mode-tag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:1px;padding:3px 8px;border-radius:8px;margin-left:8px;vertical-align:middle;
+    background:var(--gold);color:#3a2210;}
+  .mode-tag.practice{background:#7fd7ff;color:#0f2a45;}
+  .mode-tag:empty{display:none;}
+  .btn.ghost{background:rgba(255,255,255,.14);color:#fff;border:2px solid rgba(255,255,255,.7);box-shadow:none;backdrop-filter:blur(4px);}
+  .btn.ghost:active{transform:translateY(2px);box-shadow:none;}
+
+  /* 遊び方ページ */
+  #howto.overlay{position:fixed;inset:0;z-index:21;border-radius:0;padding:0;gap:0;justify-content:flex-start;text-align:left;
+    color:#f6f0ff;
+    background:linear-gradient(180deg, rgba(22,10,44,.90), rgba(22,10,44,.94)),
+      var(--title-img, url('/_blob/9b6a0dac2d723e28fbacf3f447ecb0d2')) center / cover no-repeat, #1f1236;}
+  .how-head{width:100%;display:flex;align-items:center;gap:10px;flex:none;
+    padding:calc(env(safe-area-inset-top,0px) + 12px) 14px 10px;border-bottom:1px solid rgba(255,255,255,.14);}
+  .how-head h2{margin:0;font-size:20px;font-weight:800;}
+  .how-back{border:none;background:rgba(255,255,255,.12);color:#fff;border-radius:10px;padding:8px 12px;
+    font-family:inherit;font-weight:800;font-size:14px;cursor:pointer;}
+  .how-body{flex:1;min-height:0;width:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;
+    padding:6px 16px 20px;max-width:520px;margin:0 auto;}
+  .how-body section{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px 14px;margin-top:12px;}
+  .how-body h3{margin:0 0 8px;font-size:16px;font-weight:800;color:#ffd24a;}
+  #howto .how-body p{margin:6px 0 0;color:#eee6ff;font-size:13px;line-height:1.75;max-width:none;text-shadow:none;}
+  .how-body ul{margin:0;padding-left:1.2em;font-size:13px;line-height:1.8;color:#eee6ff;}
+  .how-body b{color:#fff;}
+  .how-body .c-sync{color:#62d8ff;} .how-body .c-combo{color:#ffd24a;} .how-body .c-special{color:#ff7fc0;}
+  .how-body .formula{background:rgba(0,0,0,.25);border-radius:10px;padding:8px 10px;font-weight:800;}
+  .demo{display:flex;gap:14px;flex-wrap:wrap;margin:2px 0 4px;}
+  .demo canvas{height:38px;}
+  .how-table{border-collapse:collapse;margin-top:8px;font-size:13px;width:100%;}
+  .how-table th,.how-table td{border:1px solid rgba(255,255,255,.18);padding:6px 4px;text-align:center;}
+  .how-table th{color:#ffd24a;font-weight:800;white-space:nowrap;}
+  .how-foot{flex:none;width:100%;display:flex;justify-content:center;
+    padding:10px 16px calc(env(safe-area-inset-bottom,0px) + 14px);border-top:1px solid rgba(255,255,255,.14);}
+  .toast{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);
+    font-weight:800;font-size:14px;padding:7px 16px;border-radius:20px;opacity:0;transition:opacity .2s;z-index:9;pointer-events:none;white-space:nowrap;}
+  .toast.show{opacity:1;}
+  @media (prefers-reduced-motion:reduce){.stk.hit{animation:none;}}
+</style>
+</head>
+<body class="on-menu">
+<div id="app">
+  <header>
+    <div class="title">TWIST<span class="dot">·</span>RUSH<span class="mode-tag" id="modeTag"></span></div>
+    <div class="hud">
+      <button class="iconbtn" id="muteBtn" aria-label="音のオンオフ">♪ ON</button>
+      <div class="score"><span>スコア</span><b id="score">0</b></div>
+    </div>
+  </header>
+
+  <div class="stacks" id="stacks"></div>
+
+  <div class="board-wrap">
+    <canvas id="game"></canvas>
+    <div class="overlay" id="menu">
+      <h1 class="logo">TWIST<span class="dot">·</span>RUSH</h1>
+      <div class="menu-bottom">
+        <button class="btn" id="startBtn">ランキングモード<small>コンティニュー1回・記録あり</small></button>
+        <button class="btn practice" id="practiceBtn">練習モード<small>コンティニュー何度でも・記録なし</small></button>
+        <button class="btn ghost" id="howBtn">遊び方</button>
+        <div class="modesel" role="group" aria-label="ブロックの見た目">
+          <span>ブロック</span>
+          <button data-tm="illust" aria-pressed="true">イラスト</button>
+          <button data-tm="normal" aria-pressed="false">ノーマル</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 遊び方ページ -->
+    <div class="overlay hidden" id="howto" role="dialog" aria-label="遊び方">
+      <div class="how-head">
+        <button class="how-back" id="howBack" aria-label="タイトルに戻る">‹ 戻る</button>
+        <h2>遊び方</h2>
+      </div>
+      <div class="how-body">
+        <section>
+          <h3>目的</h3>
+          <p>上に並ぶ5色の横バーは、時間とともにたまっていきます。<b>どれか1本でも30になったらゲームオーバー</b>。ブロックを消して、横バーを減らし続けよう。</p>
+        </section>
+        <section>
+          <h3>操作</h3>
+          <ul>
+            <li><b>盤面をタップ</b>：白い枠の4マスを右回転</li>
+            <li><b>ダブルタップ</b>：左回転</li>
+            <li><b>盤面をドラッグ</b>：枠を移動</li>
+            <li><b>左下のスティック</b>：なぞって枠を移動</li>
+            <li><b>右下のボタン</b>：左回転・右回転</li>
+          </ul>
+        </section>
+        <section>
+          <h3>消し方</h3>
+          <div class="demo"><canvas class="mini" data-v="0,0,0"></canvas><canvas class="mini" data-v="2,2,2,2"></canvas></div>
+          <p>同じキャラを<b>縦か横に3〜6個</b>並べると消えます。</p>
+          <p>1列そろうと、枠の金色の線が減り始め、<b>2秒後に確定</b>して消えます。その2秒の間にほかの列もそろえれば、まとめて消せます。</p>
+          <p>消えた色の横バーは、消した数だけ減ります。</p>
+        </section>
+        <section>
+          <h3>sync・COMBO・Special</h3>
+          <ul>
+            <li><b class="c-sync">sync</b>：2列以上を同時に消す（2列＝1sync）</li>
+            <li><b class="c-combo">COMBO</b>：落ちてきたブロックで続けて消える（2回目＝1COMBO）</li>
+            <li><b class="c-special">Special</b>：syncとCOMBOが同時に起きる</li>
+          </ul>
+          <p class="formula">点数 ＝ 消したブロック数 ×（消した列の数）×（何回目の消去か）</p>
+        </section>
+        <section>
+          <h3>★ 一発逆転</h3>
+          <div class="demo"><canvas class="mini" data-v="5,5,5"></canvas></div>
+          <p>★は★同士でだけ消えます。消すと<b>全色の横バー</b>が一気に減ります。</p>
+          <table class="how-table">
+            <tr><th>★の数</th><td>3個</td><td>4個</td><td>5個</td><td>6個</td></tr>
+            <tr><th>全色</th><td>−3</td><td>−6</td><td>−10</td><td>−15</td></tr>
+          </table>
+          <p>横バーが高くなるほど、★が出やすくなります。</p>
+        </section>
+        <section>
+          <h3>だんだん速くなる</h3>
+          <ul>
+            <li>盤面の周りを回る光が1周（最初は10秒）するまでに消せないと、<b>全色の横バーが+3</b>。</li>
+            <li>横バーは6秒ごとに全色+1。</li>
+            <li>ブロックを消すほど、光の1周が短くなり（SPEED UP）、横バーのたまり方も速くなります。</li>
+            <li>★を消すと、スピードが少し戻ります（SPEED DOWN）。</li>
+          </ul>
+        </section>
+      </div>
+      <div class="how-foot"><button class="btn half" id="howStart">ランキング</button><button class="btn half practice" id="howPractice">練習</button></div>
+    </div>
+    <div class="overlay hidden" id="over">
+      <h1>RESULT</h1>
+      <div class="mode-tag" id="resultMode"></div>
+      <div><div style="font-size:12px;color:var(--muted)">スコア</div><div class="big" id="finalScore">0</div></div>
+      <p id="finalNote"></p>
+      <button class="btn" id="retryBtn">もう一度</button>
+      <button class="btn gray" id="titleBtn">タイトルへ</button>
+    </div>
+    <!-- コンティニュー（ゲームオーバー演出のあと） -->
+    <div class="overlay hidden" id="cont">
+      <h1>CONTINUE?</h1>
+      <div class="demo"><canvas class="mini" data-v="5,5,5,5,5,5"></canvas></div>
+      <p>広告を見ると、<b>★6個ぶんの一発逆転（全色の横バー −15）</b>で続きから再開できます。スコアはそのまま、<span id="contRule">1回のプレイで1度だけ</span>。</p>
+      <button class="btn" id="contAd">▶ 広告を見て続ける</button>
+      <button class="btn gray" id="contEnd">終了</button>
+    </div>
+    <!-- 広告（プロトタイプではダミー） -->
+    <div class="overlay hidden" id="ad">
+      <p class="ad-label">広告（テスト表示）</p>
+      <div class="big" id="adCount">5</div>
+      <p>本番ではここに動画広告が流れます</p>
+    </div>
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <div class="controls">
+    <div class="combo" id="combo" aria-live="polite"></div>
+    <div class="pad">
+      <div class="dragpad" id="dragpad" aria-label="枠の移動（ドラッグ）">
+        <i class="u"></i><i class="d"></i><i class="l"></i><i class="r"></i>
+        <div class="knob" id="knob"></div>
+        <span>なぞって枠を移動</span>
+      </div>
+      <div class="rots">
+        <button class="rb" id="rotL" aria-label="左回転">↺<small>左回転</small></button>
+        <button class="rb" id="rotR" aria-label="右回転">↻<small>右回転</small></button>
+      </div>
+    </div>
+    <div class="hint" id="hint"></div>
+  </div>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  // ===== 数値はここだけ触れば調整できる =====
+  const N = 6;                 // 盤面 6×6
+  const TYPES = 5;             // キャラ5種
+  const GOLD = 5;              // ★ゴールド（★同士でだけ消える。並べた数に応じて全色の横バーを大きく減らす）
+  const CFG = {
+    GOLD_RATE: 0.03,           // 補充時に★が出る確率（いちばん高い横バーが0〜9）
+    GOLD_RATE_MID: 0.07,       //   〃 横バー10〜19
+    GOLD_RATE_HIGH: 0.12,      //   〃 横バー20以上
+    STAR_BONUS: {3: 3, 4: 6, 5: 10, 6: 15},   // ★を並べた数 → 全色の横バーを減らす数
+    WARN_AT: 20,               // 横バーがこの数を超えたら赤く点滅して知らせる
+    MIN_GROUP: 3,              // 何個つながったら消えるか
+    CONFIRM_MS: 2000,          // 最初の列がそろった瞬間から確定までの秒数。この間にそろえた列がコンボになる
+    LAP_SEC: 10,               // タイムゲージ1周の秒数（スタート時）。1周以内に消せないとペナルティ
+    LAP_MIN: 5,                // 1周の下限
+    LAP_STEP_BLOCKS: 100,       // 壊したブロックがこの数たまるごとに…
+    LAP_STEP_SEC: 0.5,         // …1周をこの秒数ずつ短くする
+    PENALTY: 3,                // 1周消せなかったとき、全色のゲージにこの数ずつ加算
+    STACK_MAX: 30,             // どれか1種がこれに達したら終了
+    STACK_TICK_MS: 6000,       // 6秒ごとに全色へたまる
+    STACK_STEP_BLOCKS: 300,    // 壊したブロックがこの数たまるごとに、6秒ごとの加算が+1
+    STAR_SLOW: {3: 40, 4: 70, 5: 100, 6: 150},   // ★を消すと、壊したブロック数をこれだけ巻き戻したのと同じ速さに戻す
+    CONT_SLOW: 200,            // 広告で続けたときの巻き戻し
+    STACK_INC_MAX: 5,          // 6秒ごとの加算の上限
+    DOUBLE_MS: 250,            // ダブルタップ判定の待ち時間
+    DRAG_START: 0.25,          // セルの何割動かしたらドラッグとみなすか
+    ROT_MS: 90,  CLEAR_MS: 420, FALL_MS: 260, CURSOR_MS: 90, CURSOR_FOLLOW_MS: 35, OVER_GRAY_STEP: 90, OVER_FALL_AT: 900, OVER_TEXT_AT: 1350, OVER_SHOW_AT: 3000, AD_SEC: 5, POP_MS: 1000, POP_GAP_MS: 120, FEED_MS: 1600
+  };
+  // キャラ（仮）。イラストが来たら col と sym を画像に差し替える
+  const CH = [
+    { name:'レッド',   col:'#ff4d6a', sym:'♥' },
+    { name:'イエロー', col:'#ffbf1f', sym:'●' },
+    { name:'ブルー',   col:'#3d8bff', sym:'◆' },
+    { name:'パープル', col:'#9b5cf0', sym:'♠' },
+    { name:'グリーン', col:'#2fbf6a', sym:'♣' },
+  ];
+  // キャライラスト（1枚に横並び：レッド・イエロー・ブルー・パープル・グリーン・★レインボー、各192px）
+  const CHARA_PX = 192;
+  const charaImg = new Image();
+  let charaReady = false, tileMode = 'illust';
+  try { if (localStorage.getItem('twistrush.tile') === 'normal') tileMode = 'normal'; } catch(e) {}
+  charaImg.onload = () => { charaReady = true; try { buildGauges(); updateGauges(); drawMinis(); } catch(e) {} };
+  charaImg.onerror = () => { if (!charaImg.__local) { charaImg.__local = true; charaImg.src = 'img/chara.jpg'; } };
+  charaImg.src = true ? 'img/chara.jpg' : '/_blob/4cfb008f272fae1c7d69c00bc5468f86';
+  const GOLD_COL = '#f5c233';
+  const HINT = '盤面：タップ＝右回転／ダブルタップ＝左回転／ドラッグ＝枠の移動<br>1列そろうと2秒で確定。その間にほかの列もそろえるとコンボ';
+
+  // ===== 乱数（種つき。非同期対戦のリプレイで同じ盤面を再現するため）=====
+  const mulberry32 = a => () => { a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; };
+  let seed = 0, rng = Math.random, srng = Math.random;
+
+  const canvas = document.getElementById('game'), ctx = canvas.getContext('2d');
+  const $ = id => document.getElementById(id);
+  const now = () => performance.now();
+
+  let grid = null, cur = {r:2, c:2}, curFrom = null, curAnimT = 0;
+  // 枠の見た目の位置（小数）。論理位置 cur に向かって毎フレームなめらかに追いかける
+  let vis = {r:2, c:2}, dragFrac = {r:0, c:0}, lastFrameT = 0;
+  let stacks = Array(TYPES).fill(0), score = 0, chain = 0, best = 0, confirmUntil = 0, comboShowUntil = 0;
+  let running = false, phase = 'idle', phaseStart = 0;
+  let pointerIsDown = false, lastComboText = '', liveGroups = [];
+  let lapStart = 0, lastStackTick = 0, penaltyFlash = 0;
+  let rotAnim = null, fallDist = null, fallStart = 0;
+  let clearGroups = [], clearSet = new Set(), flashes = [], pops = [], feed = [], pendingGain = 0;
+  let broken = 0, relief = 0, speedFlash = 0, lastGoldTier = 0, overFx = null, overTimer = null;                  // 壊したブロックの合計（難易度の元）
+  // 難しさの元＝壊したブロック数 − ★や広告で巻き戻した分
+  const diffBlocks = () => Math.max(0, broken - relief);
+  const lapSec = () => Math.max(CFG.LAP_MIN, CFG.LAP_SEC - Math.floor(diffBlocks() / CFG.LAP_STEP_BLOCKS) * CFG.LAP_STEP_SEC);
+  // SPEED UP の段数（0〜）。段が上がるほど★が出やすくなる
+  const speedLv = () => Math.round((CFG.LAP_SEC - lapSec()) / CFG.LAP_STEP_SEC);
+  // ★の出やすさは、いちばん高い横バーで決める（曲の切り替えと同じ境目）
+  const goldTier = () => { const m = Math.max(...stacks); return m >= 20 ? 2 : (m >= 10 ? 1 : 0); };
+  const goldRate = () => [CFG.GOLD_RATE, CFG.GOLD_RATE_MID, CFG.GOLD_RATE_HIGH][goldTier()];
+  const stackInc = () => Math.min(CFG.STACK_INC_MAX, 1 + Math.floor(diffBlocks() / CFG.STACK_STEP_BLOCKS));
+  let size = 0, cell = 0, gm = 0, dpr = 1;
+  const COL = {};
+
+  try { best = +localStorage.getItem('rotmatch.best') || 0; } catch(e) {}
+
+  // ===== 音（その場で合成）=====
+  let actx = null, master = null, muted = false;
+  function audio(){
+    if (!actx) {
+      try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { return null; }
+      master = actx.createGain(); master.gain.value = muted ? 0 : 0.8; master.connect(actx.destination);
+    }
+    if (actx.state === 'suspended') actx.resume();
+    return actx;
+  }
+  function tone(f, t, dur, type, vol, bend){
+    const a = audio(); if (!a) return;
+    try {
+      const o = a.createOscillator(), g = a.createGain();
+      o.type = type || 'sine'; o.frequency.setValueAtTime(f, t);
+      if (bend) o.frequency.exponentialRampToValueAtTime(bend, t + dur * 0.7);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(vol, t + 0.006);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g); g.connect(master); o.start(t); o.stop(t + dur + 0.03);
+    } catch(e) {}
+  }
+  const T = () => (audio() ? actx.currentTime : 0);
+  // ノイズ（シャッ・ジョバ系の音のもと）
+  let noiseBuf = null;
+  function noise(t, dur, type, f0, f1, vol, q){
+    const a = audio(); if (!a) return;
+    try {
+      if (!noiseBuf) {
+        noiseBuf = a.createBuffer(1, a.sampleRate, a.sampleRate);
+        const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+      }
+      const src = a.createBufferSource(); src.buffer = noiseBuf;
+      const f = a.createBiquadFilter(); f.type = type; f.Q.value = q || 1;
+      f.frequency.setValueAtTime(f0, t); if (f1) f.frequency.exponentialRampToValueAtTime(f1, t + dur);
+      const g = a.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(vol, t + 0.004);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      src.connect(f); f.connect(g); g.connect(master);
+      src.start(t, Math.random() * 0.5); src.stop(t + dur + 0.02);
+    } catch(e) {}
+  }
+  // 回転：ピュッ。右回転は高め、左回転は低めに鳴らし分ける
+  const sndRot = d => {
+    const t = T();
+    if (d > 0) tone(1050, t, 0.075, 'sine', 0.16, 2100);
+    else       tone(620,  t, 0.075, 'sine', 0.16, 1250);
+  };
+  const sndReady = () => { const t = T(); tone(880, t, 0.08, 'sine', 0.10); tone(1320, t + 0.07, 0.12, 'sine', 0.10); };
+  // カーソル移動：カチッ（高さを交互に変えてカチ、カチと聞こえるように）
+  let clickAlt = false, lastClick = 0;
+  const sndMove = () => {
+    const t = T(); if (t - lastClick < 0.025) return; lastClick = t;
+    clickAlt = !clickAlt;
+    noise(t, 0.018, 'bandpass', clickAlt ? 4200 : 3400, 0, 0.35, 3);
+    tone(clickAlt ? 2400 : 1900, t, 0.012, 'square', 0.035);
+  };
+  // 消える：ジョバァッ（水が流れる音。コンボが進むほど少し高く）
+  const sndClear = n => {
+    const t = T(), up = Math.min(n - 1, 6) * 0.06;
+    noise(t,        0.30, 'bandpass', 420 * (1 + up), 3800 * (1 + up), 0.30, 0.9);   // ジョ
+    noise(t + 0.08, 0.34, 'bandpass', 3200 * (1 + up), 520, 0.22, 1.1);              // バァ
+    for (let i = 0; i < 4; i++) tone(260 + Math.random() * 220, t + 0.04 + i * 0.05, 0.06, 'sine', 0.07, 520 + Math.random() * 300);  // 泡
+  };
+  const sndSpeed = () => { const t = T(); [660, 880, 1175].forEach((f, i) => tone(f, t + 0.25 + i * 0.06, 0.1, 'square', 0.05)); };
+  const sndCrash = () => {                 // 崩れ落ちる音：ドサッ＋ガラガラ
+    const t = T();
+    noise(t, 0.55, 'lowpass', 900, 90, 0.45, 0.7);
+    tone(95, t, 0.45, 'sine', 0.22, 45);
+    for (let i = 0; i < 6; i++) noise(t + 0.05 + i * 0.06, 0.06, 'bandpass', 1400 + Math.random() * 1600, 0, 0.12, 2);
+  };
+  const sndPenalty = () => { const t = T(); tone(220, t, 0.18, 'square', 0.06, 150); tone(180, t + 0.16, 0.22, 'square', 0.06, 120); };
+  const sndOver = () => { const t = T(); [523, 440, 349, 262].forEach((f, i) => tone(f, t + i * 0.14, 0.2, 'triangle', 0.09)); };
+
+  // ===== BGM：まったり → 少し速い → 焦りマックス =====
+  // 公開ページでは /_blob/ の音源、手元のファイル（Dropbox）では bgm フォルダのmp3を鳴らす
+  const BGM = {
+    calm:  [['/_blob/3d611653bebb398c0fb77929dddf6bcc', 'bgm/Puzzle_Time1.mp3'], ['/_blob/dfaddd6873590c0dc6f1da38a291c045', 'bgm/Puzzle_Time2.mp3']],
+    rush:  [['/_blob/d234109a77bff0f8c2e7748d8068af27', 'bgm/Puzzle_Rush1.mp3'], ['/_blob/8bcd3443d1d9fd91ed3f36705dc40335', 'bgm/Puzzle_Rush2.mp3']],
+    panic: [['/_blob/fe54953c3df4b015f8f8bdae999aa5d3', 'bgm/Maximum_Panic_Mode1.mp3'], ['/_blob/82d78fbd317873e5692ab924f97d31e9', 'bgm/Maximum_Panic_Mode2.mp3']],
+  };
+  const BGM_LOCAL = true;
+  const BGM_VOL = 0.45, BGM_XFADE = 0.8, BGM_TAIL = 3.0;   // 音量／切替の重ね秒数／曲の終わり何秒前に次へ
+  const bgmEls = [new Audio(), new Audio()], bgmGain = [null, null];
+  let bgmIdx = 0, bgmMode = null, bgmOn = false;
+  const bgmTurn = {calm: 0, rush: 0, panic: 0};
+  bgmEls.forEach((el, i) => {
+    el.preload = 'auto'; el.setAttribute('playsinline', '');
+    // 曲が終わる少し前に、同じモードのもう1曲へ重ねて切り替える（無音を作らない）
+    el.addEventListener('timeupdate', () => {
+      if (!bgmOn || i !== bgmIdx || !el.duration) return;
+      if (el.duration - el.currentTime < BGM_TAIL) bgmPlay(bgmMode, true);
+    });
+    // 公開ページの音源が読めなければ、手元の bgm フォルダを試す
+    el.addEventListener('error', () => {
+      if (el.__local && !el.__triedLocal) { el.__triedLocal = true; el.src = el.__local; el.play().catch(() => {}); }
+    });
+  });
+  // iPhoneは audio.volume を無視するので、音量は必ず Web Audio のゲイン経由で動かす
+  function bgmGainOf(i){
+    if (bgmGain[i]) return bgmGain[i];
+    const a = audio(); if (!a) return null;
+    try {
+      const src = a.createMediaElementSource(bgmEls[i]), g = a.createGain();
+      g.gain.value = 0; src.connect(g); g.connect(master); bgmGain[i] = g;
+    } catch(e) { bgmGain[i] = null; }
+    return bgmGain[i];
+  }
+  function bgmFade(i, to, sec){
+    const g = bgmGainOf(i);
+    if (g && actx) {
+      const t = actx.currentTime;
+      g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(g.gain.value, t);
+      g.gain.linearRampToValueAtTime(to, t + Math.max(0.01, sec));
+    } else { try { bgmEls[i].volume = to; } catch(_) {} }
+  }
+  function bgmPlay(mode, nextInSameMode){
+    if (!nextInSameMode && mode === bgmMode) return;
+    bgmMode = mode;
+    const list = BGM[mode], [blob, local] = list[bgmTurn[mode]++ % list.length];
+    const oldI = bgmIdx, newI = 1 - bgmIdx, el = bgmEls[newI];
+    el.__local = local; el.__triedLocal = BGM_LOCAL;
+    el.src = BGM_LOCAL ? local : blob;
+    try { el.currentTime = 0; } catch(_) {}
+    bgmFade(newI, 0, 0.01);
+    el.play().catch(() => {});
+    bgmFade(newI, BGM_VOL, BGM_XFADE); bgmFade(oldI, 0, BGM_XFADE);
+    bgmIdx = newI;
+    const old = bgmEls[oldI];
+    setTimeout(() => { if (bgmIdx !== oldI) { try { old.pause(); } catch(_) {} } }, BGM_XFADE * 1000 + 120);
+  }
+  // 「はじめる」のタップ中に2つとも鳴らしておく（スマホの自動再生制限を解除）
+  function bgmUnlock(){
+    bgmEls.forEach((el, i) => {
+      bgmGainOf(i); bgmFade(i, 0, 0.01);
+      if (!el.src) { const [blob, local] = BGM.calm[1]; el.__local = local; el.src = BGM_LOCAL ? local : blob; }
+      const p = el.play(); if (p && p.then) p.then(() => { if (i !== bgmIdx) { try { el.pause(); } catch(_) {} } }).catch(() => {});
+    });
+  }
+  function bgmStop(sec){
+    bgmOn = false; bgmMode = null;
+    [0, 1].forEach(i => bgmFade(i, 0, sec));
+    setTimeout(() => { if (!bgmOn) bgmEls.forEach(el => { try { el.pause(); } catch(_) {} }); }, sec * 1000 + 100);
+  }
+  // いちばん高い横バーで曲を選ぶ：10未満＝まったり／10〜19＝少し速い／20以上＝焦りマックス
+  const BGM_RUSH_AT = 10, BGM_PANIC_AT = 20, BGM_HYST = 3;   // 下がるときはこの数だけ余裕を持って戻す（境目で行ったり来たりしない）
+  function bgmUpdate(){
+    if (!bgmOn) return;
+    const maxS = Math.max(...stacks);
+    let want = maxS >= BGM_PANIC_AT ? 'panic' : (maxS >= BGM_RUSH_AT ? 'rush' : 'calm');
+    if (bgmMode === 'panic' && want !== 'panic' && maxS >= BGM_PANIC_AT - BGM_HYST) want = 'panic';
+    if (bgmMode === 'rush'  && want === 'calm' && maxS >= BGM_RUSH_AT - BGM_HYST)   want = 'rush';
+    if (want !== bgmMode) bgmPlay(want);
+  }
+
+  // ===== 盤面 =====
+  function randType(allowGold){ return (allowGold && rng() < goldRate()) ? GOLD : Math.floor(rng() * TYPES); }
+
+  // 縦または横に一直線で3〜6個並んだ同じブロックを探す。★（ゴールド）は★同士でだけ消える
+  // L字・T字のように縦と横が重なった場合は、両方の列が消える
+  function findGroups(){
+    const out = [];
+    const lines = [];
+    for (let i = 0; i < N; i++) {
+      lines.push(Array.from({length:N}, (_, k) => [i, k]));   // 横
+      lines.push(Array.from({length:N}, (_, k) => [k, i]));   // 縦
+    }
+    for (const line of lines) {
+      let run = [], t = null;
+      const flush = () => { if (run.length >= CFG.MIN_GROUP) out.push({t, cells: run}); run = []; };
+      for (const [r, c] of line) {
+        const v = grid[r][c];
+        if (v !== t) { flush(); t = v; }
+        run.push([r, c]);
+      }
+      flush();
+    }
+    return out;
+  }
+
+  // 初期盤面：最初から消える並びがない状態を保証
+  function newBoard(){
+    grid = Array.from({length:N}, () => Array.from({length:N}, () => randType(false)));
+    let guard = 0;
+    while (guard++ < 800) {
+      const gs = findGroups(); if (!gs.length) break;
+      const g = gs[0], [r, c] = g.cells[Math.floor(rng() * g.cells.length)];
+      grid[r][c] = randType(false);
+    }
+  }
+
+  function inRot(r, c){ return rotAnim && r >= rotAnim.r && r <= rotAnim.r + 1 && c >= rotAnim.c && c <= rotAnim.c + 1; }
+
+  // dir: +1=時計回り, -1=反時計回り
+  function rotate(dir){
+    if (!running) return;
+    const {r, c} = cur;
+    const four = [[r, c], [r, c+1], [r+1, c+1], [r+1, c]];
+    // 消える点滅中でも回せる。ただし点滅中のブロックを含む枠は回せない
+    if (phase === 'clear' && four.some(([a, b]) => clearSet.has(a * N + b))) return;
+    const tl = grid[r][c], tr = grid[r][c+1], br = grid[r+1][c+1], bl = grid[r+1][c];
+    if (dir > 0) { grid[r][c+1] = tl; grid[r+1][c+1] = tr; grid[r+1][c] = br; grid[r][c] = bl; }
+    else         { grid[r][c] = tr; grid[r][c+1] = br; grid[r+1][c+1] = bl; grid[r+1][c] = tl; }
+    rotAnim = {r, c, dir, t: now()};
+    if (phase === 'fall' && fallDist) four.forEach(([a, b]) => { fallDist[a][b] = 0; });  // 落下中に回したマスは着地済み扱い
+    sndRot(dir);
+    // 最初の列がそろった瞬間に確定2秒がスタート（点滅・落下中にそろえた分は、落下後の連鎖として消える）
+    if (phase === 'idle' && !confirmUntil && findGroups().length) { confirmUntil = now() + CFG.CONFIRM_MS; sndReady(); }
+  }
+
+  function moveCursor(r, c){
+    if (r === cur.r && c === cur.c) return;
+    curFrom = {r: cur.r, c: cur.c}; curAnimT = now();
+    cur = {r, c};
+    sndMove();
+  }
+
+  // ===== 確定 → 消去 → 落下 → 連鎖 =====
+  function tryResolve(){
+    const gs = findGroups();
+    if (!gs.length) {
+      phase = 'idle';
+      if (chain > 0) comboShowUntil = now() + 1200;   // 結果のコンボ数を少し残して見せる
+      return false;
+    }
+    // ===== 点数の計算 =====
+    // 消去1回ぶん：消したブロック数（重なりは1個として数える）×（消した列＋行の数）×（何回目の連続消去か）
+    //   同時に2列以上 → sync（2列=1sync）、連続して2回目以降 → COMBO（2回目=1COMBO）、両方 → Special
+    chain += 1;                                      // 連続して何回目の消去か（1回目=1）
+    clearGroups = gs; clearSet = new Set();
+    gs.forEach(g => g.cells.forEach(([r, c]) => clearSet.add(r * N + c)));
+    const blocks = clearSet.size, lines = gs.length, mult = lines * chain;
+    pendingGain = blocks * mult;
+    const syncN = lines - 1, comboN = chain - 1;
+    // 消えた場所の真ん中からラベルを湧かせる
+    const t0 = now();
+    let sr = 0, sc = 0; clearSet.forEach(k => { sr += (k / N) | 0; sc += k % N; });
+    const cr = sr / blocks, cc = sc / blocks;
+    const labels = [];
+    if (syncN > 0 && comboN > 0) labels.push({text: 'Special!', style: 'special'});
+    if (comboN > 0) labels.push({text: comboN + 'COMBO', style: 'combo'});
+    if (syncN > 0)  labels.push({text: syncN + 'sync', style: 'sync'});
+    labels.forEach((L, i) => pops.push({text: L.text, style: L.style, r: cr, c: cc, row: i, n: labels.length, t: t0 + i * CFG.POP_GAP_MS}));
+    // 盤面の右側を、下から上へ点数が湧き上がる
+    feed.push({calc: blocks + '×' + mult, pts: String(pendingGain), t: t0});
+    phase = 'clear'; phaseStart = now();
+    sndClear(chain);
+    return true;
+  }
+
+  function commitClear(){
+    let gain = 0;
+    const dec = Array(TYPES).fill(0);
+    let golds = 0;
+    gain = pendingGain;
+    const t0 = now();
+    for (const k of clearSet) {
+      const r = (k / N) | 0, c = k % N, v = grid[r][c];
+      if (v !== GOLD) dec[v]++;
+      flashes.push({r, c, v, t: t0});
+      grid[r][c] = null;
+    }
+    // ★は一発逆転：並べた数で全色を大きく減らす（3個=3、4個=6、5個=10、6個=15）
+    let slow = 0;
+    for (const g of clearGroups) if (g.t === GOLD) { golds += CFG.STAR_BONUS[Math.min(6, g.cells.length)] || 0; slow += CFG.STAR_SLOW[Math.min(6, g.cells.length)] || 0; }
+    if (golds) {
+      for (let i = 0; i < TYPES; i++) dec[i] += golds;
+      pops.push({text: '★全色 −' + golds, style: 'special', r: 2.5, c: 2.5, row: 0, n: 1, t: t0 + 150, big: true});
+      toast('一発逆転！ 全色 −' + golds);
+    }
+    score += gain;
+    dec.forEach((d, i) => { if (d) { stacks[i] = Math.max(0, stacks[i] - d); bump(i); popMinus(i, d); } });
+    lapStart = t0;                               // 消せたらタイムゲージは1周目から
+    // 壊したブロック数に応じて難しくする
+    const prevLap = lapSec(), prevInc = stackInc();
+    broken += clearSet.size;
+    if (slow) relief = Math.min(broken, relief + slow);   // ★を消すとスピードが少し戻る
+    if (lapSec() > prevLap || stackInc() < prevInc) speedDown(t0, 300);
+    else if (lapSec() < prevLap) {
+      // 盤面の真ん中に大きく出す（音だけだと気づかないため）
+      pops.push({text: 'SPEED UP!', style: 'speed', r: 2.2, c: 2.5, row: 0, n: 1, t: t0 + 300, big: true});
+      toast('1周 ' + lapSec() + '秒');
+      speedFlash = t0; sndSpeed();
+    }
+    else if (stackInc() > prevInc) toast('横バー 6秒ごとに +' + stackInc());
+    updateHUD(); updateGauges();
+
+    fallDist = Array.from({length:N}, () => Array(N).fill(0));
+    for (let c = 0; c < N; c++) {
+      const surv = [];
+      for (let r = N - 1; r >= 0; r--) if (grid[r][c] !== null) surv.push([grid[r][c], r]);
+      let r = N - 1;
+      for (let i = 0; i < surv.length; i++, r--) { grid[r][c] = surv[i][0]; fallDist[r][c] = r - surv[i][1]; }
+      const fresh = r + 1;
+      for (let k = 0; k < fresh; k++) { grid[k][c] = randType(true); fallDist[k][c] = fresh; }
+    }
+    fallStart = t0; phase = 'fall'; phaseStart = t0;
+  }
+
+  // ===== 積上げゲージ =====
+  // 全色に同じ数ずつ加算
+  function addStackAll(n){
+    stacks = stacks.map(v => Math.min(CFG.STACK_MAX, v + n));
+    updateGauges();
+    if (stacks.some(v => v >= CFG.STACK_MAX)) finish();
+  }
+  function addStack(n){
+    for (let k = 0; k < n; k++) {
+      const i = Math.floor(srng() * TYPES);
+      stacks[i] = Math.min(CFG.STACK_MAX, stacks[i] + 1);
+    }
+    updateGauges();
+    if (stacks.some(v => v >= CFG.STACK_MAX)) finish();
+  }
+
+  function tick(t){
+    bgmUpdate();
+    // 横バーが上がって★が出やすくなったら知らせる
+    const gt = goldTier();
+    if (gt > lastGoldTier) {
+      pops.push({text: '★が出やすくなった', style: 'combo', r: 2.2, c: 2.5, row: 0, n: 1, t: t, long: true});
+      toast('★の出る確率 ' + Math.round(goldRate() * 100) + '%');
+    }
+    lastGoldTier = gt;
+    while (running && t - lastStackTick >= CFG.STACK_TICK_MS) { lastStackTick += CFG.STACK_TICK_MS; addStackAll(stackInc()); }
+    if (running && t - lapStart >= lapSec() * 1000) {
+      lapStart = t; penaltyFlash = t; sndPenalty(); toast('全色 +' + CFG.PENALTY);
+      stacks = stacks.map(v => Math.min(CFG.STACK_MAX, v + CFG.PENALTY));   // 全色に+PENALTY
+      updateGauges();
+      if (stacks.some(v => v >= CFG.STACK_MAX)) finish();
+    }
+    if (!running) return;
+    if (phase === 'idle' && confirmUntil && !findGroups().length) {
+      confirmUntil = 0;                            // そろった列を全部崩したら確定は取り消し
+    } else if (phase === 'idle' && confirmUntil && t >= confirmUntil && !(rotAnim && t - rotAnim.t < CFG.ROT_MS)) {
+      confirmUntil = 0; chain = 0; tryResolve();   // 3秒たったら、そろっている列を全部まとめて消す
+    } else if (phase === 'clear' && t - phaseStart >= CFG.CLEAR_MS) {
+      commitClear();
+    } else if (phase === 'fall' && t - phaseStart >= CFG.FALL_MS) {
+      fallDist = null;
+      tryResolve();                                // 落ちた結果そろえばコンボ
+    }
+  }
+
+  // ===== 入力 =====
+  function xy(e){ const b = canvas.getBoundingClientRect(); return [e.clientX - b.left, e.clientY - b.top]; }
+
+  // 枠の中か
+  function inCursor(x, y){
+    const c = Math.floor((x - gm) / cell), r = Math.floor((y - gm) / cell);
+    return r >= cur.r && r <= cur.r + 1 && c >= cur.c && c <= cur.c + 1;
+  }
+
+  // 枠の移動はドラッグ。指の動きに合わせて、枠の中心がいちばん近い交点に吸い付く
+  let down = null, tapTimer = null, dragging = false;
+  function flushTap(){ if (tapTimer) { clearTimeout(tapTimer); tapTimer = null; } }
+
+  canvas.addEventListener('pointerdown', e => {
+    if (!running && overFx && !afterShown) { showOver(); return; }   // 演出中にタップで飛ばせる
+    if (!running) return;
+    audio();
+    const [x, y] = xy(e);
+    // 指の位置と枠の中心のずれを覚えておく（どこをつかんでも枠が指から離れない）
+    const cx = gm + (cur.c + 1) * cell, cy = gm + (cur.r + 1) * cell;
+    down = {x, y, ox: cx - x, oy: cy - y, inside: inCursor(x, y)};
+    dragging = false; pointerIsDown = true;
+    try { canvas.setPointerCapture(e.pointerId); } catch(_) {}
+  });
+
+  canvas.addEventListener('pointermove', e => {
+    if (!down || !running) return;
+    const [x, y] = xy(e);
+    if (!dragging) {
+      if (Math.hypot(x - down.x, y - down.y) < cell * CFG.DRAG_START) return;
+      dragging = true; flushTap();
+    }
+    const gx = (x + down.ox - gm) / cell, gy = (y + down.oy - gm) / cell;
+    const ix = Math.min(N - 1, Math.max(1, Math.round(gx)));
+    const iy = Math.min(N - 1, Math.max(1, Math.round(gy)));
+    moveCursor(iy - 1, ix - 1);
+    // 見た目の枠は指にそのままついていく（離すといちばん近い位置に吸い付く）
+    dragFrac = {r: Math.min(N - 1, Math.max(1, gy)) - iy, c: Math.min(N - 1, Math.max(1, gx)) - ix};
+  });
+
+  canvas.addEventListener('pointerup', () => {
+    if (!down) return;
+    const d = down; down = null; pointerIsDown = false; dragFrac = {r:0, c:0};
+    if (dragging) { dragging = false; return; }   // ドラッグは枠の移動だけ
+    if (!running || !d.inside) return;
+    // タップした瞬間に右回転。0.25秒以内に2回目が来たら、左回転の位置まで戻す（待ち時間なし）
+    if (tapTimer) {
+      clearTimeout(tapTimer); tapTimer = null;
+      rotate(-1); rotate(-1);
+      if (rotAnim) rotAnim.dir = -2;             // 右回転した位置から180°戻る動きを見せる
+    } else {
+      rotate(1);
+      tapTimer = setTimeout(() => { tapTimer = null; }, CFG.DOUBLE_MS);
+    }
+  });
+
+  canvas.addEventListener('pointercancel', () => { down = null; dragging = false; pointerIsDown = false; dragFrac = {r:0, c:0}; });
+
+  // ===== 描画 =====
+  function rr(g, x, y, w, h, rad){
+    g.beginPath(); g.moveTo(x + rad, y);
+    g.arcTo(x + w, y, x + w, y + h, rad); g.arcTo(x + w, y + h, x, y + h, rad);
+    g.arcTo(x, y + h, x, y, rad); g.arcTo(x, y, x + w, y, rad); g.closePath();
+  }
+  function shade(hex, amt){
+    const n = parseInt(hex.slice(1), 16); let r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+    if (amt >= 0) { r += (255 - r) * amt; g += (255 - g) * amt; b += (255 - b) * amt; }
+    else { const k = 1 + amt; r *= k; g *= k; b *= k; }
+    return 'rgb(' + (r|0) + ',' + (g|0) + ',' + (b|0) + ')';
+  }
+  function star(g, cx, cy, ro, ri){
+    g.beginPath();
+    for (let i = 0; i < 10; i++) {
+      const a = -Math.PI / 2 + i * Math.PI / 5, rad = i % 2 ? ri : ro;
+      g.lineTo(cx + Math.cos(a) * rad, cy + Math.sin(a) * rad);
+    }
+    g.closePath();
+  }
+
+  // 仮キャラ：髪＋顔の2頭身っぽいブロック。イラストが来たらこの関数を drawImage に置き換える
+  function drawTile(g, x, y, s, v, alpha){
+    const col = v === GOLD ? GOLD_COL : CH[v].col;
+    const depth = s * 0.08, h = s - depth, rad = s * 0.28;
+    g.globalAlpha = alpha == null ? 1 : alpha;
+    if (charaReady && tileMode === 'illust') {
+      // イラスト版：色の枠＋キャラの顔。★はレインボーの枠
+      g.fillStyle = v === GOLD ? '#8a5bd6' : shade(col, -0.4); rr(g, x, y + depth, s, h, rad); g.fill();
+      if (v === GOLD) {
+        const rg = g.createLinearGradient(x, y, x + s, y + h);
+        ['#ff5f7e', '#ffb13d', '#ffe45c', '#5fe08a', '#4fb4ff', '#b77bff'].forEach((c2, i) => rg.addColorStop(i / 5, c2));
+        g.fillStyle = rg;
+      } else g.fillStyle = col;
+      rr(g, x, y, s, h, rad); g.fill();
+      const b = Math.max(2, s * 0.075), iw = s - b * 2, ih = h - b * 2;
+      g.save(); rr(g, x + b, y + b, iw, ih, rad * 0.78); g.clip();
+      const sh = CHARA_PX * ih / iw;                              // 縦横比を崩さない
+      g.drawImage(charaImg, v * CHARA_PX, (CHARA_PX - sh) / 2, CHARA_PX, sh, x + b, y + b, iw, ih);
+      g.fillStyle = 'rgba(255,255,255,.16)'; rr(g, x + b, y + b, iw, ih * 0.22, rad * 0.6); g.fill();
+      g.restore();
+      g.globalAlpha = 1;
+      return;
+    }
+    g.fillStyle = shade(col, -0.38); rr(g, x, y + depth, s, h, rad); g.fill();
+    const gr = g.createLinearGradient(x, y, x, y + h);
+    gr.addColorStop(0, shade(col, 0.30)); gr.addColorStop(1, col);
+    g.fillStyle = gr; rr(g, x, y, s, h, rad); g.fill();
+
+    if (v === GOLD) {
+      g.fillStyle = '#fffbe8'; star(g, x + s / 2, y + h * 0.52, s * 0.30, s * 0.13); g.fill();
+      g.fillStyle = 'rgba(255,255,255,.9)';
+      star(g, x + s * 0.80, y + h * 0.20, s * 0.08, s * 0.03); g.fill();
+      star(g, x + s * 0.20, y + h * 0.80, s * 0.06, s * 0.02); g.fill();
+    } else {
+      // ノーマルブロック（ニコちゃん顔）：髪
+      g.save(); rr(g, x, y, s, h, rad); g.clip();
+      g.fillStyle = shade(col, -0.20);
+      g.beginPath(); g.ellipse(x + s / 2, y + h * 0.02, s * 0.66, h * 0.44, 0, 0, Math.PI * 2); g.fill();
+      g.beginPath();
+      [0.22, 0.5, 0.78].forEach(p => { g.moveTo(x + s * p + s * 0.12, y + h * 0.40); g.arc(x + s * p, y + h * 0.40, s * 0.12, 0, Math.PI); });
+      g.fill();
+      g.restore();
+      // 目
+      const ey = y + h * 0.64;
+      g.fillStyle = '#2a1a35';
+      g.beginPath(); g.ellipse(x + s * 0.34, ey, s * 0.065, h * 0.10, 0, 0, Math.PI * 2); g.fill();
+      g.beginPath(); g.ellipse(x + s * 0.66, ey, s * 0.065, h * 0.10, 0, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#fff';
+      g.beginPath(); g.arc(x + s * 0.32, ey - h * 0.04, s * 0.024, 0, Math.PI * 2); g.fill();
+      g.beginPath(); g.arc(x + s * 0.64, ey - h * 0.04, s * 0.024, 0, Math.PI * 2); g.fill();
+      // ほお
+      g.fillStyle = 'rgba(255,110,150,.45)';
+      g.beginPath(); g.ellipse(x + s * 0.20, y + h * 0.78, s * 0.07, h * 0.04, 0, 0, Math.PI * 2); g.fill();
+      g.beginPath(); g.ellipse(x + s * 0.80, y + h * 0.78, s * 0.07, h * 0.04, 0, 0, Math.PI * 2); g.fill();
+      // 口
+      g.strokeStyle = '#2a1a35'; g.lineWidth = Math.max(1, s * 0.03); g.lineCap = 'round';
+      g.beginPath(); g.arc(x + s / 2, y + h * 0.75, s * 0.05, 0.15 * Math.PI, 0.85 * Math.PI); g.stroke();
+      // 見分け用の記号（色が分かりにくい人向け）
+      g.fillStyle = 'rgba(255,255,255,.92)';
+      g.font = '800 ' + (s * 0.20) + 'px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.fillText(CH[v].sym, x + s * 0.5, y + h * 0.20);
+    }
+    g.fillStyle = 'rgba(255,255,255,.22)';
+    rr(g, x + s * 0.12, y + h * 0.05, s * 0.76, h * 0.12, h * 0.06); g.fill();
+    g.globalAlpha = 1;
+  }
+
+  const easeOut = p => 1 - Math.pow(1 - p, 3);
+
+  // ゲームオーバー中のブロック：下の段から灰色になり、そのあと崩れ落ちる
+  function drawOverTile(x, y, s, v, r, c, t){
+    const e = t - overFx.t, k = r * N + c;
+    const grayA = Math.max(0, Math.min(1, (e - (N - 1 - r) * CFG.OVER_GRAY_STEP) / 160));
+    const fallAt = CFG.OVER_FALL_AT + (N - 1 - r) * 60 + overFx.delay[k];
+    let dy = 0, dx = 0, rot = 0;
+    if (e > fallAt) {
+      const d = (e - fallAt) / 1000;
+      dy = 0.5 * size * 5 * d * d - size * 0.25 * d;    // 少し跳ねてから落ちる
+      dx = overFx.drift[k] * d;
+      rot = overFx.spin[k] * d * 4;
+      if (y + dy > size + s) return;
+    }
+    ctx.save();
+    ctx.translate(x + s / 2 + dx, y + s / 2 + dy); ctx.rotate(rot);
+    drawTile(ctx, -s / 2, -s / 2, s, v, 1);
+    if (grayA > 0) { ctx.fillStyle = 'rgba(45,35,58,' + (0.62 * grayA) + ')'; rr(ctx, -s / 2, -s / 2, s, s, s * 0.28); ctx.fill(); }
+    ctx.restore();
+  }
+
+  function render(){
+    try {
+      const t = now();
+      if (running) tick(t);
+      liveGroups = (running && confirmUntil && phase === 'idle' && grid) ? findGroups() : [];
+      let ct = '';
+      if (liveGroups.length) ct = liveGroups.length + '<small>列そろってる</small>';
+      if (ct !== lastComboText) { lastComboText = ct; $('combo').innerHTML = ct; }
+      if (overFx) {                                // ゲームオーバーの瞬間、盤面を揺らす
+        const e = t - overFx.t;
+        canvas.style.transform = e < 380 ? 'translate(' + ((Math.random() - 0.5) * 10 * (1 - e / 380)).toFixed(1) + 'px,' + ((Math.random() - 0.5) * 10 * (1 - e / 380)).toFixed(1) + 'px)' : '';
+      }
+      ctx.clearRect(0, 0, size, size);
+      ctx.fillStyle = COL.board; rr(ctx, 0, 0, size, size, 18); ctx.fill();
+
+      const s = cell * 0.88, off = (cell - s) / 2;
+      for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+        ctx.fillStyle = COL.well; rr(ctx, gm + c * cell + off, gm + r * cell + off, s, s, s * 0.28); ctx.fill();
+      }
+      // 交点の目印（ここをタップすると中心選択）
+      ctx.fillStyle = COL.dot;
+      for (let iy = 1; iy < N; iy++) for (let ix = 1; ix < N; ix++) {
+        ctx.beginPath(); ctx.arc(gm + ix * cell, gm + iy * cell, Math.max(1.5, cell * 0.03), 0, Math.PI * 2); ctx.fill();
+      }
+
+      if (grid) {
+        const rp = rotAnim ? Math.min(1, (t - rotAnim.t) / CFG.ROT_MS) : 1;
+        const fp = fallDist ? Math.min(1, (t - fallStart) / CFG.FALL_MS) : 1;
+        const cp = phase === 'clear' ? (t - phaseStart) / CFG.CLEAR_MS : 0;
+        for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+          const v = grid[r][c]; if (v === null) continue;
+          let x = gm + c * cell + off, y = gm + r * cell + off;
+          if (rotAnim && rp < 1 && inRot(r, c)) {
+            const cx = gm + (rotAnim.c + 1) * cell, cy = gm + (rotAnim.r + 1) * cell;
+            const tx = x + s / 2 - cx, ty = y + s / 2 - cy, R = Math.hypot(tx, ty);
+            const a = Math.atan2(ty, tx) - rotAnim.dir * (Math.PI / 2) * (1 - easeOut(rp));
+            x = cx + Math.cos(a) * R - s / 2; y = cy + Math.sin(a) * R - s / 2;
+          }
+          if (fallDist && fp < 1) y -= fallDist[r][c] * cell * (1 - easeOut(fp));
+          if (overFx) drawOverTile(x, y, s, v, r, c, t); else drawTile(ctx, x, y, s, v, 1);
+          if (phase === 'clear' && clearSet.has(r * N + c)) {
+            ctx.globalAlpha = 0.25 + 0.55 * Math.abs(Math.sin(cp * Math.PI * 3));
+            ctx.fillStyle = '#fff'; rr(ctx, x, y, s, s, s * 0.28); ctx.fill(); ctx.globalAlpha = 1;
+          }
+        }
+        if (rp >= 1) rotAnim = null;
+      }
+
+      flashes = flashes.filter(f => t - f.t < 220);
+      for (const f of flashes) {
+        const p = (t - f.t) / 220, ss = s * (1 + p * 0.4);
+        drawTile(ctx, gm + f.c * cell + off - (ss - s) / 2, gm + f.r * cell + off - (ss - s) / 2, ss, f.v, (1 - p) * 0.8);
+      }
+
+      // そろっている列を金の枠で見せる（確定待ちの間）
+      if (liveGroups.length) {
+        ctx.strokeStyle = GOLD_COL; ctx.lineWidth = Math.max(3, cell * 0.06); ctx.lineJoin = 'round';
+        for (const g of liveGroups) {
+          let r0 = N, r1 = -1, c0 = N, c1 = -1;
+          for (const [r, c] of g.cells) { r0 = Math.min(r0, r); r1 = Math.max(r1, r); c0 = Math.min(c0, c); c1 = Math.max(c1, c); }
+          rr(ctx, gm + c0 * cell + off - 2, gm + r0 * cell + off - 2, (c1 - c0) * cell + s + 4, (r1 - r0) * cell + s + 4, s * 0.3);
+          ctx.stroke();
+        }
+      }
+
+      // カーソル（2×2の白枠）。確定待ちの間は金色が枠を一周する
+      if (running && grid) {
+        const dt = Math.min(50, t - (lastFrameT || t)); lastFrameT = t;
+        const tr = Math.min(N - 2, Math.max(0, cur.r + dragFrac.r));
+        const tc = Math.min(N - 2, Math.max(0, cur.c + dragFrac.c));
+        const k = 1 - Math.exp(-dt / CFG.CURSOR_FOLLOW_MS);
+        vis.r += (tr - vis.r) * k; vis.c += (tc - vis.c) * k;
+        const cr = vis.r, cc = vis.c;
+        const bx = gm + cc * cell + 1, by = gm + cr * cell + 1, bw = cell * 2 - 2, rad = cell * 0.3;
+        ctx.lineJoin = 'round';
+        ctx.strokeStyle = 'rgba(42,26,53,.55)'; ctx.lineWidth = Math.max(5, cell * 0.10);
+        rr(ctx, bx, by, bw, bw, rad); ctx.stroke();
+        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = Math.max(3, cell * 0.06);
+        rr(ctx, bx, by, bw, bw, rad); ctx.stroke();
+        if (confirmUntil && phase === 'idle') {     // 確定までの残り3秒：金の線が減っていく
+          const rem = Math.max(0, (confirmUntil - t) / CFG.CONFIRM_MS), L = bw * 4;
+          ctx.save(); ctx.strokeStyle = GOLD_COL; ctx.lineWidth = Math.max(4, cell * 0.08);
+          ctx.setLineDash([rem * L, L]); rr(ctx, bx, by, bw, bw, rad); ctx.stroke(); ctx.restore();
+        }
+      }
+
+      // タイムゲージ：盤面の外周を1周
+      if (running) {
+        const f = Math.max(0, 1 - (t - lapStart) / (lapSec() * 1000));
+        const lw = Math.max(4, gm * 0.55), ins = lw / 2 + 1, w = size - ins * 2, L = 4 * w;
+        ctx.save(); ctx.lineWidth = lw; ctx.lineCap = 'butt';
+        ctx.strokeStyle = COL.track; rr(ctx, ins, ins, w, w, 14); ctx.stroke();
+        ctx.strokeStyle = f <= 0.2 ? '#e8455f' : (f <= 0.5 ? GOLD_COL : '#34c6a0');
+        ctx.setLineDash([f * L, L]); rr(ctx, ins, ins, w, w, 14); ctx.stroke();
+        if (t - speedFlash < 700) {                // SPEED UP の瞬間、ゲージを白く光らせる
+          ctx.globalAlpha = 1 - (t - speedFlash) / 700; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = lw * 1.4;
+          ctx.setLineDash([]); rr(ctx, ins, ins, w, w, 14); ctx.stroke();
+        }
+        ctx.restore();
+        if (t - penaltyFlash < 450) {
+          ctx.globalAlpha = 1 - (t - penaltyFlash) / 450;
+          ctx.strokeStyle = '#e8455f'; ctx.lineWidth = lw * 1.6; rr(ctx, ins, ins, w, w, 14); ctx.stroke();
+          ctx.globalAlpha = 1;
+        }
+      }
+      // 縁取りつきの文字を描く
+      const fam = '"M PLUS Rounded 1c","Hiragino Maru Gothic ProN",sans-serif';
+      const GRADS = {
+        combo:   ['#fff6c9', '#ffd24a', '#f29a1f'],
+        sync:    ['#e8fbff', '#62d8ff', '#2a86f0'],
+        special: ['#ffe6f4', '#ff6fb5', '#a64dff'],
+        speed:   ['#fff0e6', '#ff8a4a', '#e8354f'],
+        score:   ['#ffffff', '#fff0b3', '#ffc93a'],
+        calc:    ['#ffffff', '#f3e9ff', '#d9c8f0'],
+      };
+      const outlined = (txt, px, base, sz, style, align) => {
+        ctx.font = '800 ' + sz + 'px ' + fam; ctx.textAlign = align || 'left'; ctx.textBaseline = 'alphabetic'; ctx.lineJoin = 'round';
+        ctx.strokeStyle = '#3a2748'; ctx.lineWidth = Math.max(3, sz * 0.22); ctx.strokeText(txt, px, base);
+        const gc = GRADS[style], gr = ctx.createLinearGradient(0, base - sz, 0, base);
+        gr.addColorStop(0, gc[0]); gr.addColorStop(0.5, gc[1]); gr.addColorStop(1, gc[2]);
+        ctx.fillStyle = gr; ctx.fillText(txt, px, base);
+      };
+
+      // COMBO / sync / Special：ポンと出て、上へ浮かびながら消える
+      pops = pops.filter(q => t - q.t < CFG.POP_MS * ((q.big || q.long) ? 1.6 : 1));
+      for (const q of pops) {
+        const p = (t - q.t) / (CFG.POP_MS * ((q.big || q.long) ? 1.6 : 1)); if (p < 0) continue;
+        const sc = p < 0.12 ? 0.4 + (p / 0.12) * 0.9 : (p < 0.22 ? 1.3 - ((p - 0.12) / 0.1) * 0.3 : 1);
+        const a = p < 0.65 ? 1 : 1 - (p - 0.65) / 0.35;
+        const sz = cell * (q.big ? 0.8 : (q.style === 'special' ? 0.56 : (q.style === 'combo' && q.text.length > 7 ? 0.34 : 0.46))) * sc;
+        ctx.font = '800 ' + sz + 'px ' + fam; const tw = ctx.measureText(q.text).width;
+        const x = Math.min(size - gm - tw / 2, Math.max(gm + tw / 2, gm + (q.c + 0.5) * cell));
+        let yc = gm + (q.r + 0.5) * cell - cell * 0.9 * easeOut(p);
+        const topY = yc - (q.n - 1) / 2 * cell * 0.55, minY = gm + cell * 0.45;
+        if (topY < minY) yc += minY - topY;                               // 盤面の上にはみ出さない
+        const y = yc + (q.row - (q.n - 1) / 2) * cell * 0.55;
+        ctx.save(); ctx.globalAlpha = Math.max(0, a);
+        outlined(q.text, x, y + sz * 0.35, sz, q.style, 'center');
+        ctx.restore();
+      }
+
+      // 点数：盤面の右側を下から上へ湧き上がって消える（例「6×1  6」）
+      feed = feed.filter(q => t - q.t < CFG.FEED_MS);
+      for (const q of feed) {
+        const p = (t - q.t) / CFG.FEED_MS; if (p < 0) continue;
+        const a = p < 0.08 ? p / 0.08 : (p < 0.7 ? 1 : 1 - (p - 0.7) / 0.3);
+        const y0 = size - gm - cell * 0.25, y1 = gm + cell * 0.6;
+        const y = y0 + (y1 - y0) * easeOut(p);
+        const big = cell * 0.46, small = cell * 0.28, xr = size - gm - 4;
+        ctx.save(); ctx.globalAlpha = Math.max(0, a);
+        outlined(q.pts, xr, y, big, 'score', 'right');
+        ctx.font = '800 ' + big + 'px ' + fam; const wp = ctx.measureText(q.pts).width;
+        outlined(q.calc, xr - wp - cell * 0.12, y, small, 'calc', 'right');
+        ctx.restore();
+      }
+      if (overFx && t - overFx.t > CFG.OVER_TEXT_AT && overlayHidden()) {
+        const p = Math.min(1, (t - overFx.t - CFG.OVER_TEXT_AT) / 380);
+        const k = 1.70158, eb = 1 + (k + 1) * Math.pow(p - 1, 3) + k * Math.pow(p - 1, 2);   // 少し行き過ぎて戻る
+        const sc = 2.2 - 1.2 * eb, sz = cell * 0.95 * sc;
+        ctx.save(); ctx.globalAlpha = Math.min(1, p * 1.6);
+        ctx.fillStyle = 'rgba(20,12,30,' + (0.45 * Math.min(1, p * 1.6)) + ')'; rr(ctx, 0, 0, size, size, 18); ctx.fill();
+        outlined('GAME OVER', size / 2, size * 0.47 + sz * 0.35, sz, 'speed', 'center');
+        if (overFx.i >= 0) outlined(CH[overFx.i].name + 'のゲージがいっぱい', size / 2, size * 0.47 + cell * 0.95, cell * 0.32, 'calc', 'center');
+        ctx.restore();
+      }
+    } catch(e) { /* 1フレーム落ちても描画ループは止めない */ }
+    requestAnimationFrame(render);
+  }
+
+  // ===== 画面まわり =====
+  function readColors(){
+    const cs = getComputedStyle(document.documentElement);
+    COL.board = cs.getPropertyValue('--board').trim() || '#fff7fa';
+    COL.well  = cs.getPropertyValue('--well').trim()  || '#f3e2ea';
+    const dark = COL.board.toLowerCase() === '#2b1e3d';
+    COL.dot   = dark ? 'rgba(255,255,255,.18)' : 'rgba(58,39,72,.16)';
+    COL.track = dark ? 'rgba(255,255,255,.08)' : 'rgba(58,39,72,.08)';
+  }
+  function resize(){
+    const wrap = canvas.parentElement;
+    size = Math.floor(Math.min(wrap.clientWidth, wrap.clientHeight));
+    gm = Math.max(10, Math.round(size * 0.035));
+    cell = (size - gm * 2) / N;
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = size * dpr; canvas.height = size * dpr;
+    canvas.style.width = size + 'px'; canvas.style.height = size + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    readColors();
+  }
+
+  function buildGauges(){
+    const box = $('stacks'); box.innerHTML = '';
+    CH.forEach((ch, i) => {
+      const d = document.createElement('div'); d.className = 'stk'; d.id = 'stk' + i;
+      d.setAttribute('aria-label', ch.name + 'のゲージ');
+      const cv = document.createElement('canvas'); cv.width = 64; cv.height = 64;
+      const g = cv.getContext('2d'); drawTile(g, 1, 1, 62, i, 1);
+      d.appendChild(cv);
+      d.insertAdjacentHTML('beforeend', '<div class="bar"><div class="fill" style="background:' + ch.col + '"></div></div><div class="n">0</div>');
+      box.appendChild(d);
+    });
+  }
+  function updateGauges(){
+    stacks.forEach((v, i) => {
+      const d = $('stk' + i); if (!d) return;
+      d.querySelector('.fill').style.width = (v / CFG.STACK_MAX * 100) + '%';
+      d.querySelector('.n').textContent = v;
+      d.classList.toggle('warn', v >= CFG.WARN_AT);
+    });
+  }
+  // 減った数をゲージの上に一瞬だけ表示（連鎖のたびに出る）
+  function popMinus(i, d){
+    const box = $('stk' + i); if (!box) return;
+    const el = document.createElement('div'); el.className = 'pop'; el.textContent = '−' + d;
+    box.appendChild(el); setTimeout(() => el.remove(), 900);
+  }
+  function bump(i){ const d = $('stk' + i); if (!d) return; d.classList.remove('hit'); void d.offsetWidth; d.classList.add('hit'); }
+  function updateHUD(){ $('score').textContent = score; }
+
+  let toastTimer = null;
+  function toast(m){ const el = $('toast'); el.textContent = m; el.classList.add('show');
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 1100); }
+
+
+  let gameMode = 'rank';
+  function start(mode){
+    if (mode === 'rank' || mode === 'practice') gameMode = mode;
+    const tag = $('modeTag'); tag.textContent = gameMode === 'rank' ? 'RANKING' : 'PRACTICE'; tag.className = 'mode-tag' + (gameMode === 'practice' ? ' practice' : '');
+    const rt = $('resultMode'); rt.textContent = tag.textContent; rt.className = tag.className;
+    audio();
+    seed = Math.floor(Math.random() * 2 ** 31);
+    rng = mulberry32(seed); srng = mulberry32(seed ^ 0x9e3779b9);
+    newBoard();
+    cur = {r: 2, c: 2}; curFrom = null; vis = {r: 2, c: 2}; dragFrac = {r:0, c:0};
+    stacks = Array(TYPES).fill(0); score = 0; chain = 0; confirmUntil = 0; comboShowUntil = 0;
+    phase = 'idle'; rotAnim = null; fallDist = null; flashes = []; pops = []; feed = []; broken = 0; relief = 0; speedFlash = 0; lastGoldTier = 0; overFx = null; clearTimeout(overTimer);
+    document.querySelectorAll('.stk.dead').forEach(d => d.classList.remove('dead')); canvas.style.transform = '';
+    const t = now(); lapStart = t; lastStackTick = t; penaltyFlash = 0;
+    running = true;
+    bgmOn = true; bgmMode = null; bgmUnlock(); bgmPlay('calm');
+    updateHUD(); updateGauges();
+    $('menu').classList.add('hidden'); $('over').classList.add('hidden'); $('cont').classList.add('hidden'); $('ad').classList.add('hidden');
+    continued = false; afterShown = false; clearInterval(adTimer);
+    document.body.classList.remove('on-menu');
+  }
+  function finish(){
+    if (!running) return;
+    running = false; confirmUntil = 0;
+    bgmStop(1.2);
+    if (tapTimer) { clearTimeout(tapTimer); tapTimer = null; }
+    sndOver();
+    const i = stacks.findIndex(v => v >= CFG.STACK_MAX);
+    // 記録はランキングモードだけ。練習モードは残さない
+    const isBest = gameMode === 'rank' && score > best;
+    if (isBest) { best = score; try { localStorage.setItem('rotmatch.best', String(best)); } catch(e) {} }
+    $('finalScore').textContent = score;
+    const why = i >= 0 ? CH[i].name + 'のゲージが30になりました。' : '';
+    $('finalNote').textContent = gameMode === 'rank'
+      ? why + (isBest ? '自己ベスト更新！' : '自己ベスト ' + best)
+      : why + '練習モードのため記録は残りません。';
+    // ===== ゲームオーバー演出 =====
+    // ①いっぱいになったゲージが赤く点滅 → ②盤面が下の段から灰色に → ③ブロックが崩れ落ちる → ④GAME OVER → ⑤結果画面
+    overFx = {
+      t: now(), i,
+      delay: Array.from({length: N * N}, () => Math.random() * 450),
+      spin:  Array.from({length: N * N}, () => (Math.random() - 0.5) * 2),
+      drift: Array.from({length: N * N}, () => (Math.random() - 0.5) * 60),
+    };
+    if (i >= 0) { const d = $('stk' + i); if (d) d.classList.add('dead'); }
+    setTimeout(sndCrash, CFG.OVER_FALL_AT);
+    const token = overFx;
+    overTimer = setTimeout(() => { if (overFx === token) showOver(); }, CFG.OVER_SHOW_AT);
+  }
+  // ===== 演出のあと：コンティニュー（1回だけ）→ 終了なら結果画面 =====
+  let continued = false, afterShown = false, adTimer = null;
+  const overlayHidden = () => !afterShown;
+  function showOver(){
+    clearTimeout(overTimer);
+    if (afterShown) return; afterShown = true;
+    if (gameMode === 'practice' || !continued) {         // ランキングは1回まで、練習は何度でも
+      $('contRule').textContent = gameMode === 'practice' ? '練習モードは何度でも' : '1回のプレイで1度だけ';
+      $('cont').classList.remove('hidden');
+    }
+    else $('over').classList.remove('hidden');
+  }
+  function endGame(){ $('cont').classList.add('hidden'); $('over').classList.remove('hidden'); }
+  // 広告（プロトタイプはダミーのカウントダウン。本番はAdMobのリワード広告に差し替え）
+  function watchAd(){
+    $('cont').classList.add('hidden'); $('ad').classList.remove('hidden');
+    let n = CFG.AD_SEC; $('adCount').textContent = n;
+    clearInterval(adTimer);
+    adTimer = setInterval(() => {
+      n--; $('adCount').textContent = Math.max(0, n);
+      if (n <= 0) { clearInterval(adTimer); $('ad').classList.add('hidden'); resumeGame(); }
+    }, 1000);
+  }
+  // ★6個ぶん（全色 −15）を適用して、スコアを保ったまま再開
+  function resumeGame(){
+    continued = true; afterShown = false;
+    const bonus = CFG.STAR_BONUS[6];
+    relief = Math.min(broken, relief + CFG.CONT_SLOW);   // 広告のあとは少しスピードを落とす
+    stacks = stacks.map(v => Math.max(0, v - bonus));
+    newBoard();
+    cur = {r: 2, c: 2}; vis = {r: 2, c: 2}; dragFrac = {r:0, c:0}; curFrom = null;
+    overFx = null; canvas.style.transform = '';
+    document.querySelectorAll('.stk.dead').forEach(d => d.classList.remove('dead'));
+    phase = 'idle'; chain = 0; confirmUntil = 0; rotAnim = null; fallDist = null;
+    const t = now(); lapStart = t; lastStackTick = t;
+    lastGoldTier = goldTier();                     // 再開直後に「★が出やすくなった」が重ならないように
+    running = true; bgmOn = true; bgmMode = null; bgmUpdate();
+    updateGauges(); updateHUD();
+    for (let i = 0; i < TYPES; i++) popMinus(i, bonus);
+    pops.push({text: 'CONTINUE!', style: 'combo', r: 2.2, c: 2.5, row: 0, n: 2, t: t, big: true});
+    pops.push({text: '★全色 −' + bonus, style: 'special', r: 2.2, c: 2.5, row: 1, n: 2, t: t + 200, long: true});
+    sndSpeed();
+    speedDown(t, 900);
+  }
+  // SPEED DOWN の表示
+  function speedDown(t, delay){
+    pops.push({text: 'SPEED DOWN', style: 'sync', r: 3.4, c: 2.5, row: 0, n: 1, t: t + delay, long: true});
+    setTimeout(() => toast('1周 ' + lapSec() + '秒 ／ 横バー 6秒ごとに +' + stackInc()), delay);
+  }
+
+  // アプリ切替・画面オフ中は時間を止める
+  let pausedAt = 0;
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { if (running) pausedAt = now(); bgmEls.forEach(el => { try { el.pause(); } catch(_) {} }); }
+    else if (pausedAt) {
+      const d = now() - pausedAt; pausedAt = 0;
+      lapStart += d; lastStackTick += d; if (confirmUntil) confirmUntil += d;
+      phaseStart += d; fallStart += d;
+    }
+    if (!document.hidden && bgmOn) bgmEls[bgmIdx].play().catch(() => {});
+  });
+
+  // ===== 下の操作ボタン =====
+  // ドラッグパッド：なぞった方向に、PAD_STEP px ごとに枠が1マス動く（ノートPCのタッチパッドと同じ感覚）
+  const PAD_STEP = 26;
+  const pad = $('dragpad'), knob = $('knob');
+  let pd = null;
+  const moveBy = (dr, dc) => moveCursor(Math.min(N - 2, Math.max(0, cur.r + dr)), Math.min(N - 2, Math.max(0, cur.c + dc)));
+  pad.addEventListener('pointerdown', e => {
+    e.preventDefault(); if (!running) return; audio();
+    try { pad.setPointerCapture(e.pointerId); } catch(_) {}
+    pd = {x: e.clientX, y: e.clientY, ax: e.clientX, ay: e.clientY};
+    knob.style.transition = 'none'; pad.classList.add('on');
+  });
+  pad.addEventListener('pointermove', e => {
+    if (!pd || !running) return;
+    let dx = e.clientX - pd.ax, dy = e.clientY - pd.ay;
+    while (Math.abs(dx) >= PAD_STEP) { const sg = Math.sign(dx); moveBy(0, sg); pd.ax += sg * PAD_STEP; dx -= sg * PAD_STEP; }
+    while (Math.abs(dy) >= PAD_STEP) { const sg = Math.sign(dy); moveBy(sg, 0); pd.ay += sg * PAD_STEP; dy -= sg * PAD_STEP; }
+    dragFrac = {r: dy / PAD_STEP * 0.8, c: dx / PAD_STEP * 0.8};   // 次のマスへ向かう途中も枠が少しずつ動く
+    let kx = e.clientX - pd.x, ky = e.clientY - pd.y; const kl = Math.hypot(kx, ky), KR = 34;
+    if (kl > KR) { kx = kx / kl * KR; ky = ky / kl * KR; }            // つまみは円の中に収める
+    knob.style.transform = 'translate(calc(-50% + ' + kx + 'px), calc(-50% + ' + ky + 'px))';
+  });
+  const padEnd = () => { pd = null; dragFrac = {r:0, c:0}; pad.classList.remove('on'); knob.style.transition = ''; knob.style.transform = ''; };
+  pad.addEventListener('pointerup', padEnd);
+  pad.addEventListener('pointercancel', padEnd);
+  // 回転ボタン：押した瞬間に回る
+  [['rotL', -1], ['rotR', 1]].forEach(([id, dir]) => {
+    $(id).addEventListener('pointerdown', e => {
+      e.preventDefault(); if (!running) return; audio();
+      flushTap(); rotate(dir);
+    });
+  });
+
+  $('startBtn').addEventListener('click', () => start('rank'));
+  $('practiceBtn').addEventListener('click', () => start('practice'));
+  $('retryBtn').addEventListener('click', () => start());          // 同じモードでもう一度
+  // タイトルへ戻る
+  $('titleBtn').addEventListener('click', () => {
+    $('over').classList.add('hidden'); $('menu').classList.remove('hidden');
+    document.body.classList.add('on-menu'); $('modeTag').textContent = '';
+  });
+  $('contAd').addEventListener('click', watchAd);
+  $('contEnd').addEventListener('click', endGame);
+  $('muteBtn').addEventListener('click', () => {
+    muted = !muted; const a = audio();
+    if (master && a) master.gain.setTargetAtTime(muted ? 0 : 0.8, a.currentTime, 0.02);
+    $('muteBtn').textContent = muted ? '♪ OFF' : '♪ ON';
+  });
+  window.addEventListener('resize', resize);
+  try { window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', readColors); } catch(e) {}
+
+  // 手元のファイルで開いたときは img フォルダの画像を使う
+  if (true) ['menu', 'howto'].forEach(id => $(id).style.setProperty('--title-img', "url('img/title.jpg')"));
+  // 遊び方ページ
+  $('howBtn').addEventListener('click', () => { audio(); $('howto').classList.remove('hidden'); $('howto').querySelector('.how-body').scrollTop = 0; });
+  $('howBack').addEventListener('click', () => $('howto').classList.add('hidden'));
+  $('howStart').addEventListener('click', () => { $('howto').classList.add('hidden'); start('rank'); });
+  $('howPractice').addEventListener('click', () => { $('howto').classList.add('hidden'); start('practice'); });
+  // 遊び方の見本ブロックを描く
+  // ブロックの見た目（イラスト／ノーマル）。選んだものは次回も使う
+  function setTileMode(m){
+    tileMode = m === 'normal' ? 'normal' : 'illust';
+    try { localStorage.setItem('twistrush.tile', tileMode); } catch(e) {}
+    document.querySelectorAll('.modesel button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.tm === tileMode)));
+    buildGauges(); updateGauges(); drawMinis();
+  }
+  document.querySelectorAll('.modesel button').forEach(b => b.addEventListener('click', () => setTileMode(b.dataset.tm)));
+  function drawMinis(){
+    document.querySelectorAll('canvas.mini').forEach(cv => {
+      const vs = cv.dataset.v.split(',').map(Number), px = 38, gap = 3, dprM = Math.min(window.devicePixelRatio || 1, 2);
+      cv.width = (vs.length * (px + gap)) * dprM; cv.height = px * dprM;
+      cv.style.width = (vs.length * (px + gap)) + 'px'; cv.style.height = px + 'px';
+      const g = cv.getContext('2d'); g.setTransform(dprM, 0, 0, dprM, 0, 0);
+      vs.forEach((v, i) => drawTile(g, i * (px + gap), 0, px, v, 1));
+    });
+  }
+  drawMinis();
+  setTileMode(tileMode);
+  buildGauges(); $('hint').innerHTML = HINT; resize();
+  requestAnimationFrame(render);
+})();
+</script>
+</body>
+</html>
