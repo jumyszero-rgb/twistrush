@@ -1,0 +1,12 @@
+/index.html
+  Cache-Control: no-cache
+/
+  Cache-Control: no-cache
+/img/*
+  Cache-Control: public, max-age=86400
+/bgm/*
+  Cache-Control: public, max-age=86400
+/voice/*
+  Cache-Control: public, max-age=86400
+/video/*
+  Cache-Control: public, max-age=86400
