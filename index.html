@@ -653,7 +653,7 @@
   #tapStart .ts-logo{margin-top:26vh;font-size:44px;font-weight:900;color:#fff;letter-spacing:2px;text-shadow:0 3px 0 #7a3cff,0 0 18px rgba(255,255,255,.6);} #tapStart .ts-logo i{color:#ffd24a;font-style:normal;}
   #tapStart .ts-tap{margin-top:auto;font-size:22px;font-weight:900;color:#fff;letter-spacing:4px;text-shadow:0 0 10px #ff7fb0,0 2px 0 #000;animation:tsblink 1.2s ease-in-out infinite;}
   #tapStart .ts-sub{margin-bottom:12vh;font-size:12px;color:#fff;opacity:.85;}
-  #tapStart.out{opacity:0;pointer-events:none;}
+  #tapStart.out{opacity:0;}
   @keyframes tsblink{50%{opacity:.35;}}
   /* 与えたダメージの数字 */
   .dmgfloat{position:fixed;z-index:60;transform:translate(-50%,-50%);font-size:26px;font-weight:900;color:#fff;pointer-events:none;
@@ -2517,8 +2517,14 @@
     const d = document.createElement('div'); d.id = 'tapStart';
     d.innerHTML = '<div class="ts-logo">TWIST<i>·</i>RUSH</div><div class="ts-tap">TAP TO START</div><div class="ts-sub">画面をタップしてはじめる</div>';
     document.body.appendChild(d);
-    const go = () => { d.classList.add('out'); setTimeout(() => d.remove(), 450); };
-    d.addEventListener('click', go); d.addEventListener('touchend', go);
+    // タップした指の「クリック」が下のボタン（モード選択）に抜けないよう、消えるまでは画面を押さえておく
+    let gone = false;
+    const block = e => { e.stopPropagation(); e.preventDefault(); };
+    const go = e => { if (e) block(e); if (gone) return; gone = true;
+      d.classList.add('out');
+      document.addEventListener('click', block, true);
+      setTimeout(() => { d.remove(); document.removeEventListener('click', block, true); }, 600); };
+    d.addEventListener('click', go); d.addEventListener('touchend', go, {passive: false});
   })();
   // タイトル画面（ストーリーのマップ・ショップも含む）にいる間はタイトル曲
   // タイトル曲はページを開いた瞬間から読み込んでおく（触ってすぐ鳴らすため）
