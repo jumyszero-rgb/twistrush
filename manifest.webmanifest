@@ -1,0 +1,19 @@
+{
+  "name": "TWIST RUSH",
+  "short_name": "TWIST RUSH",
+  "id": "/",
+  "start_url": "/?app=1",
+  "scope": "/",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "portrait",
+  "background_color": "#1f1236",
+  "theme_color": "#1f1236",
+  "lang": "ja",
+  "description": "2×2を回してそろえる対戦パズル",
+  "icons": [
+    {"src": "img/app/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "img/app/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "img/app/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}

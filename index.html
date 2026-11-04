@@ -3,7 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#fdeef3">
+<meta name="theme-color" content="#1f1236">
+<link rel="manifest" href="manifest.webmanifest" crossorigin="use-credentials">
+<link rel="icon" type="image/png" sizes="32x32" href="img/app/icon-32.png">
+<link rel="apple-touch-icon" href="img/app/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TWIST RUSH">
+
 <title>TWIST RUSH</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -6187,6 +6195,39 @@
   setCtrl('touch-swipe');                            // 操作はスワイプだけ（タップ式はやめた）
   resize();
   requestAnimationFrame(render);
+})();
+</script>
+
+<div id="pwaBar" style="display:none;position:fixed;left:10px;right:10px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:8500;background:#2a1a4a;color:#fff;border:2px solid #ffd24a;border-radius:16px;padding:10px 12px;font-family:sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.45);align-items:center;gap:10px;">
+  <img src="img/app/icon-192.png" width="44" height="44" alt="" style="border-radius:10px;flex:none;">
+  <div id="pwaText" style="flex:1;font-size:12px;line-height:1.5;"></div>
+  <button id="pwaGo" style="flex:none;border:0;background:#ffd24a;color:#3a2210;font-weight:800;border-radius:10px;padding:8px 10px;font-size:13px;">追加</button>
+  <button id="pwaX" aria-label="閉じる" style="flex:none;border:0;background:transparent;color:#bbb;font-size:18px;padding:4px;">✕</button>
+</div>
+<script>
+(function(){
+  if ('serviceWorker' in navigator) window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
+  var standalone = window.matchMedia('(display-mode: standalone)').matches || window.matchMedia('(display-mode: fullscreen)').matches || navigator.standalone === true;
+  if (standalone) { try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) {} return; }
+  var ua = navigator.userAgent, ios = /iPhone|iPad|iPod/i.test(ua) || (navigator.maxTouchPoints > 1 && /Macintosh/.test(ua));
+  var phone = ios || /Android/i.test(ua);
+  if (!phone) return;
+  var later = 0; try { later = +localStorage.getItem('twistrush.pwaLater') || 0; } catch (e) {}
+  if (Date.now() < later) return;
+  var bar = document.getElementById('pwaBar'), txt = document.getElementById('pwaText'), go = document.getElementById('pwaGo'), deferred = null;
+  function show(){ var dl = document.getElementById('daily'); if (document.getElementById('tapStart') || (dl && !dl.classList.contains('hidden')) || !document.body.classList.contains('on-menu')) { setTimeout(show, 1500); return; } bar.style.display = 'flex'; }
+  function hide(days){ bar.style.display = 'none'; try { localStorage.setItem('twistrush.pwaLater', String(Date.now() + days * 864e5)); } catch (e) {} }
+  document.getElementById('pwaX').onclick = function(){ hide(7); };
+  if (ios) {
+    txt.innerHTML = '<b>アプリにして遊べます</b><br>下の <b>共有ボタン</b>（□に↑）→「<b>ホーム画面に追加</b>」';
+    go.textContent = 'OK'; go.onclick = function(){ hide(30); };
+    setTimeout(show, 4000);
+  } else {
+    txt.innerHTML = '<b>アプリにして遊べます</b><br>ホーム画面に追加すると全画面で遊べて、データも消えにくくなります';
+    window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); deferred = e; setTimeout(show, 2500); });
+    go.onclick = function(){ if (!deferred) { hide(30); return; } deferred.prompt(); deferred.userChoice.then(function(r){ hide(r.outcome === 'accepted' ? 3650 : 7); }); deferred = null; };
+    window.addEventListener('appinstalled', function(){ hide(3650); });
+  }
 })();
 </script>
 </body>
