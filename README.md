@@ -5,6 +5,7 @@ https://twistrush.com で公開するゲーム本体。Cloudflare Pages がこ�
 - `index.html` … ゲーム本体（スマホ専用。パソコンで開くとQRコードの案内が出る）
 - `img/` `bgm/` `voice/` `video/` … 絵・曲・声・動画
 - `_headers` … Cloudflare Pages のキャッシュ設定
+- `manifest.webmanifest` `sw.js` `img/app/` … アプリ化（ホーム画面に追加して全画面で遊ぶ）の設定・アイコン
 
 このリポジトリに push すると、1〜2分で twistrush.com が新しくなる。
 
