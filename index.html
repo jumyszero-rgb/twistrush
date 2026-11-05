@@ -747,6 +747,9 @@
   .ibtn i{position:absolute;left:0;right:0;top:-8px;margin:auto;width:max-content;font-style:normal;font-size:9px;font-weight:800;background:#ff7fb0;color:#fff;border-radius:6px;padding:0 4px;pointer-events:none;}
   .ibtn.used{opacity:.3;cursor:default;}
   .ibtn.act{border-color:#7fd7ff;box-shadow:0 0 12px #7fd7ff;}
+  body.lite *{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;}
+  body.lite .skbtn.ready,body.lite .ibtn.pick,body.lite .mnode.now{animation:none!important;}
+  body.lite .fightline .art,body.lite .fightline .zako{filter:none!important;}
   .ibtn.pick{border-color:#ffd24a;box-shadow:0 0 14px #ffd24a;animation:ipulse .6s infinite alternate;}
   @keyframes ipulse{to{transform:scale(1.08);}}
   .bombpick #game{outline:3px solid #ffd24a;outline-offset:2px;border-radius:12px;}
@@ -1039,6 +1042,13 @@
             <button data-v="auto">自動</button><button data-v="light">白</button><button data-v="dark">黒</button>
           </div>
           <p>「自動」は、端末の設定（ライト／ダーク）に合わせます。</p>
+        </section>
+        <section>
+          <h3>動きの軽さ</h3>
+          <div class="modesel" data-key="lite">
+            <button data-v="auto">自動</button><button data-v="on">軽く</button><button data-v="off">きれい</button>
+          </div>
+          <p id="liteNote">「自動」は、動きが重い端末だけ自動で軽くします（絵のこまかさを少し下げ、ぼかしや光の動きを止めます）。遊び方は変わりません。</p>
         </section>
         <section>
           <h3>操作</h3>
@@ -2958,7 +2968,7 @@
   function burst(x, y, n, pal){
     pal = pal || PAL_DEF;
     shockRings.push({x, y, t: now(), n, pal});
-    const k = Math.min(26, 8 + n * 2);
+    const k = Math.round(Math.min(26, 8 + n * 2) * (liteOn() ? 0.45 : 1));
     for (let i = 0; i < k; i++) {
       const a = Math.random() * Math.PI * 2, sp = cell * (0.08 + Math.random() * 0.22);
       sparks.push({x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - cell * 0.05, t: now(), life: 420 + Math.random() * 320, pal});
@@ -2967,7 +2977,11 @@
     playAnim('me', 'hit');                        // 自分が攻撃を受けた動き
     hitFlash = now(); shakeStacks(); sndImpact(n);
   }
+  let fxClean = false;
   function drawAttackFx(t){
+    const busy = charges.length || shockRings.length || sparks.length || bolts.length;
+    if (!busy && fxClean) return;                 // 何も描いていない間は、画面全体を消す手間を省く
+    fxClean = !busy;
     fxc.clearRect(0, 0, innerWidth, innerHeight);
     charges = charges.filter(c => t - c.t < c.dur);
     for (const c of charges) {                                   // ための光
@@ -3484,7 +3498,23 @@
   }
 
   // 仮キャラ：髪＋顔の2頭身っぽいブロック。イラストが来たらこの関数を drawImage に置き換える
+  // ブロックの絵は、色ごとに1回だけ描いておいて貼る（毎回グラデーションを作ると重い）
+  let tileCache = {}, boardCache = null;
   function drawTile(g, x, y, s, v, alpha){
+    if (g !== ctx || Math.abs(s - cell * 0.88) > 0.6) return drawTileRaw(g, x, y, s, v, alpha);
+    const px = Math.ceil(s * dpr) + 4, key = v + '|' + px;
+    let sp = tileCache[key];
+    if (!sp) {
+      sp = document.createElement('canvas'); sp.width = px; sp.height = px;
+      const c2 = sp.getContext('2d'); c2.setTransform(dpr, 0, 0, dpr, 0, 0);
+      drawTileRaw(c2, 2 / dpr, 2 / dpr, s, v, 1);
+      tileCache[key] = sp;
+    }
+    g.globalAlpha = alpha == null ? 1 : alpha;
+    g.drawImage(sp, x - 2 / dpr, y - 2 / dpr, px / dpr, px / dpr);
+    g.globalAlpha = 1;
+  }
+  function drawTileRaw(g, x, y, s, v, alpha){
     const col = v === GOLD ? GOLD_COL : (v === HEART ? HEART_COL : CH[v].col);
     const depth = s * 0.08, h = s - depth, rad = s * 0.28;
     g.globalAlpha = alpha == null ? 1 : alpha;
@@ -3589,7 +3619,8 @@
   function render(){
     try {
       const t = now();
-      if (running) tick(t);
+      if (running) { tick(t); perfSample(t, t - (render.__last || t)); } else perfT0 = 0;
+      render.__last = t;
       liveGroups = (running && confirmUntil && phase === 'idle' && grid) ? findGroups() : [];
       let ct = '';
       if (liveGroups.length) ct = liveGroups.length + '<small>列そろってる</small>';
@@ -3602,17 +3633,24 @@
         canvas.style.transform = 'translate(' + ((Math.random() - 0.5) * k).toFixed(1) + 'px,' + ((Math.random() - 0.5) * k).toFixed(1) + 'px)';
       } else if (canvas.style.transform) canvas.style.transform = '';
       ctx.clearRect(0, 0, size, size);
-      ctx.fillStyle = COL.board; rr(ctx, 0, 0, size, size, 18); ctx.fill();
-
       const s = cell * 0.88, off = (cell - s) / 2;
-      for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
-        ctx.fillStyle = COL.well; rr(ctx, gm + c * cell + off, gm + r * cell + off, s, s, s * 0.28); ctx.fill();
+      // 盤面の下地（板・くぼみ・交点の目印）は、大きさか色が変わったときだけ描き直す
+      const bkey = size + '|' + dpr + '|' + N + '|' + COL.board + COL.well + COL.dot;
+      if (!boardCache || boardCache.key !== bkey) {
+        const bc = document.createElement('canvas'); bc.width = Math.ceil(size * dpr); bc.height = Math.ceil(size * dpr);
+        const b2 = bc.getContext('2d'); b2.setTransform(dpr, 0, 0, dpr, 0, 0);
+        b2.fillStyle = COL.board; rr(b2, 0, 0, size, size, 18); b2.fill();
+        for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+          b2.fillStyle = COL.well; rr(b2, gm + c * cell + off, gm + r * cell + off, s, s, s * 0.28); b2.fill();
+        }
+        // 交点の目印（ここをタップすると中心選択）
+        b2.fillStyle = COL.dot;
+        for (let iy = 1; iy < N; iy++) for (let ix = 1; ix < N; ix++) {
+          b2.beginPath(); b2.arc(gm + ix * cell, gm + iy * cell, Math.max(1.5, cell * 0.03), 0, Math.PI * 2); b2.fill();
+        }
+        boardCache = {key: bkey, cv: bc};
       }
-      // 交点の目印（ここをタップすると中心選択）
-      ctx.fillStyle = COL.dot;
-      for (let iy = 1; iy < N; iy++) for (let ix = 1; ix < N; ix++) {
-        ctx.beginPath(); ctx.arc(gm + ix * cell, gm + iy * cell, Math.max(1.5, cell * 0.03), 0, Math.PI * 2); ctx.fill();
-      }
+      ctx.drawImage(boardCache.cv, 0, 0, size, size);
 
       if (grid) {
         const rp = rotAnim ? Math.min(1, (t - rotAnim.t) / CFG.ROT_MS) : 1;
@@ -3788,7 +3826,8 @@
     size = Math.floor(Math.min(innerWidth * BOARD_SCALE, wrap.clientHeight));
     gm = Math.max(10, Math.round(size * 0.035));
     cell = (size - gm * 2) / N;
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    dpr = Math.min(window.devicePixelRatio || 1, liteOn() ? 1.25 : 2);
+    fxClean = false;
     fx.width = Math.floor(innerWidth * dpr); fx.height = Math.floor(innerHeight * dpr);
     fxc.setTransform(dpr, 0, 0, dpr, 0, 0);
     canvas.width = size * dpr; canvas.height = size * dpr;
@@ -4381,14 +4420,37 @@
   })();
   // 設定の保存と、押されているボタンの見た目
   // クラウドに送らないもの（この端末だけの設定・ログイン情報・サーバーが持つゴールドコイン）
-  var SYNC_SKIP = /^(acct_|sync_|vol_|api$|theme$|side$|gold$|pid$|pname$)/;   // var：上の方の行から save() が呼ばれても大丈夫なように
+  var SYNC_SKIP = /^(acct_|sync_|vol_|api$|theme$|side$|gold$|pid$|pname$|lite$|liteauto$)/;   // var：上の方の行から save() が呼ばれても大丈夫なように
   var syncDirty = false;
   function save(k, v){ try { localStorage.setItem('twistrush.' + k, v); } catch(e) {} if (SYNC_SKIP && !SYNC_SKIP.test(k)) syncDirty = true; }
   function load(k, def){ try { return localStorage.getItem('twistrush.' + k) || def; } catch(e) { return def; } }
   function markSel(key, v){
     document.querySelectorAll('.modesel[data-key="' + key + '"] button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === v)));
   }
-  const SET_FN = {theme: setTheme, ctrl: setCtrl, side: setSwipeSide,
+  // ===== 軽量モード（力の弱い端末向け）=====
+  // 自動：戦闘の最初の数秒で動きを測って、重ければ軽くする（その端末で覚えておく）
+  var liteMode = load('lite', 'auto'), liteAuto = load('liteauto', '') === '1';
+  function liteOn(){ return liteMode === 'on' || (liteMode === 'auto' && liteAuto); }
+  function applyLite(){
+    document.body.classList.toggle('lite', liteOn()); markSel('lite', liteMode);
+    const n = $('liteNote'); if (n) n.textContent = (liteMode === 'auto' ? (liteAuto ? 'この端末は動きが重かったので、今は「軽く」で動いています。' : 'この端末は今のところ「きれい」で動いています。') + '　' : '') +
+      '「軽く」は絵のこまかさを少し下げ、ぼかしや光の動きを止めます。遊び方は変わりません。';
+    tileCache = {}; boardCache = null;
+    try { resize(); } catch(e) {}
+  }
+  function setLite(v){ liteMode = (v === 'on' || v === 'off') ? v : 'auto'; save('lite', liteMode); applyLite(); }
+  let perfN = 0, perfSum = 0, perfT0 = 0;
+  function perfSample(t, dt){                     // 戦闘中の1コマにかかった時間を集める
+    if (liteMode !== 'auto' || liteAuto) return;
+    if (!perfT0) perfT0 = t;
+    if (t - perfT0 < 1500 || !(dt > 0) || dt > 250) return;   // 始まってすぐ・タブ切り替えは数えない
+    perfN++; perfSum += dt;
+    if (perfN >= 150) {
+      const avg = perfSum / perfN; perfN = 0; perfSum = 0;
+      if (avg > 35) { liteAuto = true; save('liteauto', '1'); applyLite(); }   // 1秒に28コマより遅い（省電力で30コマに抑えられている端末は対象外）
+    }
+  }
+  const SET_FN = {theme: setTheme, ctrl: setCtrl, side: setSwipeSide, lite: setLite,
                   prac: v => { pracLv = +v; markSel('prac', v); },
                   wperiod: v => { wPeriod = v; drawWorld(); },
                   rmode: v => { rankMode = v === 'rank' ? 'rank' : 'sixty'; drawRank(); }};
@@ -4396,6 +4458,7 @@
   document.querySelectorAll('.modesel[data-key] button').forEach(b => {
     b.addEventListener('click', () => SET_FN[b.parentElement.dataset.key](b.dataset.v));
   });
+  applyLite();
   // 対戦の設定
   // ===== ストーリー画面 =====
   let pickStage = +load('stage', '0') || 0;      // 前回選んでいたステージ（続きから）
