@@ -5741,11 +5741,23 @@
     skShown = key; bar.classList.toggle('hidden', !on);
     if (on) {
       // 1:1のアイコン。たまるほど下から明るくなる。左上に「必」「奥」、たまるまでは残り秒数
-      bar.innerHTML = skList.map((s2, i) => '<button class="skbtn ' + s2.kind + (s2.main ? ' main' : ' sub') + (s2.ready ? ' ready' : '') + '" data-i="' + i + '" title="' + skName(s2) + '" style="--p:' +
-        Math.round(s2.charge / SK_MS[s2.kind] * 100) + '"><span class="skic" data-ci="' + s2.ci + '"></span><i class="skk">' + (s2.kind === 'sp' ? '必' : '奥') + '</i>' +
-        (s2.ready ? '' : '<b class="sks">' + Math.ceil((SK_MS[s2.kind] - s2.charge) / 1000) + '</b>') + '</button>').join('');
-      const isz = Math.round((bar.querySelector('.skic') || {}).clientWidth || 46);
-      bar.querySelectorAll('.skic').forEach(el => el.appendChild(charIcon(+el.dataset.ci, isz)));
+      // ボタンは技の顔ぶれが変わったときだけ作り直す（毎回作り直すと、iPhoneで絵が読み直されてチカチカする）
+      const shape = skList.map(s2 => s2.kind + s2.ci + (s2.main ? 'm' : 's')).join('/');
+      if (force || bar.__shape !== shape || bar.children.length !== skList.length) {
+        bar.__shape = shape;
+        bar.innerHTML = skList.map((s2, i) => '<button class="skbtn ' + s2.kind + (s2.main ? ' main' : ' sub') + '" data-i="' + i + '" title="' + skName(s2) + '">' +
+          '<span class="skic" data-ci="' + s2.ci + '"></span><i class="skk">' + (s2.kind === 'sp' ? '必' : '奥') + '</i><b class="sks"></b></button>').join('');
+        const isz = Math.round((bar.querySelector('.skic') || {}).clientWidth || 46);
+        bar.querySelectorAll('.skic').forEach(el => el.appendChild(charIcon(+el.dataset.ci, isz)));
+      }
+      skList.forEach((s2, i) => {
+        const btn = bar.children[i]; if (!btn) return;
+        btn.classList.toggle('ready', !!s2.ready);
+        btn.style.setProperty('--p', Math.round(s2.charge / SK_MS[s2.kind] * 100));
+        const t = s2.ready ? '' : String(Math.ceil((SK_MS[s2.kind] - s2.charge) / 1000)), sk = btn.querySelector('.sks');
+        if (sk.textContent !== t) sk.textContent = t;
+        sk.style.display = s2.ready ? 'none' : '';
+      });
     }
     if (was !== bar.classList.contains('hidden')) resize();
   }
