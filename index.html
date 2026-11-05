@@ -12,7 +12,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="TWIST RUSH">
 <style>
+  html{background:#1f1236;}
   html.iospwa{height:var(--fullh);}
+  html.iospwa body{height:100%;}
   html.iospwa .stagebg,html.iospwa .intro,html.iospwa #askBox,html.iospwa #tapStart,
   html.iospwa #menu.overlay,html.iospwa #settings.overlay,html.iospwa #rank.overlay,html.iospwa #howto.overlay,html.iospwa #story.overlay,
   html.iospwa #prac.overlay,html.iospwa #online.overlay,html.iospwa #vs.overlay,html.iospwa #gacha.overlay,html.iospwa #box.overlay,
@@ -26,8 +28,8 @@
   function fit(){
     var full = Math.max(screen.width, screen.height), inner = window.innerHeight, de = document.documentElement;
     if (window.innerWidth > window.innerHeight) full = Math.min(screen.width, screen.height);
-    if (full - inner > 8) { de.classList.add('iospwa'); de.style.setProperty('--fullh', full + 'px'); }
-    else { de.classList.remove('iospwa'); }
+    // 高さが正しく伝わっていても伝わっていなくても、画面いっぱい（スマホの画面の高さ）にそろえる
+    de.classList.add('iospwa'); de.style.setProperty('--fullh', Math.max(full, inner) + 'px');
   }
   fit(); window.addEventListener('resize', fit); window.addEventListener('orientationchange', function(){ setTimeout(fit, 300); });
   document.addEventListener('DOMContentLoaded', fit); window.addEventListener('load', fit);
