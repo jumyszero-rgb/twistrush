@@ -59,7 +59,7 @@
     --board:#2b1e3d; --well:#221733;
   }
   *,*::before,*::after{box-sizing:inherit;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;}
-  html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px);}
+  html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px);overflow:hidden;overscroll-behavior:none;}
   html,body{margin:0;}
   body{height:100%;background:var(--bg);color:var(--ink);overflow:hidden;overscroll-behavior:none;touch-action:manipulation;
     font-family:"M PLUS Rounded 1c","Hiragino Maru Gothic ProN","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;}
@@ -2545,6 +2545,18 @@
   // 最初に画面に触れたときに準備（ボス戦は登場動画のあとに始まるので、開始の瞬間には触れていない）
   ['touchend', 'click'].forEach(ev => document.addEventListener(ev, () => { if (!bgmUnlocked) { audio(); bgmUnlock(); setTimeout(titleBgm, 50); } }, true));
   // 起動画面「TAP TO START」：ブラウザは触れるまで音を出せないので、最初のタップで曲を始める
+  // 画面ぜんたいが横や縦にずれたまま戻らない（iPhoneはbodyのoverflow:hiddenを無視して動かせてしまう）のを防ぐ
+  (function lockPage(){
+    const back = () => { if (window.scrollX || window.scrollY) window.scrollTo(0, 0);
+      const de = document.documentElement, bd = document.body;
+      if (de.scrollLeft || de.scrollTop) { de.scrollLeft = 0; de.scrollTop = 0; }
+      if (bd && (bd.scrollLeft || bd.scrollTop)) { bd.scrollLeft = 0; bd.scrollTop = 0; } };
+    window.addEventListener('scroll', back, {passive: true});
+    document.addEventListener('touchend', () => setTimeout(back, 50), {passive: true});
+    // 2本指で広げる・縮める（ピンチ）で画面が大きくなったままになるのを防ぐ
+    ['gesturestart', 'gesturechange'].forEach(t => document.addEventListener(t, e => e.preventDefault(), {passive: false}));
+    document.addEventListener('touchmove', e => { if (e.touches && e.touches.length > 1) e.preventDefault(); }, {passive: false});
+  })();
   (function tapStart(){
     const d = document.createElement('div'); d.id = 'tapStart';
     d.innerHTML = '<div class="ts-logo">TWIST<i>·</i>RUSH</div><div class="ts-tap">TAP TO START</div><div class="ts-sub">画面をタップしてはじめる</div>';
