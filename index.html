@@ -376,7 +376,7 @@
   .fightline.defeat .say{display:none;}
   .fightline .art{height:230px;display:block;filter:drop-shadow(0 3px 6px rgba(0,0,0,.35));}
   /* 相手のキャラは体の下半分をグラデーションで透明にする（盤面に重なっても邪魔にならない） */
-  .fightline .art,.fightline .zako{-webkit-mask-image:linear-gradient(to bottom,#000 50%,transparent 100%);mask-image:linear-gradient(to bottom,#000 50%,transparent 100%);}
+  .fightline .art,.fightline .zako{-webkit-mask-image:linear-gradient(to bottom,#000 28%,rgba(0,0,0,.45) 55%,rgba(0,0,0,.12) 72%,transparent 84%);mask-image:linear-gradient(to bottom,#000 28%,rgba(0,0,0,.45) 55%,rgba(0,0,0,.12) 72%,transparent 84%);}
   .fightline.defeat .art,.fightline.defeat .zako{-webkit-mask-image:none;mask-image:none;}
   .fname{font-size:12px;font-weight:800;color:var(--ink);background:color-mix(in srgb,var(--panel) 80%,transparent);padding:2px 6px;border-radius:8px;align-self:flex-start;margin-top:6px;}
   @media (max-height:760px){ .fightline .art{height:177px;} .mefight .art{height:120px;} }
@@ -2115,6 +2115,12 @@
   const TITLE_FIRST = (() => { const l = ['title_song1', 'title_song2', 'title_song3', 'title_song4', 'title_song5', 'title_song6'].filter(x => BGM_CLIPS[x]); return l[Math.floor(Math.random() * l.length)] || 'title_song1'; })();
   function bgmPick(mode){
     if (mode === 'gacha' && BGM_CLIPS.gacha_bgm1) return [BGM_CLIPS.gacha_bgm1.blob, BGM_CLIPS.gacha_bgm1.local];
+    if (mode === 'map') {                                 // ストーリーのマップ：そのエリアのボスの「ゆっくり」の曲
+      const st = STORY[mapBgmArea * PER + BOSS_I], set = st && CHARS[st.char] ? BGM_SETS[CHARS[st.char].id] : null;
+      const list = ((set && set.calm) || []).filter(x => BGM_CLIPS[x]);
+      if (list.length) { const c = BGM_CLIPS[list[bgmTurn.map++ % list.length]]; return [c.blob, c.local]; }
+      mode = 'title';
+    }
     if (mode === 'title') {                               // タイトル画面：1回目は読み込み済みの1曲目、そのあとは入っている歌入りの曲からランダム（同じ曲は続けない）
       const list = ['title_song1', 'title_song2', 'title_song3', 'title_song4', 'title_song5', 'title_song6'].filter(x => BGM_CLIPS[x]);
       let id = TITLE_FIRST;
@@ -2148,7 +2154,8 @@
   const BGM_VOL = 0.45, BGM_XFADE = 0.8, BGM_TAIL = 3.0;   // 音量／切替の重ね秒数／曲の終わり何秒前に次へ
   const bgmEls = [new Audio(), new Audio()], bgmGain = [null, null];
   let bgmIdx = 0, bgmMode = null, bgmOn = false;
-  const bgmTurn = {calm: 0, rush: 0, panic: 0, title: 0};
+  const bgmTurn = {calm: 0, rush: 0, panic: 0, title: 0, map: 0};
+  let mapBgmArea = 0;
   bgmEls.forEach((el, i) => {
     el.preload = 'auto'; el.setAttribute('playsinline', '');
     // 曲が終わる少し前に、同じモードのもう1曲へ重ねて切り替える（無音を作らない）
@@ -2577,6 +2584,12 @@
     if (running || !document.body.classList.contains('on-menu')) return;
     if (bgmOn && bgmMode === 'title') return;
     bgmOn = true; bgmMode = null; bgmPlay('title');
+  }
+  // ストーリーのマップを開いている間は、そのエリアの曲（エリアを切り替えたら曲も替える）
+  function mapBgm(){
+    if (running) return;
+    if (bgmOn && bgmMode === 'map' && mapBgmArea === mapArea) return;
+    mapBgmArea = mapArea; bgmOn = true; bgmMode = null; bgmPlay('map');
   }
   function bgmStop(sec){
     bgmOn = false; bgmMode = null;
@@ -4117,7 +4130,6 @@
     hideFighters();
     $('over').classList.add('hidden'); $('over').classList.remove('soft', 'in');
     $('menu').classList.remove('hidden'); document.body.classList.add('on-menu'); $('modeTag').textContent = '';
-    titleBgm();
     if (!stageOpen(pickStage)) pickStage = nextStageIdx();
     mapArea = Math.floor(pickStage / PER);
     refreshStoryBtn(); drawStory();
@@ -4501,6 +4513,7 @@
     }
     $('storyStart').disabled = !inArea;
     drawTeam(); drawLoadout(); refreshCoins();
+    if (areaOpen(mapArea)) mapBgm();                         // 入れるエリアなら、そのエリアの曲にする
     $('mapTotal').innerHTML = rb(1) + ' レインボーブロック ' + starTotal() + '個 ／ 倒したボス ' + bossesBeaten() + '人。勝ったうえで、お題を1つ達成するごとにレインボーブロック1つ（1ステージ最大3つ）。';
   }
   $('areaPrev').addEventListener('click', () => { mapArea--; drawStory(); });
@@ -4563,7 +4576,7 @@
     $('introName').innerHTML = '<small>BOSS</small><b>' + c.name + '</b>';
     introDone = done; clearTimeout(introTimer);
     primeVoice();
-    if (bgmMode === 'title') bgmStop(0.6);              // 登場シーンの前にタイトル曲を止める
+    if (bgmMode === 'title' || bgmMode === 'map') bgmStop(0.6);   // 登場シーンの前にタイトル・マップの曲を止める
     const url = introOf(st.char);
     box.classList.remove('hidden');
     if (url) {
@@ -4647,7 +4660,7 @@
     preloadIntro(mapArea);
   }
   $('storyBtn').addEventListener('click', () => { pickStage = nextStageIdx(); openStory(); });   // 続きのステージを選んだ状態で開く
-  $('storyBack').addEventListener('click', () => $('story').classList.add('hidden'));
+  $('storyBack').addEventListener('click', () => { $('story').classList.add('hidden'); titleBgm(); });
   $('storyStart').addEventListener('click', () => {
     if (!stageOpen(pickStage)) return;
     $('story').classList.add('hidden'); startStory(pickStage);
