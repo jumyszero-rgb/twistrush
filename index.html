@@ -9,8 +9,30 @@
 <link rel="apple-touch-icon" href="img/app/icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="TWIST RUSH">
+<style>
+  html.iospwa{height:var(--fullh);}
+  html.iospwa .stagebg,html.iospwa .intro,html.iospwa #askBox,html.iospwa #tapStart,
+  html.iospwa #menu.overlay,html.iospwa #settings.overlay,html.iospwa #rank.overlay,html.iospwa #howto.overlay,html.iospwa #story.overlay,
+  html.iospwa #prac.overlay,html.iospwa #online.overlay,html.iospwa #vs.overlay,html.iospwa #gacha.overlay,html.iospwa #box.overlay,
+  html.iospwa #shop.overlay,html.iospwa #daily.overlay{bottom:auto!important;height:var(--fullh)!important;}
+</style>
+<script>
+// iPhoneでホーム画面から開いたとき、画面の高さが時計の帯の分だけ短く伝わることがある → 画面いっぱいの高さに直す
+(function(){
+  var ua = navigator.userAgent, ios = /iPhone|iPad|iPod/i.test(ua) || (navigator.maxTouchPoints > 1 && /Macintosh/.test(ua));
+  if (!ios || navigator.standalone !== true) return;
+  function fit(){
+    var full = Math.max(screen.width, screen.height), inner = window.innerHeight, de = document.documentElement;
+    if (window.innerWidth > window.innerHeight) full = Math.min(screen.width, screen.height);
+    if (full - inner > 8) { de.classList.add('iospwa'); de.style.setProperty('--fullh', full + 'px'); }
+    else { de.classList.remove('iospwa'); }
+  }
+  fit(); window.addEventListener('resize', fit); window.addEventListener('orientationchange', function(){ setTimeout(fit, 300); });
+  document.addEventListener('DOMContentLoaded', fit); window.addEventListener('load', fit);
+})();
+</script>
 
 <title>TWIST RUSH</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -474,7 +496,7 @@
     border:1px solid rgba(255,226,122,.45);border-radius:999px;padding:3px 10px 3px 4px;font-variant-numeric:tabular-nums;white-space:nowrap;}
   .coinchip img{width:22px;height:22px;}
   .coinchip .gr{font-size:10px;color:#fff;background:rgba(255,255,255,.18);border-radius:999px;padding:1px 6px;margin-left:4px;}
-  .menucoin{position:absolute;top:10px;right:10px;}
+  .menucoin{position:absolute;top:calc(env(safe-area-inset-top,0px) + 10px);right:10px;}
   .headcoin{margin-left:auto;}
   .btn.gacha{background:linear-gradient(90deg,#ff5f9e,#a46bff,#4fb4ff);color:#fff;box-shadow:0 5px 0 #6a3fb8;}
   .btn.gacha:active{box-shadow:0 2px 0 #6a3fb8;}
