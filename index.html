@@ -751,6 +751,39 @@
   body.lite .skbtn.ready,body.lite .ibtn.pick,body.lite .mnode.now{animation:none!important;}
   body.lite .fightline .art,body.lite .fightline .zako{filter:none!important;}
   .ibtn.pick{border-color:#ffd24a;box-shadow:0 0 14px #ffd24a;animation:ipulse .6s infinite alternate;}
+  /* 合成・限界突破の演出 */
+  #upFx{position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;background:rgba(8,4,20,.93);overflow:hidden;}
+  #upFx .rays{position:absolute;left:50%;top:44%;width:180vmax;height:180vmax;margin:-90vmax 0 0 -90vmax;opacity:0;
+    background:repeating-conic-gradient(from 0deg,rgba(255,226,120,.55) 0 7deg,rgba(255,226,120,0) 7deg 18deg);
+    -webkit-mask-image:radial-gradient(circle,#000 0,rgba(0,0,0,.6) 22%,transparent 55%);mask-image:radial-gradient(circle,#000 0,rgba(0,0,0,.6) 22%,transparent 55%);}
+  #upFx.on .rays{animation:uprays 6s linear infinite,upfade .5s ease-out forwards;}
+  #upFx .glow{position:absolute;left:50%;top:44%;width:70vmin;height:70vmin;margin:-35vmin 0 0 -35vmin;border-radius:50%;opacity:0;
+    background:radial-gradient(circle,rgba(255,255,255,.95) 0,rgba(255,220,120,.7) 25%,rgba(255,170,60,0) 65%);}
+  #upFx.on .glow{animation:upglow 1.4s ease-out forwards;}
+  #upFx .flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;}
+  #upFx.on .flash{animation:upflash .7s ease-out forwards;}
+  #upFx .base,#upFx .mat{position:absolute;left:50%;top:44%;width:150px;height:150px;margin:-75px 0 0 -75px;border-radius:24px;overflow:hidden;
+    box-shadow:0 0 0 4px #ffe066,0 0 30px rgba(255,220,100,.9);}
+  #upFx .mat{width:96px;height:96px;margin:-48px 0 0 -48px;box-shadow:0 0 0 3px #fff,0 0 18px rgba(255,255,255,.9);}
+  #upFx .base .cicon,#upFx .mat .cicon{width:100%!important;height:100%!important;}
+  #upFx.on .base{animation:upbase 1.6s ease-out forwards;}
+  #upFx .ttl{position:absolute;left:0;right:0;top:calc(44% + 98px);text-align:center;font-weight:900;font-size:40px;letter-spacing:.04em;color:#fff4b8;opacity:0;
+    text-shadow:0 0 6px #ff9d00,0 0 18px #ff7a00,0 3px 0 #a14b00;font-style:italic;}
+  #upFx .sub{position:absolute;left:0;right:0;top:calc(44% + 150px);text-align:center;font-weight:800;font-size:17px;color:#fff;opacity:0;}
+  #upFx .sub b{color:#ffe066;font-size:22px;}
+  #upFx.on .ttl{animation:upttl .5s cubic-bezier(.2,1.6,.4,1) forwards;}
+  #upFx.on .sub{animation:upfade .4s ease-out forwards;}
+  #upFx .tap{position:absolute;bottom:calc(30px + env(safe-area-inset-bottom,0px));left:0;right:0;text-align:center;color:#cbbbe8;font-size:12px;opacity:0;animation:upfade .3s ease-out 1.8s forwards;}
+  #upFx .spk{position:absolute;left:50%;top:44%;width:10px;height:10px;margin:-5px;border-radius:50%;background:#fff6c4;box-shadow:0 0 10px #ffd24a;opacity:0;}
+  #upFx.on .spk{animation:upspk 1.1s ease-out forwards;}
+  @keyframes uprays{to{transform:rotate(360deg);}}
+  @keyframes upfade{to{opacity:1;}}
+  @keyframes upglow{0%{opacity:0;transform:scale(.3);}35%{opacity:1;transform:scale(1.15);}100%{opacity:.75;transform:scale(1);}}
+  @keyframes upflash{0%{opacity:.95;}100%{opacity:0;}}
+  @keyframes upbase{0%{transform:scale(1);filter:brightness(1);}12%{transform:scale(1.18);filter:brightness(2.6);}40%{transform:scale(.96);filter:brightness(1.4);}100%{transform:scale(1);filter:brightness(1);}}
+  @keyframes upttl{0%{opacity:0;transform:scale(2.4);}100%{opacity:1;transform:scale(1);}}
+  @keyframes upspk{0%{opacity:1;transform:translate(0,0) scale(1);}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.3);}}
+  body.lite #upFx .rays{display:none;}
   @keyframes ipulse{to{transform:scale(1.08);}}
   .bombpick #game{outline:3px solid #ffd24a;outline-offset:2px;border-radius:12px;}
   body.slowmo .timebar,body.slowmo #game{filter:saturate(.85) hue-rotate(-10deg);}
@@ -1948,7 +1981,55 @@
     tone(95, t, 0.45, 'sine', 0.22, 45);
     for (let i = 0; i < 6; i++) noise(t + 0.05 + i * 0.06, 0.06, 'bandpass', 1400 + Math.random() * 1600, 0, 0.12, 2);
   };
-  // 危険域の警告：怪獣襲来の空襲警報のような、低くうねるサイレン
+  // 録音した効果音・声（あとから足す）。名前 → [claude.ai用の番号, Web版のファイル]。無いものは合成音で鳴らす
+  const SE_FILES = {};
+  const seBuf = {}, seLoading = {};
+  function playSeFile(name, vol){
+    const a = audio(), f = SE_FILES[name]; if (!a || !f) return false;
+    const go = buf => { try { const src = a.createBufferSource(); src.buffer = buf; const g = a.createGain(); g.gain.value = vol || 1;
+      src.connect(g); g.connect((name.startsWith('dj_') ? bus.voice : bus.se) || master); src.start(); } catch(e) {} };
+    if (seBuf[name]) { go(seBuf[name]); return true; }
+    if (!seLoading[name]) seLoading[name] = fetch(LOCAL_ART ? f[1] : blobU(f[0])).then(r => r.arrayBuffer()).then(b => a.decodeAudioData(b)).then(buf => { seBuf[name] = buf; return buf; }).catch(() => null);
+    seLoading[name].then(buf => { if (buf) go(buf); });
+    return true;
+  }
+  // 鐘のように長く残る音（キラーン・ピカーン用）
+  function bell(f, t, dur, vol){
+    tone(f, t, dur, 'sine', vol); tone(f * 2.01, t, dur * 0.6, 'sine', vol * 0.35); tone(f * 3.02, t, dur * 0.35, 'sine', vol * 0.18);
+  }
+  // ピカーン：光る瞬間
+  function sndShine(t, big){
+    noise(t, big ? 1.4 : 0.9, 'highpass', 3000, 9000, big ? 0.12 : 0.09, 0.6);
+    [1568, 2093, 2637, 3136].forEach((f, k) => bell(f, t + k * 0.025, big ? 1.8 : 1.1, 0.05));
+    tone(220, t, 0.5, 'sine', 0.16, 110);
+  }
+  // テッテレー！：ファンファーレ（タタタ・ターン＋和音）
+  function sndFanfare(t, vol){
+    vol = vol || 0.07;
+    [[523, 0], [659, 0.11], [784, 0.22]].forEach(([f, d]) => { tone(f, t + d, 0.12, 'square', vol * 0.6); tone(f, t + d, 0.14, 'triangle', vol); });
+    const u = t + 0.36;
+    [1047, 1319, 1568, 2093].forEach((f, k) => { tone(f, u, 1.3, 'triangle', vol * (k ? 0.7 : 1)); tone(f * 1.003, u, 1.3, 'sawtooth', vol * 0.12); });
+    tone(262, u, 1.2, 'triangle', vol * 0.9); tone(131, u, 1.2, 'sine', vol * 1.2);
+    bell(2093, u, 1.6, 0.04);
+  }
+  // 限界突破：ためて光って、ピカーン → テッテレー！
+  const sndLimitBreak = () => {
+    const t = T();
+    noise(t, 1.0, 'bandpass', 300, 5000, 0.10, 1.4);                  // シュワァァ（ため）
+    tone(180, t, 1.0, 'sawtooth', 0.05, 1400); tone(182, t, 1.0, 'sawtooth', 0.04, 1410);
+    if (!playSeFile('limit_break')) { sndShine(t + 1.0, true); sndFanfare(t + 1.15, 0.08); }
+    setTimeout(() => playSeFile('dj_limit_break'), 1150);
+  };
+  // 合成：吸いこむたびにキュッ → レベルアップの音
+  const sndAbsorb = k => { const t = T(); tone(700 + k * 90, t, 0.12, 'sine', 0.08, 1800 + k * 120); noise(t, 0.12, 'bandpass', 2500, 6000, 0.05, 2); };
+  const sndLevelUp = up => {
+    const t = T();
+    if (playSeFile(up ? 'level_up' : 'exp_up')) { if (up) setTimeout(() => playSeFile('dj_level_up'), 250); return; }
+    sndShine(t, false);
+    if (up) [784, 1047, 1319, 1568, 2093].forEach((f, k) => tone(f, t + 0.08 + k * 0.07, k === 4 ? 0.8 : 0.14, 'triangle', 0.08));
+    else [1047, 1319].forEach((f, k) => tone(f, t + 0.05 + k * 0.08, 0.3, 'triangle', 0.07));
+  };
+  // 危険域の警告：怪獣が現れたときの非常ブザー（ビーッ、ビーッ、ビーッ）
   function wail(t0, dur, vol){
     // のこぎり波を低い音から高い音へ上げて、また下げる（ウゥゥーーーン）
     tone(120, t0,           dur * 0.55, 'sawtooth', vol,        300);
@@ -1958,11 +2039,18 @@
     tone(58,  t0,           dur,         'sine',     vol * 1.1);        // 腹に響く低音
     noise(t0, dur, 'lowpass', 500, 160, 0.10, 0.8);                     // うなりのざらつき
   }
+  function buzz(t, dur, vol){
+    // 少しずらした2つの四角い音を重ねて、耳ざわりな非常ベルの音にする
+    tone(587, t, dur, 'square', vol); tone(622, t, dur, 'square', vol * 0.8);
+    tone(147, t, dur, 'square', vol * 0.9); tone(1175, t, dur, 'sawtooth', vol * 0.25);
+  }
   const sndWarn = () => {
+    if (playSeFile('danger_alarm')) return;
     const t = T();
-    wail(t,        0.85, 0.11);
-    wail(t + 0.95, 0.85, 0.11);
+    for (let i = 0; i < 3; i++) buzz(t + i * 0.42, 0.3, 0.055);
   };
+  // 残り時間のカウント：ピッ（最後の1秒は高く）
+  const sndCount = last => { const t = T(); tone(last ? 1568 : 1047, t, last ? 0.3 : 0.09, 'square', 0.05); tone(last ? 3136 : 2093, t, 0.06, 'sine', 0.04); };
   // 相手の攻撃音：ためのうなり → 発射のヒュン
   const sndEnemyAttack = n => {
     const t = T();
@@ -3930,7 +4018,7 @@
     if (sec !== timeShown) {
       timeShown = sec; $('timeLeft').textContent = sec;
       $('timeBar').classList.toggle('low', sec <= 10);
-      if (sec <= 5 && sec > 0) sndWarn();                    // 残り5秒からカウント音
+      if (sec <= 5 && sec > 0) sndCount(sec === 1);           // 残り5秒からカウント音
     }
     if (left <= 0) timeUp();
   }
@@ -5317,8 +5405,10 @@
   const G_COST = {silver: {one: 100, ten: 1000}, gold: {one: 100, ten: 1000}};
   // ---- 音（すべてその場で合成） ----
   const sndGSpin = () => { const t = T(); noise(t, 0.9, 'bandpass', 400, 3200, 0.10, 2); [0, 0.15, 0.3, 0.45, 0.6].forEach((d, k) => tone(500 + k * 160, t + d, 0.12, 'triangle', 0.06)); };
-  const sndGBurst = () => { const t = T(); noise(t, 0.6, 'highpass', 1200, 6000, 0.16, 0.7); [523, 659, 784, 1047, 1319].forEach((f, k) => tone(f, t + 0.05 + k * 0.07, 0.6, 'sine', 0.09)); tone(130, t, 0.5, 'sine', 0.2, 60); };
-  const sndGCard = isNew => { const t = T(); if (isNew) { [784, 988, 1175, 1568].forEach((f, k) => tone(f, t + k * 0.06, 0.35, 'triangle', 0.08)); } else { tone(660, t, 0.18, 'triangle', 0.07); tone(880, t + 0.08, 0.2, 'triangle', 0.06); } };
+  // 開いた瞬間：ピカーン（いいキャラほど派手に）
+  const sndGBurst = rank => { if (playSeFile(rank >= 3 ? 'gacha_open_hi' : 'gacha_open')) return; const t = T(); sndShine(t, rank >= 3); if (rank >= 4) sndFanfare(t + 0.2, 0.08); };
+  // 1枚ずつ：新しいキャラはテッテレー、持っているキャラはキラッ
+  const sndGCard = isNew => { const t = T(); if (isNew) { if (!playSeFile('gacha_new')) sndFanfare(t, 0.06); } else { bell(1319, t, 0.5, 0.06); bell(1760, t + 0.07, 0.6, 0.05); } };
   const sndGList = () => { const t = T(); [523, 659, 784, 1047].forEach((f, k) => tone(f, t + k * 0.05, 0.4, 'sine', 0.07)); };
   function drawGachaFoot(){
     const t = gTickets(), coinImg = k => '<img src="' + gImg(k) + '" alt="">';
@@ -5369,7 +5459,7 @@
     const box = $('gResult'), burst = $('gBurst'), r = gRev.res[gRev.i];
     box.innerHTML = ''; burst.src = gImg('burst_' + CHAR_STAT[ALLC[r.ci].id].grade.toLowerCase());
     burst.className = 'g-burst'; void burst.offsetWidth; burst.className = 'g-burst go';
-    sndGBurst();
+    sndGBurst(GRADE_RANK[CHAR_STAT[ALLC[r.ci].id].grade] || 0);
     setTimeout(() => { if (!gRev) return; box.appendChild(card(r, true)); sndGCard(r.isNew); }, 350);
     drawGachaFoot();
   }
@@ -5618,6 +5708,47 @@
     for (const m of pool) { if (lvAfter(u, gain).lv >= capOf(u)) break; feedSel.add(m.u); gain += feedExp(u, m); }
     toast(feedSel.size ? feedSel.size + '体を選びました' : 'おすすめできる材料（N・R）がありません');
   }
+  // ===== 合成・限界突破の演出 =====
+  // 材料のキャラが飛んできて重なり → 神々しく光って、LIMIT BREAK! / LEVEL UP!
+  function upFx(baseCi, matCis, title, subHTML, kind, done){
+    const old = $('upFx'); if (old) old.remove();
+    const d = document.createElement('div'); d.id = 'upFx';
+    d.innerHTML = '<div class="rays"></div><div class="glow"></div><div class="base"></div><div class="flash"></div>' +
+      '<div class="ttl">' + title + '</div><div class="sub">' + subHTML + '</div><div class="tap">タップで閉じる</div>';
+    document.body.appendChild(d);
+    d.querySelector('.base').appendChild(charIcon(baseCi, 150));
+    const mats = matCis.slice(0, 8), n = mats.length, fly = kind === 'limit' ? 700 : 260;   // 1体が飛んでくる時間
+    mats.forEach((ci, k) => {
+      const m = document.createElement('div'); m.className = 'mat'; m.appendChild(charIcon(ci, 96)); d.appendChild(m);
+      const ang = n === 1 ? 0 : (k / n) * Math.PI * 2 - Math.PI / 2, R = Math.min(innerWidth, innerHeight) * 0.42;
+      const sx = n === 1 ? innerWidth * 0.62 : Math.cos(ang) * R, sy = n === 1 ? -40 : Math.sin(ang) * R;
+      const delay = 250 + k * (kind === 'limit' ? 0 : 150);
+      try {
+        m.animate([{transform: 'translate(' + sx + 'px,' + sy + 'px) scale(1)', opacity: 1},
+                   {transform: 'translate(' + sx * 0.25 + 'px,' + sy * 0.25 + 'px) scale(1.05)', opacity: 1, offset: 0.7},
+                   {transform: 'translate(0,0) scale(.35)', opacity: 0}],
+                  {duration: fly, delay, easing: 'cubic-bezier(.5,0,.75,.6)', fill: 'both'});
+      } catch(e) { m.style.display = 'none'; }
+      setTimeout(() => { if (d.isConnected && kind !== 'limit') sndAbsorb(k); }, delay + fly - 40);
+    });
+    const hit = 250 + (kind === 'limit' ? fly : (n - 1) * 150 + fly);   // 全部重なった瞬間
+    if (kind === 'limit') sndLimitBreak();
+    setTimeout(() => {
+      if (!d.isConnected) return;
+      for (let i = 0; i < 18; i++) {                  // 光の粒が飛び散る
+        const p = document.createElement('i'); p.className = 'spk'; const a = Math.random() * Math.PI * 2, r = 90 + Math.random() * 150;
+        p.style.setProperty('--dx', Math.cos(a) * r + 'px'); p.style.setProperty('--dy', Math.sin(a) * r + 'px'); p.style.animationDelay = (Math.random() * 0.15) + 's';
+        d.appendChild(p);
+      }
+      d.classList.add('on');
+      if (kind !== 'limit') sndLevelUp(kind === 'lvup');
+      try { navigator.vibrate && navigator.vibrate(kind === 'limit' ? [40, 60, 120] : 30); } catch(e) {}
+    }, kind === 'limit' ? 1000 : hit);
+    let closable = false; setTimeout(() => { closable = true; }, kind === 'limit' ? 1500 : hit + 400);
+    const close = () => { if (!closable || !d.isConnected) return; d.remove(); if (done) done(); };
+    d.addEventListener('click', close);
+    setTimeout(close, kind === 'limit' ? 4200 : hit + 2600);
+  }
   function feedGo(uid){
     const u = unitOf(uid); if (!u || !feedSel.size) return;
     if (u.lv >= capOf(u)) { toast('レベル上限です。先に限界突破してください'); return; }
@@ -5626,10 +5757,12 @@
     const hasHi = ids.some(id => GRADE_RANK[CHAR_STAT[unitOf(id).id].grade] >= 3);
     askYes(ids.length + '体を材料にして、経験値 +' + pv.gain.toLocaleString() + ' を入れますか？<br>（LV' + u.lv + ' → LV' + pv.lv + '）<br>材料にしたキャラはいなくなります。' + (hasHi ? '<br><b style="color:#ff9db8">※SR以上のキャラがふくまれています。</b>' : ''), () => {
       const was = u.lv, r = lvAfter(u, pv.gain);
+      const matCis = ids.map(id => ciOf(unitOf(id))).filter(ci => ci >= 0);
       units = units.filter(x => !ids.includes(x.u));
       u.lv = r.lv; u.exp = r.exp; feedSel.clear(); saveUnits(); fixTeam();
-      sndGCard(true); toast(r.lv > was ? 'レベルアップ！ LV' + was + ' → LV' + r.lv : '経験値 +' + pv.gain.toLocaleString());
       drawBox();
+      upFx(ciOf(u), matCis, r.lv > was ? 'LEVEL UP!' : 'EXP UP!',
+        r.lv > was ? 'LV' + was + ' → <b>LV' + r.lv + '</b>' : '経験値 <b>+' + pv.gain.toLocaleString() + '</b>', r.lv > was ? 'lvup' : 'exp');
     });
   }
   // 限界突破：同じキャラ1体を材料にして★を1つ上げる（レベル上限+10）。材料にしたキャラは消え、チームからも外れる
@@ -5638,13 +5771,13 @@
     if (!u || !m || u.id !== m.id || uid === mid || (u.star || 0) >= starMaxOf(u)) return;
     if (m.lock) { toast('ロック中のキャラは材料にできません（詳細でロックを外せます）'); return; }
     askYes(ALLC[ciOf(m)].name + '（LV' + m.lv + '）を材料にして、★を1つ上げますか？<br>レベル上限 LV' + capOf(u) + ' → LV' + Math.min(LV_MAX[CHAR_STAT[u.id].grade], capOf(u) + 10) + '<br>材料にしたキャラはいなくなります。', () => {
+      const mci = ciOf(m);
       units = units.filter(x => x.u !== mid);
       teams = teams.map(t => t.map(x => x === mid ? null : x));
       u.star = (u.star || 0) + 1;
       saveUnits(); fixTeam();
-      sndGBurst();
-      toast('限界突破！ ★' + u.star + '（レベル上限 LV' + capOf(u) + '）');
       drawBox();
+      upFx(ciOf(u), [mci], 'LIMIT BREAK!', '★' + u.star + '　レベル上限 <b>LV' + capOf(u) + '</b>', 'limit');
     });
   }
   // 2つから選ぶダイアログ
