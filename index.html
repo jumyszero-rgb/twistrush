@@ -899,6 +899,7 @@
           <h3>だんだん速くなる</h3>
           <ul>
             <li>盤面の周りを回る光が1周するまでに消せないと、<b>全色のカラーHPが増えます</b>。</li>
+            <li>そろって点滅している間は、周りの光が止まります（消えるのを待っている間に1周してしまうことはありません）。</li>
             <li>カラーHPは一定時間ごとにも全色+1され、進むほど増える数が大きくなります。</li>
             <li>ブロックを消すほど光の1周が短くなります（SPEED UP）。オクタブロックで戻せる量には上限があるので、いつかは追いつかれます。</li>
           </ul>
@@ -3412,7 +3413,7 @@
     vsTick(t);
     bgmUpdate();
     if (running && bombPick) return;                // カラーボムの色を選んでいる間は止める
-    if (running) slowTick(t);
+    if (running) { slowTick(t); lapHold(t); }
     if (running) skillTick(t);
     // カラーHPが警告ラインを超えている間、一定の間隔で警告音を鳴らす（危ないほど間隔が短い）
     if (running) {
@@ -6298,6 +6299,12 @@
     pops.push({text: 'ハート！ 全色 10%回復', style: 'sync', r: r, c: c, row: 0, n: 1, t: now()});
     if (!confirmUntil && findGroups().length) { confirmUntil = now() + CFG.CONFIRM_MS; sndReady(); }
     return true;
+  }
+  // そろって点滅している間（確定待ち〜消えて落ちるまで）は、外周のタイムゲージを止める
+  let lapHoldLast = 0;
+  function lapHold(t){
+    const dt = lapHoldLast ? Math.min(100, t - lapHoldLast) : 0; lapHoldLast = t;
+    if (dt > 0 && (confirmUntil || phase !== 'idle')) lapStart += dt;
   }
   // スピードダウン中は、外周の光とカラーHPの時計を半分の速さで進める
   function slowTick(t){
