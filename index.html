@@ -557,6 +557,8 @@
   .lbmats button.lk{opacity:.45;border-color:#888;}
   .ccell .cbot{position:absolute;left:0;right:0;bottom:0;padding:8px 3px 2px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.75));text-align:right;}
   .ccell .cbot .ustar{display:block;text-align:left;font-size:8px;}
+  .ccell .cbot small i.cttl{display:block;font-style:normal;font-size:7px;font-weight:700;opacity:.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .dname .dttl{display:block;font-size:11px;font-weight:700;opacity:.85;}
   .ccell .cbot small{display:block;font-size:10px;font-weight:900;color:#fff;text-shadow:0 1px 2px #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .ccell.sel{outline:3px solid #fff;outline-offset:1px;} .ccell.lock{opacity:.35;}
   .ccell b{display:block;font-size:11px;} .ccell small{display:block;font-size:9px;opacity:.85;}
@@ -1606,6 +1608,7 @@
     ],
   };
   let zakoNow = null, zakoLast = {};
+  const zakoFull = z => (typeof ZAKO_TITLE !== 'undefined' && ZAKO_TITLE[z.k] ? ZAKO_TITLE[z.k] + '\u3000' : '') + z.name;
   // マップのザコの配置：エリアごとに10人を、はじめて開いたときにランダムで並べて保存（同じキャラは2回出ない）
   function zakoOrder(a){
     const list = ZAKO_CREW[a] || [];
@@ -3028,7 +3031,7 @@
     cpuSpec = stage ? {every: stage.every, burst: stage.burst} : {every: 4600, burst: [3, 5]};
     cpus = [];
     for (let i = 1; i < count; i++) {
-      cpus.push({name: stage ? (zakoNow ? zakoNow.name : stage.name) : ('CPU' + i), face: stage ? stage.face : (i - 1) % TYPES,
+      cpus.push({name: stage ? (zakoNow ? zakoFull(zakoNow) : fullName(CHARS[stage.char]) || stage.name) : ('CPU' + i), face: stage ? stage.face : (i - 1) % TYPES,
                  stacks: Array(TYPES).fill(0), alive: true, next: 0, tick: 0});
     }
     bolts = []; says = []; charges = []; sparks = []; shockRings = []; shakeUntil = 0;
@@ -4059,7 +4062,7 @@
     document.body.classList.remove('on-menu');
     if (stage) { preloadZako(stage.area); preloadIntro(stage.area); }
     if (stage) {                                       // ストーリー：始めにこの面の目標を出す
-      pops.push({text: stage.label + ' ' + (stage.kind === 'boss' ? 'BOSS' : (stage.kind === 'mid' ? '中ボス' : (zakoNow ? zakoNow.name : '暴走ブロック'))),
+      pops.push({text: stage.label + ' ' + (stage.kind === 'boss' ? 'BOSS' : (stage.kind === 'mid' ? '中ボス' : (zakoNow ? zakoFull(zakoNow) : '暴走ブロック'))),
                  style: 'combo', r: 2.0, c: 2.5, row: 0, n: 1, t: t + 200, long: true});
       pops.push({text: 'HPを削りきれ！', style: 'special', r: 2.0, c: 2.5, row: 1, n: 1, t: t + 400, long: true});
     }
@@ -4672,7 +4675,7 @@
         (clr ? ' done' : '') + (op ? '' : ' lock') + (i === nowIdx && op && !clr ? ' now' : '') + (i === pickStage ? ' sel' : '');
       b.style.left = MAP_POS[k][0] + '%'; b.style.top = (MAP_POS[k][1] / 124 * 100) + '%';
       const zk = st.kind === 'boss' ? null : zakoAt(st);
-      b.setAttribute('aria-label', st.label + ' ' + (zk ? zk.name : st.name) + (op ? '' : '（まだ入れない）'));
+      b.setAttribute('aria-label', st.label + ' ' + (zk ? zakoFull(zk) : st.name) + (op ? '' : '（まだ入れない）'));
       if (st.kind === 'boss') {
         const ic = charIcon(st.char, 74); ic.style.width = '100%'; ic.style.height = '100%';
         ic.style.backgroundSize = (CHARS.length * 100) + '% 100%';
@@ -4706,7 +4709,7 @@
     const st = STORY[pickStage], inArea = Math.floor(pickStage / PER) === a && open;
     if (inArea) {
       const zk = st.kind === 'boss' ? null : zakoAt(st);
-      const rule = st.kind === 'boss' ? 'ボス：' + st.name : (st.kind === 'mid' ? '中ボス：' + st.name : (zk ? zk.name : RULE_NAME[st.kind] + '：' + st.name));
+      const rule = st.kind === 'boss' ? 'ボス：' + fullName(CHARS[st.char]) : (st.kind === 'mid' ? '中ボス：' + st.name : (zk ? zakoFull(zk) : RULE_NAME[st.kind] + '：' + st.name));
       const rtx = st.route === 1 ? '<div class="rt hard">つよいルート：敵のHP・ステータス+15%／コイン×1.5・経験値×1.3・仲間になる確率25%</div>' :
         (st.route === 0 ? '<div class="rt">ふつうルート</div>' : '<div class="rt">どちらかのルートを抜けると戦える</div>');
       $('stageInfo').innerHTML = '<div class="t">' + st.label + '　' + rule + '</div>' + rtx +
@@ -4780,7 +4783,7 @@
   function playBossIntro(st, done){
     const box = $('intro'), vid = $('introVid'), ph = $('introPh'), c = CHARS[st.char];
     box.style.setProperty('--bc', c.color);
-    $('introName').innerHTML = '<small>BOSS</small><b>' + c.name + '</b>';
+    $('introName').innerHTML = '<small>BOSS　' + (c.title || '') + '</small><b>' + c.name + '</b>';
     introDone = done; clearTimeout(introTimer);
     primeVoice();
     if (bgmMode === 'title' || bgmMode === 'map') bgmStop(0.6);   // 登場シーンの前にタイトル・マップの曲を止める
@@ -5228,7 +5231,7 @@
     {k: "g02", name: "ガイアロ", grade: "SR", type: "def", base: [17, 12, 20, 11], bio: "苔むした岩から生まれた土の魔神。動きはゆっくりだが、どんな攻撃にもびくともしない。体に咲いた花を大切にしている。", sp: {n: "岩のよろい", fx: [["buf", "def", 8, 200]]}, ougi: {n: "大地の目覚め", fx: [["octaDrop", 6], ["buf", "def", 8, 300]]}},
     {k: "g03", name: "シルヴィ", grade: "SR", type: "spd", base: [12, 15, 11, 20], bio: "森に住むエルフの弓使い。百歩先の木の葉も射抜く腕前。人見知りだが、仲間には片目をつむってあいさつする。", sp: {n: "千の矢", fx: [["clr", 8]]}, ougi: {n: "森風の矢雨", fx: [["clr", 10], ["eslow", 40, 5]]}},
     {k: "g04", name: "ヒノカ", grade: "SR", type: "atk", base: [11, 20, 12, 16], bio: "火山の花から生まれた炎の妖精。元気いっぱいで、うれしいと羽から火の粉が舞う。寒い日はみんなの人気者。", sp: {n: "ほむらの舞", fx: [["clr", 7], ["buf", "atk", 5, 150]]}, ougi: {n: "紅蓮の花火", fx: [["clr", 12], ["buf", "atk", 5, 200]]}},
-    {k: "g05", name: "ノクス", grade: "SR", type: "spd", base: [12, 16, 11, 20], bio: "ダークエルフの双剣使い。月のない夜にだけ姿を見せる。口数は少ないが、借りは必ず返す義理がたい性格。", sp: {n: "影縫い", fx: [["eslow", 30, 5], ["clr", 5]]}, ougi: {n: "闇夜の双刃", fx: [["crit", 10], ["clr", 8]]}},
+    {k: "g05", name: "ヴェイル", grade: "SR", type: "spd", base: [12, 16, 11, 20], bio: "ダークエルフの双剣使い。月のない夜にだけ姿を見せる。口数は少ないが、借りは必ず返す義理がたい性格。", sp: {n: "影縫い", fx: [["eslow", 30, 5], ["clr", 5]]}, ougi: {n: "闇夜の双刃", fx: [["crit", 10], ["clr", 8]]}},
     {k: "g06", name: "セラ", grade: "SR", type: "def", base: [16, 12, 20, 12], bio: "街を守るために作られたアンドロイド。光の盾は、どんな攻撃もはね返す。最近、人間の「笑う」を練習中。", sp: {n: "シールドウォール", fx: [["buf", "def", 8, 250]]}, ougi: {n: "イージス展開", fx: [["stop", 5], ["buf", "def", 8, 200]]}},
     {k: "g07", name: "ソウマ", grade: "SR", type: "atk", base: [13, 20, 12, 15], bio: "長い黒髪の流れ者の武士。桜の舞う日にだけ刀を抜くという。物静かで、甘いものに目がない。", sp: {n: "一閃", fx: [["clr", 8]]}, ougi: {n: "桜花一文字", fx: [["crit", 20]]}},
     {k: "g08", name: "ガルナ", grade: "SR", type: "hp", base: [20, 16, 13, 11], bio: "2本の斧を軽々とふり回すドワーフの戦士。鍛冶屋の娘で、自分の斧は自分で打つ。笑い声がとにかく大きい。", sp: {n: "ダブルアックス", fx: [["clr", 10]]}, ougi: {n: "大地割り", fx: [["clr", 15]]}},
@@ -5255,9 +5258,15 @@
   Object.assign(ZAKO_IMG, {"g01": "ef79faa19053ada47bc5ca9448469366", "g02": "9e72f3382128933c3c6b2c842e4b3b95", "g03": "40aafdd61fbc2558d8b3cae55f3da0e4", "g04": "2fe885da91ca86c483c8487f1a892e34", "g05": "f229b0619c71b999a33ad31c762228b8", "g06": "0311b84824cf7cf28e2fb7e53bb701ec", "g07": "68e15203eb775432589b056050ffe7b5", "g08": "edf31e42d52455c02d321ae5c1313708", "g09": "51e918470a61fc26f536bd7cd0c92c77", "g10": "f476b01615a1c1fb6defd52f23fc1853", "g11": "eaf0ef30e5cade96c92cdcde546addf9", "g12": "82a4243dd14588597348374089fbd1c0", "g13": "9d32a586bbb5d682c8e993b7afdf1d4a", "g14": "c3eae176ef9218a4b9612428dfd120af", "g15": "91b437318d851aa0ba03898f2f06bde5", "g16": "1e1163f422c4b345a96b40ff4fd5c783", "g17": "86b63a2c0599ddb71e01e78f145f1618", "g18": "de82f94603ba6081cc1cfe69c5eff94c", "g19": "c3362ecfa62d33a6bc43b0a36fbc9df0", "g20": "93516fa10fc6af064706f2e3d41048d9", "g21": "514652ffabdb50512afb735fc05d544f", "g22": "068fbf1407e92823c26ff07562d556ba", "g23": "c1d2ef32f2504e423e8a9c28c73ae88c", "g24": "30022a121f196be65cd14279724f66f9", "g25": "78a5091213035070491c82ab144d49a2", "g26": "dff9e5a8e72e29722a98ae1025889a4f", "g27": "c15044cdf2d00d42f9c154e8d17bbbd2"});
   Object.assign(ZAKO_FACE, {"g01": [121, 37, 239], "g02": [158, 15, 185], "g03": [168, 13, 162], "g04": [150, 19, 199], "g05": [181, 37, 239], "g06": [188, 26, 231], "g07": [168, 20, 160], "g08": [122, 24, 251], "g09": [115, 12, 170], "g10": [168, 19, 160], "g11": [163, 17, 160], "g12": [164, 21, 168], "g13": [157, 21, 183], "g14": [165, 20, 175], "g15": [159, 22, 160], "g16": [133, 28, 234], "g17": [159, 19, 160], "g18": [119, 14, 258], "g19": [134, 16, 232], "g20": [133, 13, 249], "g21": [156, 15, 219], "g22": [165, 40, 175], "g23": [200, 75, 165], "g24": [140, 21, 229], "g25": [114, 12, 257], "g26": [140, 5, 140], "g27": [110, 40, 200]});
   GACHA_CREW.forEach(z => { ZAKO_STAT[z.k] = {grade: z.grade, type: z.type, base: z.base, bio: z.bio}; });
+  // ===== 名前は「肩書き　名前」で出す（名前だけでは使わない）=====
+  const BOSS_TITLE = {"ichigo": "紅苺の少女", "mocha": "黄金の剣士", "rinpan": "双子の氷術師", "busy": "紫星の魔女", "camilla": "猫神の申し子", "titan": "機甲の歌姫", "windy": "そよ風の妖精", "chiyo": "紅月のくノ一", "gilbert": "銀の城の騎士"};
+  const ZAKO_TITLE = {"a1_01": "いちご農家の娘", "a1_02": "いちごの妖精", "a1_03": "いちごずきん", "a1_04": "ハチの子", "a1_05": "かかし", "a1_06": "テントウムシの子", "a1_07": "花かんむりの子", "a1_08": "うさみみの子", "a1_09": "ジャムのシェフ", "a1_10": "農家の少年", "a2_01": "見習い剣士", "a2_02": "見習い騎士", "a2_03": "門番", "a2_04": "弓使い", "a2_05": "お城のメイド", "a2_06": "鍛冶屋の見習い", "a2_07": "旗持ち", "a2_08": "太鼓の少年", "a2_09": "木馬の騎士", "a2_10": "見習い魔法使い", "a3_01": "氷のスライム", "a3_02": "青い火の玉", "a3_03": "かみつく魔導書", "a3_04": "氷のコウモリ", "a3_05": "氷のゴーレム", "a3_06": "泡の小悪魔", "a3_07": "雪の精", "a3_08": "いたずら鏡", "a3_09": "星のクラゲ", "a3_10": "月のうさぎ魔導士", "a4_01": "ほうき乗りの見習い魔女", "a4_02": "むらさきキノコ", "a4_03": "森のエルフ", "a4_04": "魔女の黒猫", "a4_05": "薬づくりの子", "a4_06": "フクロウの魔法使い", "a4_07": "かぼちゃランタン", "a4_08": "蝶の妖精", "a4_09": "切り株おばけ", "a4_10": "見習い魔導士", "a5_01": "魚屋の猫娘", "a5_02": "コックの白猫", "a5_03": "どろぼう猫", "a5_04": "猫カフェのメイド", "a5_05": "郵便屋のトラ猫", "a5_06": "猫耳おまわりさん", "a5_07": "あくびの子猫", "a5_08": "招き猫", "a5_09": "アコーディオン弾き", "a5_10": "ペルシャ猫の女王", "a6_01": "宇宙飛行士の男の子", "a6_02": "整備士の女の子", "a6_03": "宇宙人の女の子", "a6_04": "ガードロボ", "a6_05": "宇宙博士", "a6_06": "ジェットパックの女の子", "a6_07": "ホログラム案内係", "a6_08": "大型作業ロボ", "a6_09": "宇宙のペット", "a6_10": "宇宙艦長の女の子", "a7_01": "小鳥の女の子", "a7_02": "雲のひつじ", "a7_03": "凧あげの男の子", "a7_04": "風船の女の子", "a7_05": "風の精霊", "a7_06": "小さな天馬", "a7_07": "風使いの少年剣士", "a7_08": "空飛ぶクジラ", "a7_09": "虹の女の子", "a7_10": "羽の騎士", "a8_01": "忍者見習いの男の子", "a8_02": "白狐の女の子", "a8_03": "カラス天狗", "a8_04": "から傘おばけ", "a8_05": "ちょうちんおばけ", "a8_06": "からくり人形の忍者", "a8_07": "たぬき", "a8_08": "忍者がま", "a8_09": "猫の忍者", "a8_10": "ムササビ忍者", "a9_01": "ウサギの見張り兵", "a9_02": "子犬の騎士", "a9_03": "中身のない鎧", "a9_04": "銀のスライム", "a9_05": "お城のメイド", "a9_06": "石のガーゴイル", "a9_07": "銀の子ドラゴン", "a9_08": "チェスの騎士", "a9_09": "フクロウの近衛兵", "a9_10": "おばけのお姫さま"};
+  const GACHA_TITLE = {"g01": "三つ首の飛竜", "g02": "苔むす土魔神", "g03": "森の射手", "g04": "炎花の妖精", "g05": "月なき夜の双剣", "g06": "光盾の守護機", "g07": "桜下の流れ侍", "g08": "双斧の鍛冶娘", "g09": "白馬の槍騎士", "g10": "果実の歌姫", "g11": "果実の元気印", "g12": "果実の踊り手", "g13": "星詠みの見習い", "g14": "旋風の拳士", "g15": "いたずら小悪魔", "g16": "泡沫の歌姫", "g17": "荒野の早撃ち", "g18": "火山の炎竜", "g19": "天上の奏者", "g20": "魔界の紫炎公", "g21": "白銀の聖盾", "g22": "千年の大魔導", "g23": "光剣の勇者", "g24": "六属の賢者", "g25": "熾天使", "g26": "天才メカニック", "g27": "災厄の嵐獣"};
+  CHARS.forEach(c => { c.title = BOSS_TITLE[c.id] || ''; });
+  const fullName = c => c ? ((c.title ? c.title + '\u3000' : '') + c.name) : '';
   // 持ちキャラにできる全キャラ：0〜8はボス（CHARSと同じ番号）、続いてザコ、そのあとガチャ用キャラ
-  const ALLC = CHARS.concat(Object.keys(ZAKO_CREW).flatMap(a => ZAKO_CREW[a].map(z => ({id: 'z_' + z.k, name: z.name, zk: z.k, area: +a}))))
-    .concat(GACHA_CREW.map(z => ({id: 'x_' + z.k, name: z.name, zk: z.k})));
+  const ALLC = CHARS.concat(Object.keys(ZAKO_CREW).flatMap(a => ZAKO_CREW[a].map(z => ({id: 'z_' + z.k, name: z.name, title: ZAKO_TITLE[z.k] || '', zk: z.k, area: +a}))))
+    .concat(GACHA_CREW.map(z => ({id: 'x_' + z.k, name: z.name, title: GACHA_TITLE[z.k] || '', zk: z.k})));
   ALLC.forEach(c => { const z = c.zk && ZAKO_STAT[c.zk]; if (z) CHAR_STAT[c.id] = {type: z.type, grade: z.grade, base: z.base}; });
   const isZakoId = id => typeof id === 'string' && id.startsWith('z_');
   const LV_MAX = {N: 30, R: 40, SR: 50, MR: 60, LR: 70};      // グレードごとの最大レベル（★を最大まで上げたとき）
@@ -5405,7 +5414,7 @@
       const gr = CHAR_STAT[ALLC[ci].id].grade, d = document.createElement('div');
       d.className = 'getcard g-' + gr;
       d.appendChild(charIcon(ci, 96));
-      d.insertAdjacentHTML('beforeend', '<b>' + gr + ' ' + ALLC[ci].name + '</b><em>仲間になった！</em>');
+      d.insertAdjacentHTML('beforeend', '<b>' + gr + ' ' + fullName(ALLC[ci]) + '</b><em>仲間になった！</em>');
       box.appendChild(d);
     });
     if (list.length) sndGCard(true);
@@ -5419,7 +5428,7 @@
       while (lv < cap && exp >= expNeed(lv)) { exp -= expNeed(lv); lv++; }
       if (lv >= cap) exp = Math.min(exp, expNeed(lv) - 1);
       u.lv = lv; u.exp = exp;
-      if (lv > was) ups.push(ALLC[ciOf(u)].name + ' LV' + lv);
+      if (lv > was) ups.push(fullName(ALLC[ciOf(u)]) + ' LV' + lv);
     });
     saveUnits();
     return ' 経験値 +' + gain + (ups.length ? '（レベルアップ：' + ups.join('・') + '）' : '') + '。';
@@ -5434,7 +5443,7 @@
     if (u) {
       const ci = ciOf(u);
       h += '<span class="cface" data-ci="' + ci + '"></span><b class="clv">LV' + u.lv + '</b>' + typeBadge(u.id) +
-           '<span class="cno">' + '①②③④'[k] + '</span><span class="cbot">' + starsHTMLu(u) + '<small>' + ALLC[ci].name + '</small></span>';
+           '<span class="cno">' + '①②③④'[k] + '</span><span class="cbot">' + starsHTMLu(u) + '<small>' + (ALLC[ci].title ? '<i class="cttl">' + ALLC[ci].title + '</i>' : '') + ALLC[ci].name + '</small></span>';
     } else h += '<span class="tplus">＋</span>';
     h += '</div><div class="tskrow">';
     if (u && k === 0) h += '<span class="tsk both">必殺技＋奥義</span>';
@@ -5546,7 +5555,7 @@
     const d = document.createElement('div'); d.className = 'g-card' + (big ? ' big' : '');
     d.appendChild(charIcon(r.ci, big ? 170 : 58));
     const gr = CHAR_STAT[ALLC[r.ci].id].grade; d.classList.add('g-' + gr);
-    d.insertAdjacentHTML('beforeend', '<div>' + gr + ' ' + ALLC[r.ci].name + '</div>' + (r.isNew ? '<em>NEW</em>' : '<em class="sh">2体目以上</em>'));
+    d.insertAdjacentHTML('beforeend', '<div>' + gr + ' ' + fullName(ALLC[r.ci]) + '</div>' + (r.isNew ? '<em>NEW</em>' : '<em class="sh">2体目以上</em>'));
     return d;
   }
   // 1体ずつ見せる（タップかボタンで次へ）
@@ -5682,12 +5691,12 @@
              '<b class="clv">LV' + u.lv + '</b>' + typeBadge(u.id) +
              (ti >= 0 ? '<span class="cno">' + '①②③④'[ti] + '</span>' : '') +
              (lb ? '<span class="lbmark">突破</span>' : '') +
-             '<span class="cbot">' + starsHTMLu(u) + '<small>' + (boxSort.startsWith('st') ? ST_NAME[+boxSort[2]] + ' ' + unitStats(u)[+boxSort[2]] : ALLC[ci].name) + '</small></span></div>';
+             '<span class="cbot">' + starsHTMLu(u) + '<small>' + (boxSort.startsWith('st') ? ST_NAME[+boxSort[2]] + ' ' + unitStats(u)[+boxSort[2]] : (ALLC[ci].title ? '<i class="cttl">' + ALLC[ci].title + '</i>' : '') + ALLC[ci].name) + '</small></span></div>';
       });
       h += '</div>' + pagerHTML(boxPage, list0.length, BOX_PER, 'box') + '</section>';
       const su = boxSel && unitOf(boxSel);
       if (su && boxSlot < 0 && !boxPut) {
-        h += '<div class="cmenu"><b>' + ALLC[ciOf(su)].name + '（LV' + su.lv + '）</b>' +
+        h += '<div class="cmenu"><b>' + fullName(ALLC[ciOf(su)]) + '（LV' + su.lv + '）</b>' +
              '<button data-act="detail">詳細を見る</button><button data-act="put">チームに入れる</button>' +
              '<button data-act="lock">' + (su.lock ? '🔓 ロックを外す' : '🔒 ロックする') + '</button>' +
              (curTeam().includes(su.u) && curTeam().indexOf(su.u) > 0 ? '<button data-act="out">チームから外す</button>' : '') +
@@ -5746,7 +5755,7 @@
     const ti = curTeam().indexOf(u.u), atCap = u.lv >= capOf(u);
     let h = '<div class="dhead" style="display:flex;align-items:center"><button data-act="back" class="dback">‹ 一覧へ</button><button data-act="dlock" class="dlock' + (u.lock ? ' on' : '') + '">' + (u.lock ? '🔒 ロック中' : '🔓 ロックする') + '</button></div>' +
       '<div class="dtop g-' + cs.grade + '"><span class="dimg" data-ci="' + ci + '"></span><div class="dinfo">' +
-      '<div class="dname">' + c.name + (ti >= 0 ? ' <span class="cno">' + '①②③④'[ti] + '</span>' : '') + '</div>' +
+      '<div class="dname">' + (c.title ? '<small class="dttl">' + c.title + '</small>' : '') + c.name + (ti >= 0 ? ' <span class="cno">' + '①②③④'[ti] + '</span>' : '') + '</div>' +
       '<div class="dsub"><i class="dgr">' + cs.grade + '</i> ' + typeBadge(c.id).replace('tbadge', 'tbadge inl') + ' ' + tp.name + '</div>' +
       '<div class="dlv">LV <b>' + u.lv + '</b> / ' + capOf(u) + '</div>' + starsHTMLu(u).replace('ustar', 'ustar big') +
       '<div class="dexp">' + (atCap ? 'レベル上限です（限界突破で上限が上がります）' : '次のレベルまで ' + Math.max(0, expNeed(u.lv) - u.exp).toLocaleString()) + '</div></div></div>' +
@@ -5782,7 +5791,7 @@
       const lpn = Math.max(1, Math.ceil(matsAll.length / MAT_PER)); if (matPage >= lpn) matPage = lpn - 1; if (matPage < 0) matPage = 0;
       const mats = matsAll.slice(matPage * MAT_PER, matPage * MAT_PER + MAT_PER);
       const full = (u.star || 0) >= starMaxOf(u);
-      h += '<div class="dsec"><p>同じキャラ（' + c.name + '）1体を材料にして、★を1つ上げます。★1つでレベル上限が+10されます（★' + starMaxOf(u) + 'まで）。材料にしたキャラはいなくなります。</p>' +
+      h += '<div class="dsec"><p>同じキャラ（' + fullName(c) + '）1体を材料にして、★を1つ上げます。★1つでレベル上限が+10されます（★' + starMaxOf(u) + 'まで）。材料にしたキャラはいなくなります。</p>' +
         '<p>いま ' + starsHTMLu(u) + '　レベル上限 LV' + capOf(u) + (full ? '（最大）' : ' → LV' + Math.min(LV_MAX[cs.grade], capOf(u) + 10)) + '</p>' +
         (full ? '<p>これ以上★は上がりません。</p>' : mats.length ? '<div class="lbmats">' + mats.map(m => '<button data-mat="' + m.u + '"' + (m.lock ? ' class="lk"' : '') + '><span class="tic" data-ci="' + ci + '"></span>LV' + m.lv + (m.star ? ' ★' + m.star : '') + (m.lock ? '<i>🔒ロック中</i>' : teams.some(tt => tt.includes(m.u)) ? '<i>編成中</i>' : '') + '</button>').join('') + '</div>' + pagerHTML(matPage, matsAll.length, MAT_PER, 'mat') : '<p>同じキャラがもう1体いると、★を上げられます。</p>') + '</div>';
     }
@@ -5875,7 +5884,7 @@
     const u = unitOf(uid), m = unitOf(mid);
     if (!u || !m || u.id !== m.id || uid === mid || (u.star || 0) >= starMaxOf(u)) return;
     if (m.lock) { toast('ロック中のキャラは材料にできません（詳細でロックを外せます）'); return; }
-    askYes(ALLC[ciOf(m)].name + '（LV' + m.lv + '）を材料にして、★を1つ上げますか？<br>レベル上限 LV' + capOf(u) + ' → LV' + Math.min(LV_MAX[CHAR_STAT[u.id].grade], capOf(u) + 10) + '<br>材料にしたキャラはいなくなります。', () => {
+    askYes(fullName(ALLC[ciOf(m)]) + '（LV' + m.lv + '）を材料にして、★を1つ上げますか？<br>レベル上限 LV' + capOf(u) + ' → LV' + Math.min(LV_MAX[CHAR_STAT[u.id].grade], capOf(u) + 10) + '<br>材料にしたキャラはいなくなります。', () => {
       const mci = ciOf(m);
       units = units.filter(x => x.u !== mid);
       teams = teams.map(t => t.map(x => x === mid ? null : x));
@@ -6026,7 +6035,7 @@
       s2.charge = Math.min(SK_MS[s2.kind], s2.charge + dt);
       if (s2.charge >= SK_MS[s2.kind]) {
         s2.ready = true;
-        const msg = (s2.main ? '' : ALLC[s2.ci].name + 'の') + (s2.kind === 'sp' ? '必殺技チャージ完了！' : '奥義チャージ完了！');
+        const msg = (s2.main ? '' : fullName(ALLC[s2.ci]) + 'の') + (s2.kind === 'sp' ? '必殺技チャージ完了！' : '奥義チャージ完了！');
         if (!playClip('charge_' + s2.kind, 'sys')) sndReady();
         pops.push({text: msg, style: 'combo', r: 2.2, c: 2.5, row: 0, n: 1, t, long: true});
       }
@@ -6442,7 +6451,7 @@
     const s2 = skList[i];
     if (!running || !s2) return;
     const lab = s2.kind === 'sp' ? '必殺技' : '奥義';
-    if (!s2.ready) { toast(ALLC[s2.ci].name + 'の' + lab + 'はあと ' + Math.ceil((SK_MS[s2.kind] - s2.charge) / 1000) + '秒でたまります'); return; }
+    if (!s2.ready) { toast(fullName(ALLC[s2.ci]) + 'の' + lab + 'はあと ' + Math.ceil((SK_MS[s2.kind] - s2.charge) / 1000) + '秒でたまります'); return; }
     if (bombPick) { toast('カラーボムの色を選んでいる間は使えません'); return; }
     if (phase !== 'idle') { toast('ブロックが消えている間は使えません'); return; }
     const t = now();
