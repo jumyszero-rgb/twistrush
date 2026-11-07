@@ -6278,6 +6278,16 @@
     : f[0] === 'heart' ? 'ハートブロックを' + f[1] + '個出す' : f[0] === 'buf' ? f[2] + '秒間 ' + ZST[f[1]] + 'が' + f[3] + '%になる'
     : f[0] === 'shuf' ? '盤面をシャッフルする' : f[0] === 'cut' ? 'いちばんたまっている色のカラーHPを' + f[1] + '%下げる'
     : f[0] === 'dmg' ? '相手のHPに直接 ' + f[1] + '%のダメージ'
+    : f[0] === 'cross' ? 'ランダムな場所に十字の形で、合わせて' + f[1] + '個消す'
+    : f[0] === 'rect' ? 'ランダムな場所の' + f[1] + '×' + f[2] + 'を消す'
+    : f[0] === 'rects' ? f[1] + '×' + f[2] + 'を' + f[3] + 'か所消す'
+    : f[0] === 'claws' ? 'ななめに7個（3個と4個）ひっかいて消す'
+    : f[0] === 'rows' ? '横' + f[1] + '列（' + f[1] * 6 + '個）を消す'
+    : f[0] === 'octaRect' ? f[1] + '×' + f[2] + 'の' + f[1] * f[2] + '個を、すべてオクタブロックに変える'
+    : f[0] === 'heal' ? '全色のカラーHPを' + f[1] + '%回復する'
+    : f[0] === 'atk2' ? f[1] + '秒間 攻撃力が2倍になる'
+    : f[0] === 'def2' ? f[1] + '秒間 防御力が2倍になる'
+    : f[0] === 'tempest' ? '盤面をかき混ぜて、そろう並びを作る'
     : f[0] === 'crit' ? 'クリティカルヒット：相手の全色に、最大HPの' + f[1] + '%のダメージ'
     : f[0] === 'gheart' ? 'ゴールドハート（全色50%回復）を' + f[1] + '個出す'
     : f[0] === 'octaDrop' ? '次に消したとき、オクタブロックが' + f[1] + '個降ってくる'
@@ -6318,6 +6328,11 @@
       case 'eslow': case 'mslow': return [f[0], r(f[1], 5), f[2]];
       case 'stop': return [f[0], r(f[1])];
       case 'crit': case 'cut': case 'dmg': return [f[0], r(f[1], 5)];
+      case 'cross': case 'rows': case 'rects': return f[0] === 'rects' ? [f[0], f[1], f[2], r(f[3])] : [f[0], r(f[1], f[0] === 'cross' ? 4 : 1)];
+      case 'rect': case 'octaRect': return [f[0], r(f[1], 2), r(f[2], 2)];
+      case 'claws': return k < 0.75 ? ['clr', 5] : f;
+      case 'heal': return [f[0], r(f[1])];
+      case 'atk2': case 'def2': return [f[0], r(f[1], 2)];
       case 'doom': return f[1] === 'all' ? (k < 1 ? ['doom', 'half'] : f) : (k < 0.75 ? ['clr', 12] : f);
       default: return f;
     }
@@ -6343,11 +6358,24 @@
     pos.forEach(([r, c], i) => { grid[r][c] = vals[i]; });
   }
   function runZakoFx(fx){
-    let clr = 0, doom = null; const msg = [];
+    let clr = 0, doom = null; const msg = [], shape = [];
+    fx.forEach(f => {                                // 形で消す効果（十字・四角・ひっかき・横列）
+      if (f[0] === 'cross') shape.push(...cross(f[1]));
+      else if (f[0] === 'rect') shape.push(...randRect(f[1], f[2]));
+      else if (f[0] === 'rects') shape.push(...randRects(f[1], f[2], f[3]));
+      else if (f[0] === 'claws') shape.push(...claws());
+      else if (f[0] === 'rows') { shuf([0, 1, 2, 3, 4, 5]).slice(0, f[1]).forEach(r => { for (let k = 0; k < N; k++) shape.push([r, k]); }); }
+    });
+    const avoid = keyset(shape);
     fx.forEach(f => {
       if (f[0] === 'clr') clr += f[1];
-      else if (f[0] === 'octa') addOcta(f[1]);
-      else if (f[0] === 'heart') addHeart(f[1]);
+      else if (f[0] === 'octa') addOcta(f[1], avoid);
+      else if (f[0] === 'heart') addHeart(f[1], avoid);
+      else if (f[0] === 'octaRect') convert(randRect(f[1], f[2]), GOLD);
+      else if (f[0] === 'heal') healPct(f[1] / 100);
+      else if (f[0] === 'atk2') atkUntil = now() + f[1] * 1000;
+      else if (f[0] === 'def2') defUntil = now() + f[1] * 1000;
+      else if (f[0] === 'tempest') tempest();
       else if (f[0] === 'buf') { zbuf[f[1]] = [f[3] / 100, now() + f[2] * 1000]; msg.push(f[2] + '秒間 ' + ZST[f[1]] + ' ' + f[3] + '%'); }
       else if (f[0] === 'shuf') shuffleBoard();
       else if (f[0] === 'cut') cutOne(f[1] / 100);
@@ -6363,7 +6391,7 @@
       else if (f[0] === 'doom') doom = f[1];
     });
     if (doom) { const all = cellsWhere(v => isNormal(v)); blast(doom === 'all' ? all : randNormal(Math.ceil(all.length / 2))); fxExtra.push(doom === 'all' ? '☄ 破滅の時：盤面を全部消した' : '☄ 破滅の時：盤面の半分を消した'); }
-    else if (clr) blast(randNormal(clr));          // 消すのは最後
+    else if (clr || shape.length) blast(shape.concat(clr ? randNormal(clr, avoid) : []));          // 消すのは最後
   }
   ALLC.forEach(c => {
     const z = c.zk && ZAKO_SK[c.zk]; if (!z) return;
@@ -6371,6 +6399,21 @@
     SKILLS[c.id] = {sp: s2 => runZakoFx(s2 ? fxAt(c.id, 'sp', s2.star, s2.smax) : z.fx)};
     SPECIAL_NAME[c.id] = z.n + '！';
     SKILL_DESC[c.id] = {sp: z.fx.map(fxText).join('。') + '。'};
+  });
+  const BOSS_FX = {
+    ichigo:  {sp: [['clr', 7]], ougi: [['clr', 7], ['octa', 3], ['heart', 2]]},
+    mocha:   {sp: [['cross', 7]], ougi: [['cross', 10], ['octa', 5]]},
+    rinpan:  {sp: [['rect', 3, 3]], ougi: [['rect', 3, 3], ['octa', 2], ['heart', 1]]},
+    busy:    {sp: [['rects', 2, 2, 2]], ougi: [['rects', 2, 2, 3], ['heart', 1], ['atk2', 5]]},
+    camilla: {sp: [['claws']], ougi: [['rect', 3, 3], ['octa', 5], ['heart', 1]]},
+    titan:   {sp: [['octa', 4], ['heart', 1]], ougi: [['rows', 2], ['def2', 10]]},
+    windy:   {sp: [['heart', 3]], ougi: [['tempest'], ['heal', 10]]},
+    chiyo:   {sp: [['clr', 7], ['heal', 5]], ougi: [['clr', 12], ['heart', 3]]},
+    gilbert: {sp: [['heart', 3]], ougi: [['octaRect', 3, 3]]},
+  };
+  Object.keys(BOSS_FX).forEach(id => {
+    const d = BOSS_FX[id]; FX_DEF[id] = d;
+    SKILLS[id] = {sp: s2 => runZakoFx(s2 ? fxAt(id, 'sp', s2.star, s2.smax) : d.sp), ougi: s2 => runZakoFx(s2 ? fxAt(id, 'ougi', s2.star, s2.smax) : d.ougi)};
   });
   GACHA_CREW.forEach(z => {
     const id = 'x_' + z.k;
