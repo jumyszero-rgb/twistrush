@@ -900,7 +900,7 @@
           <h3>だんだん速くなる</h3>
           <ul>
             <li>盤面の周りを回る光が1周するまでに消せないと、<b>全色のカラーHPが増えます</b>。</li>
-            <li>そろって点滅している間は、周りの光が止まります（消えるのを待っている間に1周してしまうことはありません）。</li>
+            <li>ストーリーでは、そろって点滅している間は周りの光が止まります（消えるのを待っている間に1周してしまうことはありません）。</li>
             <li>カラーHPは一定時間ごとにも全色+1され、進むほど増える数が大きくなります。</li>
             <li>ブロックを消すほど光の1周が短くなります（SPEED UP）。オクタブロックで戻せる量には上限があるので、いつかは追いつかれます。</li>
           </ul>
@@ -1263,8 +1263,8 @@
     const b = Math.max(0, (lv - 10) / 10);            // 11〜20の進み具合
     const mix = (x, y, z) => x + (y - x) * a + (y === z ? 0 : (z - y) * b);
     return {
-      LAP_SEC:         10,                            // 外周1周の秒数（どの難しさでも10秒から）
-      LAP_MIN:         4,                             // その下限（どの難しさでも4秒まで）
+      LAP_SEC:         +mix(14, 6, 4.2).toFixed(2),   // 外周1周の秒数（ストーリーは start() で10秒に）
+      LAP_MIN:         +mix(9, 4, 2.0).toFixed(2),    // その下限（ストーリーは start() で4秒に）
       LAP_STEP_BLOCKS: Math.round(mix(160, 70, 40)),  // 1周が0.5秒短くなる間隔
       STACK_TICK_MS:   Math.round(mix(8000, 4800, 3200)),
       STACK_STEP_BLOCKS: Math.round(mix(450, 180, 90)),
@@ -3977,6 +3977,7 @@
     diffLv = gameMode === 'practice' ? (opt.lv || 5) : (stage ? stage.diff : 5);   // ランキング（60秒・エンドレス）はLv5固定
     vsInit(stage ? 2 : 1, null, stage);
     Object.assign(CFG, diffOf(diffLv));                  // 難易度の数値を当てる
+    if (gameMode === 'story') { CFG.LAP_SEC = 10; CFG.LAP_MIN = 4; }   // ストーリーだけ：外周は10秒から4秒まで（難しさに関係なく）
     best = loadBest(isRec(gameMode) ? gameMode : 'rank');
     $('hiScore').textContent = best;
     const tag = $('modeTag');
@@ -6305,7 +6306,7 @@
   let lapHoldLast = 0;
   function lapHold(t){
     const dt = lapHoldLast ? Math.min(100, t - lapHoldLast) : 0; lapHoldLast = t;
-    if (dt > 0 && (confirmUntil || phase !== 'idle')) lapStart += dt;
+    if (dt > 0 && gameMode === 'story' && (confirmUntil || phase !== 'idle')) lapStart += dt;   // ストーリーだけ
   }
   // スピードダウン中は、外周の光とカラーHPの時計を半分の速さで進める
   function slowTick(t){
