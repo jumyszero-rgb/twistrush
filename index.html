@@ -1263,8 +1263,8 @@
     const b = Math.max(0, (lv - 10) / 10);            // 11〜20の進み具合
     const mix = (x, y, z) => x + (y - x) * a + (y === z ? 0 : (z - y) * b);
     return {
-      LAP_SEC:         +mix(14, 6, 4.2).toFixed(2),   // 外周1周の秒数
-      LAP_MIN:         +mix(9, 4, 2.0).toFixed(2),    // その下限
+      LAP_SEC:         10,                            // 外周1周の秒数（どの難しさでも10秒から）
+      LAP_MIN:         4,                             // その下限（どの難しさでも4秒まで）
       LAP_STEP_BLOCKS: Math.round(mix(160, 70, 40)),  // 1周が0.5秒短くなる間隔
       STACK_TICK_MS:   Math.round(mix(8000, 4800, 3200)),
       STACK_STEP_BLOCKS: Math.round(mix(450, 180, 90)),
