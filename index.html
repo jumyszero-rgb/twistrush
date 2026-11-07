@@ -1365,8 +1365,38 @@
   // エリアの背景（ストーリーのバトルとマップに使う）
   const AREA_BG = ['53e43e1050883ee5c316530d7d150a6b', '175b02a60ec1f3c10e16431b07e571b3', 'e9e64355bcbc083564ff9925ac326bd4', 'f81c4a7665d6f7f1a3d7c7ae1f89e26e', '140c3388224c2b1dde707c876d736a8a', '59e506e9921a00ec88fff03198a21142', '197fdc0483cd48eaea3dc01a7aad2f32', 'a4c29b8a04978ad3b8911db82ca51cde', 'd2c5cb5a5fcd52a8314094ee66fe8d52'];
   const areaBgOf = a => AREA_BG[a] ? (true ? 'img/bg/area' + (a + 1) + '.webp' : blobU(AREA_BG[a])) : null;
+  // 60秒・エンドレス・練習の背景（20枚から毎回ランダム。直前と同じものは出さない）
+  const FREE_BG = [
+    ['ebde9fd8ad0ae79af1b1c2c6e30f383f', 'img/bg/free01.webp'],
+    ['50c3bb530d521bd7fc333eeb3e8b9f4e', 'img/bg/free02.webp'],
+    ['cb1d5a1d7838e4d4ec23dca2c06d1063', 'img/bg/free03.webp'],
+    ['90efe5d393802d3727c70f72ff40dd30', 'img/bg/free04.webp'],
+    ['1eb33e03e5530c065da101cbfd04b061', 'img/bg/free05.webp'],
+    ['66602292c92ce4efe726eef561f735d9', 'img/bg/free06.webp'],
+    ['528c182e0a8af7e88f4f2cc2cfa66dec', 'img/bg/free07.webp'],
+    ['a8bf3ad5e3c39ee875553a25d4667cb4', 'img/bg/free08.webp'],
+    ['4afd6dee42f5f2e68c5756700d7aa089', 'img/bg/free09.webp'],
+    ['100f208682b8d68e2687d0bb6cccfb42', 'img/bg/free10.webp'],
+    ['d669634deaaae43f8e1452ef1c65cb16', 'img/bg/free11.webp'],
+    ['bf5f9b5211cff1a1410461e6f4a6342a', 'img/bg/free12.webp'],
+    ['a4e23cb58cf603a924fdce9664bf3773', 'img/bg/free13.webp'],
+    ['6f940e39c116681f83ce56435a67fe34', 'img/bg/free14.webp'],
+    ['56493eede07278597b06e50932d84d16', 'img/bg/free15.webp'],
+    ['c66fb56df8447818182a458ae05cb422', 'img/bg/free16.webp'],
+    ['797050ad67d3906606af2c4c053fca23', 'img/bg/free17.webp'],
+    ['41073a7c05b1ed0171725db75308492b', 'img/bg/free18.webp'],
+    ['e698c156fbeb5d333008e189c56bec3e', 'img/bg/free19.webp'],
+    ['45f5525b4129e94c4bfd96bf627f5224', 'img/bg/free20.webp']
+  ];
+  let freeBgLast = -1;
+  function freeBgUrl(){
+    let k = Math.floor(Math.random() * FREE_BG.length);
+    if (FREE_BG.length > 1 && k === freeBgLast) k = (k + 1 + Math.floor(Math.random() * (FREE_BG.length - 1))) % FREE_BG.length;
+    freeBgLast = k;
+    return true ? FREE_BG[k][1] : blobU(FREE_BG[k][0]);
+  }
   function setStageBg(a){
-    const el = $('stageBg'), url = a == null ? null : areaBgOf(a);
+    const el = $('stageBg'), url = a === 'free' ? freeBgUrl() : (a == null ? null : areaBgOf(a));
     if (url) el.style.backgroundImage = 'url(' + url + ')';
     el.classList.toggle('on', !!url);
   }
@@ -3983,7 +4013,7 @@
     const tag = $('modeTag');
     tag.textContent = MODE_LABEL[gameMode] + (gameMode === 'practice' ? ' Lv' + diffLv : (stage ? ' ' + stage.label : ''));
     runMaxBar = 0; $('resStars').classList.add('hidden');
-    setStageBg(stage ? stage.area : null);                // ストーリーはエリアの背景
+    setStageBg(stage ? stage.area : (gameMode === 'rank' || gameMode === 'sixty' || gameMode === 'practice' ? 'free' : null));   // ストーリーはエリアの背景、60秒・エンドレス・練習は20枚からランダム
     timeShown = -1; $('timeBar').classList.toggle('hidden', gameMode !== 'sixty'); $('timeBar').classList.remove('low');
     tag.className = 'mode-tag ' + gameMode;
     const rt = $('resultMode'); rt.textContent = tag.textContent; rt.className = tag.className;
