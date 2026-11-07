@@ -4870,7 +4870,12 @@
   $('storyBack').addEventListener('click', () => { $('story').classList.add('hidden'); titleBgm(); });
   $('storyStart').addEventListener('click', () => {
     if (!stageOpen(pickStage)) return;
-    if (!curTeam()[0]) { toast(units.length ? 'チームのメイン（①）がいません。ボックスでチームを組んでください' : 'まずはガチャでキャラを仲間にしよう'); return; }
+    const tn = curTeam().filter(Boolean).length;
+    if (!units.length) { toast('まずはガチャでキャラを仲間にしよう'); return; }
+    if (!curTeam()[0] || tn < 4) {                // チームは4人そろわないと出発できない
+      toast(!curTeam()[0] ? 'チームのメイン（①）がいません' : 'チームが ' + tn + '人です。4人そろえてください');
+      $('story').classList.add('hidden'); openBox('char'); return;
+    }
     $('story').classList.add('hidden'); startStory(pickStage);
   });
 
