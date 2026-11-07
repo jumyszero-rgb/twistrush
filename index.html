@@ -762,6 +762,15 @@
   #pauseBox p{font-size:11px;opacity:.75;margin:6px 0 0;}
   body.tstop canvas#game{filter:saturate(.55) hue-rotate(190deg);}
   .lbnext{color:#ffd24a;font-size:11px;} .lbmax{color:#9fe3ff;font-size:11px;}
+  #coach{position:fixed;left:12px;right:12px;z-index:180;display:none;background:#2a1a4a;color:#fff;border:2px solid #ffd24a;border-radius:16px;
+    padding:12px 14px;box-shadow:0 8px 24px rgba(0,0,0,.5);font-size:13px;line-height:1.6;}
+  #coach.on{display:block;}
+  #coach .cs{font-size:11px;font-weight:800;color:#ffd24a;margin-bottom:2px;}
+  #coach .cb{display:flex;gap:8px;justify-content:flex-end;margin-top:8px;}
+  #coach button{border:none;border-radius:10px;padding:7px 14px;font-family:inherit;font-weight:800;font-size:13px;cursor:pointer;}
+  #coach .ok{background:#ffd24a;color:#3a2210;} #coach .skip{background:transparent;color:#bba9d8;font-size:11px;padding:7px 6px;}
+  .tutglow{animation:tutg 1s ease-in-out infinite !important;outline:3px solid #ffd24a !important;outline-offset:2px;}
+  @keyframes tutg{0%,100%{box-shadow:0 0 0 0 rgba(255,210,74,.9);}50%{box-shadow:0 0 0 10px rgba(255,210,74,0);}}
   .ibtn.pick{border-color:#ffd24a;box-shadow:0 0 14px #ffd24a;animation:ipulse .6s infinite alternate;}
   /* 合成・限界突破の演出 */
   #upFx{position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;background:rgba(8,4,20,.93);overflow:hidden;}
@@ -4861,6 +4870,7 @@
   $('storyBack').addEventListener('click', () => { $('story').classList.add('hidden'); titleBgm(); });
   $('storyStart').addEventListener('click', () => {
     if (!stageOpen(pickStage)) return;
+    if (!curTeam()[0]) { toast(units.length ? 'チームのメイン（①）がいません。ボックスでチームを組んでください' : 'まずはガチャでキャラを仲間にしよう'); return; }
     $('story').classList.add('hidden'); startStory(pickStage);
   });
 
@@ -5259,7 +5269,7 @@
   if (!Array.isArray(units)) {                          // 前の形（キャラごとのレベル・★の材料）から移す
     units = [];
     const oldLv = loadJ('charlv', {}) || {}, oldOwn = loadJ('owned', {}) || {};
-    const ids = new Set(['ichigo']); Object.keys(oldOwn).forEach(id => ids.add(id)); Object.keys(oldLv).forEach(id => ids.add(id));
+    const ids = new Set(); Object.keys(oldOwn).forEach(id => ids.add(id)); Object.keys(oldLv).forEach(id => ids.add(id));
     ids.forEach(id => {
       const ci = CHARS.findIndex(c => c.id === id); if (ci < 0 || !CHAR_STAT[id]) return;
       newUnit(ci, (oldLv[id] && oldLv[id].lv) || 1, (oldLv[id] && oldLv[id].exp) || 0);
@@ -5283,8 +5293,7 @@
       AREAS.forEach((_, a) => { if (old && bossBeat(a)) given.push('boss' + a); });
       changed = true;
     }
-    if (!units.some(u => u.id === 'ichigo') && !given.includes('start')) { newUnit(0); given.push('start'); changed = true; }
-    if (!units.length) newUnit(0);
+    if (!given.includes('start')) { given.push('start'); changed = true; }   // 最初の1体は配らない（無料11連ガチャから始める）
     AREAS.forEach((ar, a) => {
       if (!bossBeat(a) || given.includes('boss' + a)) return;
       given.push('boss' + a); changed = true;
@@ -6638,6 +6647,61 @@
   // 操作はスワイプだけ。画面下のボタンは帯の左右を切り替える
 
   $('gearBtn').addEventListener('click', openSettings);
+  // ===== はじめての人への案内（①ガチャ ②配置 ③ストーリー ④コイン ⑤LVアップ ⑥限界突破）=====
+  (function(){
+    let step = load('tut', '');
+    if (!step) step = storyClr.some(v => v > 0) ? 'done' : '1';
+    const setStep = v => { step = String(v); save('tut', step); };
+    const box = document.createElement('div'); box.id = 'coach';
+    box.innerHTML = '<div class="cs"></div><div class="ct"></div><div class="cb"><button class="skip">案内をとばす</button><button class="ok">OK</button></div>';
+    document.body.appendChild(box);
+    let okFn = null, glow = null;
+    box.querySelector('.ok').addEventListener('click', () => { if (okFn) okFn(); });
+    box.querySelector('.skip').addEventListener('click', () => askYes('はじめての案内をとばしますか？', () => setStep('done')));
+    const vis = id => { const e = $(id); return !!(e && !e.classList.contains('hidden') && e.style.display !== 'none'); };
+    const findBtn = (root, txt) => [...(root ? root.querySelectorAll('button') : [])].find(b => b.textContent.includes(txt) && b.offsetParent);
+    function show(no, text, target, ok){
+      if (glow && glow !== target) glow.classList.remove('tutglow');
+      glow = target || null; if (glow) glow.classList.add('tutglow');
+      box.querySelector('.cs').textContent = 'はじめての案内　' + no + ' / 6';
+      box.querySelector('.ct').innerHTML = text;
+      okFn = ok || null; box.querySelector('.ok').style.display = ok ? '' : 'none';
+      const r = target && target.getBoundingClientRect();
+      const low = r && r.top + r.height / 2 > innerHeight * 0.55;   // 光らせる場所とかぶらない側に出す
+      box.style.top = low ? 'calc(env(safe-area-inset-top,0px) + 12px)' : 'auto';
+      box.style.bottom = low ? 'auto' : 'calc(env(safe-area-inset-bottom,0px) + 16px)';
+      box.classList.add('on');
+    }
+    function hide(){ box.classList.remove('on'); if (glow) { glow.classList.remove('tutglow'); glow = null; } }
+    function tick(){
+      if (step === 'done' || $('tapStart') || vis('daily') || running || vis('settings') || ($('askBox') && $('askBox').style.display === 'flex')) { hide(); return; }
+      const team = curTeam ? curTeam().filter(Boolean).length : 0;
+      if (step === '1') {
+        if (units.length && !freeTenLeft()) { if (!vis('gacha')) { setStep(2); return tick(); } return show(1, '仲間がそろいました！ 最後まで見たら「‹ 戻る」でもどろう。'); }
+        if (!vis('gacha')) return show(1, 'まずは<b>ガチャ</b>を開いて、<b>無料の11連ガチャ</b>を回そう！（SR以上が1体かならず出ます）', $('gachaBtn'));
+        const b = findBtn($('gacha'), '初回限定');
+        return show(1, '<b>「初回限定 無料10連」</b>を押そう。タップで1体ずつ見られます。', b);
+      }
+      if (step === '2') {
+        if (!vis('box')) { if (team >= 4) { setStep(3); return tick(); } return show(2, '<b>ボックス</b>を開いて、チームにキャラを<b>配置</b>しよう。', $('boxBtn')); }
+        return show(2, 'チームは4人。<b>①（メイン）</b>は必殺技と奥義の両方、<b>②〜④</b>はどちらか1つを使います。<br>枠を押してから、下の一覧のキャラを押すと入ります。' +
+          (team >= 4 ? '<br><b>4人そろったら「‹ 戻る」</b>' : '（いま ' + team + '人）'), team >= 4 ? null : document.querySelector('#box .tgrid'));
+      }
+      if (step === '3') {
+        if (storyClr.some(v => v > 0)) { setStep(4); return tick(); }
+        if (!vis('story')) return show(3, '<b>ストーリー</b>を始めよう！ ブロックを消して、敵のHPを削りきれば勝ち。', $('storyBtn'));
+        return show(3, '光っているマスを選んで、<b>「このステージに挑戦」</b>。', $('storyStart'));
+      }
+      if (step === '4') return show(4, '勝つと<b>シルバーコイン</b>がもらえます。<b>毎日のプレゼント</b>や、ステージの<b>お題</b>を達成しても増えます。<br>コインは<b>ガチャ</b>や<b>ショップ</b>（アイテム）で使おう。', null, () => setStep(5));
+      if (step === '5') {
+        if (!vis('box')) return show(5, 'キャラを育てよう。<b>ボックス</b>を開いてね。', $('boxBtn'));
+        return show(5, '<b>レベルアップ</b>：キャラを押して「詳細」→<b>「LVアップ（合成）」</b>。<br>使わないキャラを材料にすると経験値が入ります。ストーリーで勝っても経験値が入ります。', null, () => setStep(6));
+      }
+      if (step === '6') return show(6, '<b>限界突破</b>：同じキャラが2体以上いたら、詳細の<b>「限界突破」</b>で1体を材料に★を上げよう。<br>★が1つ増えると<b>レベル上限 +10</b>、<b>必殺技と奥義も強く</b>なります。', null, () => { setStep('done'); hide(); toast('案内はここまで。楽しんでね！'); });
+    }
+    setInterval(tick, 400);
+    window.__tutStep = () => step;
+  })();
   // ===== 一時停止：再開／やめてトップ（ストーリーはマップ）へ戻る =====
   (function(){
     const box = document.createElement('div'); box.id = 'pauseBox';
