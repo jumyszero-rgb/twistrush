@@ -761,6 +761,7 @@
   #pauseBox .quit{background:transparent;color:#ff9aa8;border:1px solid #ff9aa8;}
   #pauseBox p{font-size:11px;opacity:.75;margin:6px 0 0;}
   body.tstop canvas#game{filter:saturate(.55) hue-rotate(190deg);}
+  .lbnext{color:#ffd24a;font-size:11px;} .lbmax{color:#9fe3ff;font-size:11px;}
   .ibtn.pick{border-color:#ffd24a;box-shadow:0 0 14px #ffd24a;animation:ipulse .6s infinite alternate;}
   /* 合成・限界突破の演出 */
   #upFx{position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;background:rgba(8,4,20,.93);overflow:hidden;}
@@ -5208,15 +5209,15 @@
   const ZAKO_FACE = {a1_01: [114, 44, 291], a1_02: [106, 44, 291], a1_03: [110, 44, 291], a1_04: [110, 44, 291], a1_05: [111, 44, 291], a1_06: [109, 44, 291], a1_07: [146, 44, 291], a1_08: [111, 44, 291], a1_09: [122, 44, 291], a1_10: [107, 44, 291], a2_01: [126, 44, 291], a2_02: [112, 44, 291], a2_03: [115, 44, 291], a2_04: [93, 44, 291], a2_05: [99, 44, 291], a2_06: [106, 44, 291], a2_07: [153, 135, 203], a2_08: [108, 44, 291], a2_09: [154, 44, 291], a2_10: [106, 44, 291], a3_01: [114, 44, 291], a3_02: [147, 132, 290], a3_03: [150, 106, 210], a3_04: [58, 95, 220], a3_05: [112, 44, 291], a3_06: [95, 44, 291], a3_07: [99, 44, 291], a3_08: [123, 44, 291], a3_09: [111, 44, 291], a3_10: [107, 44, 291], a4_01: [84, 44, 291], a4_02: [109, 44, 291], a4_03: [114, 44, 291], a4_04: [79, 44, 291], a4_05: [100, 44, 291], a4_06: [106, 44, 291], a4_07: [107, 44, 291], a4_08: [108, 44, 291], a4_09: [108, 44, 291], a4_10: [89, 44, 291], a5_01: [101, 44, 291], a5_02: [91, 45, 291], a5_03: [119, 44, 291], a5_04: [100, 44, 291], a5_05: [101, 44, 291], a5_06: [114, 44, 291], a5_07: [83, 44, 291], a5_08: [121, 44, 291], a5_09: [109, 44, 291], a5_10: [54, 44, 291], a6_01: [124, 48, 285], a6_02: [117, 49, 285], a6_03: [108, 49, 285], a6_04: [116, 49, 285], a6_05: [91, 48, 285], a6_06: [93, 49, 285], a6_07: [108, 49, 285], a6_08: [125, 57, 273], a6_09: [114, 49, 285], a6_10: [114, 48, 285], a7_01: [116, 49, 285], a7_02: [103, 49, 285], a7_03: [59, 74, 256], a7_04: [163, 128, 228], a7_05: [121, 49, 284], a7_06: [147, 49, 285], a7_07: [93, 49, 285], a7_08: [100, 52, 280], a7_09: [134, 49, 285], a7_10: [103, 49, 285], a8_01: [114, 49, 284], a8_02: [104, 49, 284], a8_03: [97, 48, 285], a8_04: [117, 49, 284], a8_05: [119, 48, 282], a8_06: [101, 49, 284], a8_07: [86, 49, 284], a8_08: [129, 55, 276], a8_09: [99, 49, 284], a8_10: [117, 49, 284], a9_01: [122, 48, 285], a9_02: [123, 48, 285], a9_03: [87, 48, 285], a9_04: [74, 49, 284], a9_05: [105, 49, 284], a9_06: [113, 48, 284], a9_07: [109, 49, 284], a9_08: [99, 48, 284], a9_09: [118, 48, 284], a9_10: [118, 49, 284]};
   // ===== ガチャ用キャラ（SR17・MR5・LR5）。絵は1枚、必殺技と奥義の両方を持つ =====
   const GACHA_CREW = [
-    {k: "g01", name: "トリオン", grade: "SR", type: "atk", base: [16, 20, 14, 11], bio: "炎・氷・雷の3つの首を持つワイバーン。3つの首はいつも言い争っているが、戦いになると息がぴったり合う。", sp: {n: "トライブレス", fx: [["clr", 9]]}, ougi: {n: "三竜の咆哮", fx: [["clr", 12], ["crit", 3000]]}},
+    {k: "g01", name: "トリオン", grade: "SR", type: "atk", base: [16, 20, 14, 11], bio: "炎・氷・雷の3つの首を持つワイバーン。3つの首はいつも言い争っているが、戦いになると息がぴったり合う。", sp: {n: "トライブレス", fx: [["clr", 9]]}, ougi: {n: "三竜の咆哮", fx: [["clr", 12], ["crit", 10]]}},
     {k: "g02", name: "ガイアロ", grade: "SR", type: "def", base: [17, 12, 20, 11], bio: "苔むした岩から生まれた土の魔神。動きはゆっくりだが、どんな攻撃にもびくともしない。体に咲いた花を大切にしている。", sp: {n: "岩のよろい", fx: [["buf", "def", 8, 200]]}, ougi: {n: "大地の目覚め", fx: [["octaDrop", 6], ["buf", "def", 8, 300]]}},
     {k: "g03", name: "シルヴィ", grade: "SR", type: "spd", base: [12, 15, 11, 20], bio: "森に住むエルフの弓使い。百歩先の木の葉も射抜く腕前。人見知りだが、仲間には片目をつむってあいさつする。", sp: {n: "千の矢", fx: [["clr", 8]]}, ougi: {n: "森風の矢雨", fx: [["clr", 10], ["eslow", 40, 5]]}},
     {k: "g04", name: "ヒノカ", grade: "SR", type: "atk", base: [11, 20, 12, 16], bio: "火山の花から生まれた炎の妖精。元気いっぱいで、うれしいと羽から火の粉が舞う。寒い日はみんなの人気者。", sp: {n: "ほむらの舞", fx: [["clr", 7], ["buf", "atk", 5, 150]]}, ougi: {n: "紅蓮の花火", fx: [["clr", 12], ["buf", "atk", 5, 200]]}},
-    {k: "g05", name: "ノクス", grade: "SR", type: "spd", base: [12, 16, 11, 20], bio: "ダークエルフの双剣使い。月のない夜にだけ姿を見せる。口数は少ないが、借りは必ず返す義理がたい性格。", sp: {n: "影縫い", fx: [["eslow", 30, 5], ["clr", 5]]}, ougi: {n: "闇夜の双刃", fx: [["crit", 3000], ["clr", 8]]}},
+    {k: "g05", name: "ノクス", grade: "SR", type: "spd", base: [12, 16, 11, 20], bio: "ダークエルフの双剣使い。月のない夜にだけ姿を見せる。口数は少ないが、借りは必ず返す義理がたい性格。", sp: {n: "影縫い", fx: [["eslow", 30, 5], ["clr", 5]]}, ougi: {n: "闇夜の双刃", fx: [["crit", 10], ["clr", 8]]}},
     {k: "g06", name: "セラ", grade: "SR", type: "def", base: [16, 12, 20, 12], bio: "街を守るために作られたアンドロイド。光の盾は、どんな攻撃もはね返す。最近、人間の「笑う」を練習中。", sp: {n: "シールドウォール", fx: [["buf", "def", 8, 250]]}, ougi: {n: "イージス展開", fx: [["stop", 5], ["buf", "def", 8, 200]]}},
-    {k: "g07", name: "ソウマ", grade: "SR", type: "atk", base: [13, 20, 12, 15], bio: "長い黒髪の流れ者の武士。桜の舞う日にだけ刀を抜くという。物静かで、甘いものに目がない。", sp: {n: "一閃", fx: [["clr", 8]]}, ougi: {n: "桜花一文字", fx: [["crit", 5000]]}},
+    {k: "g07", name: "ソウマ", grade: "SR", type: "atk", base: [13, 20, 12, 15], bio: "長い黒髪の流れ者の武士。桜の舞う日にだけ刀を抜くという。物静かで、甘いものに目がない。", sp: {n: "一閃", fx: [["clr", 8]]}, ougi: {n: "桜花一文字", fx: [["crit", 20]]}},
     {k: "g08", name: "ガルナ", grade: "SR", type: "hp", base: [20, 16, 13, 11], bio: "2本の斧を軽々とふり回すドワーフの戦士。鍛冶屋の娘で、自分の斧は自分で打つ。笑い声がとにかく大きい。", sp: {n: "ダブルアックス", fx: [["clr", 10]]}, ougi: {n: "大地割り", fx: [["clr", 15]]}},
-    {k: "g09", name: "リディア", grade: "SR", type: "atk", base: [14, 20, 13, 13], bio: "白馬にまたがる槍の女騎士。まっすぐな性格で、曲がったことが大嫌い。愛馬とは言葉なしで通じ合う。", sp: {n: "ランスチャージ", fx: [["crit", 3000]]}, ougi: {n: "白馬の突撃", fx: [["crit", 3000], ["buf", "atk", 8, 200]]}},
+    {k: "g09", name: "リディア", grade: "SR", type: "atk", base: [14, 20, 13, 13], bio: "白馬にまたがる槍の女騎士。まっすぐな性格で、曲がったことが大嫌い。愛馬とは言葉なしで通じ合う。", sp: {n: "ランスチャージ", fx: [["crit", 10]]}, ougi: {n: "白馬の突撃", fx: [["crit", 10], ["buf", "atk", 8, 200]]}},
     {k: "g10", name: "モモ", grade: "SR", type: "hp", base: [20, 11, 14, 15], bio: "果物アイドルユニットの、もも担当。おっとりした癒やし系で、歌声を聴くと元気が出ると評判。", sp: {n: "ももいろエール", fx: [["heart", 3]]}, ougi: {n: "ピーチ・ライブ", fx: [["heart", 4], ["score", 1000]]}},
     {k: "g11", name: "ミカン", grade: "SR", type: "atk", base: [13, 20, 11, 16], bio: "果物アイドルユニットの、みかん担当。いつも全力のムードメーカーで、ステージを走り回る。ビタミンたっぷりの笑顔が自慢。", sp: {n: "みかんスマイル", fx: [["buf", "atk", 8, 150], ["score", 500]]}, ougi: {n: "シトラス・ライブ", fx: [["chg", 10], ["score", 1500]]}},
     {k: "g12", name: "マスカ", grade: "SR", type: "spd", base: [14, 12, 14, 20], bio: "果物アイドルユニットの、マスカット担当。クールに見えて、実はとても照れ屋。ダンスのキレはユニットいち。", sp: {n: "マスカットの香り", fx: [["mslow", 30, 8]]}, ougi: {n: "グリーン・ライブ", fx: [["mslow", 40, 10], ["heart", 3]]}},
@@ -5224,16 +5225,16 @@
     {k: "g14", name: "シャオ", grade: "SR", type: "spd", base: [13, 16, 11, 20], bio: "拳ひとつで旅をする武闘家の少女。風をまとった蹴りは目にも止まらない。修行と同じくらい、食べることが好き。", sp: {n: "旋風脚", fx: [["clr", 6], ["buf", "spd", 5, 200]]}, ougi: {n: "百裂拳", fx: [["clr", 15]]}},
     {k: "g15", name: "リリ", grade: "SR", type: "spd", base: [12, 15, 13, 20], bio: "いたずら好きの小悪魔。悪さをしては舌を出して逃げていく。本当はさびしがり屋で、かまってほしいだけ。", sp: {n: "いたずら", fx: [["shuf"], ["eslow", 30, 3]]}, ougi: {n: "小悪魔の誘惑", fx: [["eslow", 50, 5], ["cut", 30]]}},
     {k: "g16", name: "シェル", grade: "SR", type: "hp", base: [20, 12, 15, 13], bio: "泡の中で歌う人魚。その歌声は、傷ついた心と体を癒やすという。陸のお菓子に興味しんしん。", sp: {n: "人魚の歌", fx: [["heart", 3]]}, ougi: {n: "潮騒のアリア", fx: [["gheart", 1], ["heart", 2]]}},
-    {k: "g17", name: "ダスティ", grade: "SR", type: "spd", base: [13, 16, 11, 20], bio: "荒野を旅するガンマン。指先で銃をくるくる回すのが得意。早撃ちなら誰にも負けないが、ひどい方向音痴。", sp: {n: "早撃ち", fx: [["crit", 3000]]}, ougi: {n: "ファニング・ショット", fx: [["crit", 5000], ["clr", 5]]}},
+    {k: "g17", name: "ダスティ", grade: "SR", type: "spd", base: [13, 16, 11, 20], bio: "荒野を旅するガンマン。指先で銃をくるくる回すのが得意。早撃ちなら誰にも負けないが、ひどい方向音痴。", sp: {n: "早撃ち", fx: [["crit", 10]]}, ougi: {n: "ファニング・ショット", fx: [["crit", 20], ["clr", 5]]}},
     {k: "g18", name: "ヴォルカ", grade: "MR", type: "atk", base: [20, 26, 17, 15], bio: "火山の奥に棲む炎のドラゴン。ひと息で山を溶かすほどの炎を吐く。宝物は、昔もらった小さな鈴。", sp: {n: "業火のブレス", fx: [["clr", 12], ["buf", "atk", 5, 200]]}, ougi: {n: "煉獄", fx: [["doom", "half"], ["buf", "atk", 8, 300]]}},
     {k: "g19", name: "セレナ", grade: "MR", type: "hp", base: [26, 15, 19, 18], bio: "天上でハープを奏でる天使。その音色は、聴く者の疲れを消し去る。少しおっちょこちょい。", sp: {n: "天上のハープ", fx: [["heart", 4], ["mslow", 40, 5]]}, ougi: {n: "祝福の調べ", fx: [["gheart", 1], ["chg", 15]]}},
-    {k: "g20", name: "ノワール", grade: "MR", type: "atk", base: [17, 26, 18, 17], bio: "魔界の上級悪魔。紫の炎を自在にあやつる。礼儀正しいが、退屈が何より嫌い。", sp: {n: "闇の炎", fx: [["crit", 5000], ["eslow", 40, 5]]}, ougi: {n: "魔王の宴", fx: [["crit", 8000], ["eslow", 60, 8]]}},
+    {k: "g20", name: "ノワール", grade: "MR", type: "atk", base: [17, 26, 18, 17], bio: "魔界の上級悪魔。紫の炎を自在にあやつる。礼儀正しいが、退屈が何より嫌い。", sp: {n: "闇の炎", fx: [["crit", 20], ["eslow", 40, 5]]}, ougi: {n: "魔王の宴", fx: [["crit", 35], ["eslow", 60, 8]]}},
     {k: "g21", name: "アリシア", grade: "MR", type: "def", base: [19, 17, 26, 16], bio: "白銀の鎧をまとうプラチナの騎士。王国最強の盾と呼ばれる。紅茶をいれるのが上手。", sp: {n: "聖盾", fx: [["buf", "def", 8, 300], ["heart", 2]]}, ougi: {n: "プラチナ・サンクチュアリ", fx: [["stop", 5], ["buf", "def", 10, 400]]}},
     {k: "g22", name: "オルドリン", grade: "MR", type: "spd", base: [18, 18, 16, 26], bio: "千年を生きる大魔導士。あらゆる魔法を知りつくしている。長いひげの手入れに毎朝1時間かける。", sp: {n: "秘術の門", fx: [["octa", 9]]}, ougi: {n: "大魔導の書", fx: [["octa", 15], ["chg", 15]]}},
-    {k: "g23", name: "アルト", grade: "LR", type: "atk", base: [24, 32, 21, 19], bio: "光の剣に選ばれた若き勇者。どんな強敵にも笑って立ち向かう。仲間を守るためなら、何度でも立ち上がる。", sp: {n: "勇者の一撃", fx: [["crit", 8000], ["buf", "atk", 8, 300]]}, ougi: {n: "ブレイブ・クリスタル", fx: [["doom", "all"], ["buf", "atk", 10, 500]]}},
+    {k: "g23", name: "アルト", grade: "LR", type: "atk", base: [24, 32, 21, 19], bio: "光の剣に選ばれた若き勇者。どんな強敵にも笑って立ち向かう。仲間を守るためなら、何度でも立ち上がる。", sp: {n: "勇者の一撃", fx: [["crit", 35], ["buf", "atk", 8, 300]]}, ougi: {n: "ブレイブ・クリスタル", fx: [["doom", "all"], ["buf", "atk", 10, 500]]}},
     {k: "g24", name: "ソフィア", grade: "LR", type: "hp", base: [32, 21, 22, 21], bio: "世界のすべての書を読んだという賢者。6つの属性の力をあやつる。眼鏡をなくして探すのが日課。", sp: {n: "六属の叡智", fx: [["octaDrop", 12], ["heart", 3]]}, ougi: {n: "賢者の真理", fx: [["octa", 21], ["chg", 25]]}},
     {k: "g25", name: "ルミエル", grade: "LR", type: "def", base: [23, 19, 32, 22], bio: "六枚の翼を持つ熾天使。天界の門を守り続けている。ほほえむだけで、あたりが光に包まれる。", sp: {n: "熾天の光", fx: [["gheart", 1], ["buf", "def", 8, 400]]}, ougi: {n: "終末の審判", fx: [["stop", 10], ["gheart", 1]]}},
-    {k: "g26", name: "ポッピー", grade: "LR", type: "atk", base: [22, 32, 23, 19], bio: "自作のロボ「ボンボン」に乗る天才メカニック少女。ボンボンとは大の仲良し。油まみれでも気にしない。", sp: {n: "ロケットパンチ", fx: [["crit", 8000], ["clr", 10]]}, ougi: {n: "全弾発射", fx: [["doom", "half"], ["crit", 10000]]}},
+    {k: "g26", name: "ポッピー", grade: "LR", type: "atk", base: [22, 32, 23, 19], bio: "自作のロボ「ボンボン」に乗る天才メカニック少女。ボンボンとは大の仲良し。油まみれでも気にしない。", sp: {n: "ロケットパンチ", fx: [["crit", 35], ["clr", 10]]}, ougi: {n: "全弾発射", fx: [["doom", "half"], ["crit", 50]]}},
     {k: "g27", name: "ボルテクス", grade: "LR", type: "spd", base: [25, 24, 15, 32], bio: "嵐とともに現れる災害級の魔獣。歩くだけで雷雲が生まれる。暴れるのは、雷が怖いからという説もある。", sp: {n: "雷雲", fx: [["eslow", 70, 8], ["clr", 12]]}, ougi: {n: "災厄の嵐", fx: [["doom", "all"], ["eslow", 70, 10]]}}
   ];
   Object.assign(ZAKO_IMG, {"g01": "ef79faa19053ada47bc5ca9448469366", "g02": "9e72f3382128933c3c6b2c842e4b3b95", "g03": "40aafdd61fbc2558d8b3cae55f3da0e4", "g04": "2fe885da91ca86c483c8487f1a892e34", "g05": "f229b0619c71b999a33ad31c762228b8", "g06": "0311b84824cf7cf28e2fb7e53bb701ec", "g07": "68e15203eb775432589b056050ffe7b5", "g08": "edf31e42d52455c02d321ae5c1313708", "g09": "51e918470a61fc26f536bd7cd0c92c77", "g10": "f476b01615a1c1fb6defd52f23fc1853", "g11": "eaf0ef30e5cade96c92cdcde546addf9", "g12": "82a4243dd14588597348374089fbd1c0", "g13": "9d32a586bbb5d682c8e993b7afdf1d4a", "g14": "c3eae176ef9218a4b9612428dfd120af", "g15": "91b437318d851aa0ba03898f2f06bde5", "g16": "1e1163f422c4b345a96b40ff4fd5c783", "g17": "86b63a2c0599ddb71e01e78f145f1618", "g18": "de82f94603ba6081cc1cfe69c5eff94c", "g19": "c3362ecfa62d33a6bc43b0a36fbc9df0", "g20": "93516fa10fc6af064706f2e3d41048d9", "g21": "514652ffabdb50512afb735fc05d544f", "g22": "068fbf1407e92823c26ff07562d556ba", "g23": "c1d2ef32f2504e423e8a9c28c73ae88c", "g24": "30022a121f196be65cd14279724f66f9", "g25": "78a5091213035070491c82ab144d49a2", "g26": "dff9e5a8e72e29722a98ae1025889a4f", "g27": "c15044cdf2d00d42f9c154e8d17bbbd2"});
@@ -5716,6 +5717,16 @@
   const FEED_EXP = {N: 100, R: 300, SR: 1000, MR: 3000, LR: 10000};
   const feedExp = (u, m) => Math.round((FEED_EXP[CHAR_STAT[m.id].grade] || 1000) * (1 + (m.lv - 1) * 0.05) * (u.id === m.id ? 1.5 : 1));
   let detTab = 'info';
+  // 詳細画面の技の説明：いまの★での内容。育つ技は、★が最大のときの内容も出す
+  function skDescU(id, kind, u){
+    const base = SKILL_DESC[id] ? SKILL_DESC[id][kind] || '' : '';
+    if (!FX_DEF[id] || !FX_DEF[id][kind]) return base;
+    const st = u.star || 0, sm = starMaxOf(u), now0 = fxDesc(fxAt(id, kind, st, sm));
+    if (st >= sm) return now0 + '<br><small class="lbmax">★最大：この技は最大まで育っています</small>';
+    let nx = st + 1; while (nx < sm && fxDesc(fxAt(id, kind, nx, sm)) === now0) nx++;
+    return now0 + '<br><small class="lbnext">★' + nx + 'で：' + fxDesc(fxAt(id, kind, nx, sm)) + '</small>' +
+      (nx < sm ? '<br><small class="lbnext">★' + sm + '（最大）で：' + base + '</small>' : '');
+  }
   function drawDetail(u){
     const body = $('boxBody'), ci = ciOf(u), c = ALLC[ci], cs = CHAR_STAT[c.id], tp = TYPE_INFO[cs.type], st = unitStats(u);
     const ti = curTeam().indexOf(u.u), atCap = u.lv >= capOf(u);
@@ -5728,10 +5739,10 @@
       '<div class="dtabs">' + [['info', 'ステータス・技'], ['feed', 'LVアップ（合成）'], ['lb', '限界突破']].map(([k, n]) => '<button data-ftab="' + k + '" class="' + (detTab === k ? 'on' : '') + '">' + n + '</button>').join('') + '</div>';
     if (detTab === 'info') {
       h += '<div class="dsec"><div class="stt">' + ST_NAME.map((n, k) => '<div>' + n + '<b>' + st[k] + '</b></div>').join('') + '</div></div>' +
-        (isZakoId(c.id) ? '<div class="dsec"><h4>必殺技 <span>' + (SPECIAL_NAME[c.id] || '').replace('！', '') + '</span><em>30秒でたまる</em></h4><p>' + (SKILL_DESC[c.id] ? SKILL_DESC[c.id].sp : '') + '</p>' +
+        (isZakoId(c.id) ? '<div class="dsec"><h4>必殺技 <span>' + (SPECIAL_NAME[c.id] || '').replace('！', '') + '</span><em>30秒でたまる</em></h4><p>' + skDescU(c.id, 'sp', u) + '</p>' +
           '<p class="dnote">N・Rは必殺技だけ（奥義なし）。サブ（②〜④）に入れて使います。メイン（①）にはなれません。</p></div>'
-        : SKILLS[c.id] ? '<div class="dsec"><h4>必殺技 <span>' + (SPECIAL_NAME[c.id] || '').replace('！', '') + '</span><em>30秒でたまる</em></h4><p>' + (SKILL_DESC[c.id] ? SKILL_DESC[c.id].sp : '') + '</p>' +
-        '<h4>奥義 <span>' + (OUGI_NAME[c.id] || '') + '</span><em>60秒でたまる</em></h4><p>' + (SKILL_DESC[c.id] ? SKILL_DESC[c.id].ougi : '') + '</p>' +
+        : SKILLS[c.id] ? '<div class="dsec"><h4>必殺技 <span>' + (SPECIAL_NAME[c.id] || '').replace('！', '') + '</span><em>30秒でたまる</em></h4><p>' + skDescU(c.id, 'sp', u) + '</p>' +
+        '<h4>奥義 <span>' + (OUGI_NAME[c.id] || '') + '</span><em>60秒でたまる</em></h4><p>' + skDescU(c.id, 'ougi', u) + '</p>' +
         '<p class="dnote">チームのメインは必殺技と奥義の両方、サブはどちらか1つを使います。</p></div>'
         : '<div class="dsec"><h4>技</h4><p>このキャラは、まだ技を持っていません。サブ（②〜④）に入れて、ステータスでチームを強くします。メイン（①）にはなれません。</p></div>') +
         '<div class="dsec"><h4>プロフィール</h4><p>' + (CHAR_BIO[c.id] || '') + '</p></div>';
@@ -5984,7 +5995,7 @@
     t.forEach((uid, k) => {
       const u = unitOf(uid); if (!u || !SKILLS[u.id]) return;
       const kinds = !SKILLS[u.id].ougi ? ['sp'] : k === 0 ? ['sp', 'ougi'] : [sk[k] === 'ougi' ? 'ougi' : 'sp'];
-      kinds.forEach(kind => skList.push({id: u.id, ci: ciOf(u), kind, main: k === 0, charge: 0, ready: false}));
+      kinds.forEach(kind => skList.push({id: u.id, ci: ciOf(u), kind, main: k === 0, charge: 0, ready: false, star: u.star || 0, smax: starMaxOf(u)}));
     });
   }
   function skillReset(){
@@ -6267,7 +6278,7 @@
     : f[0] === 'heart' ? 'ハートブロックを' + f[1] + '個出す' : f[0] === 'buf' ? f[2] + '秒間 ' + ZST[f[1]] + 'が' + f[3] + '%になる'
     : f[0] === 'shuf' ? '盤面をシャッフルする' : f[0] === 'cut' ? 'いちばんたまっている色のカラーHPを' + f[1] + '%下げる'
     : f[0] === 'dmg' ? '相手のHPに直接 ' + f[1] + '%のダメージ'
-    : f[0] === 'crit' ? 'クリティカルヒット：相手の全色に ' + f[1].toLocaleString() + ' ダメージ'
+    : f[0] === 'crit' ? 'クリティカルヒット：相手の全色に、最大HPの' + f[1] + '%のダメージ'
     : f[0] === 'gheart' ? 'ゴールドハート（全色50%回復）を' + f[1] + '個出す'
     : f[0] === 'octaDrop' ? '次に消したとき、オクタブロックが' + f[1] + '個降ってくる'
     : f[0] === 'eslow' ? f[2] + '秒間 敵のスピードを' + f[1] + '%下げる'
@@ -6290,12 +6301,41 @@
     if (dealt > 0) floatDmg(enemyHP * p * enUnitPts(), 'direct', '全色 ');
     playAnim('me', 'atk'); if (isZako()) zakoFx('hit'); drawVsPanel();
   }
+  // ===== 限界突破で技が育つ：★が最大のときが、書いてある内容そのもの =====
+  // 必殺技は★1から、奥義は★2から強くなる。★0は数値が半分くらい。2つ目の効果は途中の★で追加される
+  const FX_DEF = {};
+  function skLevel(kind, star, smax){
+    if (smax <= 0) return 1;
+    if (kind === 'sp') return Math.min(1, star / smax);
+    return smax <= 1 ? Math.min(1, star) : Math.min(1, Math.max(0, star - 1) / (smax - 1));
+  }
+  function scaleFx(f, k){
+    const r = (v, m) => Math.max(m == null ? 1 : m, Math.round(v * k));
+    switch (f[0]) {
+      case 'clr': case 'octa': case 'octaDrop': case 'heart': case 'gheart': case 'chg': return [f[0], r(f[1])];
+      case 'score': return [f[0], Math.round(f[1] * k / 100) * 100];
+      case 'buf': return [f[0], f[1], f[2], Math.round(100 + (f[3] - 100) * k)];
+      case 'eslow': case 'mslow': return [f[0], r(f[1], 5), f[2]];
+      case 'stop': return [f[0], r(f[1])];
+      case 'crit': case 'cut': case 'dmg': return [f[0], r(f[1], 5)];
+      case 'doom': return f[1] === 'all' ? (k < 1 ? ['doom', 'half'] : f) : (k < 0.75 ? ['clr', 12] : f);
+      default: return f;
+    }
+  }
+  // その★のときの効果の一覧
+  function fxAt(id, kind, star, smax){
+    const fx = FX_DEF[id] && FX_DEF[id][kind]; if (!fx) return null;
+    const lv = skLevel(kind, star || 0, smax || 0), k = 0.5 + 0.5 * lv;
+    const list = lv >= 0.5 ? fx : fx.slice(0, 1);
+    return list.map(f => scaleFx(f, k));
+  }
+  const fxDesc = list => list.map(fxText).join('。') + '。';
   // クリティカルヒット：相手の全色に、防御力に関係なく決まった量のダメージ
-  function critDmg(pts){
+  function critDmg(pct){
     if (!vsOn) return;
-    const u = pts / enUnitPts();
+    const u = enemyHP * pct / 100;
     cpus.forEach(c => { if (!c.alive) return; c.stacks = c.stacks.map(v => Math.min(enemyHP, v + u)); checkCpuOut(c); });
-    floatDmg(pts, 'direct', 'CRITICAL ');
+    floatDmg(u * enUnitPts(), 'direct', 'CRITICAL ');
     playAnim('me', 'atk'); if (isZako()) zakoFx('hit'); drawVsPanel();
   }
   function shuffleBoard(){
@@ -6327,13 +6367,15 @@
   }
   ALLC.forEach(c => {
     const z = c.zk && ZAKO_SK[c.zk]; if (!z) return;
-    SKILLS[c.id] = {sp: () => runZakoFx(z.fx)};
+    FX_DEF[c.id] = {sp: z.fx};
+    SKILLS[c.id] = {sp: s2 => runZakoFx(s2 ? fxAt(c.id, 'sp', s2.star, s2.smax) : z.fx)};
     SPECIAL_NAME[c.id] = z.n + '！';
     SKILL_DESC[c.id] = {sp: z.fx.map(fxText).join('。') + '。'};
   });
   GACHA_CREW.forEach(z => {
     const id = 'x_' + z.k;
-    SKILLS[id] = {sp: () => runZakoFx(z.sp.fx), ougi: () => runZakoFx(z.ougi.fx)};
+    FX_DEF[id] = {sp: z.sp.fx, ougi: z.ougi.fx};
+    SKILLS[id] = {sp: s2 => runZakoFx(s2 ? fxAt(id, 'sp', s2.star, s2.smax) : z.sp.fx), ougi: s2 => runZakoFx(s2 ? fxAt(id, 'ougi', s2.star, s2.smax) : z.ougi.fx)};
     SPECIAL_NAME[id] = z.sp.n + '！'; OUGI_NAME[id] = z.ougi.n;
     SKILL_DESC[id] = {sp: z.sp.fx.map(fxText).join('。') + '。', ougi: z.ougi.fx.map(fxText).join('。') + '。'};
     CHAR_BIO[id] = z.bio;
@@ -6353,7 +6395,7 @@
     playAnim('me', 'atk');
     const hi = true;                                  // カットインは全キャラ顔つき（必殺技＝黒、奥義＝ゴールド）
     const snap = skSnap(); fxExtra = []; skUsing = s2;
-    SKILLS[s2.id][s2.kind]();
+    SKILLS[s2.id][s2.kind](s2);
     cutIn(s2, name, skDiff(snap), hi);                // 技名と、何が起きたかを一緒に、画面の上の方に出す
     // 変えたオクタやかき混ぜた盤面で並びができたら、ふつうにそろえたときと同じく確定へ
     if (phase === 'idle' && !confirmUntil && findGroups().length) { confirmUntil = t + CFG.CONFIRM_MS; sndReady(); }
