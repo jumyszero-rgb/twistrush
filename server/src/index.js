@@ -237,7 +237,7 @@ async function api(env, req, url) {
     if (c && c.c >= GUEST_PER_IP_DAY) return fail(env, req, '登録が多すぎます。時間をおいてください', 429);
     const id = randId(12), name = cleanName(b.name);
     await env.DB.batch([
-      env.DB.prepare('INSERT INTO accounts (id, name, created_at, last_login) VALUES (?, ?, ?, ?)').bind(id, name, t, t),
+      env.DB.prepare('INSERT INTO accounts (id, name, created_at, last_login, country) VALUES (?, ?, ?, ?, ?)').bind(id, name, t, t, countryOf(req)),
       env.DB.prepare('INSERT INTO identities (provider, sub, account_id, created_at) VALUES (?, ?, ?, ?)').bind('guest', id, id, t),
       env.DB.prepare('INSERT INTO guest_log (ip, t) VALUES (?, ?)').bind(ip, t),
       env.DB.prepare('DELETE FROM guest_log WHERE t < ?').bind(t - 86400 * 2),
@@ -327,7 +327,7 @@ async function api(env, req, url) {
   }
 
   // ランキングに登録
-  if (p === '/api/score' && M === 'POST') return rankPost(env, req, me);
+  if (p === '/api/score' && M === 'POST') { await setCountry(env, req, me.id); return rankPost(env, req, me); }
   // ---- 対戦メダル ----
   if (p === '/api/medal' && M === 'GET') {
     const m = await medalOf(env, me.id), t = nowSec();
@@ -402,11 +402,11 @@ async function rankTop(env, req, url) {
   const mode = (url.searchParams.get('mode') || 'sixty').slice(0, 16);
   const period = PERIODS.includes(url.searchParams.get('period')) ? url.searchParams.get('period') : 'day';
   const limit = Math.min(100, Math.max(1, Number(url.searchParams.get('limit') || 20)));
-  const { results } = await env.DB.prepare('SELECT player, name, MAX(score) AS score, MAX(created_at) AS at FROM scores WHERE mode = ? AND created_at >= ? GROUP BY player ORDER BY score DESC, at ASC LIMIT ?').bind(mode, since(period, t), limit).all();
+  const { results } = await env.DB.prepare('SELECT s.player, s.name, MAX(s.score) AS score, MAX(s.created_at) AS at, (SELECT country FROM accounts a WHERE a.id = s.player) AS cc FROM scores s WHERE s.mode = ? AND s.created_at >= ? GROUP BY s.player ORDER BY score DESC, at ASC LIMIT ?').bind(mode, since(period, t), limit).all();
   const me = await who(env, req);
   return json(env, req, {
     period, mode,
-    top: (results || []).map((r, i) => ({ rank: i + 1, name: r.name, score: r.score, me: !!(me && r.player === me.id) })),
+    top: (results || []).map((r, i) => ({ rank: i + 1, name: r.name, cc: r.cc || '', score: r.score, me: !!(me && r.player === me.id) })),
     me: me ? await myRank(env, mode, period, me.id, t) : null,
     // 月間のごほうび（順位ごとの中身）と、今月のいまの順位
     prizes: MONTH_REWARDS.map(x => ({ upTo: x.upTo, label: x.label, items: x.items })),
@@ -470,11 +470,17 @@ async function monthRewards(env, player) {
   return out;
 }
 
+// つないだ場所の国（Cloudflare が判定する2文字の国コード。住所などは使わない）
+const countryOf = req => { const c = String((req.cf && req.cf.country) || '').toUpperCase(); return /^[A-Z]{2}$/.test(c) && c !== 'XX' && c !== 'T1' ? c : ''; };
+async function setCountry(env, req, id) { const c = countryOf(req); if (c) await env.DB.prepare('UPDATE accounts SET country = ? WHERE id = ? AND country <> ?').bind(c, id, c).run(); return c; }
+
 // ---------- 準備（テーブルを作る・署名用の秘密を用意する）。1つの実行環境につき1回だけ ----------
 let ready = null;
 function prepared(env) {
   if (!ready) ready = (async () => {
     await env.DB.batch(SCHEMA.map(q => env.DB.prepare(q)));
+    // あとから足した列（すでにあればエラーになるので無視）
+    for (const q of ["ALTER TABLE accounts ADD COLUMN country TEXT NOT NULL DEFAULT ''"]) { try { await env.DB.prepare(q).run(); } catch (e) {} }
     let secret = env.SESSION_SECRET;
     if (!secret) {
       await env.DB.prepare("INSERT OR IGNORE INTO meta (k, v) VALUES ('session_secret', ?)").bind(randId(48)).run();
@@ -495,7 +501,8 @@ async function wsRoom(env, req, url) {
   const room = url.pathname.slice(9).replace(/[^A-Za-z0-9-]/g, '').slice(0, 64);
   if (!room) return new Response('room', { status: 400 });
   let team = null; try { team = JSON.parse(url.searchParams.get('team') || 'null'); } catch (e) {}
-  const me = { id: acc.id, name: acc.name, kind: url.searchParams.get('kind'), bet: +url.searchParams.get('bet') || 0, room, team };
+  const cc = (await setCountry(env, req, acc.id)) || (await env.DB.prepare('SELECT country FROM accounts WHERE id = ?').bind(acc.id).first() || {}).country || '';
+  const me = { id: acc.id, name: acc.name, cc, kind: url.searchParams.get('kind'), bet: +url.searchParams.get('bet') || 0, room, team };
   const u = new URL(req.url); u.searchParams.set('_me', JSON.stringify(me)); u.searchParams.delete('t');
   return env.ROOM.get(env.ROOM.idFromName(room)).fetch(new Request(u.toString(), req));
 }

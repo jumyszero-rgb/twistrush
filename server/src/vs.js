@@ -68,8 +68,8 @@ async function rateSave(env, id, kind, rate, res, t) {
     .bind(id, kind, rate, w, l, d, t).run();
 }
 export async function vsTop(env, kind, me) {
-  const { results } = await env.DB.prepare('SELECT r.account_id AS id, a.name, r.rate, r.win, r.lose FROM ratings r JOIN accounts a ON a.id = r.account_id WHERE r.kind = ? ORDER BY r.rate DESC, r.updated_at ASC LIMIT 50').bind(kind).all();
-  const top = (results || []).map((x, i) => ({ rank: i + 1, name: x.name, rate: x.rate, win: x.win, lose: x.lose, me: !!(me && x.id === me) }));
+  const { results } = await env.DB.prepare('SELECT r.account_id AS id, a.name, a.country AS cc, r.rate, r.win, r.lose FROM ratings r JOIN accounts a ON a.id = r.account_id WHERE r.kind = ? ORDER BY r.rate DESC, r.updated_at ASC LIMIT 50').bind(kind).all();
+  const top = (results || []).map((x, i) => ({ rank: i + 1, name: x.name, cc: x.cc || '', rate: x.rate, win: x.win, lose: x.lose, me: !!(me && x.id === me) }));
   let mine = null;
   if (me) {
     const r = await rateOf(env, me, kind);
@@ -136,7 +136,7 @@ export class Room {
       return new Response(null, { status: 101, webSocket: pair[0] });
     }
     if (!this.cfg) this.cfg = { kind: VS_KINDS.includes(me.kind) ? me.kind : 'simple', bet: MEDAL.bets.includes(me.bet) ? me.bet : 0, room: me.room };
-    const p = { id: me.id, name: me.name, ws, team: me.team || null, st: [0, 0, 0, 0, 0], sc: 0, alive: true };
+    const p = { id: me.id, name: me.name, cc: me.cc || '', ws, team: me.team || null, st: [0, 0, 0, 0, 0], sc: 0, alive: true };
     this.ps.push(p);
     ws.addEventListener('message', ev => this.onMsg(p, ev.data));
     ws.addEventListener('close', () => this.onClose(p));
@@ -164,7 +164,7 @@ export class Room {
     a.rate = ra.rate; b.rate = rb.rate;
     this.phase = 'play'; this.t0 = Date.now() + 3500;
     const seed = Math.floor(Math.random() * 2 ** 31);
-    this.ps.forEach((p, i) => { const o = this.ps[1 - i]; this.send(p, { t: 'start', kind: this.cfg.kind, bet, seed, limit: VS_LIMIT_SEC, wait: 3500, me: { rate: p.rate }, opp: { name: o.name, rate: o.rate, team: o.team } }); });
+    this.ps.forEach((p, i) => { const o = this.ps[1 - i]; this.send(p, { t: 'start', kind: this.cfg.kind, bet, seed, limit: VS_LIMIT_SEC, wait: 3500, me: { rate: p.rate, cc: p.cc }, opp: { name: o.name, cc: o.cc, rate: o.rate, team: o.team } }); });
     this.timer = setTimeout(() => this.timeUp(), 3500 + VS_LIMIT_SEC * 1000 + 1500);
   }
   onMsg(p, raw) {

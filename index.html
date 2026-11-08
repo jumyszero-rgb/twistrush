@@ -245,6 +245,7 @@
   .olteam{display:flex;gap:6px;align-items:center;margin-top:8px;}
   .olav{display:inline-block;width:46px;height:46px;border-radius:10px;overflow:hidden;border:2px solid #fff;background:#2b2147;flex:none;}
   .olav .cicon{width:100% !important;height:100% !important;}
+  .flag{display:inline-block;margin-right:4px;font-size:1.15em;line-height:1;vertical-align:-1px;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;}
   .olav.nochar{display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:22px;color:#fff;background:linear-gradient(135deg,#ff5f9e,#7a5cff);}
   .vs-card .olav.nochar{font-size:40px;}
   .olwait{text-align:center;padding:26px 8px;}
@@ -4977,6 +4978,8 @@
   let onl = null, olView = 'top', olKind = load('ol_kind', 'simple'), olBet = +load('ol_bet', '0') || 0, olInfo = null, olRate = null, olTimer = null;
   const olWsBase = () => (apiUrl || DEFAULT_API).replace(/\/+$/, '').replace(/^http/, 'ws');
   const olEsc = v => String(v == null ? '' : v).replace(/[<>&"]/g, '');
+  // 国旗（国コード2文字 → 絵文字）
+  const flagOf = cc => /^[A-Z]{2}$/.test(cc || '') ? '<span class="flag" title="' + cc + '">' + String.fromCodePoint(...[...cc].map(c => 0x1F1E6 + c.charCodeAt(0) - 65)) + '</span>' : '';
   const olAv = (id, nm) => { const ci = id != null ? ALLC_IDX.get(id) : null; return '<span class="olav' + (ci == null ? ' nochar' : '') + '"' + (ci != null ? ' data-ci="' + ci + '"' : '') + '>' + (ci == null ? olEsc(String(nm || '？').slice(0, 1)) : '') + '</span>'; };
   function olFill(root){ root.querySelectorAll('.olav[data-ci]').forEach(el => { if (!el.firstChild) el.appendChild(charIcon(+el.dataset.ci, Math.round(el.clientWidth) || 46)); }); }
   const onlSend = o => { try { if (onl && onl.ws && onl.ws.readyState === 1) onl.ws.send(JSON.stringify(o)); } catch (_) {} };
@@ -5093,12 +5096,12 @@
     body.innerHTML = '<div class="olwait"><div class="olspin"></div></div>';
     let r; try { r = await api('/api/vs/top?kind=' + olKind, {tok: rankTok()}); } catch (_) { body.innerHTML = '<div class="olsec">サーバーにつながりませんでした</div>'; return; }
     const top = r.top || [];
-    const pod = (x, k) => x ? '<div class="pod p' + x.rank + (x.me ? ' me' : '') + '" style="--i:' + k + '"><span class="pm">' + ['👑', '🥈', '🥉'][x.rank - 1] + '</span><div class="pr">' + x.rank + '</div><div class="pn">' + olEsc(x.name) + '</div><div class="ps">' + x.rate + '</div></div>'
+    const pod = (x, k) => x ? '<div class="pod p' + x.rank + (x.me ? ' me' : '') + '" style="--i:' + k + '"><span class="pm">' + ['👑', '🥈', '🥉'][x.rank - 1] + '</span><div class="pr">' + x.rank + '</div><div class="pn">' + flagOf(x.cc) + olEsc(x.name) + '</div><div class="ps">' + x.rate + '</div></div>'
       : '<div class="pod empty p' + (k === 0 ? 2 : k === 1 ? 1 : 3) + '" style="--i:' + k + '"><div class="pr">—</div></div>';
     body.innerHTML = '<div class="oltabs">' + Object.keys(OL_KIND).map(k => '<button data-k="' + k + '" class="' + (k === olKind ? 'on' : '') + '">' + OL_KIND[k] + '</button>').join('') + '</div>' +
       '<div class="olsec"><h3>🏆 対戦ランキング（レート）</h3>' +
       (r.me && r.me.rank ? '<div class="wme"><span class="wme-l">あなたは</span><span class="wme-n">' + r.me.rank + '位</span><span class="wme-s">レート ' + r.me.rate + '<br>' + r.me.win + '勝' + r.me.lose + '敗</span></div>' : '') +
-      (top.length ? '<div class="podium">' + pod(top[1], 0) + pod(top[0], 1) + pod(top[2], 2) + '</div>' + top.slice(3).map((x, i) => '<div class="wrow' + (x.me ? ' me' : '') + '" style="--i:' + i + '"><span class="rk">' + x.rank + '</span><span class="nm2">' + olEsc(x.name) + '</span><span class="sc">' + x.rate + '</span></div>').join('')
+      (top.length ? '<div class="podium">' + pod(top[1], 0) + pod(top[0], 1) + pod(top[2], 2) + '</div>' + top.slice(3).map((x, i) => '<div class="wrow' + (x.me ? ' me' : '') + '" style="--i:' + i + '"><span class="rk">' + x.rank + '</span><span class="nm2">' + flagOf(x.cc) + olEsc(x.name) + '</span><span class="sc">' + x.rate + '</span></div>').join('')
         : '<div class="wrow"><span class="nm2">まだ記録がありません</span></div>') +
       '<button class="btn gray" id="olBackTop" style="margin-top:12px">もどる</button></div>';
     body.querySelectorAll('.oltabs button').forEach(b => b.onclick = () => { olKind = b.dataset.k; save('ol_kind', olKind); drawOlRank(); });
@@ -5157,9 +5160,9 @@
     const el = $('vsIntro'), me = myTeamInfo(), op = m.opp || {}, ot = op.team || {};
     const team = ids => ids && ids.length ? '<div class="vs-team">' + ids.slice(0, 4).map(olAv).join('') + '</div>' : '';
     el.innerHTML = '<div class="vs-kind">' + OL_KIND[m.kind] + '</div><div class="vs-pair">' +
-      '<div class="vs-card me">' + olAv(me.lead, load('rank_name', '')) + '<b>' + olEsc(load('rank_name', '') || (acct && acct.name) || 'あなた') + '</b><small>レート ' + (m.me ? m.me.rate : 1000) + '</small>' + (m.kind === 'chara' ? team(me.ids) : '') + '</div>' +
+      '<div class="vs-card me">' + olAv(me.lead, load('rank_name', '')) + '<b>' + flagOf(m.me && m.me.cc) + olEsc(load('rank_name', '') || (acct && acct.name) || 'あなた') + '</b><small>レート ' + (m.me ? m.me.rate : 1000) + '</small>' + (m.kind === 'chara' ? team(me.ids) : '') + '</div>' +
       '<div class="vs-vs">VS</div>' +
-      '<div class="vs-card op">' + olAv(ot.lead, op.name) + '<b>' + olEsc(op.name) + '</b><small>レート ' + op.rate + '</small>' + (m.kind === 'chara' ? team(ot.ids) : '') + '</div></div>' +
+      '<div class="vs-card op">' + olAv(ot.lead, op.name) + '<b>' + flagOf(op.cc) + olEsc(op.name) + '</b><small>レート ' + op.rate + '</small>' + (m.kind === 'chara' ? team(ot.ids) : '') + '</div></div>' +
       '<div class="vs-bet">' + (m.bet ? '🏅 ' + m.bet + ' を賭けた勝負（勝てば +' + m.bet * 2 + '）' : '賭けなしの勝負') + '</div><div class="vs-cnt" id="vsCnt"></div>';
     el.classList.remove('hidden'); olFill(el);
     try { sndShine(T(), true); } catch (_) {}
@@ -5179,7 +5182,7 @@
     start('online', {});
     $('onlOpp').classList.remove('hidden');
     $('ooAv').innerHTML = olAv(ot.lead, onl.opp && onl.opp.name); olFill($('ooAv'));
-    $('ooName').textContent = onl.opp ? onl.opp.name : '';
+    $('ooName').innerHTML = onl.opp ? flagOf(onl.opp.cc) + olEsc(onl.opp.name) : '';
     $('ooRate').textContent = 'レート ' + (onl.opp ? onl.opp.rate : '');
     $('ooBars').innerHTML = CH.map((c, i) => '<i style="--c:' + c.col + '"><b style="width:0%"></b></i>').join('');
     onlDrawOpp(); resize();
@@ -5328,11 +5331,11 @@
     try {
       const r = await api('/api/top?mode=' + rankMode + '&limit=20&period=' + wPeriod, {tok: rankTok()});
       const esc = v => String(v).replace(/[<>&]/g, ''), top = r.top || [];
-      const podOf = (x, k) => x ? '<div class="pod p' + x.rank + (x.me ? ' me' : '') + '" style="--i:' + k + '"><span class="pm">' + ['👑', '🥈', '🥉'][x.rank - 1] + '</span><div class="pr">' + x.rank + '</div><div class="pn">' + esc(x.name) + '</div><div class="ps">' + x.score.toLocaleString() + '</div></div>'
+      const podOf = (x, k) => x ? '<div class="pod p' + x.rank + (x.me ? ' me' : '') + '" style="--i:' + k + '"><span class="pm">' + ['👑', '🥈', '🥉'][x.rank - 1] + '</span><div class="pr">' + x.rank + '</div><div class="pn">' + flagOf(x.cc) + esc(x.name) + '</div><div class="ps">' + x.score.toLocaleString() + '</div></div>'
         : '<div class="pod empty p' + (k === 0 ? 2 : k === 1 ? 1 : 3) + '" style="--i:' + k + '"><div class="pr">—</div><div class="pn">まだいない</div></div>';
       const meCard = r.me && r.me.rank ? '<div class="wme"><span class="wme-l">あなたは</span><span class="wme-n">' + r.me.rank + '位</span><span class="wme-s">/ ' + r.me.total + '人<br>' + r.me.best.toLocaleString() + '点</span></div>' : '';
       box.innerHTML = top.length ? meCard + '<div class="podium">' + podOf(top[1], 0) + podOf(top[0], 1) + podOf(top[2], 2) + '</div>' +
-        top.slice(3).map((x, i) => '<div class="wrow' + (x.me ? ' me' : '') + '" style="--i:' + i + '"><span class="rk">' + x.rank + '</span><span class="nm2">' + esc(x.name) + '</span><span class="sc">' + x.score.toLocaleString() + '</span></div>').join('')
+        top.slice(3).map((x, i) => '<div class="wrow' + (x.me ? ' me' : '') + '" style="--i:' + i + '"><span class="rk">' + x.rank + '</span><span class="nm2">' + flagOf(x.cc) + esc(x.name) + '</span><span class="sc">' + x.score.toLocaleString() + '</span></div>').join('')
         : '<div class="wrow"><span class="nm2">まだ記録がありません。一番乗りをめざそう！</span></div>';
       drawPrizes(r);
       const meRow = box.querySelector('.wrow.me'); if (meRow) setTimeout(() => meRow.scrollIntoView({block: 'nearest', behavior: 'smooth'}), 600);
