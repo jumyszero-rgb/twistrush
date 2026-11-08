@@ -167,6 +167,7 @@
   .rkres::before{content:"";position:absolute;inset:-40%;background:conic-gradient(from 0deg,transparent 0 20deg,rgba(255,255,255,.10) 20deg 30deg,transparent 30deg 60deg,rgba(255,255,255,.08) 60deg 70deg,transparent 70deg 120deg,rgba(255,255,255,.10) 120deg 130deg,transparent 130deg 180deg,rgba(255,255,255,.08) 180deg 190deg,transparent 190deg 240deg,rgba(255,255,255,.10) 240deg 250deg,transparent 250deg 300deg,rgba(255,255,255,.08) 300deg 310deg,transparent 310deg);animation:rkSpin 14s linear infinite;pointer-events:none;}
   .rkres > *{position:relative;}
   .rkres .rk-head{font-weight:900;letter-spacing:3px;font-size:13px;color:#ffe9a8;text-shadow:0 0 8px rgba(255,200,80,.8);}
+  .rkres .rk-mode{display:inline-block;margin-top:4px;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:900;background:rgba(255,255,255,.16);color:#fff;}
   .rkres .rk-wel{margin:6px 0 2px;font-size:13px;color:#e7dcff;animation:rkFade .5s .2s both;}
   .rkres .rk-wel b{color:#fff;font-size:15px;}
   .rkres .rk-main{display:flex;align-items:baseline;justify-content:center;gap:4px;margin:6px 0 2px;}
@@ -4784,9 +4785,20 @@
     }
   }
   // ゲーム終了時に送る（60秒アタック・エンドレス）。まだ登録していない人には、名前を入れて登録するか聞く
+  // 結果画面が見えてから動かす（エンドレスは広告で続けるか決まってから、60秒は TIME UP のあと）
+  const overVisible = () => { const o = $('over'); return !o.classList.contains('hidden') && (!o.classList.contains('soft') || o.classList.contains('in')); };
+  let overWait = null;
+  function whenOverShown(fn){
+    clearInterval(overWait);
+    if (overVisible()) { fn(); return; }
+    const t0 = Date.now();
+    overWait = setInterval(() => { if (running) { clearInterval(overWait); return; } if (overVisible()) { clearInterval(overWait); setTimeout(fn, 250); } else if (Date.now() - t0 > 120000) clearInterval(overWait); }, 150);
+  }
   function sendScore(){
+    clearInterval(overWait);
     $('rankJoin').classList.add('hidden'); $('rankRes').classList.add('hidden'); $('rankJoin').classList.remove('bye');
     if (!isRec(gameMode) || score <= 0) return;
+    if (!overVisible()) { whenOverShown(sendScore); return; }   // 広告で続けたら、最後のスコアだけを送る
     const b = {mode: gameMode, score, blocks: broken, dur: Math.round((now() - runStart) / 1000), ver: GAME_VER};
     if (rankTok()) { postScore(b); return; }
     rankPend = b;
@@ -4809,7 +4821,7 @@
     const msg = rank === 1 ? '今日の世界1位！' : rank <= 3 ? '表彰台！' : rank <= 10 ? 'トップ10入り！' : best ? '自己ベスト更新！' : (rank <= Math.ceil(total / 2) ? '上位' + Math.max(1, Math.round(rank / total * 100)) + '%！' : 'もっと上をめざそう！');
     const sub = [['今週', R.week], ['今月', R.month], ['全期間', R.all]].filter(x => x[1] && x[1].rank).map(x => '<span>' + x[0] + ' <b>' + x[1].rank + '</b>位</span>').join('');
     el.className = 'rkres ' + tier;
-    el.innerHTML = '<div class="rk-head">🌏 WORLD RANKING</div>' +
+    el.innerHTML = '<div class="rk-head">🌏 WORLD RANKING</div><div class="rk-mode">' + (b.mode === 'rank' ? '∞ エンドレス' : '⏱ 60秒アタック') + '</div>' +
       (welcome ? '<div class="rk-wel">ようこそ、<b>' + String(welcome).replace(/[<>&]/g, '') + '</b> さん！ 登録しました</div>' : '') +
       '<div class="rk-medal">' + medal + '</div>' +
       '<div class="rk-main"><span class="rk-lbl">今日</span><span class="rk-num">' + Math.max(rank, total) + '</span><span class="rk-i">位</span><span class="rk-of">/ ' + total.toLocaleString() + '人</span></div>' +
