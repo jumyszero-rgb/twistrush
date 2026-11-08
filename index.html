@@ -721,6 +721,20 @@
   .cutin .cfx{display:flex;flex-direction:column;margin-top:3px;} .cutin .cfx span{font-size:13px;font-weight:800;line-height:1.35;}
   .cutin.ougi .cband{background:linear-gradient(100deg,rgba(184,134,11,0),rgba(184,134,11,.96) 8%,rgba(255,215,90,.96) 50%,rgba(184,134,11,.96) 92%,rgba(184,134,11,0));box-shadow:0 0 26px rgba(255,210,80,.9);border-color:rgba(255,250,210,.8);}
   .cutin.ougi .cname{text-shadow:0 2px 0 rgba(90,50,0,.55),0 0 8px rgba(90,50,0,.5);}
+  .cutin.enemy .cband{background:linear-gradient(100deg,rgba(150,0,30,0),rgba(150,0,30,.95) 8%,rgba(210,20,60,.95) 50%,rgba(150,0,30,.95) 92%,rgba(150,0,30,0));flex-direction:row-reverse;}
+  .cutin.enemy.ougi .cband{background:linear-gradient(100deg,rgba(80,0,90,0),rgba(80,0,90,.96) 8%,rgba(200,30,120,.96) 50%,rgba(80,0,90,.96) 92%,rgba(80,0,90,0));box-shadow:0 0 26px rgba(255,40,120,.6);}
+  #heartTray{position:absolute;z-index:12;display:flex;gap:3px;transform:translateY(calc(-100% - 6px));}
+  #heartTray button{width:30px;height:30px;border:2px solid #fff;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffd1e2,#ff4f8b);font-size:15px;line-height:1;padding:0;box-shadow:0 2px 6px rgba(0,0,0,.35),0 0 8px rgba(255,90,150,.7);animation:hpop .35s cubic-bezier(.2,1.6,.4,1) both;touch-action:manipulation;}
+  #heartTray button.g{background:radial-gradient(circle at 35% 30%,#fff3c4,#ffb21f);box-shadow:0 2px 6px rgba(0,0,0,.35),0 0 10px rgba(255,190,40,.9);}
+  @keyframes hpop{from{transform:scale(.2);}to{transform:scale(1);}}
+  #enSk{position:absolute;right:6px;top:100%;margin-top:22px;display:flex;gap:4px;}
+  #enSk .ensk{position:relative;display:flex;align-items:center;gap:2px;font-size:11px;font-weight:900;color:#fff;border-radius:8px;padding:1px 6px 1px 3px;overflow:hidden;
+    background:linear-gradient(90deg,rgba(220,30,70,.95) calc(var(--p)*1%),rgba(60,10,30,.85) calc(var(--p)*1%));box-shadow:0 1px 3px rgba(0,0,0,.4);}
+  #enSk .ensk.ougi{background:linear-gradient(90deg,rgba(190,40,200,.95) calc(var(--p)*1%),rgba(40,10,50,.85) calc(var(--p)*1%));}
+  #enSk .ensk i{font-style:normal;background:#fff;color:#c01040;border-radius:5px;padding:0 3px;font-size:10px;}
+  #enSk .ensk.ougi i{color:#9020a0;}
+  #enSk .ensk.near{animation:enskblink .5s ease-in-out infinite alternate;}
+  @keyframes enskblink{from{filter:brightness(1);}to{filter:brightness(1.6);}}
   .cutin .cface2 .cicon{border-radius:14px;border:3px solid #fff;box-shadow:0 0 12px #fff;}
   .cutin .cname{color:#fff;font-size:22px;font-weight:900;text-shadow:0 2px 0 rgba(0,0,0,.35),0 0 8px rgba(0,0,0,.4);line-height:1.1;}
   .cutin.lo .cname{font-size:18px;}
@@ -3615,7 +3629,8 @@
         const k = Math.floor(Math.random() * VOICE_SETS[spId].special.length);
         voiceForce = VOICE_SETS[spId].special[k]; spName = spName[k] || spName[0];
       }
-      enemySay(spName || 'えぃ！');   // ボスは必殺技の名前を叫ぶ
+      if (gameMode === 'story') { voiceForce = null; enemySay('えぃ！'); }   // ストーリーの必殺技・奥義は敵のタイマーで別に使ってくる
+      else enemySay(spName || 'えぃ！');   // ボスは必殺技の名前を叫ぶ
       stacks = stacks.map(v => Math.min(CFG.STACK_MAX, v + CFG.PENALTY));   // 全色に+PENALTY
       spawnBolt(CFG.PENALTY * TYPES, !!spHas);                                       // 大きめの火の玉
       updateGauges();
@@ -6190,10 +6205,10 @@
       '<div class="dtabs">' + [['info', 'ステータス・技'], ['feed', 'LVアップ（合成）'], ['lb', '限界突破']].map(([k, n]) => '<button data-ftab="' + k + '" class="' + (detTab === k ? 'on' : '') + '">' + n + '</button>').join('') + '</div>';
     if (detTab === 'info') {
       h += '<div class="dsec"><div class="stt">' + ST_NAME.map((n, k) => '<div>' + n + '<b>' + st[k] + '</b></div>').join('') + '</div></div>' +
-        (isZakoId(c.id) ? '<div class="dsec"><h4>必殺技 <span>' + (SPECIAL_NAME[c.id] || '').replace('！', '') + '</span><em>30秒でたまる</em></h4><p>' + skDescU(c.id, 'sp', u) + '</p>' +
+        (isZakoId(c.id) ? '<div class="dsec"><h4>必殺技 <span>' + (SPECIAL_NAME[c.id] || '').replace('！', '') + '</span><em>基準30秒（スピードで変わる）</em></h4><p>' + skDescU(c.id, 'sp', u) + '</p>' +
           '<p class="dnote">N・Rは必殺技だけ（奥義なし）。サブ（②〜④）に入れて使います。メイン（①）にはなれません。</p></div>'
-        : SKILLS[c.id] ? '<div class="dsec"><h4>必殺技 <span>' + (SPECIAL_NAME[c.id] || '').replace('！', '') + '</span><em>30秒でたまる</em></h4><p>' + skDescU(c.id, 'sp', u) + '</p>' +
-        '<h4>奥義 <span>' + (OUGI_NAME[c.id] || '') + '</span><em>60秒でたまる</em></h4><p>' + skDescU(c.id, 'ougi', u) + '</p>' +
+        : SKILLS[c.id] ? '<div class="dsec"><h4>必殺技 <span>' + (SPECIAL_NAME[c.id] || '').replace('！', '') + '</span><em>基準30秒（スピードで変わる）</em></h4><p>' + skDescU(c.id, 'sp', u) + '</p>' +
+        '<h4>奥義 <span>' + (OUGI_NAME[c.id] || '') + '</span><em>基準60秒（スピードで変わる）</em></h4><p>' + skDescU(c.id, 'ougi', u) + '</p>' +
         '<p class="dnote">チームのメインは必殺技と奥義の両方、サブはどちらか1つを使います。</p></div>'
         : '<div class="dsec"><h4>技</h4><p>このキャラは、まだ技を持っていません。サブ（②〜④）に入れて、ステータスでチームを強くします。メイン（①）にはなれません。</p></div>') +
         '<div class="dsec"><h4>プロフィール</h4><p>' + (CHAR_BIO[c.id] || '') + '</p></div>';
@@ -6497,7 +6512,22 @@
     }
   });
   // ===== キャラの技（必殺技30秒・奥義60秒で時間チャージ） =====
-  const SK_MS = {sp: 30000, ougi: 60000};
+  const SK_MS = {sp: 30000, ougi: 60000};               // 基準の時間。キャラのスピードと敵のスピードの比べ合いで 0.5〜1.5倍 に変わる
+  const clampF = (v, a, b) => Math.max(a, Math.min(b, v));
+  // 自分の技：そのキャラのスピード（レベル込みの最終値）と、敵1人分のスピードを比べる。同じなら基準どおり、2倍速いと0.75倍、半分だと1.5倍
+  function skMs(s2){
+    const base = SK_MS[s2.kind];
+    if (!statOn() || !s2.spd) return base;
+    const en = Math.max(1, runEn[3] / 4), me = s2.spd * bm('spd');
+    return Math.round(base * clampF((me + en) / (2 * me), 0.5, 1.5));
+  }
+  // 敵の技：敵のスピードとチームのスピードを比べる。敵が速いほど早くたまる
+  function enMs(kind){
+    const base = SK_MS[kind];
+    if (!statOn()) return base;
+    const en = Math.max(1, runEn[3]), me = Math.max(1, runMy[3]);
+    return Math.round(base * clampF((en + me) / (2 * en), 0.5, 1.5));
+  }
   const OUGI_NAME = {ichigo: 'レインボースラッシュ', mocha: 'ホーリークロス', rinpan: 'アイスバーグ・フォール', busy: 'グラビティ・クラッシュ',
     camilla: '猫神連爪', titan: 'オメガ・イレイザー', windy: '天空神風・スカイテンペスト', chiyo: '朧月・紅蓮桜', gilbert: '聖銀剣・アストラル・クロス'};
   // 試合で使える技の一覧：メインは必殺技と奥義の2つ、サブはそれぞれ選んだ1つ
@@ -6520,22 +6550,71 @@
     t.forEach((uid, k) => {
       const u = unitOf(uid); if (!u || !SKILLS[u.id]) return;
       const kinds = !SKILLS[u.id].ougi ? ['sp'] : k === 0 ? ['sp', 'ougi'] : [sk[k] === 'ougi' ? 'ougi' : 'sp'];
-      kinds.forEach(kind => skList.push({id: u.id, ci: ciOf(u), kind, main: k === 0, charge: 0, ready: false, star: u.star || 0, smax: starMaxOf(u)}));
+      kinds.forEach(kind => skList.push({id: u.id, ci: ciOf(u), kind, main: k === 0, charge: 0, ready: false, star: u.star || 0, smax: starMaxOf(u), spd: unitStats(u)[3]}));
     });
   }
+  // 敵の技のたまり具合。ボスは必殺技と奥義、ザコは必殺技だけ
+  let enSk = [];
+  const enId = () => !curStage ? null : (curStage.char != null ? (CHARS[curStage.char] || {}).id : (zakoNow ? 'z_' + zakoNow.k : null));
+  function enSkReset(){
+    enSk = [];
+    if (gameMode !== 'story' || !curStage) return;
+    const id = enId(); if (!id) return;
+    enSk.push({kind: 'sp', charge: 0});
+    if (curStage.char != null && OUGI_NAME[id]) enSk.push({kind: 'ougi', charge: 0});
+    drawEnSk(true);
+  }
+  const EN_SK_DMG = {sp: 6, ougi: 10};                   // 全色のカラーHPに入る量（ステータスの比べ合いで増減）
+  function enemyCast(e){
+    const id = enId(), ci = ALLC_IDX.get(id);
+    let name = e.kind === 'sp' ? SPECIAL_NAME[id] : OUGI_NAME[id];
+    if (Array.isArray(name)) name = name[0];
+    name = String(name || (e.kind === 'sp' ? '必殺技' : '奥義')).replace('！', '');
+    const vs = VOICE_SETS[id] && VOICE_SETS[id][e.kind === 'sp' ? 'special' : 'ougi'];
+    if (vs && vs.length) voiceForce = vs[Math.floor(Math.random() * vs.length)];
+    enemySay(name + '！');
+    try { playAnim('en', 'atk'); } catch(_) {}
+    const before = stacks.slice();
+    addStackAll(EN_SK_DMG[e.kind]);
+    const got = Math.round(stacks.reduce((a, v, k) => a + v - before[k], 0) / TYPES * (statOn() ? unitPts() : 1)).toLocaleString();
+    if (ci != null) cutIn({kind: e.kind, ci, enemy: true}, name, ['敵の' + (e.kind === 'sp' ? '必殺技' : '奥義') + '！ 全色のカラーHP +' + got], true);
+    try { e.kind === 'ougi' ? sndPenalty() : sndPenalty(); } catch(_) {}
+    penaltyFlash = now();
+  }
+  function enSkTick(dt){
+    if (!enSk.length || !running || pausedAt) return;
+    if (tstop && now() < tstop) return;                  // 時止め中はたまらない
+    enSk.forEach(e => {
+      e.charge += dt * ebm();                           // 敵のスピードダウン中はゆっくり
+      if (e.charge >= enMs(e.kind)) { e.charge = 0; if (phase === 'idle' || phase === 'clear' || phase === 'fall') enemyCast(e); }
+    });
+    drawEnSk();
+  }
+  function drawEnSk(force){
+    let el = $('enSk');
+    if (!el) { el = document.createElement('div'); el.id = 'enSk'; $('enemyRow').appendChild(el); }
+    const on = enSk.length && running && gameMode === 'story';
+    el.style.display = on ? '' : 'none'; if (!on) return;
+    const key = enSk.map(e => Math.ceil((enMs(e.kind) - e.charge) / 1000)).join('/');
+    if (!force && el.__k === key) return; el.__k = key;
+    el.innerHTML = enSk.map(e => { const left = Math.max(0, Math.ceil((enMs(e.kind) - e.charge) / 1000)), p = Math.round(e.charge / enMs(e.kind) * 100);
+      return '<span class="ensk ' + e.kind + (left <= 5 ? ' near' : '') + '" style="--p:' + p + '"><i>' + (e.kind === 'sp' ? '必' : '奥') + '</i>' + left + '</span>'; }).join('');
+  }
   function skillReset(){
-    buildSkills(); skLast = now(); skShown = '';
+    buildSkills(); skLast = now(); skShown = ''; enSkReset(); heartStock = []; drawHearts(true);
     atkUntil = 0; defUntil = 0; zbuf = {atk: [1, 0], def: [1, 0], spd: [1, 0]};
     ebuf = [1, 0]; tslow = [0, 0]; tstop = 0; octaPend = 0;
     drawSkillBar(true);
   }
   function skillTick(t){
     const dt = Math.max(0, Math.min(500, t - skLast)); skLast = t;
+    if (!pausedAt) enSkTick(dt);
+    drawHearts();
     if (!skillOn() || pausedAt) return;
     skList.forEach(s2 => {
       if (s2.ready) return;
-      s2.charge = Math.min(SK_MS[s2.kind], s2.charge + dt);
-      if (s2.charge >= SK_MS[s2.kind]) {
+      s2.charge = Math.min(skMs(s2), s2.charge + dt);
+      if (s2.charge >= skMs(s2)) {
         s2.ready = true;
         const msg = (s2.main ? '' : fullName(ALLC[s2.ci]) + 'の') + (s2.kind === 'sp' ? '必殺技チャージ完了！' : '奥義チャージ完了！');
         if (!playClip('charge_' + s2.kind, 'sys')) sndReady();
@@ -6554,7 +6633,7 @@
   function drawSkillBar(force){
     const bar = $('skillBar'); if (!bar) return;
     const on = skillOn() && running;
-    const key = on ? skList.map(s2 => s2.ready ? 'R' : Math.floor(s2.charge / SK_MS[s2.kind] * 50)).join('/') : 'off';
+    const key = on ? skList.map(s2 => s2.ready ? 'R' : Math.floor(s2.charge / skMs(s2) * 50)).join('/') : 'off';
     if (!force && key === skShown) return;
     const was = bar.classList.contains('hidden');
     skShown = key; bar.classList.toggle('hidden', !on);
@@ -6572,8 +6651,8 @@
       skList.forEach((s2, i) => {
         const btn = bar.children[i]; if (!btn) return;
         btn.classList.toggle('ready', !!s2.ready);
-        btn.style.setProperty('--p', Math.round(s2.charge / SK_MS[s2.kind] * 100));
-        const t = s2.ready ? '' : String(Math.ceil((SK_MS[s2.kind] - s2.charge) / 1000)), sk = btn.querySelector('.sks');
+        btn.style.setProperty('--p', Math.round(s2.charge / skMs(s2) * 100));
+        const t = s2.ready ? '' : String(Math.ceil((skMs(s2) - s2.charge) / 1000)), sk = btn.querySelector('.sks');
         if (sk.textContent !== t) sk.textContent = t;
         sk.style.display = s2.ready ? 'none' : '';
       });
@@ -6651,7 +6730,42 @@
     return n;
   }
   function addOcta(n, avoid){ return convert(randNormal(n, avoid), GOLD); }
-  function addHeart(n, avoid){ return convert(randNormal(Math.min(n, HEART_MAX - heartCount()), avoid), HEART); }
+  // ハートは盤面に置かず、盤面の左上にためる（タップで使う）。ふつうのハートは最大5個、ゴールドハートは最大3個
+  let heartStock = [];
+  const GHEART_MAX = 3;
+  function stockHeart(kind, n){
+    let k = 0;
+    for (let i = 0; i < n; i++) {
+      const have = heartStock.filter(x => x === kind).length;
+      if (have >= (kind === 'g' ? GHEART_MAX : HEART_MAX)) break;
+      heartStock.push(kind); k++;
+    }
+    if (k) drawHearts(true);
+    return k;
+  }
+  function addHeart(n){ return stockHeart('h', n); }
+  function useHeart(i){
+    if (!running || pausedAt) return;
+    const kind = heartStock[i]; if (!kind) return;
+    heartStock.splice(i, 1);
+    const gh = kind === 'g';
+    healPct(gh ? 0.50 : 0.10); sndSpeed();
+    pops.push({text: gh ? 'ゴールドハート！ 全色 50%回復' : 'ハート！ 全色 10%回復', style: 'sync', r: 0, c: 0, row: 0, n: 1, t: now()});
+    drawHearts(true);
+  }
+  function drawHearts(force){
+    let el = $('heartTray');
+    if (!el) {
+      el = document.createElement('div'); el.id = 'heartTray'; canvas.parentElement.appendChild(el);
+      el.addEventListener('pointerdown', e => { const b = e.target.closest('[data-h]'); if (!b) return; e.preventDefault(); e.stopPropagation(); useHeart(+b.dataset.h); });
+    }
+    const on = running && heartStock.length > 0;
+    el.style.display = on ? '' : 'none'; if (!on) return;
+    el.style.left = (canvas.offsetLeft + gm) + 'px'; el.style.top = (canvas.offsetTop + gm) + 'px';
+    const key = heartStock.join('');
+    if (!force && el.__k === key) return; el.__k = key;
+    el.innerHTML = heartStock.map((k, i) => '<button data-h="' + i + '" class="' + (k === 'g' ? 'g' : 'h') + '" aria-label="' + (k === 'g' ? 'ゴールドハート' : 'ハート') + '">' + (k === 'g' ? '💛' : '💗') + '</button>').join('');
+  }
   // 全色のカラーHPを p の割合だけ回復（たまった分を減らす）
   function healPct(p){
     const was = stacks.slice();
@@ -6895,7 +7009,7 @@
     fx.forEach(f => {
       if (f[0] === 'clr') clr += f[1];
       else if (f[0] === 'octa') addOcta(f[1], avoid);
-      else if (f[0] === 'heart') addHeart(f[1], avoid);
+      else if (f[0] === 'heart') addHeart(f[1]);
       else if (f[0] === 'octaRect') convert(randRect(f[1], f[2]), GOLD);
       else if (f[0] === 'heal') healPct(f[1] / 100);
       else if (f[0] === 'atk2') atkUntil = now() + f[1] * 1000;
@@ -6906,7 +7020,7 @@
       else if (f[0] === 'cut') cutOne(f[1] / 100);
       else if (f[0] === 'dmg') { directDmg(f[1] / 100); msg.push('相手に直接 ' + f[1] + '%ダメージ'); }
       else if (f[0] === 'crit') critDmg(f[1]);
-      else if (f[0] === 'gheart') convert(randNormal(f[1]), GHEART);
+      else if (f[0] === 'gheart') stockHeart('g', f[1]);
       else if (f[0] === 'octaDrop') { octaPend += f[1]; fxExtra.push('✴ 次に消すと、オクタブロックが' + f[1] + '個降ってくる'); }
       else if (f[0] === 'eslow') { ebuf = [1 - f[1] / 100, now() + f[2] * 1000]; fxExtra.push('🐢 敵のスピード −' + f[1] + '%（' + f[2] + '秒）'); }
       else if (f[0] === 'mslow') { tslow = [f[1] / 100, now() + f[2] * 1000]; fxExtra.push('⏳ 時間の流れ −' + f[1] + '%（' + f[2] + '秒）'); }
@@ -6953,7 +7067,7 @@
     const s2 = skList[i];
     if (!running || !s2) return;
     const lab = s2.kind === 'sp' ? '必殺技' : '奥義';
-    if (!s2.ready) { toast(fullName(ALLC[s2.ci]) + 'の' + lab + 'はあと ' + Math.ceil((SK_MS[s2.kind] - s2.charge) / 1000) + '秒でたまります'); return; }
+    if (!s2.ready) { toast(fullName(ALLC[s2.ci]) + 'の' + lab + 'はあと ' + Math.ceil((skMs(s2) - s2.charge) / 1000) + '秒でたまります'); return; }
     if (bombPick) { toast('カラーボムの色を選んでいる間は使えません'); return; }
     if (phase !== 'idle') { toast('ブロックが消えている間は使えません'); return; }
     const t = now();
@@ -6971,7 +7085,7 @@
   }
   // ---- 技で何が起きたかを見せる ----
   function skSnap(){
-    return {g: grid.map(r => r.slice()), st: stacks.slice(), en: cpus.map(c => c.stacks.slice()), atk: atkUntil, def: defUntil, zb: JSON.stringify(zbuf)};
+    return {hs: heartStock.slice(), g: grid.map(r => r.slice()), st: stacks.slice(), en: cpus.map(c => c.stacks.slice()), atk: atkUntil, def: defUntil, zb: JSON.stringify(zbuf)};
   }
   function skDiff(sn){
     const out = [];
@@ -6985,7 +7099,10 @@
     }
     if (cleared) out.push('💥 ' + cleared + '個こわした');
     if (octa) out.push('✴ オクタブロック ×' + octa);
+    const nh = heartStock.filter(x => x === 'h').length - sn.hs.filter(x => x === 'h').length, ng = heartStock.filter(x => x === 'g').length - sn.hs.filter(x => x === 'g').length;
     if (heart) out.push('♥ ハートブロック ×' + heart);
+    if (nh > 0) out.push('♥ ハート ×' + nh + '（左上にためた。タップで全色10%回復）');
+    if (ng > 0) out.push('💛 ゴールドハート ×' + ng + '（左上にためた。タップで全色50%回復）');
     if (moved >= 6) out.push('🔀 盤面をかきまぜた');
     let heal = 0; const hc = [];
     sn.st.forEach((v, i) => { const d = v - stacks[i]; if (d > 0) { heal += d; hc.push(i); } });
@@ -7013,8 +7130,8 @@
   function cutIn(s2, name, lines, hi){
     let el = $('cutIn');
     if (!el) { el = document.createElement('div'); el.id = 'cutIn'; document.body.appendChild(el); }
-    el.className = 'cutin ' + s2.kind + (hi ? ' hi' : ' lo');
-    el.innerHTML = '<div class="cband">' + (hi ? '<span class="cface2"></span>' : '') + '<div class="cname"><small>' + (s2.kind === 'sp' ? '必殺技' : '奥義') + '</small>' + name.replace('！', '') +
+    el.className = 'cutin ' + s2.kind + (hi ? ' hi' : ' lo') + (s2.enemy ? ' enemy' : '');
+    el.innerHTML = '<div class="cband">' + (hi ? '<span class="cface2"></span>' : '') + '<div class="cname"><small>' + (s2.enemy ? '敵の' : '') + (s2.kind === 'sp' ? '必殺技' : '奥義') + '</small>' + name.replace('！', '') +
       '<div class="cfx">' + lines.map(x => '<span>' + x + '</span>').join('') + '</div></div></div>';
     if (hi) el.querySelector('.cface2').appendChild(charIcon(s2.ci, 96));
     const top = ($('stacks') && $('stacks').getBoundingClientRect().top) || 40;
