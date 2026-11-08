@@ -3,6 +3,8 @@
   "name": "twistrush",
   "main": "src/worker.js",
   "compatibility_date": "2025-09-01",
+  // ダッシュボードで入れた変数（TESTER_PASS など）を、push のたびに消さない
+  "keep_vars": true,
   "assets": {
     "directory": ".",
     "binding": "ASSETS",
