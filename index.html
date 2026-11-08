@@ -810,6 +810,72 @@
   @keyframes upbase{0%{transform:scale(1);filter:brightness(1);}12%{transform:scale(1.18);filter:brightness(2.6);}40%{transform:scale(.96);filter:brightness(1.4);}100%{transform:scale(1);filter:brightness(1);}}
   @keyframes upttl{0%{opacity:0;transform:scale(2.4);}100%{opacity:1;transform:scale(1);}}
   @keyframes upspk{0%{opacity:1;transform:translate(0,0) scale(1);}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.3);}}
+  /* ===== ストーリーで勝ったあとの結果：黒い画面で順番に見せる ===== */
+  #resSeq{position:fixed;inset:0;z-index:8990;background:#000;opacity:0;transition:opacity .6s;overflow:hidden;color:#fff;touch-action:manipulation;-webkit-user-select:none;user-select:none;}
+  #resSeq.in{opacity:1;}
+  #resSeq .rsq-pane{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:24px 14px calc(40px + env(safe-area-inset-bottom,0px));text-align:center;}
+  #resSeq.shake .rsq-pane{animation:rsqshake .4s;}
+  @keyframes rsqshake{0%,100%{transform:none;}15%{transform:translate(-10px,5px);}35%{transform:translate(9px,-7px);}55%{transform:translate(-6px,-4px);}75%{transform:translate(5px,6px);}}
+  #resSeq .rsq-ttl{font-size:38px;font-weight:900;font-style:italic;color:#fff4b8;text-shadow:0 0 8px #ff9d00,0 0 22px #ff7a00,0 3px 0 #a14b00;animation:upttl .5s cubic-bezier(.2,1.6,.4,1) both;}
+  #resSeq .rsq-sub{font-size:14px;color:#d8ccf0;font-weight:700;}
+  #resSeq .rsq-score{font-size:46px;font-weight:900;line-height:1.1;}
+  #resSeq .resstars{margin-top:6px;max-width:360px;color:#fff;}
+  #resSeq .rsq-tap{position:absolute;bottom:calc(16px + env(safe-area-inset-bottom,0px));left:0;right:0;color:#bfb3dd;font-size:12px;opacity:0;animation:upfade .3s ease-out 1.2s forwards;}
+  #resSeq .rg-N{--gc:#d6d6d6;--rc:rgba(230,230,230,.18);--gc2:rgba(210,210,210,.35);}
+  #resSeq .rg-R{--gc:#4fa8ff;--rc:rgba(120,190,255,.3);--gc2:rgba(80,160,255,.55);}
+  #resSeq .rg-SR{--gc:#b77bff;--rc:rgba(200,150,255,.45);--gc2:rgba(180,110,255,.65);}
+  #resSeq .rg-MR{--gc:#ffc83d;--rc:rgba(255,220,110,.55);--gc2:rgba(255,190,60,.75);}
+  #resSeq .rg-LR{--gc:#ff5fd0;--rc:rgba(255,190,240,.65);--gc2:rgba(255,120,220,.8);}
+  #resSeq .rsq-rays{position:absolute;left:50%;top:34%;width:180vmax;height:180vmax;margin:-90vmax 0 0 -90vmax;opacity:0;pointer-events:none;
+    background:repeating-conic-gradient(from 0deg,var(--rc) 0 7deg,transparent 7deg 18deg);
+    -webkit-mask-image:radial-gradient(circle,#000 0,rgba(0,0,0,.6) 22%,transparent 55%);mask-image:radial-gradient(circle,#000 0,rgba(0,0,0,.6) 22%,transparent 55%);}
+  #resSeq .rsq-rays.on{animation:uprays 9s linear infinite,upfade .4s ease-out forwards;}
+  #resSeq .rsq-rays.r2.on{animation:rsqrev 6s linear infinite,upfade .4s ease-out forwards;}
+  #resSeq .rg-LR .rsq-rays.on{animation:uprays 6s linear infinite,upfade .4s ease-out forwards,rsqhue 2.5s linear infinite;}
+  #resSeq .rg-LR .rsq-rays.r2.on{animation:rsqrev 4s linear infinite,upfade .4s ease-out forwards,rsqhue 2.5s linear infinite;}
+  @keyframes rsqrev{to{transform:rotate(-360deg);}}
+  @keyframes rsqhue{to{filter:hue-rotate(360deg);}}
+  #resSeq .rsq-glow{position:absolute;left:50%;top:34%;width:80vmin;height:80vmin;margin:-40vmin 0 0 -40vmin;border-radius:50%;opacity:0;pointer-events:none;
+    background:radial-gradient(circle,rgba(255,255,255,.9) 0,var(--gc2) 30%,transparent 66%);}
+  #resSeq .rsq-glow.on{animation:upglow 1.4s ease-out forwards;}
+  #resSeq .rg-MR .rsq-glow.on,#resSeq .rg-LR .rsq-glow.on{animation:upglow 1.4s ease-out forwards,rsqpulse 1.6s ease-in-out 1.4s infinite alternate;}
+  @keyframes rsqpulse{from{transform:scale(1);opacity:.75;}to{transform:scale(1.12);opacity:1;}}
+  #resSeq .rsq-flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;}
+  #resSeq .rsq-flash.on{animation:upflash .6s ease-out forwards;}
+  #resSeq .rsq-card{position:absolute;left:50%;top:34%;width:150px;height:150px;margin:-75px 0 0 -75px;border-radius:22px;overflow:hidden;box-shadow:0 0 0 4px var(--gc),0 0 30px var(--gc);}
+  #resSeq .rsq-card .cicon{width:100%!important;height:100%!important;}
+  #resSeq .rsq-card.shine::after{content:'';position:absolute;inset:0;background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.8) 50%,transparent 64%);background-size:260% 100%;animation:rsqshine 1.8s ease-in-out infinite;}
+  @keyframes rsqshine{from{background-position:160% 0;}to{background-position:-110% 0;}}
+  #resSeq .rsq-spk{position:absolute;left:50%;top:34%;width:10px;height:10px;margin:-5px;border-radius:50%;background:#fff;box-shadow:0 0 10px var(--gc);opacity:0;animation:upspk 1.2s ease-out forwards;pointer-events:none;}
+  #resSeq .rsq-info{position:absolute;left:12px;right:12px;top:calc(34% + 92px);opacity:0;transform:translateY(14px);transition:opacity .5s,transform .5s;}
+  #resSeq .rsq-info.on{opacity:1;transform:none;}
+  #resSeq .rsq-info .gget{color:#ffe27a;font-weight:900;font-size:14px;}
+  #resSeq .rsq-info .gname{font-size:19px;font-weight:900;margin:2px 0 4px;}
+  #resSeq .rsq-info .gname small{display:block;font-size:12px;color:#d8ccf0;}
+  #resSeq .rsq-info .ggr{display:inline-block;font-style:normal;font-size:13px;padding:0 7px;border-radius:7px;background:var(--gc);color:#1a1030;margin-right:4px;vertical-align:2px;}
+  #resSeq .rsq-sk{margin:5px auto 0;max-width:380px;text-align:left;background:rgba(255,255,255,.09);border-radius:10px;padding:6px 10px;font-size:12px;line-height:1.45;}
+  #resSeq .rsq-sk b{color:#ffd24a;}
+  #resSeq .rsq-rows{display:flex;flex-direction:column;gap:12px;align-items:center;margin:6px 0 10px;}
+  #resSeq .rsq-row{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:900;}
+  #resSeq .rsq-row img{width:24px;height:24px;}
+  #resSeq .rsq-dial{display:inline-flex;background:#1b1230;border:2px solid #ffd24a;border-radius:10px;padding:0 6px;box-shadow:inset 0 6px 8px rgba(0,0,0,.6),inset 0 -6px 8px rgba(0,0,0,.6);}
+  #resSeq .rsq-dial .pl{font-size:26px;font-weight:900;color:#ffe27a;line-height:1.25em;}
+  #resSeq .rsq-dial .dg{display:inline-block;width:.64em;height:1.25em;overflow:hidden;font-size:30px;line-height:1.25em;font-weight:900;color:#fff4b8;}
+  #resSeq .rsq-dial .dg span{display:block;}
+  #resSeq .rsq-team{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:4px;}
+  #resSeq .rsq-mem{position:relative;width:74px;font-size:11px;}
+  #resSeq .rsq-mem .ic{position:relative;width:66px;height:66px;margin:0 auto;border-radius:14px;overflow:hidden;box-shadow:0 0 0 2px rgba(255,255,255,.3);}
+  #resSeq .rsq-mem .ic .cicon{width:100%!important;height:100%!important;}
+  #resSeq .rsq-mem.up .ic{animation:upbase 1s ease-out;box-shadow:0 0 0 3px #ffe066,0 0 22px #ffd24a;}
+  #resSeq .rsq-mem .lvb{position:absolute;left:-6px;top:-9px;z-index:2;background:#ff3d7f;color:#fff;font-weight:900;font-size:10px;border-radius:8px;padding:1px 5px;white-space:nowrap;opacity:0;transform:scale(.3);transition:.35s cubic-bezier(.2,1.6,.4,1);box-shadow:0 2px 6px rgba(0,0,0,.5);}
+  #resSeq .rsq-mem.up .lvb{opacity:1;transform:none;}
+  #resSeq .rsq-mem .lv{font-weight:900;margin-top:3px;}
+  #resSeq .rsq-mem .bar{height:7px;background:rgba(255,255,255,.15);border-radius:4px;overflow:hidden;margin-top:2px;}
+  #resSeq .rsq-mem .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#7cf,#7fffd4);}
+  #resSeq .rsq-mem .bar i.go{transition:width .35s linear;}
+  #resSeq .rsq-mem .mx{color:#ffd24a;font-weight:900;font-size:10px;}
+  #resSeq .rsq-btns{margin-top:18px;opacity:0;transform:translateY(10px);transition:opacity .5s,transform .5s;pointer-events:none;}
+  #resSeq .rsq-btns.on{opacity:1;transform:none;pointer-events:auto;}
   body.lite #upFx .rays{display:none;}
   @keyframes ipulse{to{transform:scale(1.08);}}
   .bombpick #game{outline:3px solid #ffd24a;outline-offset:2px;border-radius:12px;}
@@ -3335,7 +3401,7 @@
         em.textContent = Math.ceil(left * pts);
         em.className = left <= Math.ceil(enemyHP / 3) ? 'low' : '';
       });
-      $('vsst' + i).textContent = c.alive ? ('残' + Math.ceil(Math.max(0, enemyHP - cpuDone(c)) * enUnitPts())) : '脱落';
+      $('vsst' + i).textContent = c.alive ? ('残' + Math.ceil(Math.max(0, enemyHP - cpuDone(c)) * enUnitPts())) : 'LOSE';
     });
   }
   // n個ぶんの攻撃を受ける（色はランダムに散らす）
@@ -3382,7 +3448,7 @@
   const cpuDone = c => goalColor >= 0 ? c.stacks[goalColor] : Math.max(...c.stacks);
   function checkCpuOut(c){
     if (c.alive && cpuDone(c) >= enemyHP) {
-      c.alive = false; toast(c.name + ' 脱落！');
+      c.alive = false; toast(c.name + ' LOSE!');
       if (cpus.every(x => !x.alive)) winGame();
     }
   }
@@ -3397,7 +3463,8 @@
     itemsStop();
     let coinNote = '';
     // ストーリー：★を付けて保存（すぐ保存）。★＝クリア＋コンティニューなし＋カラーHPを警告ラインまで上げない
-    let got = 0, firstClear = false, bossBefore = 0;
+    let got = 0, firstClear = false, bossBefore = 0, seqC0 = coins;
+    lastExpInfo = null;
     if (gameMode === 'story' && curStage) {
       const i = curStage.no - 1;
       const runMask = misFinal(), oldMask = storyMask[i];
@@ -3427,7 +3494,7 @@
     canvas.parentElement.classList.add('won');      // 盤面を薄くする
     $('meRow').classList.add('hidden'); $('meSay').classList.remove('on'); $('enSay').classList.remove('on');
     $('finalScore').textContent = score;
-    let note = '相手を全員脱落させました。記録は残りません。';
+    let note = '相手に全員勝ちました。記録は残りません。';
     let nx = -1;
     if (gameMode === 'story' && curStage) {
       const st = curStage;
@@ -3443,6 +3510,7 @@
     nextStage = nx;
     $('nextBtn').classList.toggle('hidden', nx < 0);
     if (nx >= 0) $('nextBtn').querySelector('span').innerHTML = '次へ<small>' + STORY[nx].label + '</small>';
+    const seqData = (gameMode === 'story' && curStage) ? {label: curStage.label, score, stars: lastStars, coins: coins - seqC0, exp: lastExpInfo, gets: winGets.slice()} : null;
     showGets();
     $('stageBtn').classList.toggle('hidden', gameMode !== 'story');   // ストーリーならマップへ戻る（次の面はマップで選ぶ）
     $('stageBtn').classList.toggle('next', gameMode === 'story');
@@ -3452,6 +3520,7 @@
     clearTimeout(winFade); clearTimeout(winShow);
     const showResult = () => {
       if (running) return;
+      if (seqData) { storyResultSeq(seqData); return; }   // ストーリーは黒い画面で順番に見せる
       const ov = $('over');
       ov.classList.add('soft'); ov.classList.remove('hidden');
       requestAnimationFrame(() => ov.classList.add('in'));
@@ -5488,18 +5557,144 @@
     });
     if (list.length) sndGCard(true);
   }
+  let lastExpInfo = null;                                 // 結果画面で見せる：チームの経験値とレベルアップ
+  // ===== ストーリーで勝ったあと：黒い画面 → スコアとクリア報酬 → 仲間になったキャラ → コイン・経験値・レベルアップ =====
+  function skillLine(id, kind){
+    const nm = kind === 'sp' ? (SPECIAL_NAME[id] || '').replace('！', '') : (OUGI_NAME[id] || '');
+    if (!nm) return '';
+    let ds = ''; try { ds = String(skDescU(id, kind, {id, star: 0})).split('<br>')[0]; } catch(e) {}
+    return '<div class="rsq-sk"><b>' + (kind === 'sp' ? '必殺技' : '奥義') + '「' + nm + '」</b>' + (ds ? '<br>' + ds : '') + '</div>';
+  }
+  function storyResultSeq(r){
+    const old = $('resSeq'); if (old) old.remove();
+    const d = document.createElement('div'); d.id = 'resSeq'; document.body.appendChild(d);
+    requestAnimationFrame(() => d.classList.add('in'));
+    let timers = [], idx = -1, lockUntil = 0;
+    const later = (fn, ms) => { timers.push(setTimeout(() => { if (d.isConnected) fn(); }, ms)); };
+    const pane = (html, cls) => { d.querySelectorAll('.rsq-pane').forEach(p => p.remove()); const p = document.createElement('div'); p.className = 'rsq-pane' + (cls ? ' ' + cls : ''); p.innerHTML = html; d.appendChild(p); return p; };
+    const steps = [];
+    const next = () => { timers.forEach(clearTimeout); timers = []; idx++; if (idx < steps.length) steps[idx](); };
+    const close = () => { timers.forEach(clearTimeout); timers = []; d.remove(); };
+    d.addEventListener('click', e => {
+      const b = e.target.closest('[data-rsq]');
+      if (b) { const id = {map: 'stageBtn', retry: 'retryBtn', title: 'titleBtn'}[b.dataset.rsq]; close(); if (id) $(id).click(); return; }
+      if (performance.now() < lockUntil || idx >= steps.length - 1) return;
+      next();
+    });
+    // ① クリアとスコア・お題
+    steps.push(() => {
+      lockUntil = performance.now() + 800;
+      let stH = ''; if (r.stars) { showResStars(r.stars); stH = $('resStars').innerHTML; }
+      const p = pane('<div class="rsq-ttl">STAGE CLEAR!</div><div class="rsq-sub">' + (r.label || '') + '</div><div class="rsq-sub" style="margin-top:8px">スコア</div><div class="rsq-score">0</div>' +
+        (stH ? '<div class="resstars">' + stH + '</div>' : '') + '<div class="rsq-tap">タップで次へ</div>');
+      const el = p.querySelector('.rsq-score'), t0 = performance.now();
+      const run = () => { const k = Math.min(1, (performance.now() - t0) / 900); el.textContent = Math.round((r.score || 0) * k).toLocaleString(); if (k < 1 && el.isConnected) requestAnimationFrame(run); };
+      run();
+      try { sndFanfare(T(), 0.06); } catch(_) {}
+      later(next, 3400);
+    });
+    // ② 仲間になったキャラ：画面の外のどこかから、手裏剣のように回って飛んできて、真ん中にバン！
+    (r.gets || []).forEach(ci => steps.push(() => {
+      lockUntil = performance.now() + 1600;
+      const id = ALLC[ci].id, gr = CHAR_STAT[id].grade, rank = GRADE_RANK[gr] || 1, c = ALLC[ci];
+      const p = pane('<div class="rsq-rays"></div><div class="rsq-rays r2"></div><div class="rsq-glow"></div><div class="rsq-card"></div><div class="rsq-flash"></div>' +
+        '<div class="rsq-info"><div class="gget">NEW! 仲間になった！</div><div class="gname">' + (c.title ? '<small>' + c.title + '</small>' : '') + '<i class="ggr">' + gr + '</i>' + c.name + '</div>' +
+        skillLine(id, 'sp') + (isZakoId(id) ? '' : skillLine(id, 'ougi')) + '</div><div class="rsq-tap">タップで次へ</div>', 'rg-' + gr);
+      const card = p.querySelector('.rsq-card'); card.appendChild(charIcon(ci, 150));
+      const ang = Math.random() * Math.PI * 2, R0 = Math.hypot(innerWidth, innerHeight) * 0.8;
+      const sx = Math.cos(ang) * R0, sy = Math.sin(ang) * R0, spin = (Math.random() < 0.5 ? -1 : 1) * (1080 + 360 * Math.floor(Math.random() * 3));
+      const fly = 650;
+      try { card.animate([{transform: 'translate(' + sx + 'px,' + sy + 'px) rotate(' + spin + 'deg) scale(.5)'},
+        {transform: 'translate(0,0) rotate(0deg) scale(1.4)', offset: 0.78}, {transform: 'scale(.9)', offset: 0.9}, {transform: 'scale(1)'}],
+        {duration: fly + 300, easing: 'cubic-bezier(.35,.1,.45,1)', fill: 'both'}); } catch(e) {}
+      try { const t = T(); noise(t, fly / 1000, 'bandpass', 900, 5000, 0.07, 4); } catch(_) {}
+      later(() => {                                   // バン！
+        p.querySelector('.rsq-flash').classList.add('on');
+        d.classList.remove('shake'); void d.offsetWidth; d.classList.add('shake');
+        const rays = p.querySelectorAll('.rsq-rays');
+        if (rank >= 2) rays[0].classList.add('on');
+        if (rank >= 4) rays[1].classList.add('on');
+        p.querySelector('.rsq-glow').classList.add('on');
+        if (rank >= 3) card.classList.add('shine');
+        const nSp = [0, 0, 8, 16, 26, 44][rank] || 0;
+        for (let k = 0; k < nSp; k++) {
+          const s = document.createElement('div'); s.className = 'rsq-spk';
+          const a = Math.random() * Math.PI * 2, L = 90 + Math.random() * (rank >= 4 ? 220 : 140);
+          s.style.setProperty('--dx', Math.cos(a) * L + 'px'); s.style.setProperty('--dy', Math.sin(a) * L + 'px');
+          s.style.animationDelay = (Math.random() * (rank >= 5 ? 0.9 : 0.3)) + 's';
+          p.appendChild(s);
+        }
+        try { tone(80, T(), 0.3, 'sine', 0.3, 35); noise(T(), 0.25, 'lowpass', 200, 900, 0.18, 1); } catch(_) {}
+        try { sndGBurst(rank); } catch(_) {}
+        if (rank >= 5) later(() => { try { sndFanfare(T(), 0.08); } catch(_) {} }, 450);
+      }, fly);
+      later(() => { p.querySelector('.rsq-info').classList.add('on'); try { sndGCard(true); } catch(_) {} }, fly + 650);
+    }));
+    // ③ コイン・経験値（ダイヤルが回って止まる）→ チームのレベルアップ → ボタン
+    steps.push(() => {
+      lockUntil = Infinity;
+      const ex = r.exp || {gain: 0, list: []};
+      const dial = v => { const s = String(Math.max(0, v | 0)); return '<span class="rsq-dial"><span class="pl">+</span>' + s.split('').map(() => '<span class="dg"><span>' + '0123456789'.repeat(3).split('').join('<br>') + '</span></span>').join('') + '</span>'; };
+      const p = pane('<div class="rsq-ttl" style="font-size:30px">REWARD</div><div class="rsq-rows">' +
+        '<div class="rsq-row">' + coinTag() + 'コイン ' + dial(r.coins) + '</div>' +
+        '<div class="rsq-row">EXP ' + dial(ex.gain) + '</div></div>' +
+        (ex.list.length ? '<div class="rsq-team">' + ex.list.map(() => '<div class="rsq-mem"><span class="lvb"></span><div class="ic"></div><div class="lv"></div><div class="bar"><i></i></div></div>').join('') + '</div>' : '') +
+        '<div class="resbtns rsq-btns"><button class="rbtn next" data-rsq="map"><i>🗺</i><span>マップへ</span></button><button class="rbtn" data-rsq="retry"><i>↻</i><span>もう一度</span></button><button class="rbtn" data-rsq="title"><i>⌂</i><span>タイトル</span></button></div>');
+      // ダイヤル
+      const vals = [r.coins, ex.gain]; let longest = 0;
+      p.querySelectorAll('.rsq-dial').forEach((dl, j) => {
+        const s = String(Math.max(0, vals[j] | 0)), cols = dl.querySelectorAll('.dg > span');
+        cols.forEach((col, k) => {
+          const dgt = +s[k], dur = 900 + 260 * k + 300 * j; longest = Math.max(longest, dur);
+          col.style.transform = 'translateY(0)';
+          requestAnimationFrame(() => requestAnimationFrame(() => { col.style.transition = 'transform ' + dur + 'ms cubic-bezier(.15,.7,.25,1)'; col.style.transform = 'translateY(' + (-(20 + dgt) * 1.25) + 'em)'; }));
+        });
+      });
+      let tk = 0; const tick = setInterval(() => { if (!d.isConnected || (tk += 70) > longest) { clearInterval(tick); return; } try { tone(1800 + Math.random() * 400, T(), 0.03, 'square', 0.025); } catch(_) {} }, 70);
+      later(() => { try { bell(1568, T(), 0.5, 0.06); bell(2093, T() + 0.06, 0.6, 0.05); } catch(_) {} }, longest);
+      // チームのレベルアップ
+      const mems = p.querySelectorAll('.rsq-mem');
+      ex.list.forEach((m, k) => {
+        const el = mems[k]; el.querySelector('.ic').appendChild(charIcon(m.ci, 66));
+        const lvEl = el.querySelector('.lv'), bar = el.querySelector('.bar i'), badge = el.querySelector('.lvb');
+        const frac = (lv, e) => lv >= m.cap ? 1 : Math.max(0, Math.min(1, e / expNeed(lv)));
+        const setLv = lv => { lvEl.innerHTML = 'LV' + lv + (lv >= m.cap ? ' <span class="mx">MAX</span>' : ''); };
+        setLv(m.lv0); bar.style.width = (frac(m.lv0, m.e0) * 100) + '%';
+        const ups = Math.max(0, m.lv1 - m.lv0), steps2 = Math.min(ups, 6);
+        let t = longest + 300 + k * 120;
+        for (let s = 0; s < steps2; s++) {
+          later(() => { bar.classList.add('go'); bar.style.width = '100%'; }, t);
+          t += 380;
+          const lvNow = s === steps2 - 1 ? m.lv1 : m.lv0 + s + 1;
+          later(() => {
+            bar.classList.remove('go'); bar.style.width = '0%'; setLv(lvNow);
+            badge.textContent = 'LV' + m.lv0 + '→LV' + lvNow;
+            el.classList.remove('up'); void el.offsetWidth; el.classList.add('up');
+            if (s === 0) { try { sndLevelUp(true); } catch(_) {} }
+          }, t);
+          t += 60;
+        }
+        later(() => { bar.classList.add('go'); bar.style.width = (frac(m.lv1, m.e1) * 100) + '%'; }, t + 20);
+      });
+      const endAt = longest + 300 + ex.list.length * 120 + 6 * 440 * (ex.list.some(m => m.lv1 > m.lv0) ? 1 : 0) + 500;
+      later(() => p.querySelector('.rsq-btns').classList.add('on'), Math.min(endAt, longest + 3200));
+    });
+    later(next, 600);
+  }
   function teamExp(st){
     const gain = Math.round((50 + 30 * (st.area + 1)) * (st.kind === 'boss' ? 3 : (st.kind === 'mid' ? 2 : 1)) * (st.route === 1 ? 1.3 : 1));
-    const ups = [];
+    const ups = [], info = {gain, list: []};
     teamMembers().forEach(u => {
       const cs = CHAR_STAT[u.id]; let lv = u.lv, exp = u.exp + gain;
       const cap = capOf(u), was = lv;
+      info.list.push({ci: ciOf(u), lv0: lv, e0: u.exp, cap, get lv1(){ return u.lv; }, get e1(){ return u.exp; }});
       while (lv < cap && exp >= expNeed(lv)) { exp -= expNeed(lv); lv++; }
       if (lv >= cap) exp = Math.min(exp, expNeed(lv) - 1);
       u.lv = lv; u.exp = exp;
       if (lv > was) ups.push(fullName(ALLC[ciOf(u)]) + ' LV' + lv);
     });
     saveUnits();
+    lastExpInfo = {gain, list: info.list.map(m => ({ci: m.ci, lv0: m.lv0, e0: m.e0, cap: m.cap, lv1: m.lv1, e1: m.e1}))};
     return ' 経験値 +' + gain + (ups.length ? '（レベルアップ：' + ups.join('・') + '）' : '') + '。';
   }
   // ----- チーム画面（ストーリーのマップの下） -----
