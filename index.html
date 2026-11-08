@@ -654,6 +654,12 @@
   .dsec .stt{margin-top:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;text-align:center;} .dsec .stt b{display:block;font-size:17px;color:#ffd24a;} .lbmats button i{font-style:normal;display:block;font-size:9px;color:#ffe27a;}
   .csort{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 8px;} .csort button{border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.3);color:#fff;font-weight:800;font-size:11px;padding:4px 9px;}
   .csort button.on{background:#ff7fb0;border-color:#ffd0e2;}
+  .coptbar{display:flex;gap:6px;align-items:stretch;margin:4px 0 8px;}
+  .coptbar .copt{flex:1;text-align:left;border-radius:10px;border:1px solid rgba(255,255,255,.3);background:rgba(0,0,0,.3);color:#fff;font-weight:800;font-size:12px;padding:6px 10px;font-family:inherit;}
+  .coptbar .copt small{margin-left:8px;color:#ffe27a;font-size:11px;}
+  .coptbar .creset{border-radius:10px;border:0;background:#ff5f9e;color:#fff;font-weight:900;font-size:12px;padding:6px 10px;font-family:inherit;}
+  .coptbar .creset:disabled{background:rgba(255,255,255,.15);color:rgba(255,255,255,.45);}
+  .copts{display:none;} .copts.open{display:block;}
   .cfilt{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 6px;align-items:center;} .cfilt b{font-size:10px;color:#ffe27a;margin-right:2px;}
   .cfilt button{border-radius:8px;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.3);color:#fff;font-weight:800;font-size:11px;padding:3px 8px;} .cfilt button.on{background:#5fb8ff;border-color:#cfe9ff;}
   .pager{display:flex;justify-content:center;align-items:center;gap:6px;margin:8px 0;color:#fff;font-weight:800;font-size:12px;}
@@ -6137,6 +6143,7 @@
   // 一覧が長くならないように：ページ分け＋しぼりこみ
   const BOX_PER = 40, MAT_PER = 30;
   const GR5 = ['N', 'R', 'SR', 'MR', 'LR'];
+  let boxOpt = false;                                     // 並べかえ・しぼりこみは、ふだんは折りたたむ
   let boxPage = 0, boxFG = 'all', boxFT = 'all', matPage = 0, matF = 'all', feedSel = new Set();
   function pagerHTML(page, total, per, key){
     const n = Math.max(1, Math.ceil(total / per)); if (n <= 1) return '';
@@ -6165,12 +6172,17 @@
       const list = list0.slice(boxPage * BOX_PER, boxPage * BOX_PER + BOX_PER);
       const cnt = {}; units.forEach(u => cnt[u.id] = (cnt[u.id] || 0) + 1);
       h += '<section><h3>持ちキャラ（' + (list0.length === all.length ? all.length : list0.length + ' / ' + all.length) + '体）</h3>' +
-           '<div class="clegend">枠の色＝グレード：' + ['N', 'R', 'SR', 'MR', 'LR'].map(g => '<i class="g-' + g + '">' + g + '</i>').join('') +
+           (() => { const sn = (SORTS.find(x => x[0] === boxSort) || ['', '入手順'])[1] + (boxAsc ? '↑' : '↓');
+             const fg = boxFG === 'all' ? '' : '・' + boxFG, ft = boxFT === 'all' ? '' : '・' + TYPE_INFO[boxFT].name;
+             const dirty = boxSort !== 'new' || boxAsc || boxFG !== 'all' || boxFT !== 'all';
+             return '<div class="coptbar"><button data-copt="1" class="copt">' + (boxOpt ? '▲' : '▼') + ' 並べかえ・しぼりこみ<small>' + sn + fg + ft + '</small></button>' +
+               '<button data-creset="1" class="creset"' + (dirty ? '' : ' disabled') + '>一括解除</button></div>'; })() +
+           '<div class="copts' + (boxOpt ? ' open' : '') + '"><div class="clegend">枠の色＝グレード：' + ['N', 'R', 'SR', 'MR', 'LR'].map(g => '<i class="g-' + g + '">' + g + '</i>').join('') +
            '　①②③④＝今のチームの何番目か（①がメイン）　<i class="lbmark">突破</i>＝限界突破できる　<i class="maxmk">MAX</i>＝1つ上のグレードの限界突破の材料にできる　<i class="clock">🔒</i>＝ロック中（材料にできない）</div><div class="csort">' +
            SORTS.map(([k, n]) => '<button data-sort="' + k + '" class="' + (boxSort === k ? 'on' : '') + '">' + n + (boxSort === k ? (boxAsc ? '↑' : '↓') : '') + '</button>').join('') +
            '</div><div class="cfilt"><b>グレード</b>' + ['all'].concat(GR5).map(g => '<button data-fg="' + g + '" class="' + (boxFG === g ? 'on' : '') + '">' + (g === 'all' ? '全部' : g) + '</button>').join('') +
            '</div><div class="cfilt"><b>タイプ</b><button data-ft="all" class="' + (boxFT === 'all' ? 'on' : '') + '">全部</button>' + Object.keys(TYPE_INFO).map(k => '<button data-ft="' + k + '" class="' + (boxFT === k ? 'on' : '') + '">' + TYPE_INFO[k].mark + ' ' + TYPE_INFO[k].name + '</button>').join('') +
-           '</div>' + pagerHTML(boxPage, list0.length, BOX_PER, 'box') + '<div class="cgrid">';
+           '</div></div>' + pagerHTML(boxPage, list0.length, BOX_PER, 'box') + '<div class="cgrid">';
       if (!list.length) h += '<p>この条件のキャラはいません。</p>';
       list.forEach(u => {
         const ci = ciOf(u), ti = t.indexOf(u.u), lb = cnt[u.id] > 1 && (u.star || 0) < starMaxOf(u);
@@ -6506,7 +6518,9 @@
     if (e.target.closest('[data-unslot]')) { boxSlot = -1; drawBox(); return; }
     const tb = e.target.closest('[data-team]'); if (tb) { teamNo = +tb.dataset.team; boxSlot = -1; fixTeam(); drawBox(); return; }
     const pgb = e.target.closest('[data-pg]');
-    if (pgb && !pgb.disabled) { const [k, v] = pgb.dataset.pg.split(':'); if (k === 'box') boxPage = +v; else matPage = +v; drawBox(); const sec = $('boxBody').querySelector(k === 'box' ? '.cfilt' : '.lbmats'); if (sec) sec.scrollIntoView({block: 'start'}); return; }
+    if (pgb && !pgb.disabled) { const [k, v] = pgb.dataset.pg.split(':'); if (k === 'box') boxPage = +v; else matPage = +v; drawBox(); const sec = $('boxBody').querySelector(k === 'box' ? '.coptbar' : '.lbmats'); if (sec) sec.scrollIntoView({block: 'start'}); return; }
+    if (e.target.closest('[data-copt]')) { boxOpt = !boxOpt; drawBox(); return; }
+    if (e.target.closest('[data-creset]')) { boxSort = 'new'; boxAsc = false; boxFG = 'all'; boxFT = 'all'; boxPage = 0; save('boxsort', 'new'); save('boxasc', '0'); drawBox(); toast('並べかえ・しぼりこみを元に戻しました'); return; }
     const fgb = e.target.closest('[data-fg]'); if (fgb) { boxFG = fgb.dataset.fg; boxPage = 0; drawBox(); return; }
     const ftb = e.target.closest('[data-ft]'); if (ftb) { boxFT = ftb.dataset.ft; boxPage = 0; drawBox(); return; }
     const so = e.target.closest('[data-sort]');
@@ -6563,7 +6577,7 @@
   });
   // ---- チームの枠の長押し：外す・入れかえる ----
   let lpTimer = 0, lpFired = false, lpStart = null;
-  function scrollToList(){ const sec = $('boxBody').querySelector('.cfilt') || $('boxBody').querySelector('.cgrid'); if (sec) setTimeout(() => sec.scrollIntoView({block: 'start', behavior: 'smooth'}), 60); }
+  function scrollToList(){ const sec = $('boxBody').querySelector('.coptbar') || $('boxBody').querySelector('.cgrid'); if (sec) setTimeout(() => sec.scrollIntoView({block: 'start', behavior: 'smooth'}), 60); }
   function slotMenu(k){
     const uid = curTeam()[k], u = unitOf(uid); if (!u) return;
     const old = $('slotMenu'); if (old) old.remove();
