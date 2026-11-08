@@ -5011,7 +5011,7 @@
     // 対戦用（オンライン対戦を作るときに使う）
     shield: '88473b7a62c81918aa222a3648073b09', ice: '82c1aaef6b0a9de9cd92a9d21ddd46ca', speedup: 'c82710e03971c24070df8e220c2c47cb'};
   const itemImg = k0 => { const k = (typeof ITEMS !== 'undefined' && ITEMS[k0] && ITEMS[k0].img) || k0; return (LOCAL_ART || !ITEM_BLOB[k]) ? 'img/item/' + k + '.webp' : blobU(ITEM_BLOB[k]); };
-  const coinTag = () => '<img src="' + itemImg('coin') + '" alt="コイン">';
+  const coinTag = () => '<img src="' + gImg('coin_silver') + '" alt="シルバーコイン">';   // ふだんのコイン＝シルバー（ゴールドと見分けるため銀色の絵）
   // アイテム（ストーリー専用）
   const ITEMS = {
     charm:   {name: 'お守り',           price: 200, desc: '負けそうになったとき1回だけ、自動でカラーHPを全部0にして続けられる'},
