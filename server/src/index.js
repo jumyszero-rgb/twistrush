@@ -1,4 +1,4 @@
-import { Lobby, Room, MEDAL, MEDAL_SHOP, VS_KINDS, medalOf, medalDaily, medalTake, vsTop } from './vs.js';
+import { Lobby, Room, MEDAL, MEDAL_SHOP, VS_KINDS, medalOf, medalDaily, medalTake, vsTop, vsRewards, vsClaim } from './vs.js';
 export { Lobby, Room };
 // TWIST RUSH サーバー（Cloudflare Workers + D1）
 //   ・ログイン（Google／LINE／Microsoft）  ・セーブの保存と読み込み
@@ -34,7 +34,9 @@ const SCHEMA = [
   "CREATE TABLE IF NOT EXISTS medal_log ( id INTEGER PRIMARY KEY AUTOINCREMENT, account_id TEXT NOT NULL, delta INTEGER NOT NULL, reason TEXT NOT NULL, created_at INTEGER NOT NULL )",
   "CREATE INDEX IF NOT EXISTS idx_medal_log ON medal_log(account_id, created_at)",
   "CREATE TABLE IF NOT EXISTS ratings ( account_id TEXT NOT NULL, kind TEXT NOT NULL, rate INTEGER NOT NULL, win INTEGER NOT NULL DEFAULT 0, lose INTEGER NOT NULL DEFAULT 0, draw INTEGER NOT NULL DEFAULT 0, updated_at INTEGER NOT NULL, PRIMARY KEY (account_id, kind) )",
-  "CREATE INDEX IF NOT EXISTS idx_ratings ON ratings(kind, rate DESC)"
+  "CREATE INDEX IF NOT EXISTS idx_ratings ON ratings(kind, rate DESC)",
+  "CREATE TABLE IF NOT EXISTS ratings_month ( account_id TEXT NOT NULL, kind TEXT NOT NULL, month TEXT NOT NULL, rate INTEGER NOT NULL, games INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (account_id, kind, month) )",
+  "CREATE INDEX IF NOT EXISTS idx_ratings_month ON ratings_month(kind, month, rate DESC)"
   ];
 
 // ---------- 小さな道具 ----------
@@ -328,6 +330,9 @@ async function api(env, req, url) {
 
   // ランキングに登録
   if (p === '/api/score' && M === 'POST') { await setCountry(env, req, me.id); return rankPost(env, req, me); }
+  // ---- 対戦の月間プレゼント ----
+  if (p === '/api/vs/reward' && M === 'GET') return json(env, req, { rewards: await vsRewards(env, me.id) });
+  if (p === '/api/vs/reward/claim' && M === 'POST') { const b = await req.json().catch(() => ({})); const r = await vsClaim(env, me.id, String(b.kind || '')); return r.error ? fail(env, req, r.error, 409) : json(env, req, r); }
   // ---- 対戦メダル ----
   if (p === '/api/medal' && M === 'GET') {
     const m = await medalOf(env, me.id), t = nowSec();

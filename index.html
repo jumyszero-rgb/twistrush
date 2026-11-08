@@ -5025,7 +5025,7 @@
       '<p style="margin:6px 0 0;font-size:12px">' + (olBet ? '勝つと相手の分ももらえて +' + olBet * 2 + '。負けると −' + olBet + '。' : '賭けずに対戦します（レートは変わります）。') + '</p></div>' +
       '<button class="olbig" id="olQuick">⚡ ランダム対戦</button>' +
       '<div class="olrow"><button id="olCreate">🏠 部屋を作る</button><button id="olJoin">🔢 番号で入る</button><button id="olRank">🏆 対戦ランキング</button><button id="olShop">🛒 メダル交換</button></div>' +
-      '<p style="font-size:12px;margin-top:10px">3分たったら、カラーHPのいちばん高い色が低いほうの勝ち。対戦中は一時停止できません。途中で抜けると負けになります。</p>';
+      '<p style="font-size:12px;margin-top:10px">🎁 ランダム対戦のレート順で、毎月プレゼントがもらえます（' + (olKind === 'simple' ? 'シンプル対戦のほうが豪華' : 'キャラ対戦はシンプル対戦の半分くらい') + '）。くわしくは「対戦ランキング」。<br>3分たったら、カラーHPのいちばん高い色が低いほうの勝ち。対戦中は一時停止できません。途中で抜けると負けになります。</p>';
     olFill(body);
     if ($('olDaily')) $('olDaily').onclick = async () => { try { const r = await api('/api/medal/daily', {method: 'POST', body: '{}', tok: rankTok()}); toast('対戦メダル +' + r.got); drawOnline(); } catch (_) { toast('サーバーにつながりませんでした'); } };
     body.querySelectorAll('.oltabs button').forEach(b => b.onclick = () => { olKind = b.dataset.k; save('ol_kind', olKind); drawOnline(); });
@@ -5103,9 +5103,22 @@
       (r.me && r.me.rank ? '<div class="wme"><span class="wme-l">あなたは</span><span class="wme-n">' + r.me.rank + '位</span><span class="wme-s">レート ' + r.me.rate + '<br>' + r.me.win + '勝' + r.me.lose + '敗</span></div>' : '') +
       (top.length ? '<div class="podium">' + pod(top[1], 0) + pod(top[0], 1) + pod(top[2], 2) + '</div>' + top.slice(3).map((x, i) => '<div class="wrow' + (x.me ? ' me' : '') + '" style="--i:' + i + '"><span class="rk">' + x.rank + '</span><span class="nm2">' + flagOf(x.cc) + olEsc(x.name) + '</span><span class="sc">' + x.rate + '</span></div>').join('')
         : '<div class="wrow"><span class="nm2">まだ記録がありません</span></div>') +
-      '<button class="btn gray" id="olBackTop" style="margin-top:12px">もどる</button></div>';
+      '<button class="btn gray" id="olBackTop" style="margin-top:12px">もどる</button></div>' + olPrizeHTML(r);
     body.querySelectorAll('.oltabs button').forEach(b => b.onclick = () => { olKind = b.dataset.k; save('ol_kind', olKind); drawOlRank(); });
     $('olBackTop').onclick = () => { olView = 'top'; drawOnline(); };
+  }
+  // 月間レートランキングのプレゼント（ランダム対戦のレート順。前の月に5戦以上した人）
+  function olPrizeHTML(r){
+    const pz = (r && r.prizes) || []; if (!pz.length) return '';
+    const m = r.month, cur = m && m.ok && m.rank ? pz.findIndex(x => !x.upTo || m.rank <= x.upTo) : -1;
+    const ic = ['👑', '🥈', '🏅', '🎖', '🎁', '🎀'];
+    return '<div class="prz"><div class="prz-h">🎁 ' + OL_KIND[r.kind] + 'の月間プレゼント</div>' +
+      '<div class="prz-s">' + (m ? (m.ok ? '今月のあなたは <b>' + m.rank + '位</b> / ' + m.total + '人（レート ' + m.rate + '）。このままだと光っている段がもらえます'
+          : '今月 ' + m.games + '戦。あと ' + (r.minGames - m.games) + '戦（ランダム対戦）でプレゼントの対象になります')
+        : 'ランダム対戦を月に' + r.minGames + '戦以上すると、月末のレートの順位でもらえます') + '</div>' +
+      pz.map((x, i) => '<div class="prz-r' + (i === cur ? ' on' : '') + '"><span class="prz-l">' + (ic[i] || '🎁') + ' ' + x.label + '</span><span class="prz-i">' +
+        Object.entries(x.items).map(([k, n]) => '<i>' + itemLabel(k) + ' ×' + n + '</i>').join('') + '</span></div>').join('') +
+      '<div class="prz-f">部屋番号の対戦はレートが変わりません（ランダム対戦だけ）。翌月1日（日本時間）に、ゲームを開くと受け取れます。</div></div>';
   }
   async function olCancel(){
     const room = onl && onl.room; onlClose();
@@ -5269,7 +5282,7 @@
       const from = (onl.me ? onl.me.rate : r.rate - r.delta);
       el.className = 'rkres onlres ' + (r.res === 'win' ? 't1' : r.res === 'lose' ? 'lose' : '');
       el.innerHTML = '<div class="rk-head">⚔ ' + OL_KIND[onl.kind] + '</div>' +
-        '<div class="or-row"><div class="or-box">レート<b id="orRate">' + from + '</b><span>' + (r.delta >= 0 ? '+' : '') + r.delta + '</span></div>' +
+        '<div class="or-row"><div class="or-box">レート<b id="orRate">' + from + '</b><span>' + (r.rated === false ? '部屋番号の対戦は変わりません' : (r.delta >= 0 ? '+' : '') + r.delta) + '</span></div>' +
         (onl.bet || r.medal ? '<div class="or-box">対戦メダル<b class="' + (r.medal > 0 ? 'up' : r.medal < 0 ? 'down' : '') + '">' + (r.medal > 0 ? '+' : '') + r.medal + '</b><span>のこり ' + (r.medals || 0).toLocaleString() + '</span></div>' : '') + '</div>' +
         '<div class="or-btns"><button class="or-again" id="orAgain">🔁 同じ相手と再戦</button><button class="or-sub" id="orQuick">⚡ ランダムでもう一度</button><button class="or-sub" id="orTop">対戦トップへ</button></div>';
       el.classList.remove('hidden');
@@ -5310,7 +5323,7 @@
     if (running || !$('daily').classList.contains('hidden')) { setTimeout(checkRewards, 2000); return; }   // 毎日のプレゼントや試合が終わってから
     try {
       const r = await api('/api/reward', {tok: rankTok()});
-      const list = (r && r.rewards) || []; if (!list.length) return;
+      const list = (r && r.rewards) || []; if (!list.length) return checkVsRewards();
       const x = list[0], its = Object.entries(x.items).map(([k, n]) => itemLabel(k) + ' ×' + n).join('<br>');
       askChoice('🏆 ' + x.month.replace('-', '年') + '月の月間ランキング<br><b>' + RW_MODE[x.mode] + '　' + x.rank + '位</b>（' + x.total + '人中）<br><small>ごほうび（' + x.label + '）</small><br>' + its,
         '受け取る', 'あとで',
@@ -5324,6 +5337,20 @@
     } catch (e) { /* つながらないときは次の起動で */ }
   }
   setTimeout(checkRewards, 2500);
+  async function checkVsRewards(){
+    try {
+      const r = await api('/api/vs/reward', {tok: rankTok()});
+      const x = ((r && r.rewards) || [])[0]; if (!x) return;
+      const its = Object.entries(x.items).map(([k, n]) => itemLabel(k) + ' ×' + n).join('<br>');
+      askChoice('⚔ ' + x.month.replace('-', '年') + '月の' + OL_KIND[x.kind] + 'ランキング<br><b>' + x.rank + '位</b>（' + x.total + '人中・レート ' + x.rate + '）<br><small>プレゼント（' + x.label + '）</small><br>' + its,
+        '受け取る', 'あとで',
+        async () => {
+          try { const c = await api('/api/vs/reward/claim', {method: 'POST', body: JSON.stringify({kind: x.kind}), tok: rankTok()});
+            Object.entries(c.reward.items).forEach(([k, n]) => { inv[k] = own(k) + n; }); saveInv(); toast('プレゼントを受け取りました'); setTimeout(checkVsRewards, 600); }
+          catch (e) { toast(e.status === 409 ? 'もう受け取っています' : 'サーバーにつながりませんでした'); }
+        }, () => {});
+    } catch (_) {}
+  }
   async function drawWorld(){
     markSel('wperiod', wPeriod);
     const box = $('worldList'), note = $('worldNote');

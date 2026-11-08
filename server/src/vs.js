@@ -23,6 +23,58 @@ export const MEDAL_SHOP = [
 export const VS_KINDS = ['simple', 'chara'];
 export const VS_LIMIT_SEC = 180;           // 3分たったら、カラーHPのいちばん高い色が低い方の勝ち
 const RATE_START = 1000, RATE_K = 32;
+// 月間レートランキングのプレゼント（ランダム対戦だけで決まる。部屋番号の対戦はレートが動かない）
+// 前の月に5戦以上した人を、その月の終わりのレートで並べる。キャラ対戦はシンプル対戦の半分くらい
+export const VS_MIN_GAMES = 5;
+export const VS_REWARDS = {
+  simple: [
+    { upTo: 1,   label: '1位',       items: { pot_SR: 1, refresh100: 3, star9: 1 } },
+    { upTo: 3,   label: '2〜3位',    items: { pot_R: 2, refresh80: 3, star6: 1 } },
+    { upTo: 10,  label: '4〜10位',   items: { pot_N: 3, refresh50: 3, star3: 2 } },
+    { upTo: 50,  label: '11〜50位',  items: { refresh30: 3, slow: 1 } },
+    { upTo: 100, label: '51〜100位', items: { refresh30: 2 } },
+    { upTo: 0,   label: '参加賞',    items: { refresh30: 1 } },
+  ],
+  chara: [
+    { upTo: 1,   label: '1位',       items: { pot_R: 1, refresh100: 2, star6: 1 } },
+    { upTo: 3,   label: '2〜3位',    items: { pot_R: 1, refresh80: 2, star3: 1 } },
+    { upTo: 10,  label: '4〜10位',   items: { pot_N: 2, refresh50: 2, star3: 1 } },
+    { upTo: 50,  label: '11〜50位',  items: { refresh30: 2 } },
+    { upTo: 100, label: '51〜100位', items: { refresh30: 1 } },
+  ],
+};
+const monthKey = t => { const d = new Date((t + TZ) * 1000); return d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0'); };
+const prevMonthKey = t => { const d = new Date((t + TZ) * 1000); d.setUTCDate(1); d.setUTCMonth(d.getUTCMonth() - 1); return d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0'); };
+async function monthSave(env, id, kind, rate, t) {
+  await env.DB.prepare('INSERT INTO ratings_month (account_id, kind, month, rate, games) VALUES (?, ?, ?, ?, 1) ON CONFLICT(account_id, kind, month) DO UPDATE SET rate = excluded.rate, games = games + 1').bind(id, kind, monthKey(t), rate).run();
+}
+async function monthRank(env, id, kind, month) {
+  const r = await env.DB.prepare('SELECT rate, games FROM ratings_month WHERE account_id = ? AND kind = ? AND month = ?').bind(id, kind, month).first();
+  if (!r) return null;
+  const above = await env.DB.prepare('SELECT COUNT(*) AS c FROM ratings_month WHERE kind = ? AND month = ? AND games >= ? AND rate > ?').bind(kind, month, VS_MIN_GAMES, r.rate).first();
+  const total = await env.DB.prepare('SELECT COUNT(*) AS c FROM ratings_month WHERE kind = ? AND month = ? AND games >= ?').bind(kind, month, VS_MIN_GAMES).first();
+  return { rate: r.rate, games: r.games, ok: r.games >= VS_MIN_GAMES, rank: r.games >= VS_MIN_GAMES ? (above.c || 0) + 1 : null, total: total.c || 0 };
+}
+const tierOf = (kind, rank) => VS_REWARDS[kind].find(x => !x.upTo || rank <= x.upTo) || null;
+// 先月のプレゼント（まだ受け取っていないもの）
+export async function vsRewards(env, id) {
+  const t = Math.floor(Date.now() / 1000), month = prevMonthKey(t), out = [];
+  for (const kind of VS_KINDS) {
+    const m = await monthRank(env, id, kind, month); if (!m || !m.ok) continue;
+    const tier = tierOf(kind, m.rank); if (!tier) continue;
+    const done = await env.DB.prepare('SELECT 1 FROM reward_claims WHERE account_id = ? AND month = ? AND mode = ?').bind(id, month, 'vs_' + kind).first();
+    if (done) continue;
+    out.push({ month, kind, rank: m.rank, total: m.total, rate: m.rate, label: tier.label, items: tier.items });
+  }
+  return out;
+}
+export async function vsClaim(env, id, kind) {
+  const r = (await vsRewards(env, id)).find(x => x.kind === kind); if (!r) return { error: '受け取れるプレゼントがありません' };
+  const res = await env.DB.prepare('INSERT OR IGNORE INTO reward_claims (account_id, month, mode, created_at) VALUES (?, ?, ?, ?)').bind(id, r.month, 'vs_' + kind, Math.floor(Date.now() / 1000)).run();
+  if (!res.meta.changes) return { error: 'もう受け取りました' };
+  return { ok: true, reward: r };
+}
+export async function vsMonthNow(env, id, kind) { return monthRank(env, id, kind, monthKey(Math.floor(Date.now() / 1000))); }
 const TZ = 9 * 3600;
 const dayKey = t => { const d = new Date((t + TZ) * 1000); return d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0') + '-' + String(d.getUTCDate()).padStart(2, '0'); };
 
@@ -76,7 +128,7 @@ export async function vsTop(env, kind, me) {
     const above = await env.DB.prepare('SELECT COUNT(*) AS c FROM ratings WHERE kind = ? AND rate > ?').bind(kind, r.rate).first();
     mine = Object.assign({ rank: r.win + r.lose + r.draw ? (above.c || 0) + 1 : null }, r);
   }
-  return { kind, top, me: mine };
+  return { kind, top, me: mine, prizes: VS_REWARDS[kind], minGames: VS_MIN_GAMES, month: me ? await vsMonthNow(env, me, kind) : null };
 }
 
 // ---------- ロビー：ランダム対戦の待ち合わせと、部屋番号 ----------
@@ -206,8 +258,9 @@ export class Room {
     this.phase = 'done'; clearTimeout(this.timer);
     const env = this.env, t = Math.floor(Date.now() / 1000), kind = this.cfg.kind, bet = this.cfg.bet;
     const out = {};
+    const rated = String(this.cfg.room || '').startsWith('q');   // ランダム対戦だけレートが動く
     if (win) {
-      const ew = 1 / (1 + Math.pow(10, (lose.rate - win.rate) / 400)), d = Math.max(1, Math.round(RATE_K * (1 - ew)));
+      const ew = 1 / (1 + Math.pow(10, (lose.rate - win.rate) / 400)), d = rated ? Math.max(1, Math.round(RATE_K * (1 - ew))) : 0;
       out[win.id] = { res: 'win', delta: d, rate: win.rate + d, medal: this.pot };
       out[lose.id] = { res: 'lose', delta: -d, rate: Math.max(0, lose.rate - d), medal: -bet };
       if (this.pot) await medalGive(env, win.id, this.pot, 'win', t);
@@ -215,7 +268,8 @@ export class Room {
       this.ps.forEach(p => { out[p.id] = { res: 'draw', delta: 0, rate: p.rate, medal: 0 }; });
       for (const p of this.ps) if (bet) await medalGive(env, p.id, bet, 'draw', t);
     }
-    for (const p of this.ps) await rateSave(env, p.id, kind, out[p.id].rate, out[p.id].res, t);
+    if (rated) for (const p of this.ps) { await rateSave(env, p.id, kind, out[p.id].rate, out[p.id].res, t); await monthSave(env, p.id, kind, out[p.id].rate, t); }
+    for (const p of this.ps) out[p.id].rated = rated;
     for (const p of this.ps) {
       const m = await medalOf(env, p.id);
       this.send(p, Object.assign({ t: 'end', why, medals: m ? m.balance : 0 }, out[p.id]));

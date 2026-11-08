@@ -117,3 +117,14 @@ CREATE TABLE IF NOT EXISTS ratings (
   PRIMARY KEY (account_id, kind)
 );
 CREATE INDEX IF NOT EXISTS idx_ratings ON ratings(kind, rate DESC);
+
+-- 月ごとの対戦レート（ランダム対戦だけ。月の終わりのレートと、その月の試合数）
+CREATE TABLE IF NOT EXISTS ratings_month (
+  account_id  TEXT NOT NULL,
+  kind        TEXT NOT NULL,
+  month       TEXT NOT NULL,             -- '2026-11'
+  rate        INTEGER NOT NULL,
+  games       INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (account_id, kind, month)
+);
+CREATE INDEX IF NOT EXISTS idx_ratings_month ON ratings_month(kind, month, rate DESC);
