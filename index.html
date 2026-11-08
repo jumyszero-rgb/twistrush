@@ -5886,7 +5886,11 @@
   const gTickets = () => ({ticket: +load('gticket', '0') || 0, ticket_hi: +load('gticket_hi', '0') || 0});
   const freeTenLeft = () => load('freeten', '0') !== '1';
   // 出る確率（グレードごと）。MR・LRはキャラがいないので、いまは出ない（いない分は下のグレードに回す）
-  const G_RATE = {silver: {LR: 1, MR: 4, SR: 15, R: 30, N: 50}, gold: {LR: 2, MR: 8, SR: 30, R: 60, N: 0}, hi: {LR: 5, MR: 15, SR: 80, R: 0, N: 0}};
+  const G_RATE = {silver: {LR: 1, MR: 4, SR: 15, R: 30, N: 50}, gold: {LR: 2, MR: 8, SR: 30, R: 60, N: 0}, hi: {LR: 1, MR: 4, SR: 95, R: 0, N: 0}};   // hi＝SR以上確定チケット（LR・MRの出やすさはシルバーガチャと同じ）
+  const rateText = r => ['LR', 'MR', 'SR', 'R', 'N'].filter(g => r[g]).map(g => g + ' ' + r[g] + '%').join('／');
+  // キャラ確定チケット：そのキャラが100%出る。{キャラid: 枚数}
+  const cTickets = () => loadJ('cticket', {}) || {};
+  function addCTicket(id, n){ const t = cTickets(); t[id] = (t[id] || 0) + (n || 1); save('cticket', JSON.stringify(t)); }
   const STORY_IDS = new Set(CHARS.map(c => c.id));          // ストーリーのキャラ（ボス9人）はガチャに出ない。倒すと仲間になる
   function gachaGrade(rate, minG){
     const pools = {}; ALLC.forEach((c, i) => { if (STORY_IDS.has(c.id)) return; const g = CHAR_STAT[c.id] && CHAR_STAT[c.id].grade; if (g) (pools[g] = pools[g] || []).push(i); });
@@ -5899,6 +5903,10 @@
     const pl = pools[order[k]]; return pl[Math.floor(Math.random() * pl.length)];
   }
   function gachaPull(n, kind){
+    if (String(kind).startsWith('char:')) {               // キャラ確定チケット：そのキャラが100%
+      const ci = ALLC_IDX.get(kind.slice(5)); if (ci == null) return [];
+      const isNew = !units.some(u => u.id === ALLC[ci].id); newUnit(ci); saveUnits(); return [{ci, isNew}];
+    }
     const rate = kind === 'ticket_hi' ? G_RATE.hi : (kind === 'gone' || kind === 'goldten') ? G_RATE.gold : G_RATE.silver;
     const out = [];
     for (let k = 0; k < n; k++) {
@@ -5977,9 +5985,11 @@
       h += '<button class="btn shop" data-g="gone">1回 ' + coinImg('coin_gold') + G_COST.gold.one + '</button><button class="btn shop" data-g="goldten">10連（11体） ' + coinImg('coin_gold') + G_COST.gold.ten.toLocaleString() + '</button>';
       if (t.ticket_hi > 0) h += '<button class="btn shop" data-g="ticket_hi">' + coinImg('ticket_hi') + '確定チケット（' + t.ticket_hi + '枚）</button>';
     }
+    if (gTab !== 'item') { const ct = cTickets(); Object.keys(ct).filter(id => ct[id] > 0 && ALLC_IDX.has(id)).forEach(id => {
+      h += '<button class="btn shop" data-g="char:' + id + '">' + coinImg('ticket_hi') + fullName(ALLC[ALLC_IDX.get(id)]) + ' 確定チケット（' + ct[id] + '枚）</button>'; }); }
     if (!gRev) h += '<button class="btn gray" data-g="test">テスト用：コイン・チケットを増やす（公開前に消す）</button>' +
       (gTab === 'item' ? '<div class="rate">アイテムガチャ：ショップでは買えないアイテムが出る（いまは限界突破ポット）。' + 'シルバー版：' + igRateText('silver') + '。ゴールド版（課金）：' + igRateText('gold') + '。出るものは同じ。10連は1個SR以上が確定。</div>' : '<div class="rate">' + (gTab === 'silver' ? 'シルバーガチャ：無料のシルバーコインで引ける。' : 'ゴールドガチャ：有料のゴールドコインで引ける。高グレードが出やすい（予定）。') +
-      (gTab === 'gold' ? '出る確率：SR 40%／R 60%' : '出る確率：SR 20%／R 30%／N 50%') + '（MR・LRはキャラ追加後に出ます）。10連は1体SR以上が確定。同じキャラも1体ずつボックスに入ります。</div>');
+      (gTab === 'gold' ? '出る確率：' + rateText(G_RATE.gold) + '。確定チケット（SR以上確定）：' + rateText(G_RATE.hi) + '。' : '出る確率：' + rateText(G_RATE.silver) + '（ガチャチケットも同じ）。') + '10連は1体SR以上が確定。キャラ確定チケットはそのキャラが100%。同じキャラも1体ずつボックスに入ります。</div>');
     $('gachaFoot').innerHTML = h;
     $('gachaCoin').innerHTML = '';
     $('gWallet').innerHTML = '<span>' + coinImg('coin_silver') + 'シルバー <b>' + coins.toLocaleString() + '</b></span>' +
@@ -6031,7 +6041,8 @@
       if (acctToken) api('/api/dev/grant', {method: 'POST', body: JSON.stringify({amount: 10000})}).then(r => { if (r.gold) { gold = r.gold.total; drawGachaFoot(); refreshCoins(); } }).catch(() => toast('サーバーのゴールドは増やせませんでした（テストログインのときだけ増やせます）'));
       else { gold += 10000; save('gold', String(gold)); }
       save('gticket', String((+load('gticket', '0') || 0) + 10)); save('gticket_hi', String((+load('gticket_hi', '0') || 0) + 5));
-      save('freeten', '0'); drawGachaFoot(); toast('シルバー・ゴールド +10,000、チケット +10・確定チケット +5'); return;
+      const crew = ALLC.filter(c => c.id.startsWith('x_')); addCTicket(crew[Math.floor(Math.random() * crew.length)].id, 1);
+      save('freeten', '0'); drawGachaFoot(); toast('シルバー・ゴールド +10,000、チケット +10・確定チケット +5・キャラ確定チケット +1'); return;
     }
     let n = 1;
     const payS = c => { if (coins < c) { toast('シルバーコインが足りません'); return false; } addCoins(-c); return true; };
@@ -6049,6 +6060,7 @@
       if (acctToken) { gBusy = true; spendGold(c, 'gacha').then(ok => { gBusy = false; if (ok) gachaGo(n, kind); }); return; }
       if (!payG(c)) return;
     }
+    else if (String(kind).startsWith('char:')) { const t = cTickets(), id = kind.slice(5); if (!(t[id] > 0)) return; t[id]--; if (!t[id]) delete t[id]; save('cticket', JSON.stringify(t)); }
     else if (kind === 'ticket' || kind === 'ticket_hi') { const k2 = kind === 'ticket' ? 'gticket' : 'gticket_hi', c = +load(k2, '0') || 0; if (c <= 0) return; save(k2, String(c - 1)); }
     gachaGo(n, kind);
   }
@@ -6058,7 +6070,7 @@
     const cube = $('gCube'), burst = $('gBurst'), box = $('gResult');
     box.innerHTML = ''; burst.className = 'g-burst'; cube.className = 'g-cube'; void cube.offsetWidth;
     cube.className = 'g-cube spin'; sndGSpin();
-    burst.src = gImg(gTab === 'gold' || kind === 'ticket_hi' ? 'burst_mr' : 'burst_sr');
+    burst.src = gImg(gTab === 'gold' || kind === 'ticket_hi' || String(kind).startsWith('char:') ? 'burst_mr' : 'burst_sr');
     $('gachaFoot').innerHTML = '';
     setTimeout(() => {
       if (n === 1) { gRev = {res, i: 0}; revealOne(); setTimeout(() => { gRev = null; gBusy = false; drawGachaFoot(); refreshCoins(); }, 900); }
