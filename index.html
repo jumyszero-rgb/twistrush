@@ -641,6 +641,10 @@
   .ustar{display:block;font-size:9px;line-height:1;color:#ffd24a;letter-spacing:-1px;text-shadow:0 0 3px #000;}
   .lbbox{margin-top:8px;padding:8px;border-radius:10px;background:rgba(255,210,74,.1);border:1px solid rgba(255,210,74,.35);line-height:1.6;}
   .lbbox .ustar{display:inline;font-size:13px;letter-spacing:0;}
+  .potlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;} .potrow{display:flex;align-items:center;gap:6px;background:rgba(0,0,0,.3);border-radius:10px;padding:4px 8px;font-size:12px;} .potrow img{width:36px;height:36px;} .potrow span{margin-left:auto;color:#ffd24a;font-weight:800;}
+  .lbsub{margin-top:10px;padding-top:8px;border-top:1px dashed rgba(255,255,255,.25);} .lbgo{margin-top:6px;border:0;border-radius:10px;padding:8px 12px;font-weight:900;background:linear-gradient(#ffd24a,#ff9d2a);color:#3a2000;} .lbgo:disabled{opacity:.4;}
+  .potbtn{display:flex;align-items:center;gap:8px;} .potbtn img{width:34px;height:34px;}
+  .g-card .potic{width:70px;height:70px;display:block;margin:0 auto 4px;filter:drop-shadow(0 0 10px var(--gc));} .g-card.big .potic{width:150px;height:150px;}
   .lbmats{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;} .lbmats button{position:relative;border:2px solid #ffd24a;border-radius:10px;background:rgba(0,0,0,.35);color:#fff;font-weight:800;font-size:10px;padding:3px;}
   .lbmats button i{display:block;font-style:normal;font-size:9px;color:#ff9db8;} .lbmats .tic{display:block;margin:0 auto;}
   .lbmark{position:absolute;top:18px;right:2px;font-size:8px;font-weight:900;color:#3a2210;background:linear-gradient(90deg,#ffe066,#ffb03d);border-radius:5px;padding:0 3px;box-shadow:0 0 6px rgba(255,200,80,.9);}
@@ -4937,6 +4941,16 @@
     star9:   {name: 'オクタ変換 9個', price: 350, desc: 'ふつうのブロック9個をランダムにオクタブロックへ変える', n: 9},
   };
   const ITEM_KEYS = Object.keys(ITEMS);
+  // 限界突破ポット：ショップでは買えない。アイテムガチャだけで出る。1個で★+1（LR2は2個、LR3〜LR5は3個）
+  const POT_G = ['N', 'R', 'SR', 'MR', 'LR'];
+  const POT_COL = {N: '#c9c9c9', R: '#4fa8ff', SR: '#b77bff', MR: '#ffc83d', LR: '#ff5fd0'};
+  const potKey = g => 'pot_' + g;
+  const potName = g => '限界突破ポット（' + g + '）';
+  const potImg = g => { const c = POT_COL[g];
+    return 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><radialGradient id="a" cx=".4" cy=".35"><stop offset="0" stop-color="#fff"/><stop offset=".35" stop-color="' + c + '"/><stop offset="1" stop-color="#222"/></radialGradient></defs>' +
+      '<circle cx="32" cy="34" r="30" fill="' + c + '" opacity=".25"/><rect x="24" y="8" width="16" height="8" rx="3" fill="#8a5a2b"/><path d="M22 16h20l-2 6c9 4 14 11 14 19 0 11-10 17-22 17S10 52 10 41c0-8 5-15 14-19z" fill="url(#a)" stroke="#fff" stroke-width="2"/>' +
+      '<path d="M32 30l3 7 7 .6-5.4 4.6 1.7 7-6.3-3.8-6.3 3.8 1.7-7L22 37.6l7-.6z" fill="#fff"/><text x="32" y="62" font-size="11" font-weight="900" text-anchor="middle" fill="#fff" stroke="#000" stroke-width="2" paint-order="stroke" font-family="sans-serif">' + g + '</text></svg>'); };
+  const potNeed = u => { const t = tierOf(u.id); return t >= 3 ? 3 : t === 2 ? 2 : 1; };
   const LOAD_MAX = 2;          // 持っていけるアイテムの種類
   const CONT_MAX = 3;          // ストーリーのコンティニュー（1ステージ）
   const SLOW_MS = 10000;       // スピードダウンの長さ
@@ -5272,8 +5286,12 @@
   const LV_MAX = {N: 30, R: 40, SR: 50, MR: 60, LR: 70};      // グレードごとの最大レベル（★を最大まで上げたとき）
   const STAR_MAX = {N: 2, R: 3, SR: 4, MR: 5, LR: 6};         // 限界突破できる★の数
   // レベルの上限：★0でLV10、★1つごとに+10
-  const capOf = u => Math.min(LV_MAX[CHAR_STAT[u.id].grade] || 50, 10 + 10 * (u.star || 0));
-  const starMaxOf = u => STAR_MAX[CHAR_STAT[u.id].grade] || 4;
+  // LRの中の段（LR1〜LR5）。表示はどれも「LR」。段が上がるごとに★上限+1・レベル上限+10
+  const LR_TIER = {};                                          // 例：LR_TIER['x_g99'] = 3（LR3）
+  const tierOf = id => (CHAR_STAT[id] && CHAR_STAT[id].grade === 'LR') ? (LR_TIER[id] || CHAR_STAT[id].tier || 0) : 0;
+  const lvMaxOf = u => (LV_MAX[CHAR_STAT[u.id].grade] || 50) + 10 * tierOf(u.id);
+  const capOf = u => Math.min(lvMaxOf(u), 10 + 10 * (u.star || 0));
+  const starMaxOf = u => (STAR_MAX[CHAR_STAT[u.id].grade] || 4) + tierOf(u.id);
   const starsHTMLu = u => { let h = ''; for (let k = 0; k < starMaxOf(u); k++) h += k < (u.star || 0) ? '★' : '☆'; return '<span class="ustar">' + h + '</span>'; };
   const expNeed = lv => Math.round(20 * Math.pow(lv, 1.6));   // 次のレベルまでに必要な経験値
   // ---- 持ちキャラは1体ずつ（同じキャラでも別々。レベルも1体ごと） ----
@@ -5506,7 +5524,41 @@
   }
   // シルバーガチャ（無料コイン）とゴールドガチャ（有料コイン）。確率は G_RATE
   let gTab = 'silver';
-  const G_COST = {silver: {one: 100, ten: 1000}, gold: {one: 100, ten: 1000}};
+  const G_COST = {silver: {one: 100, ten: 1000}, gold: {one: 100, ten: 1000}, item: {one: 100, ten: 1000}};
+  // アイテムガチャ：ショップで買えないアイテム（いまは限界突破ポット）だけが出る。シルバーコインで引く。10連は1個SR以上確定
+  const IG_RATE = {LR: 3, MR: 9, SR: 18, R: 30, N: 40};
+  function itemPull(n){
+    const out = [];
+    for (let k = 0; k < n; k++) {
+      let r = Math.random() * 100, g = 'N';
+      for (const x of ['LR', 'MR', 'SR', 'R', 'N']) { if (r < IG_RATE[x]) { g = x; break; } r -= IG_RATE[x]; }
+      if (n >= 11 && k === n - 1 && !out.some(o => GRADE_RANK[o.g] >= 3) && GRADE_RANK[g] < 3) g = 'SR';
+      inv[potKey(g)] = own(potKey(g)) + 1; out.push({g});
+    }
+    saveInv(); return out;
+  }
+  function itemCard(r, big){
+    const d = document.createElement('div'); d.className = 'g-card g-' + r.g + (big ? ' big' : '');
+    d.innerHTML = '<img class="potic" src="' + potImg(r.g) + '" alt=""><div>' + potName(r.g) + '</div>';
+    return d;
+  }
+  function itemGachaGo(n){
+    gBusy = true;
+    const res = itemPull(n), best = res.reduce((a, r) => Math.max(a, GRADE_RANK[r.g]), 1);
+    const cube = $('gCube'), burst = $('gBurst'), box = $('gResult');
+    box.innerHTML = ''; burst.className = 'g-burst'; cube.className = 'g-cube'; void cube.offsetWidth;
+    cube.className = 'g-cube spin'; sndGSpin();
+    burst.src = gImg(best >= 4 ? 'burst_mr' : 'burst_sr');
+    $('gachaFoot').innerHTML = '';
+    setTimeout(() => {
+      burst.className = 'g-burst go'; sndGBurst(best);
+      setTimeout(() => {
+        if (n === 1) box.appendChild(itemCard(res[0], true));
+        else { res.forEach((r, i) => { const d = itemCard(r, false); d.style.animationDelay = (i * 0.05) + 's'; box.appendChild(d); }); sndGList(); }
+        gBusy = false; drawGachaFoot(); refreshCoins();
+      }, 350);
+    }, 1000);
+  }
   // ---- 音（すべてその場で合成） ----
   const sndGSpin = () => { const t = T(); noise(t, 0.9, 'bandpass', 400, 3200, 0.10, 2); [0, 0.15, 0.3, 0.45, 0.6].forEach((d, k) => tone(500 + k * 160, t + d, 0.12, 'triangle', 0.06)); };
   // 開いた瞬間：ピカーン（いいキャラほど派手に）
@@ -5517,10 +5569,13 @@
   function drawGachaFoot(){
     const t = gTickets(), coinImg = k => '<img src="' + gImg(k) + '" alt="">';
     let h = '<div class="gtabs"><button data-tab="silver" class="' + (gTab === 'silver' ? 'on' : '') + '">' + coinImg('coin_silver') + 'シルバーガチャ</button>' +
-            '<button data-tab="gold" class="' + (gTab === 'gold' ? 'on' : '') + '">' + coinImg('coin_gold') + 'ゴールドガチャ</button></div>';
+            '<button data-tab="gold" class="' + (gTab === 'gold' ? 'on' : '') + '">' + coinImg('coin_gold') + 'ゴールドガチャ</button>' +
+            '<button data-tab="item" class="' + (gTab === 'item' ? 'on' : '') + '"><img src="' + potImg('SR') + '" alt="">アイテムガチャ</button></div>';
     if (gRev) {
       h += '<button class="btn gacha" data-g="next">' + (gRev.i + 1 < gRev.res.length ? 'つぎへ（' + (gRev.i + 1) + '/' + gRev.res.length + '）' : '一覧を見る') + '</button>' +
            '<button class="btn gray" data-g="skip">スキップ</button>';
+    } else if (gTab === 'item') {
+      h += '<button class="btn" data-g="ione">1回 ' + coinImg('coin_silver') + G_COST.item.one + '</button><button class="btn gacha" data-g="iten">10連（11個） ' + coinImg('coin_silver') + G_COST.item.ten.toLocaleString() + '</button>';
     } else if (gTab === 'silver') {
       if (freeTenLeft()) h += '<button class="btn gacha" data-g="free">初回限定 無料10連（11体）</button>';
       h += '<button class="btn" data-g="one">1回 ' + coinImg('coin_silver') + G_COST.silver.one + '</button><button class="btn gacha" data-g="ten">10連（11体） ' + coinImg('coin_silver') + G_COST.silver.ten.toLocaleString() + '</button>';
@@ -5530,8 +5585,8 @@
       if (t.ticket_hi > 0) h += '<button class="btn shop" data-g="ticket_hi">' + coinImg('ticket_hi') + '確定チケット（' + t.ticket_hi + '枚）</button>';
     }
     if (!gRev) h += '<button class="btn gray" data-g="test">テスト用：コイン・チケットを増やす（公開前に消す）</button>' +
-      '<div class="rate">' + (gTab === 'silver' ? 'シルバーガチャ：無料のシルバーコインで引ける。' : 'ゴールドガチャ：有料のゴールドコインで引ける。高グレードが出やすい（予定）。') +
-      (gTab === 'gold' ? '出る確率：SR 40%／R 60%' : '出る確率：SR 20%／R 30%／N 50%') + '（MR・LRはキャラ追加後に出ます）。10連は1体SR以上が確定。同じキャラも1体ずつボックスに入ります。</div>';
+      (gTab === 'item' ? '<div class="rate">アイテムガチャ：ショップでは買えないアイテムが出る（いまは限界突破ポット）。シルバーコインで引ける。出る確率：LR 3%／MR 9%／SR 18%／R 30%／N 40%。10連は1個SR以上が確定。</div>' : '<div class="rate">' + (gTab === 'silver' ? 'シルバーガチャ：無料のシルバーコインで引ける。' : 'ゴールドガチャ：有料のゴールドコインで引ける。高グレードが出やすい（予定）。') +
+      (gTab === 'gold' ? '出る確率：SR 40%／R 60%' : '出る確率：SR 20%／R 30%／N 50%') + '（MR・LRはキャラ追加後に出ます）。10連は1体SR以上が確定。同じキャラも1体ずつボックスに入ります。</div>');
     $('gachaFoot').innerHTML = h;
     $('gachaCoin').innerHTML = '';
     $('gWallet').innerHTML = '<span>' + coinImg('coin_silver') + 'シルバー <b>' + coins.toLocaleString() + '</b></span>' +
@@ -5591,6 +5646,7 @@
     if (kind === 'free') { if (!freeTenLeft()) return; save('freeten', '1'); n = 11; }
     else if (kind === 'one') { if (!payS(G_COST.silver.one)) return; }
     else if (kind === 'ten') { if (!payS(G_COST.silver.ten)) return; n = 11; }
+    else if (kind === 'ione' || kind === 'iten') { const c = kind === 'ione' ? G_COST.item.one : G_COST.item.ten; if (!payS(c)) return; itemGachaGo(kind === 'ione' ? 1 : 11); return; }
     else if (kind === 'gone' || kind === 'goldten') {      // ゴールドコイン：ログイン中はサーバーで減らしてから引く
       const c = kind === 'gone' ? G_COST.gold.one : G_COST.gold.ten; if (kind === 'goldten') n = 11;
       if (acctToken) { gBusy = true; spendGold(c, 'gacha').then(ok => { gBusy = false; if (ok) gachaGo(n, kind); }); return; }
@@ -5706,7 +5762,10 @@
       body.querySelectorAll('.tic').forEach(el => el.appendChild(charIcon(+el.dataset.ci, 40)));
       fillFaces(body);
     } else {
-      body.innerHTML = '<section><h3>アイテム（ストーリーに2つまで持っていける）</h3><div class="loadout" id="boxLoad"></div></section>';
+      body.innerHTML = '<section><h3>アイテム（ストーリーに2つまで持っていける）</h3><div class="loadout" id="boxLoad"></div></section>' +
+        '<section><h3>限界突破ポット（アイテムガチャで出る・ショップでは買えない）</h3><div class="potlist">' +
+        POT_G.map(g => '<div class="potrow"><img src="' + potImg(g) + '" alt=""><b>' + potName(g) + '</b><span>所持 ' + own(potKey(g)) + '</span></div>').join('') +
+        '</div><p class="thint">キャラの詳細 →「限界突破」で使います。同じグレードのキャラに1個で★+1。</p></section>';
       const lo = $('loadout'); body.querySelector('#boxLoad').replaceWith(lo); lo.classList.add('inbox'); drawLoadout();
     }
   }
@@ -5792,8 +5851,9 @@
       const mats = matsAll.slice(matPage * MAT_PER, matPage * MAT_PER + MAT_PER);
       const full = (u.star || 0) >= starMaxOf(u);
       h += '<div class="dsec"><p>同じキャラ（' + fullName(c) + '）1体を材料にして、★を1つ上げます。★1つでレベル上限が+10されます（★' + starMaxOf(u) + 'まで）。材料にしたキャラはいなくなります。</p>' +
-        '<p>いま ' + starsHTMLu(u) + '　レベル上限 LV' + capOf(u) + (full ? '（最大）' : ' → LV' + Math.min(LV_MAX[cs.grade], capOf(u) + 10)) + '</p>' +
+        '<p>いま ' + starsHTMLu(u) + '　レベル上限 LV' + capOf(u) + (full ? '（最大）' : ' → LV' + Math.min(lvMaxOf(u), capOf(u) + 10)) + '</p>' +
         (full ? '<p>これ以上★は上がりません。</p>' : mats.length ? '<div class="lbmats">' + mats.map(m => '<button data-mat="' + m.u + '"' + (m.lock ? ' class="lk"' : '') + '><span class="tic" data-ci="' + ci + '"></span>LV' + m.lv + (m.star ? ' ★' + m.star : '') + (m.lock ? '<i>🔒ロック中</i>' : teams.some(tt => tt.includes(m.u)) ? '<i>編成中</i>' : '') + '</button>').join('') + '</div>' + pagerHTML(matPage, matsAll.length, MAT_PER, 'mat') : '<p>同じキャラがもう1体いると、★を上げられます。</p>') + '</div>';
+      if (!full) h += lbExtraHTML(u);
     }
     body.innerHTML = h;
     body.querySelectorAll('.tic').forEach(el => el.appendChild(charIcon(+el.dataset.ci, 40)));
@@ -5879,12 +5939,57 @@
         r.lv > was ? 'LV' + was + ' → <b>LV' + r.lv + '</b>' : '経験値 <b>+' + pv.gain.toLocaleString() + '</b>', r.lv > was ? 'lvup' : 'exp');
     });
   }
+  // ---- ほかのキャラ・ポットでの限界突破 ----
+  // ほかのキャラ：同じグレードなら材料にできる。2体で★+1（LRで中の段が違うキャラがまざると3体）
+  const lbSel = new Set();
+  const lbOtherNeed = u => [...lbSel].some(id => { const m = unitOf(id); return m && tierOf(m.id) !== tierOf(u.id); }) ? 3 : 2;
+  function lbOthers(u){
+    const g = CHAR_STAT[u.id].grade;
+    return units.filter(x => x.id !== u.id && CHAR_STAT[x.id] && CHAR_STAT[x.id].grade === g).sort((a, b) => (a.star || 0) - (b.star || 0) || a.lv - b.lv);
+  }
+  function lbExtraHTML(u){
+    const g = CHAR_STAT[u.id].grade, ot = lbOthers(u);
+    [...lbSel].forEach(id => { if (!ot.some(m => m.u === id)) lbSel.delete(id); });
+    const need = lbOtherNeed(u), pn = potNeed(u), have = own(potKey(g));
+    let h = '<div class="dsec lbsub"><p><b>ほかのキャラで限界突破</b>：同じグレード（' + g + '）のほかのキャラ <b>' + need + '体</b>で★+1（同じキャラの2倍以上かかります' + (g === 'LR' ? '。LRで中の段が違うキャラがまざると3体' : '') + '）。</p>';
+    h += ot.length ? '<div class="lbmats">' + ot.slice(0, MAT_PER).map(m => '<button data-osel="' + m.u + '" class="' + (m.lock ? 'lk' : lbSel.has(m.u) ? 'sel' : '') + '"><span class="tic" data-ci="' + ciOf(m) + '"></span>LV' + m.lv + (m.star ? ' ★' + m.star : '') + (m.lock ? '<i>🔒ロック中</i>' : teams.some(tt => tt.includes(m.u)) ? '<i>編成中</i>' : '') + '</button>').join('') + '</div>' +
+         '<button class="lbgo" data-ogo="1"' + (lbSel.size >= need ? '' : ' disabled') + '>選んだ' + lbSel.size + '体で★+1（必要 ' + need + '体）</button>'
+       : '<p>同じグレードのほかのキャラがいません。</p>';
+    h += '</div><div class="dsec lbsub"><p><b>ポットで限界突破</b>：' + potName(g) + 'を <b>' + pn + '個</b>使って★+1。ポットはアイテムガチャで出ます（ショップでは買えません）。</p>' +
+         '<button class="lbgo potbtn" data-pot="1"' + (have >= pn ? '' : ' disabled') + '><img src="' + potImg(g) + '" alt="">ポットを使う（所持 ' + have + '個／必要 ' + pn + '個）</button></div>';
+    return h;
+  }
+  function lbStarUp(u, matIds, label){
+    const mcis = matIds.map(id => ciOf(unitOf(id)));
+    units = units.filter(x => !matIds.includes(x.u));
+    teams = teams.map(t => t.map(x => matIds.includes(x) ? null : x));
+    matIds.forEach(id => { lbSel.delete(id); feedSel.delete(id); });
+    u.star = (u.star || 0) + 1;
+    saveUnits(); fixTeam(); drawBox();
+    upFx(ciOf(u), mcis, 'LIMIT BREAK!', '★' + u.star + '　レベル上限 <b>LV' + capOf(u) + '</b>' + (label ? '<br><small>' + label + '</small>' : ''), 'limit');
+  }
+  function limitBreakOthers(uid){
+    const u = unitOf(uid); if (!u || (u.star || 0) >= starMaxOf(u)) return;
+    const need = lbOtherNeed(u), pick = [...lbSel].map(unitOf).filter(Boolean);
+    if (pick.some(m => m.lock)) { toast('ロック中のキャラは材料にできません'); return; }
+    if (pick.length < need) { toast('あと' + (need - pick.length) + '体選んでください'); return; }
+    const use = pick.slice(0, need).map(m => m.u);
+    askYes('選んだ' + use.length + '体を材料にして、★を1つ上げますか？<br>レベル上限 LV' + capOf(u) + ' → LV' + Math.min(lvMaxOf(u), capOf(u) + 10) + '<br>材料にしたキャラはいなくなります。', () => lbStarUp(u, use, 'ほかのキャラ ' + use.length + '体で突破'));
+  }
+  function limitBreakPot(uid){
+    const u = unitOf(uid); if (!u || (u.star || 0) >= starMaxOf(u)) return;
+    const g = CHAR_STAT[u.id].grade, k = potKey(g), pn = potNeed(u);
+    if (own(k) < pn) { toast(potName(g) + 'が足りません'); return; }
+    askYes(potName(g) + 'を' + pn + '個使って、★を1つ上げますか？<br>レベル上限 LV' + capOf(u) + ' → LV' + Math.min(lvMaxOf(u), capOf(u) + 10), () => {
+      inv[k] = own(k) - pn; saveInv(); lbStarUp(u, [], potName(g) + ' ×' + pn);
+    });
+  }
   // 限界突破：同じキャラ1体を材料にして★を1つ上げる（レベル上限+10）。材料にしたキャラは消え、チームからも外れる
   function limitBreak(uid, mid){
     const u = unitOf(uid), m = unitOf(mid);
     if (!u || !m || u.id !== m.id || uid === mid || (u.star || 0) >= starMaxOf(u)) return;
     if (m.lock) { toast('ロック中のキャラは材料にできません（詳細でロックを外せます）'); return; }
-    askYes(fullName(ALLC[ciOf(m)]) + '（LV' + m.lv + '）を材料にして、★を1つ上げますか？<br>レベル上限 LV' + capOf(u) + ' → LV' + Math.min(LV_MAX[CHAR_STAT[u.id].grade], capOf(u) + 10) + '<br>材料にしたキャラはいなくなります。', () => {
+    askYes(fullName(ALLC[ciOf(m)]) + '（LV' + m.lv + '）を材料にして、★を1つ上げますか？<br>レベル上限 LV' + capOf(u) + ' → LV' + Math.min(lvMaxOf(u), capOf(u) + 10) + '<br>材料にしたキャラはいなくなります。', () => {
       const mci = ciOf(m);
       units = units.filter(x => x.u !== mid);
       teams = teams.map(t => t.map(x => x === mid ? null : x));
@@ -5956,9 +6061,12 @@
     if (so) { const k = so.dataset.sort; if (boxSort === k) boxAsc = !boxAsc; else { boxSort = k; boxAsc = false; } save('boxsort', boxSort); save('boxasc', boxAsc ? '1' : '0'); boxPage = 0; drawBox(); return; }
     if (e.target.closest('[data-clear]') && boxSlot > 0) { curTeam()[boxSlot] = null; boxSlot = -1; fixTeam(); drawBox(); return; }
     if (boxDetail) {
-      if (e.target.closest('[data-act="back"]')) { boxDetail = null; drawBox(); return; }
+      if (e.target.closest('[data-act="back"]')) { boxDetail = null; lbSel.clear(); drawBox(); return; }
       if (e.target.closest('[data-act="dlock"]')) { toggleLock(unitOf(boxDetail)); drawBox(); return; }
       const mb2 = e.target.closest('[data-mat]'); if (mb2) { limitBreak(boxDetail, mb2.dataset.mat); return; }
+      const os = e.target.closest('[data-osel]'); if (os) { const id = os.dataset.osel, m = unitOf(id); if (m && m.lock) { toast('ロック中のキャラは材料にできません'); return; } lbSel.has(id) ? lbSel.delete(id) : lbSel.add(id); drawBox(); return; }
+      if (e.target.closest('[data-ogo]')) { limitBreakOthers(boxDetail); return; }
+      if (e.target.closest('[data-pot]')) { limitBreakPot(boxDetail); return; }
       const fb = e.target.closest('[data-feed]'); if (fb) { const id = fb.dataset.feed; feedSel.has(id) ? feedSel.delete(id) : feedSel.add(id); drawBox(); return; }
       const mf = e.target.closest('[data-mf]'); if (mf) { matF = mf.dataset.mf; matPage = 0; drawBox(); return; }
       const fa = e.target.closest('[data-fact]');
@@ -5970,7 +6078,7 @@
         else if (a === 'go') { feedGo(boxDetail); return; }
         drawBox(); return;
       }
-      const ft = e.target.closest('[data-ftab]'); if (ft) { detTab = ft.dataset.ftab; matPage = 0; matF = 'all'; feedSel.clear(); drawBox(); return; }
+      const ft = e.target.closest('[data-ftab]'); if (ft) { detTab = ft.dataset.ftab; matPage = 0; matF = 'all'; feedSel.clear(); lbSel.clear(); drawBox(); return; }
       return;
     }
     const act = e.target.closest('[data-act]');
@@ -6711,7 +6819,7 @@
         if (!vis('box')) return show(5, 'キャラを育てよう。<b>ボックス</b>を開いてね。', $('boxBtn'));
         return show(5, '<b>レベルアップ</b>：キャラを押して「詳細」→<b>「LVアップ（合成）」</b>。<br>使わないキャラを材料にすると経験値が入ります。ストーリーで勝っても経験値が入ります。', null, () => setStep(6));
       }
-      if (step === '6') return show(6, '<b>限界突破</b>：同じキャラが2体以上いたら、詳細の<b>「限界突破」</b>で1体を材料に★を上げよう。<br>★が1つ増えると<b>レベル上限 +10</b>、<b>必殺技と奥義も強く</b>なります。', null, () => { setStep('done'); hide(); toast('案内はここまで。楽しんでね！'); });
+      if (step === '6') return show(6, '<b>限界突破</b>：同じキャラが2体以上いたら、詳細の<b>「限界突破」</b>で1体を材料に★を上げよう（同じグレードのほかのキャラ2体や、アイテムガチャで出る<b>限界突破ポット</b>でもOK）。<br>★が1つ増えると<b>レベル上限 +10</b>、<b>必殺技と奥義も強く</b>なります。', null, () => { setStep('done'); hide(); toast('案内はここまで。楽しんでね！'); });
     }
     setInterval(tick, 400);
     window.__tutStep = () => step;
