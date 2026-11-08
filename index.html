@@ -172,6 +172,18 @@
   .maptools button span{display:block;font-size:10px;margin-top:2px;white-space:nowrap;}
   .maptools button:active{transform:translateY(2px);}
   .pickbar{background:linear-gradient(90deg,#ff5f9e,#a46bff);color:#fff;font-weight:900;font-size:13px;border-radius:10px;padding:8px 10px;margin:4px 0 8px;display:flex;align-items:center;gap:8px;}
+  .pickbar.slotbar{position:sticky;top:0;z-index:5;background:linear-gradient(90deg,#2fa8ff,#7a5cff);}
+  #boxBody.slotmode .cgrid .ccell:not(.tslot){animation:pickme 1.2s ease-in-out infinite;}
+  @keyframes pickme{0%,100%{box-shadow:0 0 0 0 rgba(80,180,255,0);}50%{box-shadow:0 0 0 3px rgba(80,180,255,.85);}}
+  .tslot{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}
+  .tslot.pressing{transform:scale(.94);transition:transform .45s;box-shadow:0 0 0 3px #ffd24a;}
+  #slotMenu{position:fixed;inset:0;z-index:9000;background:rgba(10,4,24,.55);display:flex;align-items:flex-end;justify-content:center;animation:upfade .2s ease-out both;opacity:0;}
+  #slotMenu .smsheet{width:min(420px,100%);background:#241640;border-radius:18px 18px 0 0;padding:12px 14px calc(14px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:8px;animation:smup .25s ease-out both;}
+  @keyframes smup{from{transform:translateY(40px);}to{transform:none;}}
+  #slotMenu .smhead{display:flex;align-items:center;gap:10px;color:#fff;margin-bottom:2px;} #slotMenu .smhead small{display:block;color:#bfb3dd;font-size:11px;}
+  #slotMenu .smic .cicon{border-radius:10px;}
+  #slotMenu button{border:0;border-radius:12px;padding:12px;font-size:15px;font-weight:800;text-align:left;background:#3b2566;color:#fff;font-family:inherit;}
+  #slotMenu button.cancel{text-align:center;background:transparent;color:#bfb3dd;}
   .pickbar button{margin-left:auto;border:0;border-radius:8px;background:rgba(0,0,0,.3);color:#fff;font-weight:800;font-size:11px;padding:4px 8px;}
   .areanav{flex:none;width:40px;height:40px;border-radius:12px;border:2px solid rgba(255,255,255,.22);background:rgba(255,255,255,.1);
     color:#fff;font-family:inherit;font-size:22px;font-weight:800;cursor:pointer;line-height:1;}
@@ -661,6 +673,7 @@
   .lbmark{position:absolute;top:18px;right:2px;font-size:8px;font-weight:900;color:#3a2210;background:linear-gradient(90deg,#ffe066,#ffb03d);border-radius:5px;padding:0 3px;box-shadow:0 0 6px rgba(255,200,80,.9);}
   .ttabs{display:flex;gap:4px;margin-top:6px;} .ttabs button{flex:1;border-radius:8px;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.3);color:#fff;font-weight:800;font-size:11px;padding:5px 0;}
   .ttabs button.on{background:#ffd24a;color:#3a2210;border-color:#ffd24a;}
+.ttabs button small{display:block;font-size:9px;line-height:1;margin-top:1px;} .tnow{color:#ffd24a;}
   .teamsec{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:8px 10px;}
   .thint{font-size:11px;margin:6px 0 0;} .thint button{border:none;border-radius:6px;background:#ccc;font-weight:800;font-size:11px;padding:2px 8px;}
   .tsum{margin-top:6px;font-size:11px;opacity:.9;} .tsum b{color:#ffd24a;} .tsum.en b{color:#ff8aa8;}
@@ -5830,7 +5843,7 @@
   }
   // ----- チーム画面（ストーリーのマップの下） -----
   function typeBadge(id){ const cs = CHAR_STAT[id]; if (!cs) return ''; const t = TYPE_INFO[cs.type]; return '<i class="tbadge" style="background:' + t.col + '" title="' + t.name + '">' + t.mark + '</i>'; }
-  function teamTabs(){ return '<div class="ttabs">' + [0, 1, 2, 3].map(k => '<button data-team="' + k + '" class="' + (k === teamNo ? 'on' : '') + '">チーム' + (k + 1) + '</button>').join('') + '</div>'; }
+  function teamTabs(){ return '<div class="ttabs">' + [0, 1, 2, 3].map(k => '<button data-team="' + k + '" class="' + (k === teamNo ? 'on' : '') + '">チーム' + (k + 1) + (k === teamNo ? '<small>使用中</small>' : '') + '</button>').join('') + '</div>'; }
   // チームの枠：キャラ一覧と同じ見た目。枠の下で必殺技か奥義を選ぶ（メインは両方）
   function slotHTML(uid, k, sel){
     const u = unitOf(uid);
@@ -5851,7 +5864,7 @@
     const box = $('teamBox'); if (!box) return;
     fixTeam();
     const sum = teamStats();
-    let html = '<div class="lh"><span>チーム（1人目がメイン：必殺技と奥義）</span><button id="teamBoxBtn">編成する</button></div>' + teamTabs() + '<div class="tgrid">';
+    let html = '<div class="lh"><span>使用中：<b class="tnow">チーム' + (teamNo + 1) + '</b>（1人目がメイン）</span><button id="teamBoxBtn">編成する</button></div>' + teamTabs() + '<div class="tgrid">';
     curTeam().forEach((uid, k) => { html += slotHTML(uid, k, false); });
     html += '</div><div class="tsum">' + ST_NAME.map((n, k) => n + ' <b>' + sum[k] + '</b>').join('　') + '</div>';
     const st = STORY[pickStage];
@@ -5870,7 +5883,7 @@
       openBox('char');
       if (cur && unitOf(cur)) { boxDetail = cur; detTab = 'info'; matPage = 0; matF = 'all'; feedSel.clear(); }
       else boxSlot = k;
-      drawBox(); $('boxBody').scrollTop = 0; return;
+      drawBox(); $('boxBody').scrollTop = 0; if (!(cur && unitOf(cur))) scrollToList(); return;
     }
     if (e.target.closest('#teamBoxBtn')) openBox('char');
   });
@@ -6133,17 +6146,19 @@
   function openBox(tab, pick){ audio(); if (tab) boxTab = tab; boxPick = pick || null; boxPage = 0; boxSel = null; boxSlot = -1; boxPut = null; boxDetail = null; $('box').classList.remove('hidden'); drawBox(); }
   const openDetail = (uid, tab) => { boxDetail = uid; detTab = tab || 'info'; matPage = 0; matF = 'all'; feedSel.clear(); lbSel.clear(); boxSel = null; boxSlot = -1; drawBox(); $('boxBody').scrollTop = 0; };
   function drawBox(){
+    $('boxBody').classList.toggle('slotmode', boxSlot >= 0 && !boxDetail && !boxPick && boxTab === 'char');
     document.querySelectorAll('.boxtabs button').forEach(b => b.classList.toggle('on', b.dataset.t === boxTab));
     const body = $('boxBody');
     if (boxTab === 'char' && boxDetail && unitOf(boxDetail)) { drawDetail(unitOf(boxDetail)); return; }
     if (boxTab === 'char') {
       fixTeam();
       const t = curTeam(), sum = teamStats();
-      let h = (boxPick ? '<div class="pickbar">' + (boxPick === 'feed' ? '⬆ レベルアップするキャラを選んでください' : '★ 限界突破するキャラを選んでください（レベル上限に届いたキャラ）') + '<button data-unpick="1">やめる</button></div>' : '') +
+      let h = (boxSlot >= 0 && !boxPick ? '<div class="pickbar slotbar"><span>' + '①②③④'[boxSlot] + 'の枠に入れるキャラを、<b>下の一覧</b>から選んでください</span><button data-unslot="1">やめる</button></div>' : '') +
+        (boxPick ? '<div class="pickbar">' + (boxPick === 'feed' ? '⬆ レベルアップするキャラを選んでください' : '★ 限界突破するキャラを選んでください（レベル上限に届いたキャラ）') + '<button data-unpick="1">やめる</button></div>' : '') +
         '<section class="teamsec"><h3>チーム編成（4つまで保存）</h3>' + teamTabs() + '<div class="tgrid">';
       t.forEach((uid, k) => { h += slotHTML(uid, k, boxSlot === k); });
       h += '</div><div class="tsum">' + ST_NAME.map((n, k) => n + ' <b>' + sum[k] + '</b>').join('　') + '</div>' +
-           '<p class="thint">①（メイン）は必殺技と奥義の両方。サブは枠の下の「必殺技」「奥義」から1つ選びます。<br>' + (boxPut ? '入れる枠を押してください（' + ALLC[ciOf(unitOf(boxPut))].name + '）' : boxSlot >= 0 ? '下の一覧から、入れるキャラを選んでください' + (boxSlot > 0 && t[boxSlot] ? '（<button data-clear="1">外す</button>）' : '') : 'キャラの入っている枠を押すと詳細が見られます。入れかえは、下の一覧のキャラを押して「チームに入れる」。空いている枠は、押してから一覧のキャラを選ぶと入ります') + '</p></section>';
+           '<p class="thint">①（メイン）は必殺技と奥義の両方。サブは枠の下の「必殺技」「奥義」から1つ選びます。<br>' + (boxPut ? '入れる枠を押してください（' + ALLC[ciOf(unitOf(boxPut))].name + '）' : boxSlot >= 0 ? '下の一覧から、入れるキャラを選んでください' + (boxSlot > 0 && t[boxSlot] ? '（<button data-clear="1">外す</button>）' : '') : '<b>枠をタップ</b>＝詳細　<b>枠を長押し</b>＝外す・入れかえ　<b>空いている枠をタップ</b>＝下の一覧から入れるキャラを選ぶ') + '</p></section>';
       const all = sortUnits();
       const list0 = all.filter(u => (boxFG === 'all' || CHAR_STAT[u.id].grade === boxFG) && (boxFT === 'all' || CHAR_STAT[u.id].type === boxFT));
       const pn = Math.max(1, Math.ceil(list0.length / BOX_PER)); if (boxPage >= pn) boxPage = pn - 1; if (boxPage < 0) boxPage = 0;
@@ -6486,7 +6501,9 @@
   $('boxBody').addEventListener('click', e => {
     const s2 = e.target.closest('[data-sk2]'); if (s2) { const [k, v] = s2.dataset.sk2.split(':'); setSubSkill(+k, v); drawBox(); return; }
     const tk = e.target.closest('[data-sk]'); if (tk) { const k = +tk.dataset.sk; setSubSkill(k, teamSk[teamNo][k] === 'ougi' ? 'sp' : 'ougi'); drawBox(); return; }
+    if (lpFired) { lpFired = false; return; }                // 長押しのあとの「クリック」は無視
     if (e.target.closest('[data-unpick]')) { boxPick = null; drawBox(); return; }
+    if (e.target.closest('[data-unslot]')) { boxSlot = -1; drawBox(); return; }
     const tb = e.target.closest('[data-team]'); if (tb) { teamNo = +tb.dataset.team; boxSlot = -1; fixTeam(); drawBox(); return; }
     const pgb = e.target.closest('[data-pg]');
     if (pgb && !pgb.disabled) { const [k, v] = pgb.dataset.pg.split(':'); if (k === 'box') boxPage = +v; else matPage = +v; drawBox(); const sec = $('boxBody').querySelector(k === 'box' ? '.cfilt' : '.lbmats'); if (sec) sec.scrollIntoView({block: 'start'}); return; }
@@ -6532,7 +6549,7 @@
       if (boxPut) { putUnit(k, boxPut); boxPut = null; }
       else if (cur && unitOf(cur) && boxSlot !== k) { openDetail(cur, boxPick || 'info'); return; }   // キャラが入っている枠：詳細を開く
       else { boxSlot = boxSlot === k ? -1 : k; boxSel = null; }
-      drawBox(); return;
+      drawBox(); if (boxSlot >= 0) scrollToList(); return;
     }
     const cc = e.target.closest('.ccell');
     if (cc) {
@@ -6544,6 +6561,46 @@
       drawBox();
     }
   });
+  // ---- チームの枠の長押し：外す・入れかえる ----
+  let lpTimer = 0, lpFired = false, lpStart = null;
+  function scrollToList(){ const sec = $('boxBody').querySelector('.cfilt') || $('boxBody').querySelector('.cgrid'); if (sec) setTimeout(() => sec.scrollIntoView({block: 'start', behavior: 'smooth'}), 60); }
+  function slotMenu(k){
+    const uid = curTeam()[k], u = unitOf(uid); if (!u) return;
+    const old = $('slotMenu'); if (old) old.remove();
+    const d = document.createElement('div'); d.id = 'slotMenu';
+    d.innerHTML = '<div class="smsheet"><div class="smhead"><span class="smic"></span><div><small>' + '①②③④'[k] + (k === 0 ? '（メイン）' : '') + '</small><b>' + fullName(ALLC[ciOf(u)]) + '</b></div></div>' +
+      '<button data-sm="swap">🔄 入れかえる（下の一覧から選ぶ）</button>' +
+      '<button data-sm="out">➖ チームから外す</button>' +
+      '<button data-sm="detail">🔍 詳細を見る</button>' +
+      '<button data-sm="cancel" class="cancel">やめる</button></div>';
+    d.querySelector('.smic').appendChild(charIcon(ciOf(u), 48));
+    document.body.appendChild(d);
+    try { navigator.vibrate && navigator.vibrate(15); } catch(_) {}
+    d.addEventListener('click', e => {
+      const b = e.target.closest('[data-sm]');
+      if (!b && e.target !== d) return;
+      const a = b ? b.dataset.sm : 'cancel';
+      d.remove();
+      if (a === 'swap') { boxSlot = k; boxSel = null; boxPut = null; drawBox(); scrollToList(); }
+      else if (a === 'out') {
+        curTeam()[k] = null; fixTeam(); boxSlot = -1; drawBox();
+        toast(k === 0 ? 'メインを外しました（技を持つキャラがいれば自動でメインに入ります）' : fullName(ALLC[ciOf(u)]) + ' をチームから外しました');
+      }
+      else if (a === 'detail') openDetail(uid, 'info');
+    });
+  }
+  $('boxBody').addEventListener('pointerdown', e => {
+    const sl = e.target.closest('.tslot'); if (!sl || boxDetail) return;
+    const k = +sl.dataset.k; if (!curTeam()[k]) return;
+    lpStart = [e.clientX, e.clientY]; clearTimeout(lpTimer);
+    sl.classList.add('pressing');
+    lpTimer = setTimeout(() => { lpFired = true; sl.classList.remove('pressing'); slotMenu(k); setTimeout(() => { lpFired = false; }, 700); }, 450);
+  });
+  const lpCancel = () => { clearTimeout(lpTimer); $('boxBody').querySelectorAll('.tslot.pressing').forEach(x => x.classList.remove('pressing')); };
+  $('boxBody').addEventListener('pointerup', lpCancel);
+  $('boxBody').addEventListener('pointercancel', lpCancel);
+  $('boxBody').addEventListener('pointermove', e => { if (lpStart && Math.hypot(e.clientX - lpStart[0], e.clientY - lpStart[1]) > 10) lpCancel(); });
+  $('boxBody').addEventListener('contextmenu', e => { if (e.target.closest('.tslot')) e.preventDefault(); });
   // ===== キャラの技（必殺技30秒・奥義60秒で時間チャージ） =====
   const SK_MS = {sp: 30000, ougi: 60000};               // 基準の時間。キャラのスピードと敵のスピードの比べ合いで 0.5〜1.5倍 に変わる
   const clampF = (v, a, b) => Math.max(a, Math.min(b, v));
