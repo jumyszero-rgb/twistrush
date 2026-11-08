@@ -167,6 +167,12 @@
   .wrow .sc{font-weight:800;font-variant-numeric:tabular-nums;}
   /* ===== ストーリーのマップ ===== */
   .areabar{display:flex;align-items:center;gap:8px;margin-top:8px;}
+  .maptools{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:8px;}
+  .maptools button{border:2px solid rgba(255,210,74,.7);border-radius:12px;background:linear-gradient(#3b2566,#26174a);color:#fff;font-weight:900;font-size:17px;padding:5px 2px 4px;line-height:1.1;font-family:inherit;}
+  .maptools button span{display:block;font-size:10px;margin-top:2px;white-space:nowrap;}
+  .maptools button:active{transform:translateY(2px);}
+  .pickbar{background:linear-gradient(90deg,#ff5f9e,#a46bff);color:#fff;font-weight:900;font-size:13px;border-radius:10px;padding:8px 10px;margin:4px 0 8px;display:flex;align-items:center;gap:8px;}
+  .pickbar button{margin-left:auto;border:0;border-radius:8px;background:rgba(0,0,0,.3);color:#fff;font-weight:800;font-size:11px;padding:4px 8px;}
   .areanav{flex:none;width:40px;height:40px;border-radius:12px;border:2px solid rgba(255,255,255,.22);background:rgba(255,255,255,.1);
     color:#fff;font-family:inherit;font-size:22px;font-weight:800;cursor:pointer;line-height:1;}
   .areanav:disabled{opacity:.3;cursor:default;}
@@ -1046,6 +1052,7 @@
         <div class="coinchip headcoin" id="storyCoin"></div>
       </div>
       <div class="how-body">
+        <div class="maptools"><button data-mt="team">👥<span>チーム編成</span></button><button data-mt="feed">⬆<span>レベルアップ</span></button><button data-mt="lb">★<span>限界突破</span></button><button data-mt="item">🎒<span>アイテム</span></button></div>
         <div class="areabar">
           <button class="areanav" id="areaPrev" aria-label="前のエリア">‹</button>
           <div class="areatitle"><b id="areaName"></b><small id="areaStars"></small></div>
@@ -5750,6 +5757,12 @@
     if (e.target.closest('#teamBoxBtn')) openBox('char');
   });
 
+  // マップの上のボタン：チーム編成・レベルアップ・限界突破・アイテム
+  document.querySelector('#story .maptools').addEventListener('click', e => {
+    const b = e.target.closest('[data-mt]'); if (!b) return;
+    const m = b.dataset.mt;
+    if (m === 'item') openBox('item'); else openBox('char', m === 'team' ? null : m);
+  });
   // ===== ガチャ（ボス9人＝SR、ザコ90人＝N・R） =====
   const GACHA_BLOB = {bg: '6ea64de028b584db6d85ac1011ac7f69', cube: '46b330f7669c0ec121b54aa9902db2ec', burst_n: '60f6bf8035b3c8cf1f2e2465e2d4d3da', burst_r: '8aa0c03b3b71c60f59ac2ebb675033c2', burst_sr: '4ff28d314cc05230e7b6fd5816278636', burst_mr: '2c6c0449c78153137001a466143dac50', burst_lr: '1b0bae4097b7b062a928a9d7eeff5c5f', coin_silver: 'f3387cb2b4f35aa3ed893305c37f1c5a', coin_gold: '4ddc48d0e62894f4c4f9ebc2ed9b573f', ticket: '870c40b6ca838a4264478e8f0f17e627', ticket_hi: 'f27228c91d9b7f6e8b49cf6f147fed5d'};
   const gImg = k => LOCAL_ART ? 'img/gacha/' + k + '.webp' : blobU(GACHA_BLOB[k]);
@@ -5759,8 +5772,9 @@
   const freeTenLeft = () => load('freeten', '0') !== '1';
   // 出る確率（グレードごと）。MR・LRはキャラがいないので、いまは出ない（いない分は下のグレードに回す）
   const G_RATE = {silver: {LR: 1, MR: 4, SR: 15, R: 30, N: 50}, gold: {LR: 2, MR: 8, SR: 30, R: 60, N: 0}, hi: {LR: 5, MR: 15, SR: 80, R: 0, N: 0}};
+  const STORY_IDS = new Set(CHARS.map(c => c.id));          // ストーリーのキャラ（ボス9人）はガチャに出ない。倒すと仲間になる
   function gachaGrade(rate, minG){
-    const pools = {}; ALLC.forEach((c, i) => { const g = CHAR_STAT[c.id] && CHAR_STAT[c.id].grade; if (g) (pools[g] = pools[g] || []).push(i); });
+    const pools = {}; ALLC.forEach((c, i) => { if (STORY_IDS.has(c.id)) return; const g = CHAR_STAT[c.id] && CHAR_STAT[c.id].grade; if (g) (pools[g] = pools[g] || []).push(i); });
     const order = ['LR', 'MR', 'SR', 'R', 'N'];
     let r = Math.random() * 100, g = 'N';
     for (const x of order) { if (r < rate[x]) { g = x; break; } r -= rate[x]; }
@@ -5974,6 +5988,7 @@
   })();
   // ===== ボックス（持ちキャラ・アイテム） =====
   let boxTab = 'char', boxSel = null, boxSlot = -1, boxPut = null, boxDetail = null;
+  let boxPick = null;                                       // 'feed'＝レベルアップ／'lb'＝限界突破 するキャラを選ぶ（マップのボタンから）
   // 一覧が長くならないように：ページ分け＋しぼりこみ
   const BOX_PER = 40, MAT_PER = 30;
   const GR5 = ['N', 'R', 'SR', 'MR', 'LR'];
@@ -5983,7 +5998,8 @@
     return '<div class="pager"><button data-pg="' + key + ':0"' + (page <= 0 ? ' disabled' : '') + '>«</button><button data-pg="' + key + ':' + (page - 1) + '"' + (page <= 0 ? ' disabled' : '') + '>‹</button>' +
       '<span>' + (page + 1) + ' / ' + n + '</span><button data-pg="' + key + ':' + (page + 1) + '"' + (page >= n - 1 ? ' disabled' : '') + '>›</button><button data-pg="' + key + ':' + (n - 1) + '"' + (page >= n - 1 ? ' disabled' : '') + '>»</button></div>';
   }
-  function openBox(tab){ audio(); if (tab) boxTab = tab; boxPage = 0; boxSel = null; boxSlot = -1; boxPut = null; boxDetail = null; $('box').classList.remove('hidden'); drawBox(); }
+  function openBox(tab, pick){ audio(); if (tab) boxTab = tab; boxPick = pick || null; boxPage = 0; boxSel = null; boxSlot = -1; boxPut = null; boxDetail = null; $('box').classList.remove('hidden'); drawBox(); }
+  const openDetail = (uid, tab) => { boxDetail = uid; detTab = tab || 'info'; matPage = 0; matF = 'all'; feedSel.clear(); lbSel.clear(); boxSel = null; boxSlot = -1; drawBox(); $('boxBody').scrollTop = 0; };
   function drawBox(){
     document.querySelectorAll('.boxtabs button').forEach(b => b.classList.toggle('on', b.dataset.t === boxTab));
     const body = $('boxBody');
@@ -5991,7 +6007,8 @@
     if (boxTab === 'char') {
       fixTeam();
       const t = curTeam(), sum = teamStats();
-      let h = '<section class="teamsec"><h3>チーム編成（4つまで保存）</h3>' + teamTabs() + '<div class="tgrid">';
+      let h = (boxPick ? '<div class="pickbar">' + (boxPick === 'feed' ? '⬆ レベルアップするキャラを選んでください' : '★ 限界突破するキャラを選んでください（レベル上限に届いたキャラ）') + '<button data-unpick="1">やめる</button></div>' : '') +
+        '<section class="teamsec"><h3>チーム編成（4つまで保存）</h3>' + teamTabs() + '<div class="tgrid">';
       t.forEach((uid, k) => { h += slotHTML(uid, k, boxSlot === k); });
       h += '</div><div class="tsum">' + ST_NAME.map((n, k) => n + ' <b>' + sum[k] + '</b>').join('　') + '</div>' +
            '<p class="thint">①（メイン）は必殺技と奥義の両方。サブは枠の下の「必殺技」「奥義」から1つ選びます。<br>' + (boxPut ? '入れる枠を押してください（' + ALLC[ciOf(unitOf(boxPut))].name + '）' : boxSlot >= 0 ? '下の一覧から、入れるキャラを選んでください' + (boxSlot > 0 && t[boxSlot] ? '（<button data-clear="1">外す</button>）' : '') : 'キャラの入っている枠を押すと詳細が見られます。入れかえは、下の一覧のキャラを押して「チームに入れる」。空いている枠は、押してから一覧のキャラを選ぶと入ります') + '</p></section>';
@@ -6324,6 +6341,7 @@
   $('boxBody').addEventListener('click', e => {
     const s2 = e.target.closest('[data-sk2]'); if (s2) { const [k, v] = s2.dataset.sk2.split(':'); setSubSkill(+k, v); drawBox(); return; }
     const tk = e.target.closest('[data-sk]'); if (tk) { const k = +tk.dataset.sk; setSubSkill(k, teamSk[teamNo][k] === 'ougi' ? 'sp' : 'ougi'); drawBox(); return; }
+    if (e.target.closest('[data-unpick]')) { boxPick = null; drawBox(); return; }
     const tb = e.target.closest('[data-team]'); if (tb) { teamNo = +tb.dataset.team; boxSlot = -1; fixTeam(); drawBox(); return; }
     const pgb = e.target.closest('[data-pg]');
     if (pgb && !pgb.disabled) { const [k, v] = pgb.dataset.pg.split(':'); if (k === 'box') boxPage = +v; else matPage = +v; drawBox(); const sec = $('boxBody').querySelector(k === 'box' ? '.cfilt' : '.lbmats'); if (sec) sec.scrollIntoView({block: 'start'}); return; }
@@ -6367,10 +6385,7 @@
     if (sl) {
       const k = +sl.dataset.k, cur = curTeam()[k];
       if (boxPut) { putUnit(k, boxPut); boxPut = null; }
-      else if (cur && unitOf(cur) && boxSlot !== k) {     // キャラが入っている枠：詳細を開く
-        boxDetail = cur; detTab = 'info'; matPage = 0; matF = 'all'; feedSel.clear(); boxSel = null; boxSlot = -1;
-        drawBox(); $('boxBody').scrollTop = 0; return;
-      }
+      else if (cur && unitOf(cur) && boxSlot !== k) { openDetail(cur, boxPick || 'info'); return; }   // キャラが入っている枠：詳細を開く
       else { boxSlot = boxSlot === k ? -1 : k; boxSel = null; }
       drawBox(); return;
     }
@@ -6379,6 +6394,7 @@
       const uid = cc.dataset.u;
       if (boxSlot >= 0) { putUnit(boxSlot, uid); boxSlot = -1; boxSel = null; }
       else if (boxPut) { boxPut = null; boxSel = uid; }
+      else if (boxPick) { openDetail(uid, boxPick); return; }   // レベルアップ・限界突破のキャラ選び：押したらすぐその画面へ
       else boxSel = boxSel === uid ? null : uid;
       drawBox();
     }
