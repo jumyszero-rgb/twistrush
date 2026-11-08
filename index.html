@@ -5016,7 +5016,7 @@
       '<div class="oltabs">' + Object.keys(OL_KIND).map(k => '<button data-k="' + k + '" class="' + (k === olKind ? 'on' : '') + '">' + OL_KIND[k] + '</button>').join('') + '</div>' +
       '<div class="olsec"><div class="olrate"><span>レート</span><b>' + me.rate.toLocaleString() + '</b><span>' + me.win + '勝' + me.lose + '敗' + (me.rank ? '<br>世界 ' + me.rank + '位' : '') + '</span></div>' +
       (olKind === 'chara' ? '<div class="olteam">' + (teamMembers().map(u => olAv(u.id)).join('') || '<span>チームがいません</span>') + '<button class="btn gray" id="olTeam" style="width:auto;margin:0 0 0 auto;padding:8px 10px;white-space:nowrap">チーム変更</button></div>' +
-        '<p style="margin:6px 0 0;font-size:12px">チームのステータスで攻撃が変わり、必殺技・奥義が使えます。</p>'
+        '<p style="margin:6px 0 0;font-size:12px">カラーHPはチームの体力、送るダメージは攻撃力と相手の防御力で決まります。必殺技・奥義も使えます。</p>'
         : '<p style="margin:6px 0 0;font-size:12px">キャラなし。パズルの腕だけで勝負します。</p>') + '</div>' +
       '<div class="olsec"><b>🏅 対戦メダルを賭ける</b><div class="olbets">' + olInfo.bets.map(b => '<button data-b="' + b + '" class="' + (b === olBet ? 'on' : '') + '"' + (b > olInfo.balance ? ' disabled' : '') + '>' + (b ? b : 'なし') + '</button>').join('') + '</div>' +
       '<p style="margin:6px 0 0;font-size:12px">' + (olBet ? '勝つと相手の分ももらえて +' + olBet * 2 + '。負けると −' + olBet + '。' : '賭けずに対戦します（レートは変わります）。') + '</p></div>' +
@@ -5176,7 +5176,6 @@
     if (!onl) return;
     onl.acc = [0, 0, 0, 0, 0]; onl.sent = 0; onl.skSlow = null;
     const mt = myTeamInfo(), ot = (onl.opp && onl.opp.team) || {};
-    onl.mul = onl.kind === 'chara' && mt.st && ot.st ? Math.max(0.75, Math.min(1.35, corr(mt.st[1], ot.st[2]))) : 1;
     start('online', {});
     $('onlOpp').classList.remove('hidden');
     $('ooAv').innerHTML = olAv(ot.lead, onl.opp && onl.opp.name); olFill($('ooAv'));
@@ -5197,7 +5196,8 @@
   }
   function onlDrawOpp(){
     if (!onl) return;
-    $('ooScore').textContent = (onl.oppSc || 0).toLocaleString() + '点';
+    const oMax = Math.max(...(onl.oppSt || [0])), oLeft = Math.max(0, CFG.STACK_MAX - oMax);
+    $('ooScore').textContent = (onl.oppSc || 0).toLocaleString() + '点' + (statOn() ? '　残HP ' + Math.round(oLeft * enUnitPts()).toLocaleString() : '');
     const bars = $('ooBars').querySelectorAll('i');
     (onl.oppSt || []).forEach((v, i) => { const b = bars[i]; if (!b) return; b.firstChild.style.width = Math.min(100, v / CFG.STACK_MAX * 100) + '%'; b.classList.toggle('hot', v >= CFG.STACK_MAX * 2 / 3); });
     const cv = $('ooBoard'), x = cv.getContext('2d'), W = cv.width, n = N, s = W / n, g = onl.oppG || '';
@@ -5210,11 +5210,11 @@
     }
   }
   // 自分が消した → 相手へ送る（色ごと）。端数はためておく
-  function onlAttack(dec, mul){
+  function onlAttack(dec, raw){
     if (!onl || !running || gameMode !== 'online') return;
-    const f = ONL_ATK * (onl.mul || 1) * (mul || 1);
+    const conv = v => raw ? v : statOn() ? outgoing(v) * ONL_ATK : v * ONL_ATK;
     let n = 0;
-    const d = dec.map((v, i) => { onl.acc[i] += (v || 0) * f; const s = Math.floor(onl.acc[i]); onl.acc[i] -= s; n += s; return s; });
+    const d = dec.map((v, i) => { onl.acc[i] += conv(v || 0); const s = Math.floor(onl.acc[i]); onl.acc[i] -= s; n += s; return s; });
     if (!n) return;
     onlSend({t: 'atk', d, n});
     const cv = $('ooBoard'); cv.classList.remove('hit'); void cv.offsetWidth; cv.classList.add('hit');
@@ -6358,10 +6358,10 @@
   // 比べ合いの補正：同じなら1倍、0〜2倍の間に収まる
   const corr = (a, d) => (a + d) > 0 ? 2 * a / (a + d) : 1;
   let runMy = [100, 100, 100, 100], runEn = [100, 100, 100, 100];
-  const statOn = () => gameMode === 'story' && !!curStage;
+  const statOn = () => (gameMode === 'story' && !!curStage) || (gameMode === 'online' && !!onl && onl.kind === 'chara');   // キャラ対戦もステータスで戦う
   function statsBegin(){
     runMy = statOn() ? teamStats() : [100, 100, 100, 100];
-    runEn = statOn() ? enemyStats(curStage) : [100, 100, 100, 100];
+    runEn = !statOn() ? [100, 100, 100, 100] : gameMode === 'online' ? ((onl.opp && onl.opp.team && onl.opp.team.st) || [100, 100, 100, 100]).map(v => Math.max(1, +v || 1)) : enemyStats(curStage);
   }
   const myAtk = () => runMy[1] * (atkUntil && now() < atkUntil ? 2 : 1) * bm('atk');
   const myDef = () => runMy[2] * (defUntil && now() < defUntil ? 2 : 1) * bm('def');
@@ -7779,7 +7779,7 @@
   }
   // 相手のHPに直接ダメージ（防御力に関係なく、全色を p ぶん削る）
   function directDmg(p){
-    if (gameMode === 'online') { onlAttack(Array(TYPES).fill(CFG.STACK_MAX * p), 1 / ONL_ATK); return; }
+    if (gameMode === 'online') { onlAttack(Array(TYPES).fill(CFG.STACK_MAX * p), true); return; }
     if (!vsOn) return;
     let dealt = 0;
     cpus.forEach(c => { if (!c.alive) return; const was = c.stacks.slice(); c.stacks = c.stacks.map(v => Math.min(enemyHP, v + enemyHP * p)); c.stacks.forEach((v, i) => { dealt += v - was[i]; }); checkCpuOut(c); });
@@ -7874,7 +7874,7 @@
   const fxDesc = list => list.map(fxText).join('。') + '。';
   // クリティカルヒット：相手の全色に、防御力に関係なく決まった量のダメージ
   function critDmg(pct){
-    if (gameMode === 'online') { onlAttack(Array(TYPES).fill(CFG.STACK_MAX * pct / 100), 1 / ONL_ATK); return; }   // 相手の全色に
+    if (gameMode === 'online') { onlAttack(Array(TYPES).fill(CFG.STACK_MAX * pct / 100), true); floatDmg(CFG.STACK_MAX * pct / 100 * enUnitPts(), 'direct', 'CRITICAL '); return; }   // 相手の全色に、最大HPの％
     if (!vsOn) return;
     const u = enemyHP * pct / 100;
     cpus.forEach(c => { if (!c.alive) return; c.stacks = c.stacks.map(v => Math.min(enemyHP, v + u)); checkCpuOut(c); });
