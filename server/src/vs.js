@@ -156,7 +156,7 @@ export class Room {
         this.phase = 'done'; return;
       }
     }
-    this.pot = bet * 2;
+    this.pot = bet * 2; this.cfg.games = (this.cfg.games || 0) + 1;
     const ra = await rateOf(env, a.id, this.cfg.kind), rb = await rateOf(env, b.id, this.cfg.kind);
     a.rate = ra.rate; b.rate = rb.rate;
     this.phase = 'play'; this.t0 = Date.now() + 3500;
@@ -165,17 +165,26 @@ export class Room {
     this.timer = setTimeout(() => this.timeUp(), 3500 + VS_LIMIT_SEC * 1000 + 1500);
   }
   onMsg(p, raw) {
-    if (this.phase !== 'play') return;
     let m; try { m = JSON.parse(raw); } catch (e) { return; }
     const o = this.ps.find(x => x !== p); if (!o) return;
-    if (m.t === 'st') { if (Array.isArray(m.s)) p.st = m.s.slice(0, 5).map(v => Math.max(0, Math.min(30, +v || 0))); p.sc = Math.max(0, +m.sc || 0); this.send(o, { t: 'st', s: p.st, sc: p.sc }); }
+    if (this.phase === 'done' && m.t === 'again') {         // 再戦の申し込み。2人そろったら始める
+      p.again = true; this.send(o, { t: 'again' });
+      if (o.again) { this.ps.forEach(x => { x.again = false; x.st = [0, 0, 0, 0, 0]; x.sc = 0; }); this.begin(); }
+      return;
+    }
+    if (this.phase !== 'play') return;
+    if (m.t === 'st') { if (Array.isArray(m.s)) p.st = m.s.slice(0, 5).map(v => Math.max(0, Math.min(30, +v || 0))); p.sc = Math.max(0, +m.sc || 0); this.send(o, { t: 'st', s: p.st, sc: p.sc, g: String(m.g || '').slice(0, 36) }); }
     else if (m.t === 'atk' && Array.isArray(m.d)) this.send(o, { t: 'atk', d: m.d.slice(0, 5).map(v => Math.max(0, Math.min(30, +v || 0))), n: Math.min(99, +m.n || 0) });
     else if (m.t === 'fx') this.send(o, { t: 'fx', k: String(m.k || '').slice(0, 16), v: +m.v || 0, nm: String(m.nm || '').slice(0, 30) });
     else if (m.t === 'lose') this.finish(o, p, 'out');
   }
   onClose(p) {
+    if (p.gone) return; p.gone = true;
     if (this.phase === 'wait') { this.ps = this.ps.filter(x => x !== p); this.lobbyCancel(); return; }
-    if (this.phase === 'play') { const o = this.ps.find(x => x !== p); if (o) this.finish(o, p, 'left'); }
+    const o = this.ps.find(x => x !== p);
+    if (this.phase === 'play') { if (o) this.finish(o, p, 'left'); }
+    else if (o) this.send(o, { t: 'left' });                // 結果画面で相手が帰った（再戦できない）
+    this.phase = 'closed';
   }
   lobbyCancel() { try { this.env.LOBBY.get(this.env.LOBBY.idFromName('lobby')).fetch('https://lobby/', { method: 'POST', body: JSON.stringify({ op: 'cancel', room: this.cfg && this.cfg.room }) }); } catch (e) {} }
   timeUp() {
@@ -203,7 +212,6 @@ export class Room {
     for (const p of this.ps) {
       const m = await medalOf(env, p.id);
       this.send(p, Object.assign({ t: 'end', why, medals: m ? m.balance : 0 }, out[p.id]));
-      setTimeout(() => { try { p.ws.close(1000, 'end'); } catch (e) {} }, 500);
     }
   }
 }

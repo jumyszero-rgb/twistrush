@@ -223,6 +223,98 @@
   @keyframes crown{0%,100%{transform:translateX(-50%) translateY(0) rotate(-6deg);}50%{transform:translateX(-50%) translateY(-4px) rotate(6deg);}}
   @keyframes rowIn{from{transform:translateX(30px);opacity:0;}to{transform:none;opacity:1;}}
   @keyframes meGlow{0%,100%{box-shadow:0 0 0 rgba(255,210,74,0);}50%{box-shadow:0 0 14px rgba(255,210,74,.9);}}
+
+  /* ===== オンライン対戦 ===== */
+  .olmedal{margin-left:auto;font-weight:900;font-size:14px;color:#ffe9a8;background:rgba(255,255,255,.12);border-radius:999px;padding:4px 10px;white-space:nowrap;}
+  .olsec{margin-top:12px;padding:12px;border-radius:16px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);}
+  .oltabs{display:flex;gap:6px;margin-top:10px;}
+  .oltabs button{flex:1;padding:10px 4px;border-radius:12px;border:2px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:#efe7ff;font-weight:900;font-size:15px;}
+  .oltabs button.on{background:linear-gradient(#7a5cff,#5a3cd8);border-color:#cbbcff;color:#fff;box-shadow:0 0 12px rgba(150,120,255,.6);}
+  .olrate{display:flex;align-items:center;gap:10px;font-size:13px;color:#efe7ff;}
+  .olrate b{font-size:26px;color:#fff;}
+  .oldaily{width:100%;margin-top:10px;padding:12px;border:0;border-radius:14px;font-weight:900;font-size:15px;color:#3a2000;background:linear-gradient(#fff3c4,#ffc93d);box-shadow:0 3px 0 #b8841a;animation:meGlow 1.6s ease-in-out infinite;}
+  .olbets{display:flex;gap:6px;margin-top:6px;}
+  .olbets button{flex:1;padding:8px 2px;border-radius:10px;border:2px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:#efe7ff;font-weight:900;}
+  .olbets button.on{background:#ffd24a;color:#3a2000;border-color:#fff3c4;}
+  .olbets button:disabled{opacity:.35;}
+  .olbig{width:100%;margin-top:12px;padding:16px;border:0;border-radius:16px;font-size:20px;font-weight:900;color:#fff;background:linear-gradient(90deg,#ff5f9e,#7a5cff);box-shadow:0 4px 0 #4a2a9a,0 0 18px rgba(255,95,158,.5);}
+  .olrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+  .olrow button{padding:12px 4px;border-radius:14px;border:2px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;font-weight:900;font-size:14px;}
+  .olteam{display:flex;gap:6px;align-items:center;margin-top:8px;}
+  .olav{display:inline-block;width:46px;height:46px;border-radius:10px;overflow:hidden;border:2px solid #fff;background:#2b2147;flex:none;}
+  .olav .cicon{width:100% !important;height:100% !important;}
+  .olav.nochar{display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:22px;color:#fff;background:linear-gradient(135deg,#ff5f9e,#7a5cff);}
+  .vs-card .olav.nochar{font-size:40px;}
+  .olwait{text-align:center;padding:26px 8px;}
+  .olspin{width:74px;height:74px;margin:10px auto 16px;border-radius:50%;border:7px solid rgba(255,255,255,.15);border-top-color:#ffd24a;border-right-color:#ff5f9e;animation:rkSpin 1s linear infinite;}
+  .olcode{font-size:56px;font-weight:900;letter-spacing:10px;color:#fff;text-shadow:0 0 16px rgba(255,210,74,.8);margin:6px 0;}
+  .olin{font-size:30px;letter-spacing:10px;text-align:center;width:100%;padding:10px;border-radius:14px;border:2px solid #7a5cff;background:#1b1230;color:#fff;font-weight:900;}
+  .olshop{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
+  .olitem{padding:10px;border-radius:14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);text-align:center;color:#fff;}
+  .olitem img{width:46px;height:46px;object-fit:contain;}
+  .olitem b{display:block;font-size:12px;margin:4px 0;}
+  .olitem button{width:100%;padding:7px;border:0;border-radius:10px;font-weight:900;color:#3a2000;background:linear-gradient(#fff3c4,#ffc93d);}
+  .olitem button:disabled{opacity:.4;}
+  .olitem small{display:block;font-size:10px;color:#cbb8ff;}
+  /* 対戦中：相手（ミニ盤面） */
+  .onlopp{display:flex;gap:8px;align-items:stretch;padding:4px 10px 2px;flex:none;position:relative;z-index:3;}
+  .onlopp.hidden{display:none;}
+  .oo-l{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;}
+  .oo-card{display:flex;gap:8px;align-items:center;padding:6px 8px;border-radius:12px;background:rgba(255,255,255,.82);color:#3a2748;box-shadow:0 2px 8px rgba(0,0,0,.12);}
+  .oo-card .olav{width:40px;height:40px;}
+  .oo-card div{min-width:0;flex:1;font-size:11px;line-height:1.3;}
+  .oo-card b{display:block;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .oo-card em{font-style:normal;font-weight:900;font-size:13px;}
+  .oo-time{font-weight:900;font-size:18px;color:#fff;background:#3a2748;border-radius:999px;padding:2px 10px;align-self:flex-start;}
+  .oo-time.low{background:#e8455f;animation:meGlow .8s ease-in-out infinite;}
+  .oo-bars{display:flex;gap:3px;}
+  .oo-bars i{flex:1;height:10px;border-radius:5px;border:2px solid var(--c);background:#fff;position:relative;overflow:hidden;}
+  .oo-bars i b{position:absolute;left:0;top:0;bottom:0;background:var(--c);transition:width .25s;}
+  .oo-bars i.hot{animation:meGlow .6s ease-in-out infinite;}
+  #ooBoard{width:96px;height:96px;border-radius:8px;border:3px solid #34c6a0;background:#fff;flex:none;}
+  #ooBoard.hit{animation:ooHit .35s ease-out;}
+  @keyframes ooHit{0%{transform:scale(1);box-shadow:0 0 0 rgba(255,95,158,0);}40%{transform:scale(1.08);box-shadow:0 0 22px rgba(255,95,158,.95);}100%{transform:scale(1);}}
+  .oo-fly{position:fixed;z-index:60;font-weight:900;font-size:18px;color:#ff3f7a;text-shadow:0 2px 0 #fff,0 0 8px #fff;pointer-events:none;animation:ooFly .9s ease-out forwards;}
+  @keyframes ooFly{from{transform:translateY(0);opacity:1;}to{transform:translateY(-36px);opacity:0;}}
+  .onl #pauseBtn,.onl #gearBtn{visibility:hidden;}
+  .onl #retryBtn,.onl #titleBtn,.onl #nextBtn,.onl #stageBtn{display:none !important;}
+  /* VS の始まり */
+  .vsintro{position:fixed;inset:0;z-index:70;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:radial-gradient(120% 80% at 50% 50%,#4a2a9a,#120826 75%);color:#fff;overflow:hidden;}
+  .vsintro.hidden{display:none;}
+  .vsintro::before{content:"";position:absolute;inset:-50%;background:conic-gradient(from 0deg,transparent 0 15deg,rgba(255,255,255,.07) 15deg 25deg,transparent 25deg 60deg,rgba(255,255,255,.07) 60deg 70deg,transparent 70deg 120deg,rgba(255,255,255,.07) 120deg 130deg,transparent 130deg 180deg,rgba(255,255,255,.07) 180deg 190deg,transparent 190deg 240deg,rgba(255,255,255,.07) 240deg 250deg,transparent 250deg 300deg,rgba(255,255,255,.07) 300deg 310deg,transparent 310deg);animation:rkSpin 10s linear infinite;}
+  .vsintro > *{position:relative;}
+  .vs-pair{display:flex;align-items:center;gap:6px;width:100%;justify-content:center;}
+  .vs-card{width:136px;padding:12px 8px;border-radius:18px;text-align:center;background:linear-gradient(#5b3bb0,#2a1650);border:2px solid #b89bff;box-shadow:0 0 22px rgba(150,120,255,.6);}
+  .vs-card.me{animation:vsL .55s cubic-bezier(.2,1.4,.4,1) both;}
+  .vs-card.op{animation:vsR .55s cubic-bezier(.2,1.4,.4,1) both;background:linear-gradient(#b03b6a,#501630);border-color:#ff9bd0;box-shadow:0 0 22px rgba(255,120,200,.6);}
+  .vs-card .olav{width:84px;height:84px;border-radius:14px;}
+  .vs-card b{display:block;margin-top:6px;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .vs-card small{font-size:12px;color:#e7dcff;}
+  .vs-team{display:flex;gap:3px;justify-content:center;margin-top:6px;}
+  .vs-team .olav{width:28px;height:28px;border-width:1px;border-radius:6px;}
+  .vs-vs{font-size:46px;font-weight:900;font-style:italic;color:#ffd24a;text-shadow:0 3px 0 #8a4b00,0 0 20px rgba(255,210,74,.9);animation:vsVS .7s .35s cubic-bezier(.2,1.8,.4,1) both;}
+  .vs-bet{font-weight:900;font-size:15px;padding:6px 14px;border-radius:999px;background:rgba(255,210,74,.2);border:1.5px solid #ffd24a;animation:rkFade .4s .6s both;}
+  .vs-kind{font-size:13px;font-weight:900;letter-spacing:2px;color:#cbb8ff;}
+  .vs-cnt{font-size:64px;font-weight:900;height:76px;color:#fff;text-shadow:0 0 20px rgba(255,255,255,.8);}
+  .vs-cnt.go{color:#ffd24a;}
+  .vs-cnt span{display:inline-block;animation:rkPop .5s cubic-bezier(.2,1.8,.4,1);}
+  @keyframes vsL{from{transform:translateX(-120vw) rotate(-20deg);}to{transform:none;}}
+  @keyframes vsR{from{transform:translateX(120vw) rotate(20deg);}to{transform:none;}}
+  @keyframes vsVS{from{transform:scale(4);opacity:0;}to{transform:none;opacity:1;}}
+  /* 対戦の結果 */
+  .onlres.hidden{display:none;}
+  .onlres{flex-shrink:0;}
+  .onlres .or-row{display:flex;justify-content:center;gap:10px;margin-top:8px;flex-wrap:wrap;}
+  .onlres .or-box{padding:8px 12px;border-radius:12px;background:rgba(255,255,255,.12);font-size:12px;color:#e7dcff;}
+  .onlres .or-box b{display:block;font-size:22px;color:#fff;font-variant-numeric:tabular-nums;}
+  .onlres .or-box b.up{color:#7dff8a;} .onlres .or-box b.down{color:#ff8aa0;}
+  .onlres .or-btns{display:flex;flex-direction:column;gap:6px;margin-top:12px;}
+  .onlres .or-btns button{padding:11px;border-radius:12px;border:0;font-weight:900;font-size:15px;}
+  .onlres .or-again{color:#3a2000;background:linear-gradient(#fff3c4,#ffc93d);box-shadow:0 3px 0 #b8841a;}
+  .onlres .or-again.ask{animation:meGlow 1s ease-in-out infinite;}
+  .onlres .or-again:disabled{opacity:.5;}
+  .onlres .or-sub{color:#fff;background:rgba(255,255,255,.16);}
+  .onlres.lose{background:radial-gradient(120% 90% at 50% 0%,#3a3f58 0%,#1c1f30 60%,#10121c 100%);border-color:#8a90b0;}
   .rjoin.hidden,.rkres.hidden,#rankMe.hidden{display:none;}
   .prz{margin-top:12px;padding:10px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,210,74,.5);}
   .prz-h{font-weight:900;color:#ffe9a8;font-size:15px;}
@@ -1059,6 +1151,7 @@
     </div>
   </header>
 
+  <div class="onlopp hidden" id="onlOpp"><div class="oo-l"><div class="oo-card"><span id="ooAv"></span><div><b id="ooName"></b><span id="ooRate"></span><br><em id="ooScore">0点</em></div><span class="oo-time" id="ooTime">3:00</span></div><div class="oo-bars" id="ooBars"></div></div><canvas id="ooBoard" width="120" height="120"></canvas></div>
   <div class="stacks" id="stacks"></div>
   <div class="vspanel hidden" id="vsPanel"></div>
   <div class="timebar hidden" id="timeBar" aria-label="残り時間"><b id="timeLeft">60</b><i><span id="timeFill"></span></i></div>
@@ -1181,6 +1274,7 @@
         <button class="rjskip" id="rjSkip">今はしない</button>
       </div>
       <div class="rkres hidden" id="rankRes"></div>
+      <div class="rkres onlres hidden" id="onlRes"></div>
       <div class="resbtns">
         <button class="rbtn next hidden" id="nextBtn"><i>▶</i><span>次へ</span></button>
         <button class="rbtn hidden" id="stageBtn"><i>🗺</i><span>ステージ</span></button>
@@ -1240,17 +1334,13 @@
       <div class="how-head">
         <button class="how-back" id="onlineBack" aria-label="タイトルに戻る">‹ 戻る</button>
         <h2>オンライン対戦</h2>
+        <div class="olmedal" id="olMedal"></div>
       </div>
-      <div class="how-body">
-        <section>
-          <h3>準備中です</h3>
-          <p>2〜4人で同時に対戦し、誰かが消したぶんがほかの全員のカラーHPに加算される形を予定しています。</p>
-          <p>実現には部屋を管理するサーバーが必要です（Cloudflareの常時接続サーバーで、月5ドルから）。</p>
-          <p>ストーリーで倒したキャラは、ここで自分のキャラとして使えるようにします。今は<b id="ownChars"></b>人が使えます。</p>
-        </section>
-      </div>
+      <div class="how-body" id="olBody"></div>
       <div class="how-foot"><button class="btn" id="onlineClose">とじる</button></div>
     </div>
+    <!-- 対戦の始まり（VS） -->
+    <div class="vsintro hidden" id="vsIntro"></div>
 
     <!-- ランキング -->
     <div class="overlay hidden" id="rank" role="dialog" aria-label="ランキング">
@@ -1972,7 +2062,7 @@
   // ステージの目標の文
   const goalText = st => '相手のHP ' + (st.hp * enemyStats(st)[0]).toLocaleString() + ' を削りきる（どれか1色を削りきれば勝ち）';
   const misText = m => MISSION[m.t].text(m);
-  const MODE_LABEL = {story: 'STORY', practice: 'PRACTICE', rank: 'ENDLESS', sixty: '60秒'};
+  const MODE_LABEL = {story: 'STORY', practice: 'PRACTICE', rank: 'ENDLESS', sixty: '60秒', online: '対戦'};
   const SIXTY_SEC = 60;                                   // 60秒アタックの持ち時間
   const isRec = m => m === 'rank' || m === 'sixty';      // 記録が残るモード
   // キャラ（仮）。イラストが来たら col と sym を画像に差し替える
@@ -3134,6 +3224,7 @@
     score += gain;
     dec.forEach((d, i) => { if (d) { stacks[i] = Math.max(0, stacks[i] - d); bump(i); popMinus(i, d); } });
     attackFromPlayer(clearSet.size, dec);        // 消した色のぶんだけ相手のHPを削る
+    onlAttack(dec);                              // オンライン対戦：相手のカラーHPへ
     lapStart = t0;                               // 消せたらタイムゲージは1周目から
     // 壊したブロック数に応じて難しくする
     const prevLap = lapSec(), prevInc = stackInc();
@@ -3705,7 +3796,7 @@
     }
   }
   function tick(t){
-    vsTick(t);
+    vsTick(t); onlTick(t);
     bgmUpdate();
     if (running && bombPick) return;                // カラーボムの色を選んでいる間は止める
     if (running && pausedAt) return;                // 一時停止・設定を開いている間は止める
@@ -4280,12 +4371,14 @@
     const tag = $('modeTag');
     tag.textContent = MODE_LABEL[gameMode] + (gameMode === 'practice' ? ' Lv' + diffLv : (stage ? ' ' + stage.label : ''));
     runMaxBar = 0; $('resStars').classList.add('hidden');
-    setStageBg(stage ? stage.area : (gameMode === 'rank' || gameMode === 'sixty' || gameMode === 'practice' ? 'free' : null));   // ストーリーはエリアの背景、60秒・エンドレス・練習は20枚からランダム
+    setStageBg(stage ? stage.area : (gameMode === 'rank' || gameMode === 'sixty' || gameMode === 'practice' || gameMode === 'online' ? 'free' : null));   // ストーリーはエリアの背景、60秒・エンドレス・練習は20枚からランダム
     timeShown = -1; $('timeBar').classList.toggle('hidden', gameMode !== 'sixty'); $('timeBar').classList.remove('low');
     tag.className = 'mode-tag ' + gameMode;
     const rt = $('resultMode'); rt.textContent = tag.textContent; rt.className = tag.className;
     audio();
-    seed = Math.floor(Math.random() * 2 ** 31);
+    seed = gameMode === 'online' && onl && onl.seed ? onl.seed : Math.floor(Math.random() * 2 ** 31);   // 対戦は2人とも同じ盤面から
+    document.body.classList.toggle('onl', gameMode === 'online');
+    if (gameMode !== 'online') { $('onlOpp').classList.add('hidden'); $('onlRes').classList.add('hidden'); }
     rng = mulberry32(seed); srng = mulberry32(seed ^ 0x9e3779b9);
     newBoard();
     cur = {r: 2, c: 2}; curFrom = null; vis = {r: 2, c: 2}; dragFrac = {r:0, c:0};
@@ -4350,6 +4443,7 @@
     if ($('resGet')) $('resGet').classList.add('hidden');
     if (!running) return;
     if (tryCharm()) return;                       // お守りを持っていれば、負けずに続ける
+    if (gameMode === 'online') onlSend({t: 'lose'});   // オンライン対戦：負けを知らせる
     itemsStop();
     running = false; confirmUntil = 0; refreshZone(); hideFighters();   // 終わったら立ち絵を消す
     document.body.classList.remove('danger');
@@ -4449,6 +4543,7 @@
     $('nextBtn').classList.add('hidden');            // 負けたときは「次のステージへ」を出さない
     $('stageBtn').classList.toggle('hidden', gameMode !== 'story');   // 負けてもステージ選択には戻れる
     if (afterShown) return; afterShown = true;
+    if (gameMode === 'online') { onlShowResult(); return; }   // オンライン対戦：コンティニューなし
     if (gameMode === 'sixty') { $('over').classList.remove('hidden'); return; }   // 60秒アタックはコンティニューなし
     if (gameMode === 'story') {                          // ストーリー：広告は1ステージ3回まで。使い切ったらお守りだけ
       const ch = own('charm');
@@ -4871,6 +4966,323 @@
     try { const r = await api('/api/me/name', {method: 'POST', body: JSON.stringify({name: e.target.value}), tok: rankTok()}); save('rank_name', r.name); if (acct) acct.name = r.name; toast('名前を変えました'); drawWorld(); }
     catch (_) { toast('サーバーにつながりませんでした'); }
   });
+
+  // ===== オンライン対戦（2人）=====
+  // シンプル対戦（キャラなし）とキャラ対戦（チームのステータスと技を使う）。ランダムと部屋番号。対戦メダルを賭けられる（0＝賭けない）
+  const ONL_ATK = 0.5;                                    // 消した数のうち、相手のカラーHPに送る割合
+  const OL_KIND = {simple: 'シンプル対戦', chara: 'キャラ対戦'};
+  let onl = null, olView = 'top', olKind = load('ol_kind', 'simple'), olBet = +load('ol_bet', '0') || 0, olInfo = null, olRate = null, olTimer = null;
+  const olWsBase = () => (apiUrl || DEFAULT_API).replace(/\/+$/, '').replace(/^http/, 'ws');
+  const olEsc = v => String(v == null ? '' : v).replace(/[<>&"]/g, '');
+  const olAv = (id, nm) => { const ci = id != null ? ALLC_IDX.get(id) : null; return '<span class="olav' + (ci == null ? ' nochar' : '') + '"' + (ci != null ? ' data-ci="' + ci + '"' : '') + '>' + (ci == null ? olEsc(String(nm || '？').slice(0, 1)) : '') + '</span>'; };
+  function olFill(root){ root.querySelectorAll('.olav[data-ci]').forEach(el => { if (!el.firstChild) el.appendChild(charIcon(+el.dataset.ci, Math.round(el.clientWidth) || 46)); }); }
+  const onlSend = o => { try { if (onl && onl.ws && onl.ws.readyState === 1) onl.ws.send(JSON.stringify(o)); } catch (_) {} };
+  function myTeamInfo(){
+    const ms = teamMembers(), ids = ms.map(u => u.id);
+    return {lead: ids[0] || null, ids: olKind === 'chara' ? ids : undefined, st: olKind === 'chara' ? teamStats() : undefined};
+  }
+  function olMedalShow(){ $('olMedal').textContent = '🏅 ' + (olInfo ? olInfo.balance.toLocaleString() : '—'); }
+  function openOnline(){ $('online').classList.remove('hidden'); olView = 'top'; drawOnline(); }
+  async function drawOnline(){
+    const body = $('olBody');
+    clearInterval(olTimer);
+    if (olView === 'wait' || olView === 'code') return drawOlWait();
+    if (!rankTok()) {                                     // まずは名前を登録（ランキングと同じ）
+      body.innerHTML = '<div class="olsec"><h3>名前を登録して対戦しよう</h3><p>名前だけで登録できます。毎日、対戦メダルがもらえます。</p>' +
+        '<div class="rjrow"><input id="olName" maxlength="12" placeholder="名前（12文字まで）" value="' + olEsc(load('rank_name', '')) + '"><button class="btn" id="olNameGo">登録</button></div></div>';
+      $('olNameGo').onclick = async () => {
+        const name = $('olName').value.trim(); if (!name) { toast('名前を入れてください'); return; }
+        try { const r = await api('/api/guest', {method: 'POST', body: JSON.stringify({name}), tok: ''}); guestTok = r.token; save('rank_token', guestTok); save('rank_name', r.name); toast('登録しました：' + r.name); drawOnline(); }
+        catch (e) { toast(e.status === 403 ? 'ログインしてください（設定 → アカウント）' : 'サーバーにつながりませんでした'); }
+      };
+      olMedalShow(); return;
+    }
+    if (olView === 'shop') return drawOlShop();
+    if (olView === 'rank') return drawOlRank();
+    if (olView === 'join') return drawOlJoin();
+    body.innerHTML = '<div class="olwait"><div class="olspin"></div>読み込み中…</div>';
+    try {
+      [olInfo, olRate] = await Promise.all([api('/api/medal', {tok: rankTok()}), api('/api/vs/top?kind=' + olKind, {tok: rankTok()})]);
+    } catch (e) { body.innerHTML = '<div class="olsec">サーバーにつながりませんでした。少ししてからもう一度開いてください。</div>'; return; }
+    olMedalShow();
+    if (olBet > olInfo.balance) olBet = 0;
+    const me = olRate.me || {rate: 1000, win: 0, lose: 0};
+    const t = myTeamInfo();
+    body.innerHTML =
+      (olInfo.daily ? '<button class="oldaily" id="olDaily">🎁 今日の対戦メダルを受け取る（+' + (olInfo.first ? olInfo.firstN : olInfo.dailyN) + '）</button>' : '') +
+      '<div class="oltabs">' + Object.keys(OL_KIND).map(k => '<button data-k="' + k + '" class="' + (k === olKind ? 'on' : '') + '">' + OL_KIND[k] + '</button>').join('') + '</div>' +
+      '<div class="olsec"><div class="olrate"><span>レート</span><b>' + me.rate.toLocaleString() + '</b><span>' + me.win + '勝' + me.lose + '敗' + (me.rank ? '<br>世界 ' + me.rank + '位' : '') + '</span></div>' +
+      (olKind === 'chara' ? '<div class="olteam">' + (teamMembers().map(u => olAv(u.id)).join('') || '<span>チームがいません</span>') + '<button class="btn gray" id="olTeam" style="width:auto;margin:0 0 0 auto;padding:8px 10px;white-space:nowrap">チーム変更</button></div>' +
+        '<p style="margin:6px 0 0;font-size:12px">チームのステータスで攻撃が変わり、必殺技・奥義が使えます。</p>'
+        : '<p style="margin:6px 0 0;font-size:12px">キャラなし。パズルの腕だけで勝負します。</p>') + '</div>' +
+      '<div class="olsec"><b>🏅 対戦メダルを賭ける</b><div class="olbets">' + olInfo.bets.map(b => '<button data-b="' + b + '" class="' + (b === olBet ? 'on' : '') + '"' + (b > olInfo.balance ? ' disabled' : '') + '>' + (b ? b : 'なし') + '</button>').join('') + '</div>' +
+      '<p style="margin:6px 0 0;font-size:12px">' + (olBet ? '勝つと相手の分ももらえて +' + olBet * 2 + '。負けると −' + olBet + '。' : '賭けずに対戦します（レートは変わります）。') + '</p></div>' +
+      '<button class="olbig" id="olQuick">⚡ ランダム対戦</button>' +
+      '<div class="olrow"><button id="olCreate">🏠 部屋を作る</button><button id="olJoin">🔢 番号で入る</button><button id="olRank">🏆 対戦ランキング</button><button id="olShop">🛒 メダル交換</button></div>' +
+      '<p style="font-size:12px;margin-top:10px">3分たったら、カラーHPのいちばん高い色が低いほうの勝ち。対戦中は一時停止できません。途中で抜けると負けになります。</p>';
+    olFill(body);
+    if ($('olDaily')) $('olDaily').onclick = async () => { try { const r = await api('/api/medal/daily', {method: 'POST', body: '{}', tok: rankTok()}); toast('対戦メダル +' + r.got); drawOnline(); } catch (_) { toast('サーバーにつながりませんでした'); } };
+    body.querySelectorAll('.oltabs button').forEach(b => b.onclick = () => { olKind = b.dataset.k; save('ol_kind', olKind); drawOnline(); });
+    body.querySelectorAll('.olbets button').forEach(b => b.onclick = () => { olBet = +b.dataset.b; save('ol_bet', String(olBet)); drawOnline(); });
+    if ($('olTeam')) $('olTeam').onclick = () => { $('online').classList.add('hidden'); openBox('char'); };
+    $('olQuick').onclick = olQuick;
+    $('olCreate').onclick = olCreate;
+    $('olJoin').onclick = () => { olView = 'join'; drawOnline(); };
+    $('olRank').onclick = () => { olView = 'rank'; drawOnline(); };
+    $('olShop').onclick = () => { olView = 'shop'; drawOnline(); };
+  }
+  function olNeedTeam(){ if (olKind === 'chara' && !teamMembers().length) { toast('キャラ対戦はチームが必要です'); return true; } return false; }
+  async function olQuick(){
+    if (olNeedTeam()) return;
+    try { const r = await api('/api/vs/quick', {method: 'POST', body: JSON.stringify({kind: olKind, bet: olBet}), tok: rankTok()}); olView = 'wait'; olConnect(r.room); drawOnline(); }
+    catch (e) { toast(e.message || 'サーバーにつながりませんでした'); }
+  }
+  async function olCreate(){
+    if (olNeedTeam()) return;
+    try { const r = await api('/api/vs/create', {method: 'POST', body: JSON.stringify({kind: olKind, bet: olBet}), tok: rankTok()}); olView = 'code'; olConnect(r.room); onl.code = r.code; drawOnline(); }
+    catch (e) { toast(e.message || 'サーバーにつながりませんでした'); }
+  }
+  function drawOlWait(){
+    const body = $('olBody'), t0 = Date.now(), code = olView === 'code' && onl ? onl.code : '';
+    const info = OL_KIND[olKind] + '・' + (olBet ? '賭け 🏅' + olBet : '賭けなし');
+    body.innerHTML = '<div class="olsec olwait"><div class="olspin"></div>' +
+      (code ? '<div>部屋番号</div><div class="olcode">' + code + '</div><div style="font-size:13px">' + info + '</div><button class="btn" id="olCopy" style="margin-top:12px">📋 ルーム情報をコピー</button><p>相手がこの番号で入ると始まります（10分で消えます）</p>'
+            : '<b style="font-size:18px">相手をさがしています…</b><div style="margin-top:6px;font-size:13px">' + info + '</div>') +
+      '<div id="olWaitT" style="margin-top:8px;font-size:13px;color:#cbb8ff">0:00</div><button class="btn gray" id="olCancel" style="margin-top:14px">やめる</button></div>';
+    if ($('olCopy')) $('olCopy').onclick = () => {
+      const txt = 'TWIST RUSH 対戦の部屋 ' + code + '（' + info + '）\nオンライン対戦 →「番号で入る」に入れてね\n' + location.origin;
+      (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => toast('コピーしました'), () => toast(txt));
+    };
+    $('olCancel').onclick = olCancel;
+    olTimer = setInterval(() => { const s = Math.floor((Date.now() - t0) / 1000), el = $('olWaitT'); if (el) el.textContent = Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); else clearInterval(olTimer); }, 1000);
+  }
+  function drawOlJoin(){
+    $('olBody').innerHTML = '<div class="olsec"><h3>部屋番号で入る</h3><p>相手から教えてもらった4けたの番号を入れてください。</p>' +
+      '<input class="olin" id="olCode" inputmode="numeric" maxlength="4" placeholder="0000"><button class="btn" id="olJoinGo" style="margin-top:10px">入る</button><button class="btn gray" id="olBackTop" style="margin-top:6px">もどる</button></div>';
+    $('olBackTop').onclick = () => { olView = 'top'; drawOnline(); };
+    const go = async () => {
+      const code = $('olCode').value.replace(/\D/g, ''); if (code.length !== 4) { toast('4けたの番号を入れてください'); return; }
+      try { const r = await api('/api/vs/join', {method: 'POST', body: JSON.stringify({code}), tok: rankTok()}); olKind = r.kind; olBet = r.bet;
+        if (olNeedTeam()) return; olView = 'wait'; olConnect(r.room); drawOnline(); }
+      catch (e) { toast(e.message || 'サーバーにつながりませんでした'); }
+    };
+    $('olJoinGo').onclick = go; $('olCode').onkeydown = e => { if (e.key === 'Enter') go(); };
+  }
+  async function drawOlShop(){
+    const body = $('olBody');
+    if (!olInfo) try { olInfo = await api('/api/medal', {tok: rankTok()}); } catch (_) {}
+    olMedalShow();
+    const shop = (olInfo && olInfo.shop) || [];
+    const img = k => k.startsWith('pot_') ? potImg(k.slice(4)) : itemImg(k);
+    body.innerHTML = '<div class="olsec"><h3>🛒 対戦メダルで交換</h3><p>対戦メダルは対戦専用のコインです（お金では買えません）。</p><div class="olshop">' +
+      shop.map(x => '<div class="olitem"><img src="' + img(x.k) + '" alt=""><b>' + itemLabel(x.k) + '</b><small>持っている数 ' + own(x.k) + '</small><button data-k="' + x.k + '"' + (olInfo && olInfo.balance < x.price ? ' disabled' : '') + '>🏅 ' + x.price + '</button></div>').join('') +
+      '</div><button class="btn gray" id="olBackTop" style="margin-top:12px">もどる</button></div>';
+    $('olBackTop').onclick = () => { olView = 'top'; drawOnline(); };
+    body.querySelectorAll('.olitem button').forEach(b => b.onclick = async () => {
+      b.disabled = true;
+      try { const r = await api('/api/medal/buy', {method: 'POST', body: JSON.stringify({k: b.dataset.k}), tok: rankTok()});
+        inv[r.k] = own(r.k) + 1; saveInv(); olInfo.balance = r.balance; toast(itemLabel(r.k) + ' を交換しました'); drawOlShop(); }
+      catch (e) { toast(e.message || 'サーバーにつながりませんでした'); b.disabled = false; }
+    });
+  }
+  async function drawOlRank(){
+    const body = $('olBody');
+    body.innerHTML = '<div class="olwait"><div class="olspin"></div></div>';
+    let r; try { r = await api('/api/vs/top?kind=' + olKind, {tok: rankTok()}); } catch (_) { body.innerHTML = '<div class="olsec">サーバーにつながりませんでした</div>'; return; }
+    const top = r.top || [];
+    const pod = (x, k) => x ? '<div class="pod p' + x.rank + (x.me ? ' me' : '') + '" style="--i:' + k + '"><span class="pm">' + ['👑', '🥈', '🥉'][x.rank - 1] + '</span><div class="pr">' + x.rank + '</div><div class="pn">' + olEsc(x.name) + '</div><div class="ps">' + x.rate + '</div></div>'
+      : '<div class="pod empty p' + (k === 0 ? 2 : k === 1 ? 1 : 3) + '" style="--i:' + k + '"><div class="pr">—</div></div>';
+    body.innerHTML = '<div class="oltabs">' + Object.keys(OL_KIND).map(k => '<button data-k="' + k + '" class="' + (k === olKind ? 'on' : '') + '">' + OL_KIND[k] + '</button>').join('') + '</div>' +
+      '<div class="olsec"><h3>🏆 対戦ランキング（レート）</h3>' +
+      (r.me && r.me.rank ? '<div class="wme"><span class="wme-l">あなたは</span><span class="wme-n">' + r.me.rank + '位</span><span class="wme-s">レート ' + r.me.rate + '<br>' + r.me.win + '勝' + r.me.lose + '敗</span></div>' : '') +
+      (top.length ? '<div class="podium">' + pod(top[1], 0) + pod(top[0], 1) + pod(top[2], 2) + '</div>' + top.slice(3).map((x, i) => '<div class="wrow' + (x.me ? ' me' : '') + '" style="--i:' + i + '"><span class="rk">' + x.rank + '</span><span class="nm2">' + olEsc(x.name) + '</span><span class="sc">' + x.rate + '</span></div>').join('')
+        : '<div class="wrow"><span class="nm2">まだ記録がありません</span></div>') +
+      '<button class="btn gray" id="olBackTop" style="margin-top:12px">もどる</button></div>';
+    body.querySelectorAll('.oltabs button').forEach(b => b.onclick = () => { olKind = b.dataset.k; save('ol_kind', olKind); drawOlRank(); });
+    $('olBackTop').onclick = () => { olView = 'top'; drawOnline(); };
+  }
+  async function olCancel(){
+    const room = onl && onl.room; onlClose();
+    olView = 'top'; drawOnline();
+    if (room) try { await api('/api/vs/cancel', {method: 'POST', body: JSON.stringify({room}), tok: rankTok()}); } catch (_) {}
+  }
+  function onlClose(){ if (onl && onl.ws) { onl.closing = true; try { onl.ws.close(); } catch (_) {} } onl = null; }
+  function olConnect(room){
+    onlClose();
+    const ws = new WebSocket(olWsBase() + '/ws/room/' + room + '?t=' + encodeURIComponent(rankTok()) + '&kind=' + olKind + '&bet=' + olBet + '&team=' + encodeURIComponent(JSON.stringify(myTeamInfo())));
+    onl = {ws, room, kind: olKind, bet: olBet};
+    const me = onl;
+    ws.onmessage = e => { if (onl !== me) return; let m; try { m = JSON.parse(e.data); } catch (_) { return; } onlMsg(m); };
+    ws.onclose = () => { if (onl !== me || me.closing) return; onlLost(); };
+  }
+  function onlMsg(m){
+    if (m.t === 'err') { toast(m.m); onlClose(); olView = 'top'; if (!running) { $('online').classList.remove('hidden'); drawOnline(); } return; }
+    if (m.t === 'start') {
+      Object.assign(onl, {kind: m.kind, bet: m.bet, opp: m.opp, me: m.me, limit: m.limit, seed: m.seed, result: null, again: false, oppAgain: false, oppLeft: false, oppSt: [0, 0, 0, 0, 0], oppSc: 0, oppG: ''});
+      clearInterval(olTimer); showVsIntro(m); return;
+    }
+    if (m.t === 'atk') { onlHit(m.d || []); return; }
+    if (m.t === 'st') { onl.oppSt = m.s || onl.oppSt; onl.oppSc = m.sc || 0; onl.oppG = m.g || ''; onlDrawOpp(); return; }
+    if (m.t === 'fx') { onlFx(m); return; }
+    if (m.t === 'end') { onl.result = m; onlEnd(); return; }
+    if (m.t === 'again') { onl.oppAgain = true; onlResBtns(); return; }
+    if (m.t === 'left') { onl.oppLeft = true; onlResBtns(); return; }
+  }
+  // 通信が切れた
+  function onlLost(){
+    if (!onl) return;
+    if (running && gameMode === 'online' && !onl.result) { onl.result = {res: 'lose', why: 'net', delta: 0, rate: onl.me ? onl.me.rate : 0, medal: -(onl.bet || 0)}; onlEnd(); }
+    else if (!running && gameMode === 'online' && onl.result) { onl.oppLeft = true; onlResBtns(); }
+    else { toast('つながりが切れました'); onl = null; olView = 'top'; if (!$('online').classList.contains('hidden')) drawOnline(); }
+  }
+  // VS の始まり：左右からカードが飛んできて、3・2・1・START
+  function showVsIntro(m){
+    $('online').classList.add('hidden'); $('over').classList.add('hidden'); $('over').classList.remove('soft', 'in');
+    const el = $('vsIntro'), me = myTeamInfo(), op = m.opp || {}, ot = op.team || {};
+    const team = ids => ids && ids.length ? '<div class="vs-team">' + ids.slice(0, 4).map(olAv).join('') + '</div>' : '';
+    el.innerHTML = '<div class="vs-kind">' + OL_KIND[m.kind] + '</div><div class="vs-pair">' +
+      '<div class="vs-card me">' + olAv(me.lead, load('rank_name', '')) + '<b>' + olEsc(load('rank_name', '') || (acct && acct.name) || 'あなた') + '</b><small>レート ' + (m.me ? m.me.rate : 1000) + '</small>' + (m.kind === 'chara' ? team(me.ids) : '') + '</div>' +
+      '<div class="vs-vs">VS</div>' +
+      '<div class="vs-card op">' + olAv(ot.lead, op.name) + '<b>' + olEsc(op.name) + '</b><small>レート ' + op.rate + '</small>' + (m.kind === 'chara' ? team(ot.ids) : '') + '</div></div>' +
+      '<div class="vs-bet">' + (m.bet ? '🏅 ' + m.bet + ' を賭けた勝負（勝てば +' + m.bet * 2 + '）' : '賭けなしの勝負') + '</div><div class="vs-cnt" id="vsCnt"></div>';
+    el.classList.remove('hidden'); olFill(el);
+    try { sndShine(T(), true); } catch (_) {}
+    const wait = m.wait || 3500, steps = ['3', '2', '1'], t0 = Date.now();
+    let k = -1;
+    const iv = setInterval(() => {
+      const left = wait - (Date.now() - t0), n = left > 2700 ? -1 : left > 1800 ? 0 : left > 900 ? 1 : 2;
+      if (n !== k && n >= 0) { k = n; $('vsCnt').innerHTML = '<span>' + steps[n] + '</span>'; try { sndCount(false); } catch (_) {} }
+      if (left <= 0) { clearInterval(iv); $('vsCnt').innerHTML = '<span>START!</span>'; $('vsCnt').classList.add('go'); try { sndCount(true); } catch (_) {}
+        setTimeout(() => { el.classList.add('hidden'); $('vsCnt') && $('vsCnt').classList.remove('go'); onlBegin(); }, 450); }
+    }, 100);
+  }
+  function onlBegin(){
+    if (!onl) return;
+    onl.acc = [0, 0, 0, 0, 0]; onl.sent = 0; onl.skSlow = null;
+    const mt = myTeamInfo(), ot = (onl.opp && onl.opp.team) || {};
+    onl.mul = onl.kind === 'chara' && mt.st && ot.st ? Math.max(0.75, Math.min(1.35, corr(mt.st[1], ot.st[2]))) : 1;
+    start('online', {});
+    $('onlOpp').classList.remove('hidden');
+    $('ooAv').innerHTML = olAv(ot.lead, onl.opp && onl.opp.name); olFill($('ooAv'));
+    $('ooName').textContent = onl.opp ? onl.opp.name : '';
+    $('ooRate').textContent = 'レート ' + (onl.opp ? onl.opp.rate : '');
+    $('ooBars').innerHTML = CH.map((c, i) => '<i style="--c:' + c.col + '"><b style="width:0%"></b></i>').join('');
+    onlDrawOpp(); resize();
+  }
+  // 自分の様子を相手に送る（カラーHP・点数・盤面）。盤面は36文字（0〜4 色／5 オクタ／6 ハート／9 空）
+  function onlTick(t){
+    if (!onl || !running || gameMode !== 'online') return;
+    const left = Math.max(0, onl.limit - (t - runStart) / 1000), sec = Math.ceil(left);
+    if (sec !== onl.shown) { onl.shown = sec; $('ooTime').textContent = Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0'); $('ooTime').classList.toggle('low', sec <= 30); }
+    if (t - (onl.sent || 0) < 300) return;
+    onl.sent = t;
+    const g = grid.map(row => row.map(v => v == null ? '9' : v === GOLD ? '5' : v < TYPES ? String(v) : '6').join('')).join('');
+    onlSend({t: 'st', s: stacks.map(v => Math.round(v * 10) / 10), sc: score, g});
+  }
+  function onlDrawOpp(){
+    if (!onl) return;
+    $('ooScore').textContent = (onl.oppSc || 0).toLocaleString() + '点';
+    const bars = $('ooBars').querySelectorAll('i');
+    (onl.oppSt || []).forEach((v, i) => { const b = bars[i]; if (!b) return; b.firstChild.style.width = Math.min(100, v / CFG.STACK_MAX * 100) + '%'; b.classList.toggle('hot', v >= CFG.STACK_MAX * 2 / 3); });
+    const cv = $('ooBoard'), x = cv.getContext('2d'), W = cv.width, n = N, s = W / n, g = onl.oppG || '';
+    x.clearRect(0, 0, W, W);
+    for (let i = 0; i < n * n; i++) {
+      const ch = g[i], r = (i / n) | 0, c = i % n; if (!ch || ch === '9') continue;
+      x.fillStyle = ch === '5' ? '#ffd24a' : ch === '6' ? '#ff6b9a' : (CH[+ch] ? CH[+ch].col : '#ccc');
+      const px = c * s + 1.5, py = r * s + 1.5, w = s - 3;
+      x.beginPath(); if (x.roundRect) x.roundRect(px, py, w, w, 3); else x.rect(px, py, w, w); x.fill();
+    }
+  }
+  // 自分が消した → 相手へ送る（色ごと）。端数はためておく
+  function onlAttack(dec, mul){
+    if (!onl || !running || gameMode !== 'online') return;
+    const f = ONL_ATK * (onl.mul || 1) * (mul || 1);
+    let n = 0;
+    const d = dec.map((v, i) => { onl.acc[i] += (v || 0) * f; const s = Math.floor(onl.acc[i]); onl.acc[i] -= s; n += s; return s; });
+    if (!n) return;
+    onlSend({t: 'atk', d, n});
+    const cv = $('ooBoard'); cv.classList.remove('hit'); void cv.offsetWidth; cv.classList.add('hit');
+    const r = cv.getBoundingClientRect(), f2 = document.createElement('div'); f2.className = 'oo-fly'; f2.textContent = '+' + n;
+    f2.style.left = (r.left + r.width / 2 - 12) + 'px'; f2.style.top = (r.top + 10) + 'px'; document.body.appendChild(f2); setTimeout(() => f2.remove(), 950);
+  }
+  // 相手から届いた → 自分のカラーHPが増える（相手のミニ盤面から火の玉）
+  function onlHit(d){
+    if (!running || gameMode !== 'online') return;
+    let n = 0;
+    d.forEach((v, i) => { if (v > 0 && i < TYPES) { stacks[i] = Math.min(CFG.STACK_MAX, stacks[i] + v); n += v; bump(i); } });
+    if (!n) return;
+    const cv = $('ooBoard').getBoundingClientRect(), a = {x: cv.left + cv.width / 2, y: cv.top + cv.height / 2}, pal = atkPal(), bp = barsPos();
+    const orbs = Math.max(1, Math.min(5, Math.round(n / 3)));
+    for (let i = 0; i < orbs; i++) bolts.push({x0: a.x, y0: a.y, x1: bp.x, y1: bp.y, n, part: Math.max(1, Math.round(n / orbs)), t: now() + i * 80, dur: 380 + Math.min(n, 12) * 10, trail: [], pal});
+    sndEnemyAttack(n);
+    updateGauges();
+    if (stacks.some(v => v >= CFG.STACK_MAX)) finish();
+  }
+  // キャラ対戦：技の効果を相手へ
+  function onlFx(m){
+    if (!running || gameMode !== 'online') return;
+    if (m.k === 'sk') { toast('相手の技：' + m.nm); const cv = $('ooBoard'); cv.classList.remove('hit'); void cv.offsetWidth; cv.classList.add('hit'); }
+    else if (m.k === 'eslow') { const pct = Math.floor(m.v / 1000), sec = m.v % 1000; onl.skSlow = [Math.max(0.2, 1 - pct / 100), now() + sec * 1000]; toast('相手の技で、技のたまりが ' + pct + '% 遅くなった（' + sec + '秒）'); }
+  }
+  const onlSkMul = () => onl && onl.skSlow && now() < onl.skSlow[1] ? onl.skSlow[0] : 1;
+  // 勝負がついた（サーバーから）
+  function onlEnd(){
+    const r = onl && onl.result; if (!r) return;
+    if (running) {                                      // 勝った・時間切れ：その場で止める
+      running = false; confirmUntil = 0; refreshZone(); hideFighters();
+      document.body.classList.remove('danger'); bgmStop(1.2);
+      if (tapTimer) { clearTimeout(tapTimer); tapTimer = null; }
+      afterShown = true;
+      pops.push({text: r.res === 'win' ? 'WIN!' : r.res === 'draw' ? 'DRAW' : (r.why === 'time' ? 'TIME UP' : 'LOSE'), style: 'speed', r: 2.5, c: 2.5, row: 0, n: 1, t: now(), big: true, long: true});
+      setTimeout(onlShowResult, 1400);
+    } else if (afterShown) onlShowResult();
+  }
+  const OL_WHY = {out: {win: '相手のカラーHPが30になった！', lose: 'カラーHPが30になってしまった…'}, time: {win: '時間切れ：カラーHPの低いほうの勝ち', lose: '時間切れ：カラーHPの低いほうの勝ち', draw: '時間切れ：引き分け'},
+    left: {win: '相手が抜けました', lose: '途中で抜けました'}, net: {lose: 'つながりが切れました'}};
+  function onlShowResult(){
+    const ov = $('over'), r = onl && onl.result;
+    ov.querySelector('h1').textContent = !r ? '…' : r.res === 'win' ? 'WIN!' : r.res === 'draw' ? 'DRAW' : 'LOSE';
+    $('finalScore').textContent = score;
+    $('finalNote').textContent = !r ? '結果を待っています…' : ((OL_WHY[r.why] || {})[r.res] || '');
+    $('rankJoin').classList.add('hidden'); $('rankRes').classList.add('hidden'); $('resStars').classList.add('hidden');
+    const el = $('onlRes');
+    if (r) {
+      const from = (onl.me ? onl.me.rate : r.rate - r.delta);
+      el.className = 'rkres onlres ' + (r.res === 'win' ? 't1' : r.res === 'lose' ? 'lose' : '');
+      el.innerHTML = '<div class="rk-head">⚔ ' + OL_KIND[onl.kind] + '</div>' +
+        '<div class="or-row"><div class="or-box">レート<b id="orRate">' + from + '</b><span>' + (r.delta >= 0 ? '+' : '') + r.delta + '</span></div>' +
+        (onl.bet || r.medal ? '<div class="or-box">対戦メダル<b class="' + (r.medal > 0 ? 'up' : r.medal < 0 ? 'down' : '') + '">' + (r.medal > 0 ? '+' : '') + r.medal + '</b><span>のこり ' + (r.medals || 0).toLocaleString() + '</span></div>' : '') + '</div>' +
+        '<div class="or-btns"><button class="or-again" id="orAgain">🔁 同じ相手と再戦</button><button class="or-sub" id="orQuick">⚡ ランダムでもう一度</button><button class="or-sub" id="orTop">対戦トップへ</button></div>';
+      el.classList.remove('hidden');
+      $('orAgain').onclick = () => { onl.again = true; onlSend({t: 'again'}); onlResBtns(); };
+      $('orQuick').onclick = () => { onlLeave(); olQuick(); $('online').classList.remove('hidden'); };
+      $('orTop').onclick = () => { onlLeave(); openOnline(); };
+      onlResBtns();
+      // レートの数字が回る・勝ったら紙ふぶき
+      const to = r.rate, rt = $('orRate'), t0 = performance.now();
+      (function roll(t){ const k = Math.min(1, (t - t0) / 1000), e = 1 - Math.pow(1 - k, 3); rt.textContent = Math.round(from + (to - from) * e); rt.className = to > from ? 'up' : to < from ? 'down' : ''; if (k < 1) requestAnimationFrame(roll); })(t0);
+      if (r.res === 'win') {
+        try { sndFanfare(T(), 0.08); } catch (_) {}
+        const cols = ['#ffd24a', '#ff5fd0', '#5fd3ff', '#7dff8a', '#fff', '#ff8a3d'];
+        for (let i = 0; i < 40; i++) { const c = document.createElement('i'); c.className = 'rk-conf'; c.style.background = cols[i % 6];
+          c.style.setProperty('--dx', (Math.random() * 320 - 160) + 'px'); c.style.setProperty('--dy', (Math.random() * 160 + 40) + 'px'); c.style.setProperty('--r', (Math.random() * 720 - 360) + 'deg');
+          c.style.animationDelay = (Math.random() * .25) + 's'; el.appendChild(c); setTimeout(() => c.remove(), 2200); }
+      }
+    } else el.classList.add('hidden');
+    ov.classList.add('soft'); ov.classList.remove('hidden'); requestAnimationFrame(() => ov.classList.add('in'));
+  }
+  function onlResBtns(){
+    const b = $('orAgain'); if (!b || !onl) return;
+    b.disabled = !!onl.oppLeft || !!onl.again;
+    b.classList.toggle('ask', !!onl.oppAgain && !onl.again);
+    b.textContent = onl.oppLeft ? '相手は帰りました' : onl.again ? (onl.oppAgain ? 'まもなく開始…' : '相手を待っています…') : onl.oppAgain ? '🔥 相手が再戦したがっています！' : '🔁 同じ相手と再戦';
+  }
+  function onlLeave(){
+    onlClose(); olView = 'top';
+    $('onlOpp').classList.add('hidden'); $('onlRes').classList.add('hidden');
+    document.body.classList.remove('onl');
+    $('titleBtn').click();
+  }
   // 月間ランキングのごほうび：先月の順位でアイテムがもらえる（起動したとき・登録したときに確認）
   const RW_MODE = {sixty: '60秒アタック', rank: 'エンドレス'};
   const itemLabel = k => k.startsWith('pot_') ? potName(k.slice(4)) : (ITEMS[k] ? ITEMS[k].name : k);
@@ -5303,12 +5715,10 @@
     $('story').classList.add('hidden'); startStory(pickStage);
   });
 
-  $('vsBtn').addEventListener('click', () => {
-    $('ownChars').textContent = String(Math.min(storyCleared() + 1, CHARS.length));
-    $('online').classList.remove('hidden');
-  });
-  $('onlineBack').addEventListener('click', () => $('online').classList.add('hidden'));
-  $('onlineClose').addEventListener('click', () => $('online').classList.add('hidden'));
+  $('vsBtn').addEventListener('click', openOnline);
+  const olClose = () => { if (onl && !running) olCancel(); $('online').classList.add('hidden'); };
+  $('onlineBack').addEventListener('click', olClose);
+  $('onlineClose').addEventListener('click', olClose);
   $('rankBtn').addEventListener('click', () => { drawRank(); $('rank').classList.remove('hidden'); $('rank').querySelector('.how-body').scrollTop = 0; });
   $('rankBack').addEventListener('click', () => $('rank').classList.add('hidden'));
   $('rankClose').addEventListener('click', () => $('rank').classList.add('hidden'));
@@ -6951,10 +7361,10 @@
   const atkMul = () => ((atkUntil && now() < atkUntil) ? 2 : 1) * bm('atk');
   function defCut(n){ const m = ((defUntil && now() < defUntil) ? 2 : 1) * bm('def'); return m > 1 ? Math.max(0, Math.round(n / m)) : n; }
   const myId = () => (CHARS[myChar] ? CHARS[myChar].id : null);
-  const skillOn = () => gameMode === 'story' && skList.length > 0;
+  const skillOn = () => (gameMode === 'story' || (gameMode === 'online' && onl && onl.kind === 'chara')) && skList.length > 0;
   function buildSkills(){
     skList = [];
-    if (gameMode !== 'story') return;
+    if (gameMode !== 'story' && !(gameMode === 'online' && onl && onl.kind === 'chara')) return;
     const t = curTeam(), sk = teamSk[teamNo];
     t.forEach((uid, k) => {
       const u = unitOf(uid); if (!u || !SKILLS[u.id]) return;
@@ -7022,7 +7432,7 @@
     if (!skillOn() || pausedAt) return;
     skList.forEach(s2 => {
       if (s2.ready) return;
-      s2.charge = Math.min(skMs(s2), s2.charge + dt);
+      s2.charge = Math.min(skMs(s2), s2.charge + dt * onlSkMul());
       if (s2.charge >= skMs(s2)) {
         s2.ready = true;
         const msg = (s2.main ? '' : fullName(ALLC[s2.ci]) + 'の') + (s2.kind === 'sp' ? '必殺技チャージ完了！' : '奥義チャージ完了！');
@@ -7353,6 +7763,7 @@
   }
   // 相手のHPに直接ダメージ（防御力に関係なく、全色を p ぶん削る）
   function directDmg(p){
+    if (gameMode === 'online') { onlAttack(Array(TYPES).fill(CFG.STACK_MAX * p), 1 / ONL_ATK); return; }
     if (!vsOn) return;
     let dealt = 0;
     cpus.forEach(c => { if (!c.alive) return; const was = c.stacks.slice(); c.stacks = c.stacks.map(v => Math.min(enemyHP, v + enemyHP * p)); c.stacks.forEach((v, i) => { dealt += v - was[i]; }); checkCpuOut(c); });
@@ -7447,6 +7858,7 @@
   const fxDesc = list => list.map(fxText).join('。') + '。';
   // クリティカルヒット：相手の全色に、防御力に関係なく決まった量のダメージ
   function critDmg(pct){
+    if (gameMode === 'online') { onlAttack(Array(TYPES).fill(CFG.STACK_MAX * pct / 100), 1 / ONL_ATK); return; }   // 相手の全色に
     if (!vsOn) return;
     const u = enemyHP * pct / 100;
     cpus.forEach(c => { if (!c.alive) return; c.stacks = c.stacks.map(v => Math.min(enemyHP, v + u)); checkCpuOut(c); });
@@ -7484,6 +7896,7 @@
       else if (f[0] === 'gheart') stockHeart('g', f[1]);
       else if (f[0] === 'sheart') stockHeart('s', f[1]);
       else if (f[0] === 'octaDrop') { octaPend += f[1]; fxExtra.push('✴ 次に消すと、オクタブロックが' + f[1] + '個降ってくる'); }
+      else if (f[0] === 'eslow' && gameMode === 'online') { onlSend({t: 'fx', k: 'eslow', v: f[1] * 1000 + f[2]}); fxExtra.push('🐢 相手の技のたまり −' + f[1] + '%（' + f[2] + '秒）'); }
       else if (f[0] === 'eslow') { ebuf = [1 - f[1] / 100, now() + f[2] * 1000]; fxExtra.push('🐢 敵のスピード −' + f[1] + '%（' + f[2] + '秒）'); }
       else if (f[0] === 'mslow') { tslow = [f[1] / 100, now() + f[2] * 1000]; fxExtra.push('⏳ 時間の流れ −' + f[1] + '%（' + f[2] + '秒）'); }
       else if (f[0] === 'stop') { tstop = Math.max(tstop, now() + f[1] * 1000); document.body.classList.add('tstop'); fxExtra.push('⏸ 敵の時を止めた（' + f[1] + '秒）'); }
@@ -7540,6 +7953,7 @@
     if (phase !== 'idle') { toast('ブロックが消えている間は使えません'); return; }
     const t = now();
     s2.ready = false; s2.charge = 0;
+    if (gameMode === 'online') onlSend({t: 'fx', k: 'sk', nm: skName(s2)});
     const name = s2.kind === 'sp' ? (SPECIAL_NAME[s2.id] || '必殺技！') : (OUGI_NAME[s2.id] + '！');
     VOICE_SETS[s2.id] && (VOICE_SETS[s2.id][s2.kind === 'sp' ? 'special' : 'ougi'] || []).some(v => playClip(v));
     playAnim('me', 'atk');

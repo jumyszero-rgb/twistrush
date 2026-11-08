@@ -10,6 +10,9 @@
   "d1_databases": [{ "binding": "DB", "database_name": "twistrush-db" }],
   // ダッシュボードで入れた秘密の値（ログイン用のIDなど）を、公開のたびに消さない
   "keep_vars": true,
+  // 対戦の部屋（Room）と、相手さがし（Lobby）。無料プランで使える SQLite 型の Durable Object
+  "durable_objects": { "bindings": [ { "name": "ROOM", "class_name": "Room" }, { "name": "LOBBY", "class_name": "Lobby" } ] },
+  "migrations": [ { "tag": "v1", "new_sqlite_classes": ["Room", "Lobby"] } ],
   "vars": {
     "RETURN_ORIGINS": "https://twistrush.com,https://www.twistrush.com,http://localhost:8788",
     "ALLOW_ORIGINS": "https://twistrush.com,https://www.twistrush.com,http://localhost:8788",

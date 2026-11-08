@@ -89,3 +89,31 @@ CREATE TABLE IF NOT EXISTS reward_claims (
   created_at  INTEGER NOT NULL,
   PRIMARY KEY (account_id, month, mode)
 );
+
+-- 対戦メダル（お金では買えない、対戦専用のコイン）
+CREATE TABLE IF NOT EXISTS medals (
+  account_id  TEXT PRIMARY KEY,
+  balance     INTEGER NOT NULL DEFAULT 0,
+  daily       TEXT NOT NULL DEFAULT ''      -- 最後に毎日のメダルをもらった日（日本時間 'YYYY-MM-DD'）
+);
+CREATE TABLE IF NOT EXISTS medal_log (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  account_id  TEXT NOT NULL,
+  delta       INTEGER NOT NULL,
+  reason      TEXT NOT NULL,             -- 'first' | 'daily' | 'bet' | 'win' | 'draw' | 'buy:〜'
+  created_at  INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_medal_log ON medal_log(account_id, created_at);
+
+-- 対戦レート（シンプル対戦・キャラ対戦で別）
+CREATE TABLE IF NOT EXISTS ratings (
+  account_id  TEXT NOT NULL,
+  kind        TEXT NOT NULL,             -- 'simple' | 'chara'
+  rate        INTEGER NOT NULL,
+  win         INTEGER NOT NULL DEFAULT 0,
+  lose        INTEGER NOT NULL DEFAULT 0,
+  draw        INTEGER NOT NULL DEFAULT 0,
+  updated_at  INTEGER NOT NULL,
+  PRIMARY KEY (account_id, kind)
+);
+CREATE INDEX IF NOT EXISTS idx_ratings ON ratings(kind, rate DESC);

@@ -1,3 +1,5 @@
+import { Lobby, Room, MEDAL, MEDAL_SHOP, VS_KINDS, medalOf, medalDaily, medalTake, vsTop } from './vs.js';
+export { Lobby, Room };
 // TWIST RUSH サーバー（Cloudflare Workers + D1）
 //   ・ログイン（Google／LINE／Microsoft）  ・セーブの保存と読み込み
 //   ・ゴールドコインの残高（Web・Android・iOSで共通）  ・ランキング（ゲスト登録でも載る）
@@ -27,7 +29,12 @@ const SCHEMA = [
   "CREATE TABLE IF NOT EXISTS meta ( k TEXT PRIMARY KEY, v TEXT NOT NULL )",
   "CREATE TABLE IF NOT EXISTS guest_log ( ip TEXT NOT NULL, t INTEGER NOT NULL )",
   "CREATE INDEX IF NOT EXISTS idx_guest_log ON guest_log(ip, t)",
-  "CREATE TABLE IF NOT EXISTS reward_claims ( account_id TEXT NOT NULL, month TEXT NOT NULL, mode TEXT NOT NULL, created_at INTEGER NOT NULL, PRIMARY KEY (account_id, month, mode) )"
+  "CREATE TABLE IF NOT EXISTS reward_claims ( account_id TEXT NOT NULL, month TEXT NOT NULL, mode TEXT NOT NULL, created_at INTEGER NOT NULL, PRIMARY KEY (account_id, month, mode) )",
+  "CREATE TABLE IF NOT EXISTS medals ( account_id TEXT PRIMARY KEY, balance INTEGER NOT NULL DEFAULT 0, daily TEXT NOT NULL DEFAULT '' )",
+  "CREATE TABLE IF NOT EXISTS medal_log ( id INTEGER PRIMARY KEY AUTOINCREMENT, account_id TEXT NOT NULL, delta INTEGER NOT NULL, reason TEXT NOT NULL, created_at INTEGER NOT NULL )",
+  "CREATE INDEX IF NOT EXISTS idx_medal_log ON medal_log(account_id, created_at)",
+  "CREATE TABLE IF NOT EXISTS ratings ( account_id TEXT NOT NULL, kind TEXT NOT NULL, rate INTEGER NOT NULL, win INTEGER NOT NULL DEFAULT 0, lose INTEGER NOT NULL DEFAULT 0, draw INTEGER NOT NULL DEFAULT 0, updated_at INTEGER NOT NULL, PRIMARY KEY (account_id, kind) )",
+  "CREATE INDEX IF NOT EXISTS idx_ratings ON ratings(kind, rate DESC)"
   ];
 
 // ---------- 小さな道具 ----------
@@ -220,6 +227,7 @@ async function api(env, req, url) {
 
   // ランキング一覧はだれでも見られる
   if (p === '/api/top' && M === 'GET') return rankTop(env, req, url);
+  if (p === '/api/vs/top' && M === 'GET') { const m = await who(env, req); return json(env, req, await vsTop(env, VS_KINDS.includes(url.searchParams.get('kind')) ? url.searchParams.get('kind') : 'simple', m && m.id)); }
   // ゲスト登録：名前だけでアカウントを作る（ランキング用）。あとで Google などをつなげられる
   if (p === '/api/guest' && M === 'POST') {
     if (env.GUEST_SIGNUP === '0') return fail(env, req, 'ゲスト登録は終わりました。ログインしてください', 403);
@@ -320,6 +328,37 @@ async function api(env, req, url) {
 
   // ランキングに登録
   if (p === '/api/score' && M === 'POST') return rankPost(env, req, me);
+  // ---- 対戦メダル ----
+  if (p === '/api/medal' && M === 'GET') {
+    const m = await medalOf(env, me.id), t = nowSec();
+    const today = new Date((t + TZ) * 1000).toISOString().slice(0, 10);
+    return json(env, req, { balance: m ? m.balance : 0, daily: !m || m.daily !== today, first: !m, firstN: MEDAL.first, dailyN: MEDAL.daily, bets: MEDAL.bets, shop: MEDAL_SHOP });
+  }
+  if (p === '/api/medal/daily' && M === 'POST') {
+    const got = await medalDaily(env, me.id, nowSec()), m = await medalOf(env, me.id);
+    return json(env, req, { got, balance: m ? m.balance : 0 });
+  }
+  if (p === '/api/medal/buy' && M === 'POST') {
+    const b = await req.json().catch(() => ({})), it = MEDAL_SHOP.find(x => x.k === b.k);
+    if (!it) return fail(env, req, 'その品物はありません');
+    if (!await medalTake(env, me.id, it.price, 'buy:' + it.k, nowSec())) return fail(env, req, '対戦メダルが足りません', 402);
+    const m = await medalOf(env, me.id);
+    return json(env, req, { ok: true, k: it.k, balance: m ? m.balance : 0 });
+  }
+  // ---- 対戦の相手さがし ----
+  if (p.startsWith('/api/vs/') && M === 'POST') {
+    const b = await req.json().catch(() => ({})), op = p.slice(8);
+    if (!['quick', 'create', 'join', 'cancel'].includes(op)) return fail(env, req, 'not found', 404);
+    const kind = VS_KINDS.includes(b.kind) ? b.kind : 'simple', bet = MEDAL.bets.includes(+b.bet) ? +b.bet : 0;
+    if ((op === 'quick' || op === 'create') && bet) {
+      const m = await medalOf(env, me.id);
+      if (!m || m.balance < bet) return fail(env, req, '対戦メダルが足りません', 402);
+    }
+    const lob = env.LOBBY.get(env.LOBBY.idFromName('lobby'));
+    const r = await lob.fetch('https://lobby/', { method: 'POST', body: JSON.stringify({ op, kind, bet, code: String(b.code || ''), room: String(b.room || ''), player: me.id }) });
+    const o = await r.json();
+    return o.error ? fail(env, req, o.error) : json(env, req, o);
+  }
   // 先月の順位のごほうび（見る・受け取る）
   if (p === '/api/reward' && M === 'GET') return json(env, req, { rewards: await monthRewards(env, me.id) });
   if (p === '/api/reward/claim' && M === 'POST') {
@@ -441,6 +480,20 @@ function prepared(env) {
   return ready.then(secret => Object.assign({}, env, { SESSION_SECRET: secret }));
 }
 
+// ---------- 対戦の部屋へ（WebSocket）。札は ?t= で受け取る ----------
+async function wsRoom(env, req, url) {
+  if (req.headers.get('Upgrade') !== 'websocket') return new Response('websocket only', { status: 426 });
+  const s = await readSession(env, url.searchParams.get('t'));
+  const acc = s && await env.DB.prepare('SELECT id, name, banned FROM accounts WHERE id = ?').bind(s.a).first();
+  if (!acc || acc.banned) return new Response('login', { status: 401 });
+  const room = url.pathname.slice(9).replace(/[^A-Za-z0-9-]/g, '').slice(0, 64);
+  if (!room) return new Response('room', { status: 400 });
+  let team = null; try { team = JSON.parse(url.searchParams.get('team') || 'null'); } catch (e) {}
+  const me = { id: acc.id, name: acc.name, kind: url.searchParams.get('kind'), bet: +url.searchParams.get('bet') || 0, room, team };
+  const u = new URL(req.url); u.searchParams.set('_me', JSON.stringify(me)); u.searchParams.delete('t');
+  return env.ROOM.get(env.ROOM.idFromName(room)).fetch(new Request(u.toString(), req));
+}
+
 // ---------- 入口 ----------
 export default {
   async fetch(req, env) {
@@ -450,6 +503,7 @@ export default {
       env = await prepared(env);
       const m = /^\/auth\/([a-z]+)\/(start|callback)$/.exec(url.pathname);
       if (m) return m[2] === 'start' ? authStart(env, req, m[1]) : authCallback(env, req, m[1]);
+      if (url.pathname.startsWith('/ws/room/')) return await wsRoom(env, req, url);
       if (url.pathname.startsWith('/api/')) return await api(env, req, url);
       return new Response('TWIST RUSH server', { status: 200 });
     } catch (e) {
