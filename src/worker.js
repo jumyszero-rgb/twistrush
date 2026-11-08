@@ -66,6 +66,9 @@ async function gate(ctx) {
 // Workers（静的アセットつき）の入口：すべてのリクエストをここで受けて、通すときは静的ファイルを返す
 export default {
   async fetch(request, env) {
+    // 確認用：合言葉の仕組みが動いているか（合言葉そのものは出さない）
+    if (new URL(request.url).pathname === '/__gate_status')
+      return new Response('worker: ok\ngate: ' + (env && env.TESTER_PASS ? 'on（合言葉あり）' : 'off（TESTER_PASS が見つからない）') + '\n', {headers: {'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store'}});
     return gate({request, env, next: () => env.ASSETS.fetch(request)});
   },
 };
