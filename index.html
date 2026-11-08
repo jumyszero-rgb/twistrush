@@ -553,6 +553,9 @@
   .ccell .tbadge{top:auto;bottom:16px;right:3px;}
   .ccell .cno{position:absolute;top:2px;right:2px;width:20px;height:20px;border-radius:50%;background:#ffd24a;color:#3a2210;font-size:15px;font-weight:900;line-height:20px;text-align:center;box-shadow:0 0 4px #000;}
   .ccell .lbmark{top:20px;left:3px;right:auto;}
+  .maxmk{display:inline-block;font-style:normal;font-size:8px;font-weight:900;color:#fff;background:linear-gradient(90deg,#ff5f9e,#a46bff);border-radius:5px;padding:0 3px;line-height:1.4;}
+  .ccell .cmax{position:absolute;top:33px;left:3px;box-shadow:0 0 6px rgba(255,95,158,.9);}
+  .lbmats .maxmk{display:block;margin:1px auto 0;width:max-content;}
   .ccell .clock{position:absolute;bottom:16px;left:2px;width:22px;height:22px;border-radius:50%;background:#2a2a3a;border:2px solid #ffd24a;font-size:12px;line-height:19px;text-align:center;font-style:normal;box-shadow:0 0 5px #000;}
   .ccell.locked{outline:3px solid #ffd24a;outline-offset:-3px;} .ccell.locked::after{content:'🔒';position:absolute;left:3px;top:40%;width:22px;height:22px;border-radius:50%;background:#ffd24a;font-size:12px;line-height:22px;text-align:center;box-shadow:0 0 5px #000;pointer-events:none;}
   .clegend .clock{position:static;display:inline-block;width:18px;height:18px;line-height:18px;font-size:10px;border-radius:50%;background:#ffd24a;border:none;text-align:center;font-style:normal;}
@@ -6019,7 +6022,7 @@
       const cnt = {}; units.forEach(u => cnt[u.id] = (cnt[u.id] || 0) + 1);
       h += '<section><h3>持ちキャラ（' + (list0.length === all.length ? all.length : list0.length + ' / ' + all.length) + '体）</h3>' +
            '<div class="clegend">枠の色＝グレード：' + ['N', 'R', 'SR', 'MR', 'LR'].map(g => '<i class="g-' + g + '">' + g + '</i>').join('') +
-           '　①②③④＝今のチームの何番目か（①がメイン）　<i class="lbmark">突破</i>＝限界突破できる　<i class="clock">🔒</i>＝ロック中（材料にできない）</div><div class="csort">' +
+           '　①②③④＝今のチームの何番目か（①がメイン）　<i class="lbmark">突破</i>＝限界突破できる　<i class="maxmk">MAX</i>＝1つ上のグレードの限界突破の材料にできる　<i class="clock">🔒</i>＝ロック中（材料にできない）</div><div class="csort">' +
            SORTS.map(([k, n]) => '<button data-sort="' + k + '" class="' + (boxSort === k ? 'on' : '') + '">' + n + (boxSort === k ? (boxAsc ? '↑' : '↓') : '') + '</button>').join('') +
            '</div><div class="cfilt"><b>グレード</b>' + ['all'].concat(GR5).map(g => '<button data-fg="' + g + '" class="' + (boxFG === g ? 'on' : '') + '">' + (g === 'all' ? '全部' : g) + '</button>').join('') +
            '</div><div class="cfilt"><b>タイプ</b><button data-ft="all" class="' + (boxFT === 'all' ? 'on' : '') + '">全部</button>' + Object.keys(TYPE_INFO).map(k => '<button data-ft="' + k + '" class="' + (boxFT === k ? 'on' : '') + '">' + TYPE_INFO[k].mark + ' ' + TYPE_INFO[k].name + '</button>').join('') +
@@ -6031,7 +6034,7 @@
              '<span class="cface" data-ci="' + ci + '"></span>' +
              '<b class="clv">LV' + u.lv + '</b>' + typeBadge(u.id) +
              (ti >= 0 ? '<span class="cno">' + '①②③④'[ti] + '</span>' : '') +
-             (lb ? '<span class="lbmark">突破</span>' : '') +
+             (lb ? '<span class="lbmark">突破</span>' : '') + (isMaxed(u) && GRADE_DOWN.MR !== undefined && CHAR_STAT[u.id].grade !== 'LR' ? '<span class="maxmk cmax">MAX</span>' : '') +
              '<span class="cbot">' + starsHTMLu(u) + '<small>' + (boxSort.startsWith('st') ? ST_NAME[+boxSort[2]] + ' ' + unitStats(u)[+boxSort[2]] : (ALLC[ci].title ? '<i class="cttl">' + ALLC[ci].title + '</i>' : '') + ALLC[ci].name) + '</small></span></div>';
       });
       h += '</div>' + pagerHTML(boxPage, list0.length, BOX_PER, 'box') + '</section>';
@@ -6230,17 +6233,24 @@
   // ---- ほかのキャラ・ポットでの限界突破 ----
   // ほかのキャラ：同じグレードなら材料にできる。2体で★+1（LRで中の段が違うキャラがまざると3体）
   const lbSel = new Set();
-  const lbOtherNeed = u => [...lbSel].some(id => { const m = unitOf(id); return m && tierOf(m.id) !== tierOf(u.id); }) ? 3 : 2;
+  // 下のグレードで★もレベルも最大まで育てたキャラ（MAX）は、1つ上のグレードの限界突破の材料にできる。使うと消えずに LV1・★1 に戻る
+  const isMaxed = u => (u.star || 0) >= starMaxOf(u) && u.lv >= lvMaxOf(u);
+  const GRADE_DOWN = {R: 'N', SR: 'R', MR: 'SR', LR: 'MR'};
+  const isUpMat = (u, m) => GRADE_DOWN[CHAR_STAT[u.id].grade] === CHAR_STAT[m.id].grade && isMaxed(m);
+  const matTier = (u, m) => isUpMat(u, m) ? 0 : tierOf(m.id);
+  const lbOtherNeed = u => [...lbSel].some(id => { const m = unitOf(id); return m && matTier(u, m) !== tierOf(u.id); }) ? 3 : 2;
   function lbOthers(u){
     const g = CHAR_STAT[u.id].grade;
-    return units.filter(x => x.id !== u.id && CHAR_STAT[x.id] && CHAR_STAT[x.id].grade === g).sort((a, b) => (a.star || 0) - (b.star || 0) || a.lv - b.lv);
+    return units.filter(x => x.u !== u.u && CHAR_STAT[x.id] && ((x.id !== u.id && CHAR_STAT[x.id].grade === g) || isUpMat(u, x)))
+      .sort((a, b) => (isUpMat(u, b) - isUpMat(u, a)) || (a.star || 0) - (b.star || 0) || a.lv - b.lv);
   }
   function lbExtraHTML(u){
     const g = CHAR_STAT[u.id].grade, ot = lbOthers(u);
     [...lbSel].forEach(id => { if (!ot.some(m => m.u === id)) lbSel.delete(id); });
     const need = lbOtherNeed(u), pn = potNeed(u), have = own(potKey(g)), rd = u.lv >= capOf(u);
-    let h = '<div class="dsec lbsub"><p><b>ほかのキャラで限界突破</b>：同じグレード（' + g + '）のほかのキャラ <b>' + need + '体</b>で★+1（同じキャラの2倍以上かかります' + (g === 'LR' ? '。LRで中の段が違うキャラがまざると3体' : '') + '）。</p>';
-    h += ot.length ? '<div class="lbmats">' + ot.slice(0, MAT_PER).map(m => '<button data-osel="' + m.u + '" class="' + (m.lock ? 'lk' : lbSel.has(m.u) ? 'sel' : '') + '"><span class="tic" data-ci="' + ciOf(m) + '"></span>LV' + m.lv + (m.star ? ' ★' + m.star : '') + (m.lock ? '<i>🔒ロック中</i>' : teams.some(tt => tt.includes(m.u)) ? '<i>編成中</i>' : '') + '</button>').join('') + '</div>' +
+    let h = '<div class="dsec lbsub"><p><b>ほかのキャラで限界突破</b>：同じグレード（' + g + '）のほかのキャラ <b>' + need + '体</b>で★+1（同じキャラの2倍以上かかります' + (g === 'LR' ? '。LRで中の段が違うキャラがまざると3体' : '') + '）。' +
+      (GRADE_DOWN[g] ? '<br><small>' + GRADE_DOWN[g] + 'で★もレベルも最大（<i class="maxmk">MAX</i>）まで育てたキャラも使えます。使うと消えずに LV1・★1 に戻ります。</small>' : '') + '</p>';
+    h += ot.length ? '<div class="lbmats">' + ot.slice(0, MAT_PER).map(m => '<button data-osel="' + m.u + '" class="' + (m.lock ? 'lk' : lbSel.has(m.u) ? 'sel' : '') + '"><span class="tic" data-ci="' + ciOf(m) + '"></span>' + (isUpMat(u, m) ? '<i class="maxmk">' + CHAR_STAT[m.id].grade + ' MAX</i>' : '') + 'LV' + m.lv + (m.star ? ' ★' + m.star : '') + (m.lock ? '<i>🔒ロック中</i>' : teams.some(tt => tt.includes(m.u)) ? '<i>編成中</i>' : '') + '</button>').join('') + '</div>' +
          '<button class="lbgo" data-ogo="1"' + (rd && lbSel.size >= need ? '' : ' disabled') + '>選んだ' + lbSel.size + '体で★+1（必要 ' + need + '体）</button>'
        : '<p>同じグレードのほかのキャラがいません。</p>';
     h += '</div><div class="dsec lbsub"><p><b>ポットで限界突破</b>：' + potName(g) + 'を <b>' + pn + '個</b>使って★+1。ポットはアイテムガチャで出ます（ショップでは買えません）。</p>' +
@@ -6249,6 +6259,10 @@
   }
   function lbStarUp(u, matIds, label){
     const mcis = matIds.map(id => ciOf(unitOf(id)));
+    const keep = matIds.filter(id => { const m = unitOf(id); return m && isUpMat(u, m); });   // 下のグレードのMAXキャラ：消さずに LV1・★1 に戻す
+    keep.forEach(id => { const m = unitOf(id); m.lv = 1; m.exp = 0; m.star = 1; });
+    matIds = matIds.filter(id => !keep.includes(id));
+    keep.forEach(id => { lbSel.delete(id); feedSel.delete(id); });
     units = units.filter(x => !matIds.includes(x.u));
     teams = teams.map(t => t.map(x => matIds.includes(x) ? null : x));
     matIds.forEach(id => { lbSel.delete(id); feedSel.delete(id); });
@@ -6262,7 +6276,9 @@
     if (pick.some(m => m.lock)) { toast('ロック中のキャラは材料にできません'); return; }
     if (pick.length < need) { toast('あと' + (need - pick.length) + '体選んでください'); return; }
     const use = pick.slice(0, need).map(m => m.u);
-    askYes('選んだ' + use.length + '体を材料にして、★を1つ上げますか？<br>レベル上限 LV' + capOf(u) + ' → LV' + Math.min(lvMaxOf(u), capOf(u) + 10) + '<br>材料にしたキャラはいなくなります。', () => lbStarUp(u, use, 'ほかのキャラ ' + use.length + '体で突破'));
+    const nKeep = use.filter(id => isUpMat(u, unitOf(id))).length, nGone = use.length - nKeep;
+    askYes('選んだ' + use.length + '体を材料にして、★を1つ上げますか？<br>レベル上限 LV' + capOf(u) + ' → LV' + Math.min(lvMaxOf(u), capOf(u) + 10) +
+      (nGone ? '<br>材料にしたキャラ（' + nGone + '体）はいなくなります。' : '') + (nKeep ? '<br>MAXのキャラ（' + nKeep + '体）は、いなくならずに LV1・★1 に戻ります。' : ''), () => lbStarUp(u, use, 'ほかのキャラ ' + use.length + '体で突破'));
   }
   function limitBreakPot(uid){
     const u = unitOf(uid); if (!u || (u.star || 0) >= starMaxOf(u) || !lbReady(u)) return;
