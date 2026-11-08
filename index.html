@@ -159,6 +159,81 @@
   .volrow span{width:4em;flex:none;} .volrow input{flex:1;accent-color:#ff7fb0;height:28px;} .volrow b{width:3em;text-align:right;flex:none;font-variant-numeric:tabular-nums;}
   .setrow input{font-family:inherit;font-size:14px;padding:9px 10px;border-radius:10px;border:2px solid rgba(255,255,255,.25);
     background:rgba(0,0,0,.25);color:#fff;}
+
+  /* ===== 世界ランキングの結果カード ===== */
+  .rkres{position:relative;width:min(330px,94%);margin:4px auto 10px;padding:14px 14px 12px;border-radius:18px;color:#fff;text-align:center;overflow:hidden;
+    background:radial-gradient(120% 90% at 50% 0%,#5b3bb0 0%,#2a1650 55%,#160b2e 100%);border:2px solid #b89bff;box-shadow:0 8px 24px rgba(40,10,90,.45),0 0 0 3px rgba(255,255,255,.08) inset;
+    animation:rkIn .55s cubic-bezier(.2,1.5,.4,1) both;}
+  .rkres::before{content:"";position:absolute;inset:-40%;background:conic-gradient(from 0deg,transparent 0 20deg,rgba(255,255,255,.10) 20deg 30deg,transparent 30deg 60deg,rgba(255,255,255,.08) 60deg 70deg,transparent 70deg 120deg,rgba(255,255,255,.10) 120deg 130deg,transparent 130deg 180deg,rgba(255,255,255,.08) 180deg 190deg,transparent 190deg 240deg,rgba(255,255,255,.10) 240deg 250deg,transparent 250deg 300deg,rgba(255,255,255,.08) 300deg 310deg,transparent 310deg);animation:rkSpin 14s linear infinite;pointer-events:none;}
+  .rkres > *{position:relative;}
+  .rkres .rk-head{font-weight:900;letter-spacing:3px;font-size:13px;color:#ffe9a8;text-shadow:0 0 8px rgba(255,200,80,.8);}
+  .rkres .rk-wel{margin:6px 0 2px;font-size:13px;color:#e7dcff;animation:rkFade .5s .2s both;}
+  .rkres .rk-wel b{color:#fff;font-size:15px;}
+  .rkres .rk-main{display:flex;align-items:baseline;justify-content:center;gap:4px;margin:6px 0 2px;}
+  .rkres .rk-lbl{font-size:13px;font-weight:800;color:#cbb8ff;margin-right:4px;}
+  .rkres .rk-num{font-size:58px;font-weight:900;line-height:1;font-variant-numeric:tabular-nums;background:linear-gradient(#ffffff,#c9b8ff);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 2px 0 rgba(0,0,0,.35));}
+  .rkres .rk-i{font-size:22px;font-weight:900;}
+  .rkres .rk-of{font-size:13px;color:#cbb8ff;margin-left:4px;}
+  .rkres .rk-num.pop{animation:rkPop .6s cubic-bezier(.2,1.8,.4,1);}
+  .rkres .rk-medal{font-size:34px;line-height:1;height:0;overflow:visible;opacity:0;transform:scale(.2);}
+  .rkres.done .rk-medal{height:auto;opacity:1;transform:none;transition:all .5s cubic-bezier(.2,1.8,.4,1);}
+  .rkres .rk-sub{display:flex;justify-content:center;gap:6px;margin-top:8px;opacity:0;transition:opacity .4s .2s;}
+  .rkres.done .rk-sub{opacity:1;}
+  .rkres .rk-sub span{font-size:11px;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.12);color:#e7dcff;}
+  .rkres .rk-sub b{color:#fff;font-size:13px;}
+  .rkres .rk-msg{min-height:18px;margin-top:6px;font-size:13px;font-weight:800;color:#ffe9a8;opacity:0;transition:opacity .4s .3s;}
+  .rkres.done .rk-msg{opacity:1;}
+  .rkres .rk-see{margin-top:10px;padding:8px 18px;border:0;border-radius:999px;font-weight:900;font-size:14px;color:#2a1650;background:linear-gradient(#fff3c4,#ffc93d);box-shadow:0 3px 0 #b8841a;}
+  .rkres.t1{border-color:#ffd24a;background:radial-gradient(120% 90% at 50% 0%,#a8741a 0%,#5a3608 55%,#2a1604 100%);box-shadow:0 0 30px rgba(255,200,60,.75),0 8px 24px rgba(0,0,0,.4);}
+  .rkres.t1 .rk-num{background:linear-gradient(#fffbe0,#ffcc33 60%,#e08a00);-webkit-background-clip:text;background-clip:text;}
+  .rkres.t2{border-color:#e6eef8;background:radial-gradient(120% 90% at 50% 0%,#7f8fa8 0%,#3a4458 55%,#1a2030 100%);box-shadow:0 0 26px rgba(220,235,255,.6),0 8px 24px rgba(0,0,0,.4);}
+  .rkres.t2 .rk-num{background:linear-gradient(#ffffff,#c8d6e8 60%,#8ea0b8);-webkit-background-clip:text;background-clip:text;}
+  .rkres.t3{border-color:#e6a36a;background:radial-gradient(120% 90% at 50% 0%,#9a5a2a 0%,#4f2a10 55%,#251206 100%);box-shadow:0 0 26px rgba(240,150,80,.6),0 8px 24px rgba(0,0,0,.4);}
+  .rkres.t3 .rk-num{background:linear-gradient(#ffe7d0,#f0a060 60%,#b8642a);-webkit-background-clip:text;background-clip:text;}
+  .rkres.t10{border-color:#ff8ad8;box-shadow:0 0 24px rgba(255,120,220,.55),0 8px 24px rgba(0,0,0,.4);}
+  .rk-conf{position:absolute;top:30%;left:50%;width:8px;height:12px;border-radius:2px;pointer-events:none;animation:rkConf 1.6s cubic-bezier(.2,.7,.4,1) forwards;}
+  @keyframes rkIn{0%{transform:perspective(600px) rotateX(80deg) scale(.6);opacity:0;}100%{transform:none;opacity:1;}}
+  @keyframes rkFade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  @keyframes rkPop{0%{transform:scale(1);}35%{transform:scale(1.45);}100%{transform:scale(1);}}
+  @keyframes rkSpin{to{transform:rotate(360deg);}}
+  @keyframes rkConf{0%{transform:translate(-50%,0) rotate(0);opacity:1;}100%{transform:translate(calc(-50% + var(--dx)),var(--dy)) rotate(var(--r));opacity:0;}}
+  .rjoin.bye{animation:rjBye .35s ease-in forwards;}
+  @keyframes rjBye{to{transform:scale(.6) rotate(-6deg);opacity:0;}}
+  /* ===== ランキング画面：表彰台と順位表 ===== */
+  .wme{display:flex;align-items:center;justify-content:center;gap:10px;margin:10px 0 4px;padding:10px;border-radius:14px;background:linear-gradient(90deg,rgba(255,210,74,.25),rgba(255,120,220,.22));border:1.5px solid #ffd24a;animation:rkFade .4s both;}
+  .wme .wme-l{font-size:12px;color:#ffe9a8;font-weight:800;}
+  .wme .wme-n{font-size:30px;font-weight:900;color:#fff;text-shadow:0 0 10px rgba(255,200,80,.9);line-height:1;}
+  .wme .wme-s{font-size:12px;color:#efe7ff;}
+  .podium{display:grid;grid-template-columns:1fr 1.15fr 1fr;align-items:end;gap:6px;margin:12px 0 6px;}
+  .pod{position:relative;border-radius:14px 14px 6px 6px;padding:22px 4px 8px;text-align:center;color:#fff;min-width:0;animation:podUp .6s cubic-bezier(.2,1.4,.4,1) both;animation-delay:calc(var(--i) * .12s);}
+  .pod .pm{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:26px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.4));}
+  .pod .pr{font-size:22px;font-weight:900;line-height:1;}
+  .pod .pn{font-size:12px;font-weight:800;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .pod .ps{font-size:12px;opacity:.9;font-variant-numeric:tabular-nums;}
+  .pod.p1{min-height:118px;background:linear-gradient(#ffe27a,#d99a12);color:#4a2c00;box-shadow:0 0 18px rgba(255,200,60,.8);}
+  .pod.p1 .pm{font-size:32px;top:-22px;animation:crown 1.6s ease-in-out infinite;}
+  .pod.p2{min-height:96px;background:linear-gradient(#f4f8ff,#9fb0c8);color:#22303f;box-shadow:0 0 12px rgba(220,235,255,.6);}
+  .pod.p3{min-height:84px;background:linear-gradient(#ffd2a8,#c0743a);color:#3d1d06;box-shadow:0 0 12px rgba(240,150,80,.6);}
+  .pod.empty{background:rgba(255,255,255,.06);box-shadow:none;color:#bba;}
+  .pod.me{outline:3px solid #fff;outline-offset:2px;}
+  .wrow{animation:rowIn .35s ease-out both;animation-delay:calc(var(--i) * .04s);}
+  .wrow.me{animation:rowIn .35s ease-out both,meGlow 1.6s ease-in-out .5s infinite;animation-delay:calc(var(--i) * .04s),.5s;}
+  @keyframes podUp{from{transform:translateY(40px) scale(.8);opacity:0;}to{transform:none;opacity:1;}}
+  @keyframes crown{0%,100%{transform:translateX(-50%) translateY(0) rotate(-6deg);}50%{transform:translateX(-50%) translateY(-4px) rotate(6deg);}}
+  @keyframes rowIn{from{transform:translateX(30px);opacity:0;}to{transform:none;opacity:1;}}
+  @keyframes meGlow{0%,100%{box-shadow:0 0 0 rgba(255,210,74,0);}50%{box-shadow:0 0 14px rgba(255,210,74,.9);}}
+  .rjoin.hidden,.rkres.hidden,#rankMe.hidden{display:none;}
+  .prz{margin-top:12px;padding:10px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,210,74,.5);}
+  .prz-h{font-weight:900;color:#ffe9a8;font-size:15px;}
+  .prz-s{font-size:12px;color:#efe7ff;margin:4px 0 8px;}
+  .prz-s b{color:#ffd24a;font-size:14px;}
+  .prz-r{display:flex;gap:8px;align-items:flex-start;padding:7px 8px;border-radius:10px;margin-top:4px;background:rgba(255,255,255,.05);}
+  .prz-r.on{background:linear-gradient(90deg,rgba(255,210,74,.35),rgba(255,120,220,.25));outline:2px solid #ffd24a;animation:meGlow 1.6s ease-in-out infinite;}
+  .prz-l{min-width:92px;font-weight:900;font-size:13px;color:#fff;white-space:nowrap;}
+  .prz-i{display:flex;flex-wrap:wrap;gap:4px;}
+  .prz-i i{font-style:normal;font-size:11px;padding:2px 7px;border-radius:999px;background:rgba(255,255,255,.14);color:#fff;}
+  .prz-f{font-size:11px;color:#cbb8ff;margin-top:8px;}
+  .rjoin,.rkres{flex-shrink:0;}
   .rjoin{width:min(320px,92%);margin:2px auto 8px;padding:10px 12px;border-radius:14px;background:rgba(255,210,74,.16);border:1.5px solid var(--gold);text-align:center;font-size:14px;}
   .rjrow{display:flex;gap:6px;margin-top:8px;}
   .rjrow input{flex:1;min-width:0;font-size:16px;padding:8px 10px;border-radius:10px;border:1.5px solid rgba(0,0,0,.2);}
@@ -1104,6 +1179,7 @@
         <div class="rjrow"><input id="rjName" maxlength="12" placeholder="名前（12文字まで）" autocomplete="nickname"><button class="btn" id="rjGo">登録</button></div>
         <button class="rjskip" id="rjSkip">今はしない</button>
       </div>
+      <div class="rkres hidden" id="rankRes"></div>
       <div class="resbtns">
         <button class="rbtn next hidden" id="nextBtn"><i>▶</i><span>次へ</span></button>
         <button class="rbtn hidden" id="stageBtn"><i>🗺</i><span>ステージ</span></button>
@@ -1200,7 +1276,7 @@
           <div id="worldList" class="wlist"></div>
           <p id="worldNote"></p>
           <label class="setrow hidden" id="rankMe"><span>ランキングの名前（12文字まで）</span><input id="rankNameIn" maxlength="12" placeholder="ななし"></label>
-          <p>毎月、前の月の順位（日本時間）でアイテムがもらえます。1位・2〜3位・4〜10位・11〜50位・51〜100位・参加賞。</p>
+          <div id="prizeBox"></div>
         </section>
       </div>
       <div class="how-foot"><button class="btn" id="rankClose">とじる</button></div>
@@ -4709,7 +4785,7 @@
   }
   // ゲーム終了時に送る（60秒アタック・エンドレス）。まだ登録していない人には、名前を入れて登録するか聞く
   function sendScore(){
-    $('rankJoin').classList.add('hidden');
+    $('rankJoin').classList.add('hidden'); $('rankRes').classList.add('hidden'); $('rankJoin').classList.remove('bye');
     if (!isRec(gameMode) || score <= 0) return;
     const b = {mode: gameMode, score, blocks: broken, dur: Math.round((now() - runStart) / 1000), ver: GAME_VER};
     if (rankTok()) { postScore(b); return; }
@@ -4718,11 +4794,49 @@
     $('rjName').value = load('rank_name', '');
     $('rankJoin').classList.remove('hidden');
   }
-  async function postScore(b){
+  async function postScore(b, welcome){
     try {
       const r = await api('/api/score', {method: 'POST', body: JSON.stringify(b), tok: rankTok()});
-      if (r && r.ranks && r.ranks.day) $('finalNote').textContent += ' 世界 今日 ' + r.ranks.day.rank + '位 / ' + r.ranks.day.total + '人';
+      if (r && r.ranks && r.ranks.day && r.ranks.day.rank) showRankRes(r.ranks, b, welcome);
     } catch (e) { $('finalNote').textContent += '（世界ランキングへの送信に失敗しました）'; }
+  }
+  // 結果画面：世界ランキングの順位カード。数字が回って止まり、上位ほど派手に光る
+  function showRankRes(R, b, welcome){
+    const el = $('rankRes'), d = R.day, rank = d.rank, total = d.total;
+    const tier = rank === 1 ? 't1' : rank === 2 ? 't2' : rank === 3 ? 't3' : rank <= 10 ? 't10' : '';
+    const medal = rank === 1 ? '👑' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank <= 10 ? '🏅' : '';
+    const best = R.all && R.all.best != null && b.score >= R.all.best;
+    const msg = rank === 1 ? '今日の世界1位！' : rank <= 3 ? '表彰台！' : rank <= 10 ? 'トップ10入り！' : best ? '自己ベスト更新！' : (rank <= Math.ceil(total / 2) ? '上位' + Math.max(1, Math.round(rank / total * 100)) + '%！' : 'もっと上をめざそう！');
+    const sub = [['今週', R.week], ['今月', R.month], ['全期間', R.all]].filter(x => x[1] && x[1].rank).map(x => '<span>' + x[0] + ' <b>' + x[1].rank + '</b>位</span>').join('');
+    el.className = 'rkres ' + tier;
+    el.innerHTML = '<div class="rk-head">🌏 WORLD RANKING</div>' +
+      (welcome ? '<div class="rk-wel">ようこそ、<b>' + String(welcome).replace(/[<>&]/g, '') + '</b> さん！ 登録しました</div>' : '') +
+      '<div class="rk-medal">' + medal + '</div>' +
+      '<div class="rk-main"><span class="rk-lbl">今日</span><span class="rk-num">' + Math.max(rank, total) + '</span><span class="rk-i">位</span><span class="rk-of">/ ' + total.toLocaleString() + '人</span></div>' +
+      '<div class="rk-sub">' + sub + '</div><div class="rk-msg">' + msg + '</div>' +
+      '<button class="rk-see">ランキングを見る ›</button>';
+    el.querySelector('.rk-see').addEventListener('click', () => { rankMode = b.mode; wPeriod = 'day'; drawRank(); $('rank').classList.remove('hidden'); $('rank').querySelector('.how-body').scrollTop = 0; });
+    // 数字が大きい方から回って、自分の順位で止まる
+    const num = el.querySelector('.rk-num'), from = Math.max(rank, Math.min(total, rank + 40)), t0 = performance.now(), dur = rank === from ? 300 : 1300;
+    try { sndShine(T(), rank <= 3); } catch (_) {}
+    (function roll(t){
+      const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+      num.textContent = Math.round(from - (from - rank) * e).toLocaleString();
+      if (k < 1) { requestAnimationFrame(roll); return; }
+      num.classList.add('pop'); el.classList.add('done');
+      try { if (rank <= 3) sndFanfare(T(), 0.08); else sndShine(T(), rank <= 10); } catch (_) {}
+      if (rank <= 10) {                                   // 上位は紙ふぶき
+        const cols = ['#ffd24a', '#ff5fd0', '#5fd3ff', '#7dff8a', '#fff', '#ff8a3d'];
+        for (let i = 0; i < (rank <= 3 ? 46 : 24); i++) {
+          const c = document.createElement('i'); c.className = 'rk-conf';
+          c.style.background = cols[i % cols.length];
+          c.style.setProperty('--dx', (Math.random() * 320 - 160) + 'px'); c.style.setProperty('--dy', (Math.random() * 160 + 40) + 'px'); c.style.setProperty('--r', (Math.random() * 720 - 360) + 'deg');
+          c.style.animationDelay = (Math.random() * .25) + 's';
+          el.appendChild(c); setTimeout(() => c.remove(), 2200);
+        }
+      }
+    })(t0);
+    el.classList.remove('hidden');
   }
   // 名前だけで登録（ゲスト）。登録したら、いまのスコアをすぐ送る
   async function rankJoin(){
@@ -4732,8 +4846,8 @@
     try {
       const r = await api('/api/guest', {method: 'POST', body: JSON.stringify({name}), tok: ''});
       guestTok = r.token; save('rank_token', guestTok); save('rank_name', r.name);
-      $('rankJoin').classList.add('hidden'); toast('ランキングに登録しました：' + r.name);
-      if (rankPend) { postScore(rankPend); rankPend = null; }
+      const jb = $('rankJoin'); jb.classList.add('bye');      // 登録の枠が消えて、順位カードが出る
+      setTimeout(() => { jb.classList.add('hidden'); jb.classList.remove('bye'); if (rankPend) { postScore(rankPend, r.name); rankPend = null; } }, 330);
     } catch (e) { toast(e.status === 403 ? 'ログインしてください（設定 → アカウント）' : 'サーバーにつながりませんでした'); }
     $('rjGo').disabled = false;
   }
@@ -4773,17 +4887,36 @@
     box.innerHTML = ''; note.textContent = '読み込み中…';
     try {
       const r = await api('/api/top?mode=' + rankMode + '&limit=20&period=' + wPeriod, {tok: rankTok()});
-      box.innerHTML = (r.top || []).map(x =>
-        '<div class="wrow' + (x.me ? ' me' : '') + '"><span class="rk">' + x.rank +
-        '</span><span class="nm2">' + String(x.name).replace(/[<>&]/g, '') + '</span><span class="sc">' + x.score.toLocaleString() + '</span></div>'
-      ).join('') || '<div class="wrow"><span class="nm2">まだ記録がありません</span></div>';
+      const esc = v => String(v).replace(/[<>&]/g, ''), top = r.top || [];
+      const podOf = (x, k) => x ? '<div class="pod p' + x.rank + (x.me ? ' me' : '') + '" style="--i:' + k + '"><span class="pm">' + ['👑', '🥈', '🥉'][x.rank - 1] + '</span><div class="pr">' + x.rank + '</div><div class="pn">' + esc(x.name) + '</div><div class="ps">' + x.score.toLocaleString() + '</div></div>'
+        : '<div class="pod empty p' + (k === 0 ? 2 : k === 1 ? 1 : 3) + '" style="--i:' + k + '"><div class="pr">—</div><div class="pn">まだいない</div></div>';
+      const meCard = r.me && r.me.rank ? '<div class="wme"><span class="wme-l">あなたは</span><span class="wme-n">' + r.me.rank + '位</span><span class="wme-s">/ ' + r.me.total + '人<br>' + r.me.best.toLocaleString() + '点</span></div>' : '';
+      box.innerHTML = top.length ? meCard + '<div class="podium">' + podOf(top[1], 0) + podOf(top[0], 1) + podOf(top[2], 2) + '</div>' +
+        top.slice(3).map((x, i) => '<div class="wrow' + (x.me ? ' me' : '') + '" style="--i:' + i + '"><span class="rk">' + x.rank + '</span><span class="nm2">' + esc(x.name) + '</span><span class="sc">' + x.score.toLocaleString() + '</span></div>').join('')
+        : '<div class="wrow"><span class="nm2">まだ記録がありません。一番乗りをめざそう！</span></div>';
+      drawPrizes(r);
+      const meRow = box.querySelector('.wrow.me'); if (meRow) setTimeout(() => meRow.scrollIntoView({block: 'nearest', behavior: 'smooth'}), 600);
       $('rankMe').classList.toggle('hidden', !rankTok());
       if (rankTok() && document.activeElement !== $('rankNameIn')) $('rankNameIn').value = rankName();
       note.textContent = !rankTok() ? '60秒アタックかエンドレスを遊び終わったら、名前を入れてランキングに登録できます。毎月の順位でアイテムがもらえます。'
-        : r.me && r.me.rank ? ('自分：' + r.me.rank + '位 / ' + r.me.total + '人（' + r.me.best.toLocaleString() + '点）') : 'この期間はまだ記録がありません。';
+        : r.me && r.me.rank ? '' : 'この期間はまだ記録がありません。';
     } catch (e) {
       note.textContent = 'サーバーにつながりませんでした（まだ準備中です）。';
     }
+  }
+  // 月間ランキングのプレゼント：順位ごとにもらえるものを並べる。登録している人は、今月のいまの順位の段を光らせる
+  function drawPrizes(r){
+    const box = $('prizeBox'), pz = (r && r.prizes) || [];
+    if (!pz.length) { box.innerHTML = ''; return; }
+    const m = r.month && r.month.rank ? r.month : null;
+    const cur = m ? pz.findIndex(x => !x.upTo || m.rank <= x.upTo) : -1;
+    const ic = ['👑', '🥈', '🏅', '🎖', '🎁', '🎀'];
+    box.innerHTML = '<div class="prz"><div class="prz-h">🎁 月間ランキングのプレゼント</div>' +
+      '<div class="prz-s">' + (m ? '今月のあなたは <b>' + m.rank + '位</b> / ' + m.total + '人。このままだと光っている段がもらえます'
+        : rankTok() ? '今月はまだ記録がありません。遊ぶとプレゼントがもらえます' : '名前を登録してランキングに載ると、毎月もらえます') + '</div>' +
+      pz.map((x, i) => '<div class="prz-r' + (i === cur ? ' on' : '') + '"><span class="prz-l">' + (ic[i] || '🎁') + ' ' + x.label + '</span><span class="prz-i">' +
+        Object.entries(x.items).map(([k, n]) => '<i>' + itemLabel(k) + ' ×' + n + '</i>').join('') + '</span></div>').join('') +
+      '<div class="prz-f">翌月1日（日本時間）に、ゲームを開くと受け取れます。60秒アタックとエンドレスで別々にもらえます。</div></div>';
   }
   function drawRank(){
     const rows = [['今日', 'day'], ['今週', 'week'], ['今月', 'month'], ['全期間', 'all']];

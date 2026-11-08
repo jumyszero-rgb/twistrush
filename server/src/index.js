@@ -369,6 +369,9 @@ async function rankTop(env, req, url) {
     period, mode,
     top: (results || []).map((r, i) => ({ rank: i + 1, name: r.name, score: r.score, me: !!(me && r.player === me.id) })),
     me: me ? await myRank(env, mode, period, me.id, t) : null,
+    // 月間のごほうび（順位ごとの中身）と、今月のいまの順位
+    prizes: MONTH_REWARDS.map(x => ({ upTo: x.upTo, label: x.label, items: x.items })),
+    month: me ? await myRank(env, mode, 'month', me.id, t) : null,
   });
 }
 async function rankPost(env, req, me) {
