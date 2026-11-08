@@ -510,6 +510,8 @@
   .btn.gacha{background:linear-gradient(90deg,#ff5f9e,#a46bff,#4fb4ff);color:#fff;box-shadow:0 5px 0 #6a3fb8;}
   .btn.gacha:active{box-shadow:0 2px 0 #6a3fb8;}
   #gacha{background:#0b0a24 center/cover no-repeat;}
+.gboxbtn{margin-left:auto;border:2px solid rgba(255,210,74,.8);border-radius:12px;background:linear-gradient(#3b2566,#26174a);color:#fff;font-weight:900;font-size:16px;padding:4px 10px;display:flex;align-items:center;gap:4px;font-family:inherit;}
+.gboxbtn span{font-size:12px;} .gboxbtn:active{transform:translateY(2px);}
   .gwallet{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;padding:0 10px 6px;width:100%;box-sizing:border-box;}
   .gwallet span{display:inline-flex;align-items:center;gap:3px;background:rgba(0,0,0,.5);border-radius:999px;padding:3px 10px 3px 4px;font-size:12px;font-weight:800;color:#fff;}
   .gwallet img{width:22px;height:22px;} .gwallet b{color:#ffe27a;font-size:14px;}
@@ -1257,6 +1259,7 @@
       <div class="how-head">
         <button class="how-back" id="gachaBack" aria-label="戻る">‹ 戻る</button>
         <h2>虹の祭壇</h2>
+        <button class="gboxbtn" id="gachaBox" aria-label="ボックスを開く">📦<span>ボックス</span></button>
         <div class="coinchip headcoin" id="gachaCoin"></div>
       </div>
       <div class="gwallet" id="gWallet"></div>
@@ -6081,6 +6084,8 @@
   $('gachaStage').addEventListener('click', () => { if (gRev && gRev.res.length > 1) runGacha('next'); });
   $('gachaBtn').addEventListener('click', openGacha);
   $('gachaBack').addEventListener('click', () => { if (gBusy && !gRev) return; gRev = null; gBusy = false; $('gacha').classList.add('hidden'); refreshCoins(); gachaBgm(false); });
+  // ガチャ画面からボックスへ（ボックスはガチャの上に開く。「戻る」でガチャに戻る）
+  $('gachaBox').addEventListener('click', () => { if (gBusy && !gRev) return; openBox('char'); });
   $('gachaFoot').addEventListener('click', e => {
     const tb = e.target.closest('[data-tab]'); if (tb && !gBusy) { gTab = tb.dataset.tab; drawGachaFoot(); return; }
     const b = e.target.closest('[data-g]'); if (b) runGacha(b.dataset.g);
