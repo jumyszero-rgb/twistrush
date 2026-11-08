@@ -81,37 +81,37 @@ export async function vsTop(env, kind, me) {
 
 // ---------- ロビー：ランダム対戦の待ち合わせと、部屋番号 ----------
 export class Lobby {
-  constructor(state, env) { this.state = state; this.env = env; this.wait = {}; this.codes = {}; }
+  // 待ち合わせと部屋番号は、保存して持つ（しばらく使われないとメモリから消えるため）
+  constructor(state, env) { this.state = state; this.env = env; }
   async fetch(req) {
-    const b = await req.json(), t = Math.floor(Date.now() / 1000);
-    for (const k in this.codes) if (this.codes[k].exp < t) delete this.codes[k];
-    for (const k in this.wait) if (this.wait[k].exp < t) delete this.wait[k];
+    const b = await req.json(), t = Math.floor(Date.now() / 1000), st = this.state.storage;
     const res = o => new Response(JSON.stringify(o), { headers: { 'Content-Type': 'application/json' } });
+    const live = async key => { const v = await st.get(key); if (v && v.exp < t) { await st.delete(key); return null; } return v || null; };
     if (b.op === 'quick') {                     // 同じ種類・同じ賭け額で待っている人がいればそこへ。いなければ自分が待つ
-      const key = b.kind + ':' + b.bet, w = this.wait[key];
-      if (w && w.player !== b.player) { delete this.wait[key]; return res({ room: w.room, host: false }); }
+      const key = 'w:' + b.kind + ':' + b.bet, w = await live(key);
+      if (w && w.player !== b.player) { await st.delete(key); return res({ room: w.room, host: false }); }
       const room = 'q' + crypto.randomUUID();
-      this.wait[key] = { room, player: b.player, exp: t + 90 };
+      await st.put(key, { room, player: b.player, exp: t + 90 });
       return res({ room, host: true });
     }
     if (b.op === 'cancel') {
-      for (const k in this.wait) if (this.wait[k].room === b.room) delete this.wait[k];
-      for (const k in this.codes) if (this.codes[k].room === b.room) delete this.codes[k];
+      const all = await st.list({ limit: 1000 });
+      for (const [k, v] of all) if (v && v.room === b.room) await st.delete(k);
       return res({ ok: true });
     }
     if (b.op === 'create') {                    // 部屋番号（4けた）を作る。10分で消える
       let code = '';
-      for (let i = 0; i < 50 && (!code || this.codes[code]); i++) code = String(1000 + Math.floor(Math.random() * 9000));
-      if (this.codes[code]) return res({ error: '部屋がいっぱいです。少し待ってください' });
+      for (let i = 0; i < 50; i++) { const c = String(1000 + Math.floor(Math.random() * 9000)); if (!(await live('c:' + c))) { code = c; break; } }
+      if (!code) return res({ error: '部屋がいっぱいです。少し待ってください' });
       const room = 'c' + crypto.randomUUID();
-      this.codes[code] = { room, kind: b.kind, bet: b.bet, player: b.player, exp: t + 600 };
+      await st.put('c:' + code, { room, kind: b.kind, bet: b.bet, player: b.player, exp: t + 600 });
       return res({ code, room });
     }
     if (b.op === 'join') {
-      const c = this.codes[b.code];
-      if (!c) return res({ error: 'その番号の部屋はありません' });
-      if (c.player === b.player) return res({ error: '自分の部屋には入れません' });
-      delete this.codes[b.code];
+      const c = await live('c:' + b.code);
+      if (!c) return res({ error: 'その番号の部屋はありません（番号を確かめるか、作り直してもらってください）' });
+      if (c.player === b.player) return res({ error: '同じアカウントどうしでは対戦できません（別の端末・別の名前で入ってください）' });
+      await st.delete('c:' + b.code);
       return res({ room: c.room, kind: c.kind, bet: c.bet });
     }
     return res({ error: 'op' });
@@ -128,6 +128,9 @@ export class Room {
     const pair = new WebSocketPair(), ws = pair[1];
     ws.accept();
     const send = (w, o) => { try { w.send(JSON.stringify(o)); } catch (e) {} };
+    // 待っている間に同じ人がつなぎ直した（スマホで別のアプリを開いた など）：古い方と入れかえる
+    const old = this.phase === 'wait' && this.ps.find(p => p.id === me.id);
+    if (old) { old.gone = true; try { old.ws.close(1000, 'replaced'); } catch (e) {} this.ps = this.ps.filter(p => p !== old); }
     if (this.phase !== 'wait' || this.ps.length >= 2 || this.ps.some(p => p.id === me.id)) {
       send(ws, { t: 'err', m: this.ps.some(p => p.id === me.id) ? '同じアカウントどうしでは対戦できません' : 'この部屋は始まっています' }); ws.close(1000, 'full');
       return new Response(null, { status: 101, webSocket: pair[0] });
@@ -180,7 +183,11 @@ export class Room {
   }
   onClose(p) {
     if (p.gone) return; p.gone = true;
-    if (this.phase === 'wait') { this.ps = this.ps.filter(x => x !== p); this.lobbyCancel(); return; }
+    if (this.phase === 'wait') {                         // 部屋番号の部屋は、つなぎ直しを待つ（番号は10分残る）。ランダムは待ち合わせから消す
+      this.ps = this.ps.filter(x => x !== p);
+      if (!String(this.cfg && this.cfg.room).startsWith('c')) this.lobbyCancel();
+      return;
+    }
     const o = this.ps.find(x => x !== p);
     if (this.phase === 'play') { if (o) this.finish(o, p, 'left'); }
     else if (o) this.send(o, { t: 'left' });                // 結果画面で相手が帰った（再戦できない）

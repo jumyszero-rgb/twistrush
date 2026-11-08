@@ -5116,8 +5116,21 @@
     onl = {ws, room, kind: olKind, bet: olBet};
     const me = onl;
     ws.onmessage = e => { if (onl !== me) return; let m; try { m = JSON.parse(e.data); } catch (_) { return; } onlMsg(m); };
-    ws.onclose = () => { if (onl !== me || me.closing) return; onlLost(); };
+    ws.onclose = () => {
+      if (onl !== me || me.closing) return;
+      // 待っている間に切れた（スマホで番号を送りに別のアプリへ行った など）：同じ部屋につなぎ直す
+      if (!me.opp && (olView === 'wait' || olView === 'code')) { setTimeout(() => { if (onl === me && !me.closing) olReconnect(me); }, 1200); return; }
+      onlLost();
+    };
   }
+  function olReconnect(old){
+    const ws = new WebSocket(olWsBase() + '/ws/room/' + old.room + '?t=' + encodeURIComponent(rankTok()) + '&kind=' + old.kind + '&bet=' + old.bet + '&team=' + encodeURIComponent(JSON.stringify(myTeamInfo())));
+    old.ws = ws;
+    ws.onmessage = e => { if (onl !== old) return; let m; try { m = JSON.parse(e.data); } catch (_) { return; } onlMsg(m); };
+    ws.onclose = () => { if (onl !== old || old.closing) return; if (!old.opp && (olView === 'wait' || olView === 'code')) { setTimeout(() => { if (onl === old && !old.closing) olReconnect(old); }, 2000); return; } onlLost(); };
+  }
+  // 画面に戻ってきたとき、切れていたらすぐつなぎ直す
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && onl && !onl.opp && onl.ws && onl.ws.readyState > 1 && (olView === 'wait' || olView === 'code')) olReconnect(onl); });
   function onlMsg(m){
     if (m.t === 'err') { toast(m.m); onlClose(); olView = 'top'; if (!running) { $('online').classList.remove('hidden'); drawOnline(); } return; }
     if (m.t === 'start') {
