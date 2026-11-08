@@ -5577,12 +5577,15 @@
   let gTab = 'silver';
   const G_COST = {silver: {one: 100, ten: 1000}, gold: {one: 100, ten: 1000}, item: {one: 100, ten: 1000}};
   // アイテムガチャ：ショップで買えないアイテム（いまは限界突破ポット）だけが出る。シルバーコインで引く。10連は1個SR以上確定
-  const IG_RATE = {LR: 3, MR: 9, SR: 18, R: 30, N: 40};
-  function itemPull(n){
+  // 出るものは同じ。ゴールド（課金）版のほうが上のポットが出やすい
+  const IG_RATE = {silver: {LR: 1, MR: 5, SR: 14, R: 30, N: 50}, gold: {LR: 4, MR: 12, SR: 34, R: 40, N: 10}};
+  const igRateText = k => { const r = IG_RATE[k]; return ['LR', 'MR', 'SR', 'R', 'N'].map(g => g + ' ' + r[g] + '%').join('／'); };
+  function itemPull(n, kind){
+    const rate = IG_RATE[kind] || IG_RATE.silver;
     const out = [];
     for (let k = 0; k < n; k++) {
       let r = Math.random() * 100, g = 'N';
-      for (const x of ['LR', 'MR', 'SR', 'R', 'N']) { if (r < IG_RATE[x]) { g = x; break; } r -= IG_RATE[x]; }
+      for (const x of ['LR', 'MR', 'SR', 'R', 'N']) { if (r < rate[x]) { g = x; break; } r -= rate[x]; }
       if (n >= 11 && k === n - 1 && !out.some(o => GRADE_RANK[o.g] >= 3) && GRADE_RANK[g] < 3) g = 'SR';
       inv[potKey(g)] = own(potKey(g)) + 1; out.push({g});
     }
@@ -5593,9 +5596,9 @@
     d.innerHTML = '<img class="potic" src="' + potImg(r.g) + '" alt=""><div>' + potName(r.g) + '</div>';
     return d;
   }
-  function itemGachaGo(n){
+  function itemGachaGo(n, kind){
     gBusy = true;
-    const res = itemPull(n), best = res.reduce((a, r) => Math.max(a, GRADE_RANK[r.g]), 1);
+    const res = itemPull(n, kind), best = res.reduce((a, r) => Math.max(a, GRADE_RANK[r.g]), 1);
     const cube = $('gCube'), burst = $('gBurst'), box = $('gResult');
     box.innerHTML = ''; burst.className = 'g-burst'; cube.className = 'g-cube'; void cube.offsetWidth;
     cube.className = 'g-cube spin'; sndGSpin();
@@ -5626,7 +5629,8 @@
       h += '<button class="btn gacha" data-g="next">' + (gRev.i + 1 < gRev.res.length ? 'つぎへ（' + (gRev.i + 1) + '/' + gRev.res.length + '）' : '一覧を見る') + '</button>' +
            '<button class="btn gray" data-g="skip">スキップ</button>';
     } else if (gTab === 'item') {
-      h += '<button class="btn" data-g="ione">1回 ' + coinImg('coin_silver') + G_COST.item.one + '</button><button class="btn gacha" data-g="iten">10連（11個） ' + coinImg('coin_silver') + G_COST.item.ten.toLocaleString() + '</button>';
+      h += '<button class="btn" data-g="ione">1回 ' + coinImg('coin_silver') + G_COST.item.one + '</button><button class="btn gacha" data-g="iten">10連（11個） ' + coinImg('coin_silver') + G_COST.item.ten.toLocaleString() + '</button>' +
+           '<button class="btn shop" data-g="igone">1回 ' + coinImg('coin_gold') + G_COST.item.one + '</button><button class="btn shop" data-g="igten">10連（11個） ' + coinImg('coin_gold') + G_COST.item.ten.toLocaleString() + '</button>';
     } else if (gTab === 'silver') {
       if (freeTenLeft()) h += '<button class="btn gacha" data-g="free">初回限定 無料10連（11体）</button>';
       h += '<button class="btn" data-g="one">1回 ' + coinImg('coin_silver') + G_COST.silver.one + '</button><button class="btn gacha" data-g="ten">10連（11体） ' + coinImg('coin_silver') + G_COST.silver.ten.toLocaleString() + '</button>';
@@ -5636,7 +5640,7 @@
       if (t.ticket_hi > 0) h += '<button class="btn shop" data-g="ticket_hi">' + coinImg('ticket_hi') + '確定チケット（' + t.ticket_hi + '枚）</button>';
     }
     if (!gRev) h += '<button class="btn gray" data-g="test">テスト用：コイン・チケットを増やす（公開前に消す）</button>' +
-      (gTab === 'item' ? '<div class="rate">アイテムガチャ：ショップでは買えないアイテムが出る（いまは限界突破ポット）。シルバーコインで引ける。出る確率：LR 3%／MR 9%／SR 18%／R 30%／N 40%。10連は1個SR以上が確定。</div>' : '<div class="rate">' + (gTab === 'silver' ? 'シルバーガチャ：無料のシルバーコインで引ける。' : 'ゴールドガチャ：有料のゴールドコインで引ける。高グレードが出やすい（予定）。') +
+      (gTab === 'item' ? '<div class="rate">アイテムガチャ：ショップでは買えないアイテムが出る（いまは限界突破ポット）。' + 'シルバー版：' + igRateText('silver') + '。ゴールド版（課金）：' + igRateText('gold') + '。出るものは同じ。10連は1個SR以上が確定。</div>' : '<div class="rate">' + (gTab === 'silver' ? 'シルバーガチャ：無料のシルバーコインで引ける。' : 'ゴールドガチャ：有料のゴールドコインで引ける。高グレードが出やすい（予定）。') +
       (gTab === 'gold' ? '出る確率：SR 40%／R 60%' : '出る確率：SR 20%／R 30%／N 50%') + '（MR・LRはキャラ追加後に出ます）。10連は1体SR以上が確定。同じキャラも1体ずつボックスに入ります。</div>');
     $('gachaFoot').innerHTML = h;
     $('gachaCoin').innerHTML = '';
@@ -5697,7 +5701,11 @@
     if (kind === 'free') { if (!freeTenLeft()) return; save('freeten', '1'); n = 11; }
     else if (kind === 'one') { if (!payS(G_COST.silver.one)) return; }
     else if (kind === 'ten') { if (!payS(G_COST.silver.ten)) return; n = 11; }
-    else if (kind === 'ione' || kind === 'iten') { const c = kind === 'ione' ? G_COST.item.one : G_COST.item.ten; if (!payS(c)) return; itemGachaGo(kind === 'ione' ? 1 : 11); return; }
+    else if (kind === 'ione' || kind === 'iten') { const c = kind === 'ione' ? G_COST.item.one : G_COST.item.ten; if (!payS(c)) return; itemGachaGo(kind === 'ione' ? 1 : 11, 'silver'); return; }
+    else if (kind === 'igone' || kind === 'igten') {        // アイテムガチャのゴールド版
+      const c = kind === 'igone' ? G_COST.item.one : G_COST.item.ten, n2 = kind === 'igone' ? 1 : 11;
+      gBusy = true; spendGold(c, 'itemgacha').then(ok => { gBusy = false; if (ok) itemGachaGo(n2, 'gold'); else drawGachaFoot(); }); return;
+    }
     else if (kind === 'gone' || kind === 'goldten') {      // ゴールドコイン：ログイン中はサーバーで減らしてから引く
       const c = kind === 'gone' ? G_COST.gold.one : G_COST.gold.ten; if (kind === 'goldten') n = 11;
       if (acctToken) { gBusy = true; spendGold(c, 'gacha').then(ok => { gBusy = false; if (ok) gachaGo(n, kind); }); return; }
