@@ -870,6 +870,7 @@
   #resSeq .rsq-rows{display:flex;flex-direction:column;gap:12px;align-items:center;margin:6px 0 10px;}
   #resSeq .rsq-row{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:900;}
   #resSeq .rsq-row img{width:24px;height:24px;}
+  #resSeq .rsq-row.rsq-ex{font-size:13px;color:#ffe27a;background:rgba(255,210,74,.12);border-radius:10px;padding:4px 10px;animation:upfade .4s ease-out 1.6s both;opacity:0;}
   #resSeq .rsq-dial{display:inline-flex;background:#1b1230;border:2px solid #ffd24a;border-radius:10px;padding:0 6px;box-shadow:inset 0 6px 8px rgba(0,0,0,.6),inset 0 -6px 8px rgba(0,0,0,.6);}
   #resSeq .rsq-dial{align-items:center;height:42px;}
   #resSeq .rsq-dial .pl{font-size:26px;font-weight:900;color:#ffe27a;line-height:42px;height:42px;}
@@ -890,6 +891,20 @@
   #resSeq .rsq-mem .mx{color:#ffd24a;font-weight:900;font-size:10px;}
   #resSeq .rsq-btns{margin-top:18px;opacity:0;transform:translateY(10px);transition:opacity .5s,transform .5s;pointer-events:none;}
   #resSeq .rsq-btns.on{opacity:1;transform:none;pointer-events:auto;}
+  #mapEvt{position:fixed;inset:0;z-index:8980;display:flex;align-items:center;justify-content:center;background:rgba(10,4,24,.75);animation:upfade .3s ease-out both;opacity:0;padding:16px;}
+  #mapEvt .mev{position:relative;width:min(340px,100%);background:linear-gradient(#3b2566,#1f1340);border:3px solid #ffd24a;border-radius:20px;padding:16px 14px 14px;text-align:center;color:#fff;box-shadow:0 0 30px rgba(255,210,74,.5);animation:upttl .45s cubic-bezier(.2,1.6,.4,1) both;}
+  #mapEvt .mev-tag{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:#ff5f9e;color:#fff;font-weight:900;font-size:12px;letter-spacing:.1em;border-radius:10px;padding:2px 12px;}
+  #mapEvt .mev-pic{position:relative;width:100%;aspect-ratio:4/3;border-radius:14px;overflow:hidden;background:radial-gradient(circle,#5a3a8f,#2a1747);display:flex;align-items:center;justify-content:center;}
+  #mapEvt .mev-pic img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+  #mapEvt .mev-pic span{font-size:72px;filter:drop-shadow(0 4px 10px rgba(0,0,0,.5));}
+  #mapEvt .mev-pic.has span{display:none;}
+  #mapEvt .mev-t{font-size:18px;font-weight:900;margin-top:10px;color:#ffe27a;}
+  #mapEvt .mev-d{font-size:13px;margin-top:4px;color:#e6dcff;}
+  #mapEvt .mev-c{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:10px;font-weight:900;font-size:15px;}
+  #mapEvt .mev-c img{width:24px;height:24px;} #mapEvt .mev-c b{font-size:26px;color:#fff4b8;}
+  #mapEvt .btn{margin-top:12px;width:100%;}
+  .tkbtns{display:flex;flex-direction:column;gap:4px;} .tkbtns .buybtn img{width:16px;height:16px;}
+  .dgold{display:flex;align-items:center;justify-content:center;gap:2px;font-size:10px;font-weight:900;color:#ffd24a;} .dgold img{width:12px;height:12px;}
   body.lite #upFx .rays{display:none;}
   @keyframes ipulse{to{transform:scale(1.08);}}
   .bombpick #game{outline:3px solid #ffd24a;outline-offset:2px;border-radius:12px;}
@@ -3479,7 +3494,7 @@
     itemsStop();
     let coinNote = '';
     // ストーリー：★を付けて保存（すぐ保存）。★＝クリア＋コンティニューなし＋カラーHPを警告ラインまで上げない
-    let got = 0, firstClear = false, bossBefore = 0, seqC0 = coins;
+    let got = 0, firstClear = false, bossBefore = 0, seqC0 = coins, seqExtra = [];
     lastExpInfo = null;
     if (gameMode === 'story' && curStage) {
       const i = curStage.no - 1;
@@ -3488,6 +3503,13 @@
       storyClr[i] = 1; storyMask[i] = oldMask | runMask; saveStars();
       got = storyStars[i];
       coinNote = storyWinCoins(i, curStage.area, firstClear, got - bits(oldMask)) + teamExp(curStage) + zakoDrop();
+      seqExtra = [];
+      if (firstClear && curStage.kind === 'boss') {         // エリアクリア報酬：ボスを初めて倒したとき
+        const ab = 100 * (curStage.area + 1); addCoins(ab);
+        save('gticket', String((+load('gticket', '0') || 0) + 1));
+        seqExtra.push('エリアクリア報酬：シルバー +' + ab + '・ガチャチケット +1');
+        coinNote += ' エリアクリア報酬 +' + ab + '・ガチャチケット +1。';
+      }
       lastStars = {got, runMask, oldMask, list: mis.map(m => Object.assign({}, m))};
       const ni = nextOnRoute(i); pickStage = stageOpen(ni) ? ni : i; save('stage', String(pickStage));
       refreshStoryBtn();
@@ -3526,7 +3548,7 @@
     nextStage = nx;
     $('nextBtn').classList.toggle('hidden', nx < 0);
     if (nx >= 0) $('nextBtn').querySelector('span').innerHTML = '次へ<small>' + STORY[nx].label + '</small>';
-    const seqData = (gameMode === 'story' && curStage) ? {label: curStage.label, score, stars: lastStars, coins: coins - seqC0, exp: lastExpInfo, gets: winGets.slice()} : null;
+    const seqData = (gameMode === 'story' && curStage) ? {label: curStage.label, score, stars: lastStars, coins: coins - seqC0, exp: lastExpInfo, gets: winGets.slice(), extra: seqExtra} : null;
     showGets();
     $('stageBtn').classList.toggle('hidden', gameMode !== 'story');   // ストーリーならマップへ戻る（次の面はマップで選ぶ）
     $('stageBtn').classList.toggle('next', gameMode === 'story');
@@ -4409,7 +4431,42 @@
     mapArea = Math.floor(pickStage / PER);
     refreshStoryBtn(); drawStory();
     $('story').classList.remove('hidden'); $('story').querySelector('.how-body').scrollTop = 0;
+    if (mapEvtNext) { mapEvtNext = false; if (Math.random() < MAP_EVT_RATE) setTimeout(showMapEvent, 500); }
   });
+  // ===== マップのランダムイベント：勝って次へ進むとき20%で起きる。シルバー10〜100 =====
+  let mapEvtNext = false;
+  const MAP_EVT_RATE = 0.2;
+  const EVENT_BLOB = {};                                   // 絵ができたら k → blobID（Web版は img/event/k.webp）
+  const MAP_EVT = [
+    {k: 'chest',   ic: '🎁', t: '宝箱を見つけた！',             d: '道ばたの草むらに、古い宝箱が隠れていた。'},
+    {k: 'cat',     ic: '🐱', t: '迷子の猫を助けた！',           d: '飼い主のおばあさんが、お礼にコインをくれた。'},
+    {k: 'pirate',  ic: '🏴', t: '海賊のアジトを見つけた！',     d: '留守のアジトに、置きわすれの金貨が残っていた。'},
+    {k: 'water',   ic: '💧', t: '湖からきれいな水の玉が現れた！', d: '水の玉がはじけて、キラキラのコインに変わった。'},
+    {k: 'fairy',   ic: '🍄', t: 'キノコの輪で妖精が踊っていた！', d: 'いっしょに踊ったら、妖精がコインを分けてくれた。'},
+    {k: 'bird',    ic: '🐦', t: '小鳥が光るものを運んできた！',   d: 'くちばしにくわえていたのは、ピカピカのコインだった。'},
+    {k: 'rainbow', ic: '🌈', t: '虹のふもとにたどり着いた！',     d: '虹の根もとに、コインの山がぽつんと置いてあった。'},
+    {k: 'oldman',  ic: '🧓', t: '道に迷ったおじいさんを案内した！', d: '「助かったよ」と、お小づかいをもらった。'},
+    {k: 'fox',     ic: '🦊', t: 'キツネの嫁入り行列に出会った！', d: 'お祝いのおすそわけに、コインの包みをもらった。'},
+    {k: 'stone',   ic: '💎', t: '光る石を掘り当てた！',           d: '売ってみたら、けっこうな値段になった。'},
+    {k: 'merchant',ic: '🐫', t: '旅の商人の荷物を拾った！',       d: '届けてあげたら、お礼に少しコインをくれた。'},
+    {k: 'well',    ic: '⛲', t: '願いの泉にコインが沈んでいた！', d: '泉の精が「持っていきなさい」とほほえんだ。'},
+  ];
+  const evtImg = k => LOCAL_ART || !EVENT_BLOB[k] ? 'img/event/' + k + '.webp' : blobU(EVENT_BLOB[k]);
+  function mapEvtAmount(){ const r = Math.random(); const lo = r < 0.6 ? 10 : r < 0.9 ? 45 : 75, hi = r < 0.6 ? 40 : r < 0.9 ? 70 : 100; return lo + 5 * Math.floor(Math.random() * ((hi - lo) / 5 + 1)); }
+  function showMapEvent(){
+    if ($('story').classList.contains('hidden')) return;
+    const ev = MAP_EVT[Math.floor(Math.random() * MAP_EVT.length)], amt = mapEvtAmount();
+    const old = $('mapEvt'); if (old) old.remove();
+    const d = document.createElement('div'); d.id = 'mapEvt';
+    d.innerHTML = '<div class="mev"><div class="mev-tag">EVENT</div><div class="mev-pic"><img alt=""><span>' + ev.ic + '</span></div>' +
+      '<div class="mev-t">' + ev.t + '</div><div class="mev-d">' + ev.d + '</div>' +
+      '<div class="mev-c">' + coinTag() + 'シルバー <b>+' + amt + '</b></div><button class="btn">うけとる</button></div>';
+    const im = d.querySelector('.mev-pic img');
+    im.onload = () => d.querySelector('.mev-pic').classList.add('has'); im.onerror = () => im.remove(); im.src = evtImg(ev.k);
+    document.body.appendChild(d);
+    try { const t = T(); sndShine(t, false); bell(1319, t + 0.1, 0.6, 0.05); } catch(_) {}
+    d.querySelector('button').onclick = () => { addCoins(amt); try { sndSpeed(); } catch(_) {} d.remove(); toast('シルバー +' + amt); };
+  }
   // タイトルへ戻る
   $('titleBtn').addEventListener('click', () => {
     hideFighters();
@@ -5042,6 +5099,7 @@
   const LOSE_COIN = 3, STAR_COIN = 5;
   // 毎日のプレゼント（7日で1周。休んでも1日目には戻らない）。グレードで倍率が上がる
   const DAILY = [20, 20, 30, 30, 40, 40, 100];
+  const DAILY_GOLD = 10;                                   // 7日目はゴールドも少しもらえる
   // グレード：倒したボスの数で決まる
   const GRADES = [
     {name: 'ルーキー', min: 0, mul: 1},
@@ -5052,10 +5110,10 @@
   ];
   // 課金（アプリ版で使う。いまは表示だけ）
   const PACKS = [
-    {price: '¥120', name: 'コイン 300枚', coin: 300},
-    {price: '¥370', name: 'コイン 1,000枚', coin: 1000},
-    {price: '¥610', name: 'コイン 1,800枚', coin: 1800},
-    {price: '¥1,200', name: 'コイン 4,000枚', coin: 4000},
+    {price: '¥120', name: 'ゴールドコイン 300枚', coin: 300},
+    {price: '¥370', name: 'ゴールドコイン 1,000枚', coin: 1000},
+    {price: '¥610', name: 'ゴールドコイン 1,800枚', coin: 1800},
+    {price: '¥1,200', name: 'ゴールドコイン 4,000枚', coin: 4000},
     {price: '¥160', name: '初心者パック', desc: '最初の1回だけ買えるお得なセット'},
     {price: '¥600', name: '広告削除', desc: 'コンティニューと毎日プレゼントの2倍を、広告なしで使える'},
   ];
@@ -5124,9 +5182,30 @@
     try { sndSpeed(); } catch(_) {}
     toast(potName(g) + ' を買いました（所持 ' + own(potKey(g)) + '）'); drawShop();
   }
+  // ----- チケット：シルバーでもゴールドでも買える -----
+  const TICKET_SHOP = [
+    {k: 'gticket',    name: 'ガチャチケット', desc: 'シルバーガチャを1回引ける', silver: 100, gold: 100},
+    {k: 'gticket_hi', name: '確定チケット',   desc: 'SR以上が1体確定のガチャを1回引ける', silver: 3000, gold: 300},
+  ];
+  function drawTickets(){
+    let el = $('shopTickets');
+    if (!el) { el = document.createElement('section'); el.id = 'shopTickets'; $('shopItems').closest('section').after(el); }
+    el.innerHTML = '<h3>チケット</h3>' + TICKET_SHOP.map((t, j) => '<div class="shoprow"><img src="' + gImg(t.k === 'gticket' ? 'ticket' : 'ticket_hi') + '" alt=""><div class="tx"><div class="nm">' + t.name + '<small>所持 ' + (+load(t.k, '0') || 0) + '</small></div><div class="ds">' + t.desc + '</div></div>' +
+      '<div class="tkbtns"><button class="buybtn" data-tk="' + j + ':s"' + (coins < t.silver ? ' disabled' : '') + '>' + coinTag() + t.silver.toLocaleString() + '</button>' +
+      '<button class="buybtn" data-tk="' + j + ':g"><img src="' + gImg('coin_gold') + '" alt="">' + t.gold.toLocaleString() + '</button></div></div>').join('') +
+      '<p class="note">チケットはガチャの画面で使えます。</p>';
+  }
+  async function buyTicket(tag){
+    const [j, cur] = tag.split(':'), t = TICKET_SHOP[+j]; if (!t) return;
+    if (cur === 's') { if (coins < t.silver) { toast('シルバーコインが足りません'); return; } addCoins(-t.silver); }
+    else if (!(await spendGold(t.gold, 'ticket'))) return;
+    save(t.k, String((+load(t.k, '0') || 0) + 1));
+    try { sndSpeed(); } catch(_) {}
+    toast(t.name + ' を買いました（所持 ' + load(t.k, '0') + '）'); drawShop();
+  }
   // ----- ショップ -----
   function drawShop(){
-    drawSpecial();
+    drawSpecial(); drawTickets();
     $('shopItems').innerHTML = ITEM_KEYS.map(k => { const it = ITEMS[k];
       return '<div class="shoprow"><img src="' + itemImg(k) + '" alt=""><div class="tx"><div class="nm">' + it.name + '<small>所持 ' + own(k) + '</small></div>' +
         '<div class="ds">' + it.desc + '</div></div><button class="buybtn" data-k="' + k + '"' + (coins < it.price ? ' disabled' : '') + '>' + coinTag() + it.price + '</button></div>'; }).join('');
@@ -5134,7 +5213,7 @@
       (p.desc ? '<div class="ds">' + p.desc + '</div>' : '') + '</div><button class="buybtn" disabled>' + p.price + '</button></div>').join('');
     refreshCoins();
   }
-  $('shop').addEventListener('click', e => { const b = e.target.closest('[data-pbuy]'); if (b && !b.disabled) buyPot(b.dataset.pbuy); });
+  $('shop').addEventListener('click', e => { const b = e.target.closest('[data-pbuy]'); if (b && !b.disabled) buyPot(b.dataset.pbuy); const tk = e.target.closest('[data-tk]'); if (tk && !tk.disabled) buyTicket(tk.dataset.tk); });
   $('shopItems').addEventListener('click', e => {
     const b = e.target.closest('.buybtn'); if (!b || b.disabled) return;
     const k = b.dataset.k, it = ITEMS[k]; if (!it || coins < it.price) return;
@@ -5593,7 +5672,7 @@
     const close = () => { timers.forEach(clearTimeout); timers = []; d.remove(); };
     d.addEventListener('click', e => {
       const b = e.target.closest('[data-rsq]');
-      if (b) { const id = {map: 'stageBtn', retry: 'retryBtn', title: 'titleBtn'}[b.dataset.rsq]; close(); if (id) $(id).click(); return; }
+      if (b) { const id = {map: 'stageBtn', retry: 'retryBtn', title: 'titleBtn'}[b.dataset.rsq]; close(); if (id === 'stageBtn') mapEvtNext = true; if (id) $(id).click(); return; }
       if (performance.now() < lockUntil || idx >= steps.length - 1) return;
       next();
     });
@@ -5653,7 +5732,7 @@
       const dial = v => { const s = String(Math.max(0, v | 0)); return '<span class="rsq-dial"><span class="pl">+</span>' + s.split('').map(() => '<span class="dg"><span>' + '0123456789'.repeat(3).split('').map(x => '<i>' + x + '</i>').join('') + '</span></span>').join('') + '</span>'; };
       const p = pane('<div class="rsq-ttl" style="font-size:30px">REWARD</div><div class="rsq-rows">' +
         '<div class="rsq-row">' + coinTag() + 'コイン ' + dial(r.coins) + '</div>' +
-        '<div class="rsq-row">EXP ' + dial(ex.gain) + '</div></div>' +
+        '<div class="rsq-row">EXP ' + dial(ex.gain) + '</div>' + (r.extra || []).map(t => '<div class="rsq-row rsq-ex">🎉 ' + t + '</div>').join('') + '</div>' +
         (ex.list.length ? '<div class="rsq-team">' + ex.list.map(() => '<div class="rsq-mem"><span class="lvb"></span><div class="ic"></div><div class="lv"></div><div class="bar"><i></i></div></div>').join('') + '</div>' : '') +
         '<div class="resbtns rsq-btns"><button class="rbtn next" data-rsq="map"><i>🗺</i><span>マップへ</span></button><button class="rbtn" data-rsq="retry"><i>↻</i><span>もう一度</span></button><button class="rbtn" data-rsq="title"><i>⌂</i><span>タイトル</span></button></div>');
       // ダイヤル
@@ -7021,7 +7100,7 @@
     const g = gradeNow(), gi = GRADES.indexOf(g), nx = GRADES[gi + 1];
     $('dailyGrade').textContent = 'グレード：' + g.name + '（もらえる数 ×' + g.mul + '）';
     $('dailyRow').innerHTML = DAILY.map((_, k) => '<div class="d' + (k < d.i ? ' done' : '') + (k === d.i ? ' now' : '') + (k === 6 ? ' big' : '') + '">' +
-      (k + 1) + '日目' + coinTag() + '<b>' + dailyAmt(k, g) + '</b></div>').join('');
+      (k + 1) + '日目' + coinTag() + '<b>' + dailyAmt(k, g) + '</b>' + (k === 6 ? '<small class="dgold"><img src="' + gImg('coin_gold') + '" alt="">+' + DAILY_GOLD + '</small>' : '') + '</div>').join('');
     $('dailyNote').textContent = nx ? 'ボスをあと' + (nx.min - bossesBeaten()) + '人倒すと「' + nx.name + '」（×' + nx.mul + '）になります。' : 'いちばん上のグレードです。';
     $('dailyAd').disabled = false; $('dailyGet').disabled = false;
     $('daily').classList.remove('hidden');
@@ -7029,6 +7108,7 @@
       const a = dailyAmt(d.i, g) * m;
       save('daily', JSON.stringify({i: (d.i + 1) % DAILY.length, last: today()}));
       addCoins(a); $('daily').classList.add('hidden');
+      if (d.i === 6) { if (!acctToken) { gold += DAILY_GOLD; save('gold', String(gold)); } toast('ゴールド +' + DAILY_GOLD); }
       toast('コイン +' + a);
     };
     $('dailyGet').onclick = () => claim(1);
