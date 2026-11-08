@@ -429,7 +429,13 @@ async function rankPost(env, req, me) {
   const last = await env.DB.prepare('SELECT created_at FROM scores WHERE player = ? ORDER BY created_at DESC LIMIT 1').bind(me.id).first();
   if (last && t - last.created_at < 10) return fail(env, req, '送信が早すぎます', 429);
   await env.DB.prepare('INSERT INTO scores (player, name, mode, score, blocks, dur, ver, log, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)').bind(me.id, me.name, row.mode, row.score, row.blocks, row.dur, row.ver, row.log, t).run();
-  const ranks = {}; for (const pd of PERIODS) ranks[pd] = await myRank(env, row.mode, pd, me.id, t);
+  // 順位は「今回の点数」で出す（ほかの人の自己ベストと比べる）。自己ベストの順位も別に返す
+  const ranks = {};
+  for (const pd of PERIODS) {
+    const from = since(pd, t), my = await myRank(env, row.mode, pd, me.id, t);
+    const above = await env.DB.prepare('SELECT COUNT(*) AS c FROM (SELECT player, MAX(score) AS m FROM scores WHERE mode = ? AND created_at >= ? AND player <> ? GROUP BY player) WHERE m > ?').bind(row.mode, from, me.id, row.score).first();
+    ranks[pd] = { rank: (above.c || 0) + 1, total: my.total, best: my.best, bestRank: my.rank };
+  }
   return json(env, req, { ok: true, ranks });
 }
 
