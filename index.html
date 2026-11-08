@@ -525,7 +525,7 @@
   .g-card em.sh{background:#ffb03d;color:#3a2210;}
   @keyframes gpop{from{opacity:0;transform:scale(.4);}to{opacity:1;transform:scale(1);}}
   .gacha-foot{flex-wrap:wrap;gap:8px;}
-  .gtabs{flex-basis:100%;display:flex;gap:6px;} .gtabs button{flex:1;border-radius:12px;border:2px solid rgba(255,255,255,.3);background:rgba(0,0,0,.45);color:#fff;font-weight:800;font-size:13px;padding:7px 4px;}
+  .gtabs{flex-basis:100%;display:flex;gap:6px;} .gtabs button{flex:1;border-radius:12px;border:2px solid rgba(255,255,255,.3);background:rgba(0,0,0,.45);color:#fff;font-weight:800;font-size:12px;padding:7px 2px;white-space:nowrap;letter-spacing:-.03em;}
   .gtabs button img{width:20px;height:20px;vertical-align:-5px;margin-right:3px;} .gtabs button.on{background:linear-gradient(90deg,#ff5f9e,#a46bff);border-color:#ffd0e2;}
   .gtabs button[data-tab="gold"].on{background:linear-gradient(90deg,#ffcf3d,#f59d18);color:#3a2210;}
   .gacha-foot .btn{flex:1 1 45%;min-width:140px;font-size:14px;padding:8px 6px;}
@@ -4990,8 +4990,58 @@
     ['storyCoin', 'shopCoin'].forEach(id => { $(id).innerHTML = coinTag() + coins.toLocaleString(); });
   }
 
+  // ----- ポットの販売（ふだんはショップに並ばない） -----
+  const POT_PRICE = {N: 30, R: 100, SR: 300, MR: 800, LR: 2000};   // ゴールドコイン
+  // イベント販売：期間と個数を決めて並べる（例）{id: 'xmas26', name: 'クリスマス', from: '2026-12-20', to: '2026-12-26', items: [{g: 'SR', limit: 2}, {g: 'LR', limit: 1}]}
+  const EVENT_SALE = [];
+  const evNow = () => { const d = today(); return EVENT_SALE.filter(e => e.from <= d && d <= e.to); };
+  // 秘密のショップ：1日1回、ショップを開いたときに20%で出る。ポット2つ・各1個だけ・その日かぎり
+  const SECRET_RATE = 0.2, SECRET_W = {N: 30, R: 30, SR: 25, MR: 11, LR: 4};
+  function secretToday(){
+    let s = loadJ('secret', null);
+    if (!s || s.day !== today()) {
+      s = {day: today(), items: []};
+      if (Math.random() < SECRET_RATE) {
+        const pick = () => { let r = Math.random() * 100; for (const g of POT_G) { if (r < SECRET_W[g]) return g; r -= SECRET_W[g]; } return 'N'; };
+        const a = pick(); let b = pick(); for (let k = 0; k < 5 && b === a; k++) b = pick();
+        s.items = (a === b ? [a] : [a, b]).map(g => ({g, left: 1}));
+      }
+      save('secret', JSON.stringify(s));
+    }
+    return s;
+  }
+  const evBought = () => loadJ('evbuy', {});
+  function potRow(g, left, tag){
+    return '<div class="shoprow"><img src="' + potImg(g) + '" alt=""><div class="tx"><div class="nm">' + potName(g) + '<small>所持 ' + own(potKey(g)) + '　のこり ' + left + '個</small></div>' +
+      '<div class="ds">同じグレードのキャラを★+1（レベル上限に届いてから）。ふだんはアイテムガチャでしか出ません。</div></div>' +
+      '<button class="buybtn" data-pbuy="' + tag + '"' + (left > 0 ? '' : ' disabled') + '><img src="' + gImg('coin_gold') + '" alt="">' + POT_PRICE[g].toLocaleString() + '</button></div>';
+  }
+  function drawSpecial(){
+    let el = $('shopSpecial');
+    if (!el) { el = document.createElement('section'); el.id = 'shopSpecial'; $('shopItems').closest('section').before(el); }
+    const s = secretToday(), evs = evNow(), bt = evBought();
+    let h = '';
+    evs.forEach(e => { h += '<h3>🎉 イベント販売：' + e.name + '（' + e.to.slice(5).replace('-', '/') + 'まで・数量限定）</h3>' + e.items.map((it, k) => potRow(it.g, Math.max(0, it.limit - (bt[e.id + ':' + k] | 0)), 'ev:' + e.id + ':' + k)).join(''); });
+    if (s.items.length) h += '<h3>🔮 秘密のショップ（今日だけ・各1個）</h3>' + s.items.map((it, k) => potRow(it.g, it.left, 'sc:' + k)).join('');
+    if (h) h += '<p class="note">ポットはゴールドコインで買えます（いま ' + gold.toLocaleString() + '枚）。</p>';
+    el.innerHTML = h; el.style.display = h ? '' : 'none';
+  }
+  async function buyPot(tag){
+    const [kind, a, b] = tag.split(':');
+    let g, ok = false;
+    if (kind === 'sc') { const s = secretToday(), it = s.items[+a]; if (!it || it.left <= 0) return; g = it.g;
+      if (!(await spendGold(POT_PRICE[g], 'pot'))) return; it.left--; save('secret', JSON.stringify(s)); ok = true; }
+    else if (kind === 'ev') { const e = evNow().find(x => x.id === a), it = e && e.items[+b]; if (!it) return; const bt = evBought(), key = a + ':' + b;
+      if ((bt[key] | 0) >= it.limit) return; g = it.g;
+      if (!(await spendGold(POT_PRICE[g], 'pot'))) return; bt[key] = (bt[key] | 0) + 1; save('evbuy', JSON.stringify(bt)); ok = true; }
+    if (!ok) return;
+    inv[potKey(g)] = own(potKey(g)) + 1; saveInv();
+    try { sndSpeed(); } catch(_) {}
+    toast(potName(g) + ' を買いました（所持 ' + own(potKey(g)) + '）'); drawShop();
+  }
   // ----- ショップ -----
   function drawShop(){
+    drawSpecial();
     $('shopItems').innerHTML = ITEM_KEYS.map(k => { const it = ITEMS[k];
       return '<div class="shoprow"><img src="' + itemImg(k) + '" alt=""><div class="tx"><div class="nm">' + it.name + '<small>所持 ' + own(k) + '</small></div>' +
         '<div class="ds">' + it.desc + '</div></div><button class="buybtn" data-k="' + k + '"' + (coins < it.price ? ' disabled' : '') + '>' + coinTag() + it.price + '</button></div>'; }).join('');
@@ -4999,6 +5049,7 @@
       (p.desc ? '<div class="ds">' + p.desc + '</div>' : '') + '</div><button class="buybtn" disabled>' + p.price + '</button></div>').join('');
     refreshCoins();
   }
+  $('shop').addEventListener('click', e => { const b = e.target.closest('[data-pbuy]'); if (b && !b.disabled) buyPot(b.dataset.pbuy); });
   $('shopItems').addEventListener('click', e => {
     const b = e.target.closest('.buybtn'); if (!b || b.disabled) return;
     const k = b.dataset.k, it = ITEMS[k]; if (!it || coins < it.price) return;
@@ -5570,7 +5621,7 @@
     const t = gTickets(), coinImg = k => '<img src="' + gImg(k) + '" alt="">';
     let h = '<div class="gtabs"><button data-tab="silver" class="' + (gTab === 'silver' ? 'on' : '') + '">' + coinImg('coin_silver') + 'シルバーガチャ</button>' +
             '<button data-tab="gold" class="' + (gTab === 'gold' ? 'on' : '') + '">' + coinImg('coin_gold') + 'ゴールドガチャ</button>' +
-            '<button data-tab="item" class="' + (gTab === 'item' ? 'on' : '') + '"><img src="' + potImg('SR') + '" alt="">アイテムガチャ</button></div>';
+            '<button data-tab="item" class="' + (gTab === 'item' ? 'on' : '') + '"><img src="' + potImg('SR') + '" alt="">アイテム</button></div>';
     if (gRev) {
       h += '<button class="btn gacha" data-g="next">' + (gRev.i + 1 < gRev.res.length ? 'つぎへ（' + (gRev.i + 1) + '/' + gRev.res.length + '）' : '一覧を見る') + '</button>' +
            '<button class="btn gray" data-g="skip">スキップ</button>';
@@ -5852,6 +5903,7 @@
       const full = (u.star || 0) >= starMaxOf(u);
       h += '<div class="dsec"><p>同じキャラ（' + fullName(c) + '）1体を材料にして、★を1つ上げます。★1つでレベル上限が+10されます（★' + starMaxOf(u) + 'まで）。材料にしたキャラはいなくなります。</p>' +
         '<p>いま ' + starsHTMLu(u) + '　レベル上限 LV' + capOf(u) + (full ? '（最大）' : ' → LV' + Math.min(lvMaxOf(u), capOf(u) + 10)) + '</p>' +
+        (!full && u.lv < capOf(u) ? '<p class="dwarn">限界突破は、レベルが上限（LV' + capOf(u) + '）に届いてからできます。いまは LV' + u.lv + '。先に「LVアップ（合成）」で上げてください。</p>' : '') +
         (full ? '<p>これ以上★は上がりません。</p>' : mats.length ? '<div class="lbmats">' + mats.map(m => '<button data-mat="' + m.u + '"' + (m.lock ? ' class="lk"' : '') + '><span class="tic" data-ci="' + ci + '"></span>LV' + m.lv + (m.star ? ' ★' + m.star : '') + (m.lock ? '<i>🔒ロック中</i>' : teams.some(tt => tt.includes(m.u)) ? '<i>編成中</i>' : '') + '</button>').join('') + '</div>' + pagerHTML(matPage, matsAll.length, MAT_PER, 'mat') : '<p>同じキャラがもう1体いると、★を上げられます。</p>') + '</div>';
       if (!full) h += lbExtraHTML(u);
     }
@@ -5939,6 +5991,8 @@
         r.lv > was ? 'LV' + was + ' → <b>LV' + r.lv + '</b>' : '経験値 <b>+' + pv.gain.toLocaleString() + '</b>', r.lv > was ? 'lvup' : 'exp');
     });
   }
+  // 限界突破できるのは、レベルが今の上限に届いてから（材料のレベルは問わない）
+  function lbReady(u){ if (u.lv >= capOf(u)) return true; toast('先にレベルを上限（LV' + capOf(u) + '）まで上げてください（いま LV' + u.lv + '）'); return false; }
   // ---- ほかのキャラ・ポットでの限界突破 ----
   // ほかのキャラ：同じグレードなら材料にできる。2体で★+1（LRで中の段が違うキャラがまざると3体）
   const lbSel = new Set();
@@ -5950,13 +6004,13 @@
   function lbExtraHTML(u){
     const g = CHAR_STAT[u.id].grade, ot = lbOthers(u);
     [...lbSel].forEach(id => { if (!ot.some(m => m.u === id)) lbSel.delete(id); });
-    const need = lbOtherNeed(u), pn = potNeed(u), have = own(potKey(g));
+    const need = lbOtherNeed(u), pn = potNeed(u), have = own(potKey(g)), rd = u.lv >= capOf(u);
     let h = '<div class="dsec lbsub"><p><b>ほかのキャラで限界突破</b>：同じグレード（' + g + '）のほかのキャラ <b>' + need + '体</b>で★+1（同じキャラの2倍以上かかります' + (g === 'LR' ? '。LRで中の段が違うキャラがまざると3体' : '') + '）。</p>';
     h += ot.length ? '<div class="lbmats">' + ot.slice(0, MAT_PER).map(m => '<button data-osel="' + m.u + '" class="' + (m.lock ? 'lk' : lbSel.has(m.u) ? 'sel' : '') + '"><span class="tic" data-ci="' + ciOf(m) + '"></span>LV' + m.lv + (m.star ? ' ★' + m.star : '') + (m.lock ? '<i>🔒ロック中</i>' : teams.some(tt => tt.includes(m.u)) ? '<i>編成中</i>' : '') + '</button>').join('') + '</div>' +
-         '<button class="lbgo" data-ogo="1"' + (lbSel.size >= need ? '' : ' disabled') + '>選んだ' + lbSel.size + '体で★+1（必要 ' + need + '体）</button>'
+         '<button class="lbgo" data-ogo="1"' + (rd && lbSel.size >= need ? '' : ' disabled') + '>選んだ' + lbSel.size + '体で★+1（必要 ' + need + '体）</button>'
        : '<p>同じグレードのほかのキャラがいません。</p>';
     h += '</div><div class="dsec lbsub"><p><b>ポットで限界突破</b>：' + potName(g) + 'を <b>' + pn + '個</b>使って★+1。ポットはアイテムガチャで出ます（ショップでは買えません）。</p>' +
-         '<button class="lbgo potbtn" data-pot="1"' + (have >= pn ? '' : ' disabled') + '><img src="' + potImg(g) + '" alt="">ポットを使う（所持 ' + have + '個／必要 ' + pn + '個）</button></div>';
+         '<button class="lbgo potbtn" data-pot="1"' + (rd && have >= pn ? '' : ' disabled') + '><img src="' + potImg(g) + '" alt="">ポットを使う（所持 ' + have + '個／必要 ' + pn + '個）</button></div>';
     return h;
   }
   function lbStarUp(u, matIds, label){
@@ -5969,7 +6023,7 @@
     upFx(ciOf(u), mcis, 'LIMIT BREAK!', '★' + u.star + '　レベル上限 <b>LV' + capOf(u) + '</b>' + (label ? '<br><small>' + label + '</small>' : ''), 'limit');
   }
   function limitBreakOthers(uid){
-    const u = unitOf(uid); if (!u || (u.star || 0) >= starMaxOf(u)) return;
+    const u = unitOf(uid); if (!u || (u.star || 0) >= starMaxOf(u) || !lbReady(u)) return;
     const need = lbOtherNeed(u), pick = [...lbSel].map(unitOf).filter(Boolean);
     if (pick.some(m => m.lock)) { toast('ロック中のキャラは材料にできません'); return; }
     if (pick.length < need) { toast('あと' + (need - pick.length) + '体選んでください'); return; }
@@ -5977,7 +6031,7 @@
     askYes('選んだ' + use.length + '体を材料にして、★を1つ上げますか？<br>レベル上限 LV' + capOf(u) + ' → LV' + Math.min(lvMaxOf(u), capOf(u) + 10) + '<br>材料にしたキャラはいなくなります。', () => lbStarUp(u, use, 'ほかのキャラ ' + use.length + '体で突破'));
   }
   function limitBreakPot(uid){
-    const u = unitOf(uid); if (!u || (u.star || 0) >= starMaxOf(u)) return;
+    const u = unitOf(uid); if (!u || (u.star || 0) >= starMaxOf(u) || !lbReady(u)) return;
     const g = CHAR_STAT[u.id].grade, k = potKey(g), pn = potNeed(u);
     if (own(k) < pn) { toast(potName(g) + 'が足りません'); return; }
     askYes(potName(g) + 'を' + pn + '個使って、★を1つ上げますか？<br>レベル上限 LV' + capOf(u) + ' → LV' + Math.min(lvMaxOf(u), capOf(u) + 10), () => {
@@ -5988,6 +6042,7 @@
   function limitBreak(uid, mid){
     const u = unitOf(uid), m = unitOf(mid);
     if (!u || !m || u.id !== m.id || uid === mid || (u.star || 0) >= starMaxOf(u)) return;
+    if (!lbReady(u)) return;
     if (m.lock) { toast('ロック中のキャラは材料にできません（詳細でロックを外せます）'); return; }
     askYes(fullName(ALLC[ciOf(m)]) + '（LV' + m.lv + '）を材料にして、★を1つ上げますか？<br>レベル上限 LV' + capOf(u) + ' → LV' + Math.min(lvMaxOf(u), capOf(u) + 10) + '<br>材料にしたキャラはいなくなります。', () => {
       const mci = ciOf(m);
@@ -6819,7 +6874,7 @@
         if (!vis('box')) return show(5, 'キャラを育てよう。<b>ボックス</b>を開いてね。', $('boxBtn'));
         return show(5, '<b>レベルアップ</b>：キャラを押して「詳細」→<b>「LVアップ（合成）」</b>。<br>使わないキャラを材料にすると経験値が入ります。ストーリーで勝っても経験値が入ります。', null, () => setStep(6));
       }
-      if (step === '6') return show(6, '<b>限界突破</b>：同じキャラが2体以上いたら、詳細の<b>「限界突破」</b>で1体を材料に★を上げよう（同じグレードのほかのキャラ2体や、アイテムガチャで出る<b>限界突破ポット</b>でもOK）。<br>★が1つ増えると<b>レベル上限 +10</b>、<b>必殺技と奥義も強く</b>なります。', null, () => { setStep('done'); hide(); toast('案内はここまで。楽しんでね！'); });
+      if (step === '6') return show(6, '<b>限界突破</b>：レベルが上限（★0ならLV10）に届いたら、詳細の<b>「限界突破」</b>で同じキャラ1体を材料に★を上げよう（同じグレードのほかのキャラ2体や、アイテムガチャで出る<b>限界突破ポット</b>でもOK）。<br>★が1つ増えると<b>レベル上限 +10</b>、<b>必殺技と奥義も強く</b>なります。', null, () => { setStep('done'); hide(); toast('案内はここまで。楽しんでね！'); });
     }
     setInterval(tick, 400);
     window.__tutStep = () => step;
