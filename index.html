@@ -4436,7 +4436,9 @@
   // ===== マップのランダムイベント：勝って次へ進むとき20%で起きる。シルバー10〜100 =====
   let mapEvtNext = false;
   const MAP_EVT_RATE = 0.2;
-  const EVENT_BLOB = {};                                   // 絵ができたら k → blobID（Web版は img/event/k.webp）
+  const EVENT_BLOB = {chest: 'b319db822e1081952abfdaec36fd307c', cat: '85b3b60a1565d089438f013946389932', fairy: 'af3e7c94d144bb765bbd91550a261a9a', water: 'afffd4648d612bee83344b9bae271583',
+    pirate: 'aba4da8928a51cc551f748c98ef8d153', bird: 'ed8f533e586c189ae9cc287b37141001', fox: 'dd083c8f354bc0f485e1c12061052849', oldman: '79d795150681fa2fadc060798f78d595',
+    rainbow: '28638d07cfd3cb167b53e6ebe0638c7f', stone: '53152314c5610760a4b878cc7a80638c', merchant: 'aa2e9ed777458ebeceb294c48e9db5df', well: '78b842210bfc43d6727fa9724b2d52da'};                                   // 絵ができたら k → blobID（Web版は img/event/k.webp）
   const MAP_EVT = [
     {k: 'chest',   ic: '🎁', t: '宝箱を見つけた！',             d: '道ばたの草むらに、古い宝箱が隠れていた。'},
     {k: 'cat',     ic: '🐱', t: '迷子の猫を助けた！',           d: '飼い主のおばあさんが、お礼にコインをくれた。'},
