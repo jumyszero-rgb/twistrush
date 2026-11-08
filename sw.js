@@ -10,7 +10,7 @@ self.addEventListener('fetch', e => {
   const req = e.request, url = new URL(req.url);
   if (req.method !== 'GET' || url.origin !== location.origin) return;            // サーバー（api.twistrush.com）などはそのまま
   if (req.headers.has('range')) return;                                         // 曲や動画の途中読みはそのまま
-  if (req.mode === 'navigate' || url.pathname === '/' || url.pathname.endsWith('.html')) {
+  if (url.pathname === '/' || url.pathname === '/index.html') {
     // ゲーム本体：いつも新しいものを取りに行く。電波がないときだけ残してあるもの
     e.respondWith(fetch(req).then(r => { if (okRes(r)) { const c = r.clone(); caches.open('tr-page').then(ca => ca.put('/', c)); } return r; })
       .catch(() => caches.open('tr-page').then(ca => ca.match('/')).then(r => r || fetch(req))));
