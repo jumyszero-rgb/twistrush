@@ -123,7 +123,7 @@
   #story .modesel button,#prac .modesel button{color:#efe7ff;}
   #story .modesel button[aria-pressed="true"],#prac .modesel button[aria-pressed="true"]{background:#fff;color:#2a1740;}
   #settings .modesel,#rank .modesel{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.25);}
-  #settings .modesel button,#rank .modesel button{color:#efe7ff;}
+  #settings .modesel button,#rank .modesel button{color:#efe7ff;background:transparent;}
   #settings .modesel button[aria-pressed="true"],#rank .modesel button[aria-pressed="true"]{background:#fff;color:#2a1740;}
   #settings .modesel.col{display:flex;flex-direction:column;align-items:stretch;gap:4px;}
   #settings .modesel{display:inline-flex;gap:4px;padding:3px;border:1px solid rgba(255,255,255,.25);border-radius:12px;}
@@ -159,6 +159,11 @@
   .volrow span{width:4em;flex:none;} .volrow input{flex:1;accent-color:#ff7fb0;height:28px;} .volrow b{width:3em;text-align:right;flex:none;font-variant-numeric:tabular-nums;}
   .setrow input{font-family:inherit;font-size:14px;padding:9px 10px;border-radius:10px;border:2px solid rgba(255,255,255,.25);
     background:rgba(0,0,0,.25);color:#fff;}
+  .rjoin{width:min(320px,92%);margin:2px auto 8px;padding:10px 12px;border-radius:14px;background:rgba(255,210,74,.16);border:1.5px solid var(--gold);text-align:center;font-size:14px;}
+  .rjrow{display:flex;gap:6px;margin-top:8px;}
+  .rjrow input{flex:1;min-width:0;font-size:16px;padding:8px 10px;border-radius:10px;border:1.5px solid rgba(0,0,0,.2);}
+  .rjrow .btn{width:auto;padding:8px 16px;margin:0;}
+  .rjskip{margin-top:6px;background:none;border:0;color:inherit;opacity:.7;font-size:12px;text-decoration:underline;}
   .wlist{display:flex;flex-direction:column;gap:3px;margin-top:8px;}
   .wrow{display:flex;gap:8px;align-items:center;font-size:13px;padding:5px 8px;border-radius:8px;background:rgba(255,255,255,.07);}
   .wrow.me{background:rgba(255,210,74,.22);border:1px solid var(--gold);}
@@ -1094,6 +1099,11 @@
       <div><div style="font-size:12px;color:var(--muted)">スコア</div><div class="big" id="finalScore">0</div></div>
       <div class="resget hidden" id="resGet"></div>
       <p id="finalNote"></p>
+      <div class="rjoin hidden" id="rankJoin">
+        <b>🌏 世界ランキングに載せる？</b>
+        <div class="rjrow"><input id="rjName" maxlength="12" placeholder="名前（12文字まで）" autocomplete="nickname"><button class="btn" id="rjGo">登録</button></div>
+        <button class="rjskip" id="rjSkip">今はしない</button>
+      </div>
       <div class="resbtns">
         <button class="rbtn next hidden" id="nextBtn"><i>▶</i><span>次へ</span></button>
         <button class="rbtn hidden" id="stageBtn"><i>🗺</i><span>ステージ</span></button>
@@ -1189,6 +1199,8 @@
           </div>
           <div id="worldList" class="wlist"></div>
           <p id="worldNote"></p>
+          <label class="setrow hidden" id="rankMe"><span>ランキングの名前（12文字まで）</span><input id="rankNameIn" maxlength="12" placeholder="ななし"></label>
+          <p>毎月、前の月の順位（日本時間）でアイテムがもらえます。1位・2〜3位・4〜10位・11〜50位・51〜100位・参加賞。</p>
         </section>
       </div>
       <div class="how-foot"><button class="btn" id="rankClose">とじる</button></div>
@@ -4575,16 +4587,22 @@
   const DEFAULT_API = 'https://api.twistrush.com';
   let apiUrl = load('api', '') || DEFAULT_API, wPeriod = 'day';
   let acctToken = load('acct_token', ''), acct = null;
+  // ランキング用のゲストの札（ログインしていない人。名前だけで登録）
+  let guestTok = load('rank_token', ''), rankPend = null;
+  const rankTok = () => acctToken || guestTok;
+  const rankName = () => acct ? acct.name : load('rank_name', '');
   let syncRev = +load('sync_rev', '0') || 0;
   async function api(path, opt){
     opt = opt || {};
     const base = (apiUrl || DEFAULT_API).replace(/\/+$/, '');
     const headers = Object.assign({}, opt.headers || {});
-    if (acctToken) headers.Authorization = 'Bearer ' + acctToken;
+    const tok = opt.tok !== undefined ? opt.tok : acctToken;     // ランキングはゲストの札でも送れる
+    if (tok) headers.Authorization = 'Bearer ' + tok;
     if (opt.body && !headers['Content-Type']) headers['Content-Type'] = 'application/json';
     const res = await fetch(base + path, Object.assign({}, opt, {headers}));
     let body = null; try { body = await res.json(); } catch(_) {}
-    if (res.status === 401 && acctToken) { acctLogoutLocal(); toast('ログインが切れました。もう一度ログインしてください'); }
+    if (res.status === 401 && tok && tok === guestTok && !acctToken) { guestTok = ''; save('rank_token', ''); }
+    else if (res.status === 401 && acctToken) { acctLogoutLocal(); toast('ログインが切れました。もう一度ログインしてください'); }
     if (!res.ok && res.status !== 409 && res.status !== 402) { const e = new Error((body && body.error) || 'HTTP ' + res.status); e.status = res.status; throw e; }
     return Object.assign(body || {}, {_status: res.status});
   }
@@ -4689,25 +4707,79 @@
       document.querySelectorAll('[data-login]').forEach(b => b.classList.toggle('hidden', !srvLogins.includes(b.dataset.login)));
     }
   }
-  // ゲーム終了時に送る（60秒アタック・エンドレス、ログインしている人だけ）
-  async function sendScore(){
-    if (!acctToken || !isRec(gameMode)) return;
+  // ゲーム終了時に送る（60秒アタック・エンドレス）。まだ登録していない人には、名前を入れて登録するか聞く
+  function sendScore(){
+    $('rankJoin').classList.add('hidden');
+    if (!isRec(gameMode) || score <= 0) return;
+    const b = {mode: gameMode, score, blocks: broken, dur: Math.round((now() - runStart) / 1000), ver: GAME_VER};
+    if (rankTok()) { postScore(b); return; }
+    rankPend = b;
+    if (load('rank_skip', '') === today()) return;          // 「今はしない」を選んだ日は聞かない
+    $('rjName').value = load('rank_name', '');
+    $('rankJoin').classList.remove('hidden');
+  }
+  async function postScore(b){
     try {
-      const r = await api('/api/score', {method: 'POST', body: JSON.stringify({mode: gameMode, score, blocks: broken, dur: Math.round((now() - runStart) / 1000), ver: GAME_VER})});
+      const r = await api('/api/score', {method: 'POST', body: JSON.stringify(b), tok: rankTok()});
       if (r && r.ranks && r.ranks.day) $('finalNote').textContent += ' 世界 今日 ' + r.ranks.day.rank + '位 / ' + r.ranks.day.total + '人';
     } catch (e) { $('finalNote').textContent += '（世界ランキングへの送信に失敗しました）'; }
   }
+  // 名前だけで登録（ゲスト）。登録したら、いまのスコアをすぐ送る
+  async function rankJoin(){
+    const name = $('rjName').value.trim();
+    if (!name) { toast('名前を入れてください'); $('rjName').focus(); return; }
+    $('rjGo').disabled = true;
+    try {
+      const r = await api('/api/guest', {method: 'POST', body: JSON.stringify({name}), tok: ''});
+      guestTok = r.token; save('rank_token', guestTok); save('rank_name', r.name);
+      $('rankJoin').classList.add('hidden'); toast('ランキングに登録しました：' + r.name);
+      if (rankPend) { postScore(rankPend); rankPend = null; }
+    } catch (e) { toast(e.status === 403 ? 'ログインしてください（設定 → アカウント）' : 'サーバーにつながりませんでした'); }
+    $('rjGo').disabled = false;
+  }
+  $('rjGo').addEventListener('click', rankJoin);
+  $('rjName').addEventListener('keydown', e => { if (e.key === 'Enter') rankJoin(); });
+  $('rjSkip').addEventListener('click', () => { save('rank_skip', today()); $('rankJoin').classList.add('hidden'); });
+  // ランキング画面で名前を変える（ゲストの人。ログインしている人は設定のアカウントから）
+  $('rankNameIn').addEventListener('change', async e => {
+    try { const r = await api('/api/me/name', {method: 'POST', body: JSON.stringify({name: e.target.value}), tok: rankTok()}); save('rank_name', r.name); if (acct) acct.name = r.name; toast('名前を変えました'); drawWorld(); }
+    catch (_) { toast('サーバーにつながりませんでした'); }
+  });
+  // 月間ランキングのごほうび：先月の順位でアイテムがもらえる（起動したとき・登録したときに確認）
+  const RW_MODE = {sixty: '60秒アタック', rank: 'エンドレス'};
+  const itemLabel = k => k.startsWith('pot_') ? potName(k.slice(4)) : (ITEMS[k] ? ITEMS[k].name : k);
+  async function checkRewards(){
+    if (!rankTok()) return;
+    if (running || !$('daily').classList.contains('hidden')) { setTimeout(checkRewards, 2000); return; }   // 毎日のプレゼントや試合が終わってから
+    try {
+      const r = await api('/api/reward', {tok: rankTok()});
+      const list = (r && r.rewards) || []; if (!list.length) return;
+      const x = list[0], its = Object.entries(x.items).map(([k, n]) => itemLabel(k) + ' ×' + n).join('<br>');
+      askChoice('🏆 ' + x.month.replace('-', '年') + '月の月間ランキング<br><b>' + RW_MODE[x.mode] + '　' + x.rank + '位</b>（' + x.total + '人中）<br><small>ごほうび（' + x.label + '）</small><br>' + its,
+        '受け取る', 'あとで',
+        async () => {
+          try {
+            const c = await api('/api/reward/claim', {method: 'POST', body: JSON.stringify({mode: x.mode}), tok: rankTok()});
+            Object.entries(c.reward.items).forEach(([k, n]) => { inv[k] = own(k) + n; });
+            saveInv(); toast('ごほうびを受け取りました'); setTimeout(checkRewards, 600);
+          } catch (e) { toast(e.status === 409 ? 'もう受け取っています' : 'サーバーにつながりませんでした'); }
+        }, () => {});
+    } catch (e) { /* つながらないときは次の起動で */ }
+  }
+  setTimeout(checkRewards, 2500);
   async function drawWorld(){
     markSel('wperiod', wPeriod);
     const box = $('worldList'), note = $('worldNote');
     box.innerHTML = ''; note.textContent = '読み込み中…';
     try {
-      const r = await api('/api/top?mode=' + rankMode + '&limit=20&period=' + wPeriod);
+      const r = await api('/api/top?mode=' + rankMode + '&limit=20&period=' + wPeriod, {tok: rankTok()});
       box.innerHTML = (r.top || []).map(x =>
         '<div class="wrow' + (x.me ? ' me' : '') + '"><span class="rk">' + x.rank +
         '</span><span class="nm2">' + String(x.name).replace(/[<>&]/g, '') + '</span><span class="sc">' + x.score.toLocaleString() + '</span></div>'
       ).join('') || '<div class="wrow"><span class="nm2">まだ記録がありません</span></div>';
-      note.textContent = !acctToken ? 'ログインすると、ランキングに載ります（設定 → アカウント）。'
+      $('rankMe').classList.toggle('hidden', !rankTok());
+      if (rankTok() && document.activeElement !== $('rankNameIn')) $('rankNameIn').value = rankName();
+      note.textContent = !rankTok() ? '60秒アタックかエンドレスを遊び終わったら、名前を入れてランキングに登録できます。毎月の順位でアイテムがもらえます。'
         : r.me && r.me.rank ? ('自分：' + r.me.rank + '位 / ' + r.me.total + '人（' + r.me.best.toLocaleString() + '点）') : 'この期間はまだ記録がありません。';
     } catch (e) {
       note.textContent = 'サーバーにつながりませんでした（まだ準備中です）。';

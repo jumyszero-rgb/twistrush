@@ -6,3 +6,5 @@ functions
 README.md
 node_modules
 .wrangler
+server
+.gitignore

@@ -1,0 +1,457 @@
+// TWIST RUSH サーバー（Cloudflare Workers + D1）
+//   ・ログイン（Google／LINE／Microsoft）  ・セーブの保存と読み込み
+//   ・ゴールドコインの残高（Web・Android・iOSで共通）  ・ランキング（ゲスト登録でも載る）
+// テーブルは最初のアクセスで自動で作る。SESSION_SECRET を入れていなければ、署名用の秘密もデータベースに自動で作る
+// 時刻はすべて UNIX秒（UTC）。
+
+const enc = new TextEncoder(), dec = new TextDecoder();
+const nowSec = () => Math.floor(Date.now() / 1000);
+const SESSION_DAYS = 90;                    // ログイン状態が続く日数
+const SAVE_MAX_BYTES = 400 * 1024;          // セーブ1件の上限
+const GOLD_SOURCES = ['free', 'web', 'google', 'apple'];   // 使うときはこの順に減らす
+const GUEST_PER_IP_DAY = 20;                // 同じ場所から1日に作れるゲストの数
+// テーブル（schema.sql と同じ。何度流しても大丈夫）
+const SCHEMA = [
+  "CREATE TABLE IF NOT EXISTS accounts ( id TEXT PRIMARY KEY, name TEXT NOT NULL DEFAULT '', created_at INTEGER NOT NULL, last_login INTEGER NOT NULL, banned INTEGER NOT NULL DEFAULT 0 )",
+  "CREATE TABLE IF NOT EXISTS identities ( provider TEXT NOT NULL, sub TEXT NOT NULL, account_id TEXT NOT NULL, created_at INTEGER NOT NULL, PRIMARY KEY (provider, sub) )",
+  "CREATE INDEX IF NOT EXISTS idx_ident_account ON identities(account_id)",
+  "CREATE TABLE IF NOT EXISTS saves ( account_id TEXT PRIMARY KEY, rev INTEGER NOT NULL, data TEXT NOT NULL, device TEXT NOT NULL DEFAULT '', updated_at INTEGER NOT NULL )",
+  "CREATE TABLE IF NOT EXISTS wallet ( account_id TEXT NOT NULL, source TEXT NOT NULL, balance INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (account_id, source) )",
+  "CREATE TABLE IF NOT EXISTS ledger ( id INTEGER PRIMARY KEY AUTOINCREMENT, account_id TEXT NOT NULL, source TEXT NOT NULL, delta INTEGER NOT NULL, reason TEXT NOT NULL, ref TEXT NOT NULL, created_at INTEGER NOT NULL )",
+  "CREATE UNIQUE INDEX IF NOT EXISTS idx_ledger_ref ON ledger(account_id, ref, source)",
+  "CREATE INDEX IF NOT EXISTS idx_ledger_time ON ledger(created_at)",
+  "CREATE TABLE IF NOT EXISTS scores ( id INTEGER PRIMARY KEY AUTOINCREMENT, player TEXT NOT NULL, name TEXT NOT NULL, mode TEXT NOT NULL, score INTEGER NOT NULL, blocks INTEGER NOT NULL DEFAULT 0, dur INTEGER NOT NULL DEFAULT 0, ver TEXT NOT NULL DEFAULT '', log TEXT, created_at INTEGER NOT NULL )",
+  "CREATE INDEX IF NOT EXISTS idx_scores_mode_time ON scores(mode, created_at)",
+  "CREATE INDEX IF NOT EXISTS idx_scores_mode_score ON scores(mode, score DESC)",
+  "CREATE INDEX IF NOT EXISTS idx_scores_player ON scores(player, created_at)",
+  "CREATE TABLE IF NOT EXISTS meta ( k TEXT PRIMARY KEY, v TEXT NOT NULL )",
+  "CREATE TABLE IF NOT EXISTS guest_log ( ip TEXT NOT NULL, t INTEGER NOT NULL )",
+  "CREATE INDEX IF NOT EXISTS idx_guest_log ON guest_log(ip, t)",
+  "CREATE TABLE IF NOT EXISTS reward_claims ( account_id TEXT NOT NULL, month TEXT NOT NULL, mode TEXT NOT NULL, created_at INTEGER NOT NULL, PRIMARY KEY (account_id, month, mode) )"
+  ];
+
+// ---------- 小さな道具 ----------
+const b64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const unb64u = s => { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; return Uint8Array.from(atob(s), c => c.charCodeAt(0)); };
+const randId = (n = 16) => b64u(crypto.getRandomValues(new Uint8Array(n)));
+const listOf = s => String(s || '').split(',').map(x => x.trim()).filter(Boolean);
+
+function corsHeaders(env, req) {
+  const origin = req.headers.get('Origin') || '';
+  const allow = listOf(env.ALLOW_ORIGINS);
+  const ok = allow.includes('*') || allow.includes(origin);
+  return {
+    'Access-Control-Allow-Origin': ok ? (origin || '*') : (allow[0] || ''),
+    'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Max-Age': '86400',
+    'Vary': 'Origin',
+  };
+}
+const json = (env, req, obj, status = 200) => new Response(JSON.stringify(obj), {
+  status, headers: { 'Content-Type': 'application/json; charset=utf-8', ...corsHeaders(env, req) },
+});
+const fail = (env, req, msg, status = 400) => json(env, req, { error: msg }, status);
+
+async function hmacKey(secret) {
+  return crypto.subtle.importKey('raw', enc.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign', 'verify']);
+}
+async function aesKey(secret) {
+  const raw = await crypto.subtle.digest('SHA-256', enc.encode('state:' + secret));
+  return crypto.subtle.importKey('raw', raw, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
+}
+// ログイン状態の札（署名つき）
+async function makeSession(env, accountId) {
+  const body = b64u(enc.encode(JSON.stringify({ a: accountId, e: nowSec() + SESSION_DAYS * 86400, v: 1 })));
+  const sig = await crypto.subtle.sign('HMAC', await hmacKey(env.SESSION_SECRET), enc.encode(body));
+  return body + '.' + b64u(sig);
+}
+async function readSession(env, token) {
+  const [body, sig] = String(token || '').split('.');
+  if (!body || !sig) return null;
+  const ok = await crypto.subtle.verify('HMAC', await hmacKey(env.SESSION_SECRET), unb64u(sig), enc.encode(body));
+  if (!ok) return null;
+  try { const p = JSON.parse(dec.decode(unb64u(body))); return p.e > nowSec() ? p : null; } catch (e) { return null; }
+}
+// ログインの途中で持ち回る情報（暗号化して外に出す）
+async function sealState(env, obj) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, await aesKey(env.SESSION_SECRET), enc.encode(JSON.stringify(obj)));
+  return b64u(iv) + '.' + b64u(ct);
+}
+async function openState(env, s) {
+  try {
+    const [iv, ct] = String(s || '').split('.');
+    const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64u(iv) }, await aesKey(env.SESSION_SECRET), unb64u(ct));
+    const o = JSON.parse(dec.decode(pt));
+    return o.exp > nowSec() ? o : null;
+  } catch (e) { return null; }
+}
+const jwtPayload = t => { try { return JSON.parse(dec.decode(unb64u(String(t).split('.')[1]))); } catch (e) { return null; } };
+function cleanName(s) {
+  const t = String(s || '').replace(/[\r\n\t<>]/g, ' ').trim().slice(0, 12);
+  return t || 'ななし';
+}
+
+// ---------- ログインのサービス ----------
+const PROVIDERS = {
+  google: {
+    auth: 'https://accounts.google.com/o/oauth2/v2/auth',
+    token: 'https://oauth2.googleapis.com/token',
+    scope: 'openid profile',
+    id: env => env.GOOGLE_CLIENT_ID, secret: env => env.GOOGLE_CLIENT_SECRET,
+    iss: iss => iss === 'https://accounts.google.com' || iss === 'accounts.google.com',
+  },
+  line: {
+    auth: 'https://access.line.me/oauth2/v2.1/authorize',
+    token: 'https://api.line.me/oauth2/v2.1/token',
+    scope: 'openid profile',
+    id: env => env.LINE_CHANNEL_ID, secret: env => env.LINE_CHANNEL_SECRET,
+    iss: iss => iss === 'https://access.line.me',
+  },
+  microsoft: {
+    auth: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
+    token: 'https://login.microsoftonline.com/common/oauth2/v2.0/token',
+    scope: 'openid profile',
+    id: env => env.MS_CLIENT_ID, secret: env => env.MS_CLIENT_SECRET,
+    iss: iss => /^https:\/\/login\.microsoftonline\.com\/[0-9a-f-]+\/v2\.0$/.test(iss),
+  },
+};
+
+function returnOk(env, ret) {
+  try { const u = new URL(ret); return listOf(env.RETURN_ORIGINS).includes(u.origin); } catch (e) { return false; }
+}
+const callbackUrl = (req, p) => new URL('/auth/' + p + '/callback', req.url).toString();
+const backTo = (ret, params) => Response.redirect(ret.split('#')[0] + '#' + new URLSearchParams(params).toString(), 302);
+
+async function authStart(env, req, p) {
+  const url = new URL(req.url), ret = url.searchParams.get('ret') || '';
+  if (!returnOk(env, ret)) return new Response('戻り先が許可されていません', { status: 400 });
+  const link = url.searchParams.get('link') || '';           // 今のアカウントに、別のログイン方法をつなげるとき
+  if (p === 'dev') {
+    if (env.DEV_LOGIN !== '1') return new Response('not found', { status: 404 });
+    const sub = (url.searchParams.get('sub') || 'tester').slice(0, 40);
+    return finishLogin(env, req, 'dev', sub, 'テスト' + sub.slice(0, 6), ret, link);
+  }
+  const P = PROVIDERS[p]; if (!P || !P.id(env)) return new Response('このログインはまだ使えません', { status: 404 });
+  const verifier = randId(32), nonce = randId(16);
+  const challenge = b64u(await crypto.subtle.digest('SHA-256', enc.encode(verifier)));
+  const state = await sealState(env, { p, ret, v: verifier, n: nonce, link, exp: nowSec() + 600 });
+  const q = new URLSearchParams({
+    response_type: 'code', client_id: P.id(env), redirect_uri: callbackUrl(req, p), scope: P.scope,
+    state, nonce, code_challenge: challenge, code_challenge_method: 'S256',
+  });
+  if (p === 'google') q.set('prompt', 'select_account');
+  return Response.redirect(P.auth + '?' + q.toString(), 302);
+}
+
+async function authCallback(env, req, p) {
+  const url = new URL(req.url);
+  const st = await openState(env, url.searchParams.get('state'));
+  if (!st || st.p !== p) return new Response('ログインの有効期限が切れました。もう一度やり直してください', { status: 400 });
+  if (url.searchParams.get('error')) return backTo(st.ret, { tr_error: 'cancel' });
+  const P = PROVIDERS[p];
+  const body = new URLSearchParams({
+    grant_type: 'authorization_code', code: url.searchParams.get('code') || '', redirect_uri: callbackUrl(req, p),
+    client_id: P.id(env), client_secret: P.secret(env), code_verifier: st.v,
+  });
+  const r = await fetch(P.token, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body });
+  const tok = await r.json().catch(() => ({}));
+  // 受け取りはこのサーバーから相手のサーバーへ直接（TLS）なので、中身の確認は期限・宛先・発行元・nonce で行う
+  const idt = tok.id_token && jwtPayload(tok.id_token);
+  if (!r.ok || !idt) return backTo(st.ret, { tr_error: 'token' });
+  const aud = Array.isArray(idt.aud) ? idt.aud : [idt.aud];
+  if (!aud.includes(P.id(env)) || !P.iss(idt.iss) || idt.exp < nowSec() || (idt.nonce && idt.nonce !== st.n) || !idt.sub)
+    return backTo(st.ret, { tr_error: 'verify' });
+  return finishLogin(env, req, p, String(idt.sub), idt.name || '', st.ret, st.link);
+}
+
+async function finishLogin(env, req, p, sub, name, ret, link) {
+  const t = nowSec();
+  const found = await env.DB.prepare('SELECT account_id FROM identities WHERE provider = ? AND sub = ?').bind(p, sub).first();
+  let accountId = found && found.account_id, isNew = false;
+  if (link) {                                                 // つなげる：今のアカウントに追加
+    const s = await readSession(env, link);
+    if (!s) return backTo(ret, { tr_error: 'link' });
+    if (accountId && accountId !== s.a) return backTo(ret, { tr_error: 'used' });   // ほかのアカウントで使われている
+    if (!accountId) await env.DB.prepare('INSERT INTO identities (provider, sub, account_id, created_at) VALUES (?, ?, ?, ?)').bind(p, sub, s.a, t).run();
+    accountId = s.a;
+  } else if (!accountId) {                                    // はじめて：アカウントを作る
+    accountId = randId(12); isNew = true;
+    await env.DB.batch([
+      env.DB.prepare('INSERT INTO accounts (id, name, created_at, last_login) VALUES (?, ?, ?, ?)').bind(accountId, cleanName(name), t, t),
+      env.DB.prepare('INSERT INTO identities (provider, sub, account_id, created_at) VALUES (?, ?, ?, ?)').bind(p, sub, accountId, t),
+    ]);
+  }
+  const acc = await env.DB.prepare('SELECT banned FROM accounts WHERE id = ?').bind(accountId).first();
+  if (!acc || acc.banned) return backTo(ret, { tr_error: 'banned' });
+  await env.DB.prepare('UPDATE accounts SET last_login = ? WHERE id = ?').bind(t, accountId).run();
+  return backTo(ret, { tr_token: await makeSession(env, accountId), tr_new: isNew ? '1' : '0', tr_p: p });
+}
+
+// ---------- ログインが必要なAPI ----------
+async function who(env, req) {
+  const m = /^Bearer\s+(.+)$/.exec(req.headers.get('Authorization') || '');
+  const s = m && await readSession(env, m[1]);
+  if (!s) return null;
+  const acc = await env.DB.prepare('SELECT id, name, banned, created_at FROM accounts WHERE id = ?').bind(s.a).first();
+  return acc && !acc.banned ? acc : null;
+}
+async function walletOf(env, id) {
+  const { results } = await env.DB.prepare('SELECT source, balance FROM wallet WHERE account_id = ?').bind(id).all();
+  const by = {}; GOLD_SOURCES.forEach(k => by[k] = 0);
+  (results || []).forEach(r => by[r.source] = r.balance);
+  return { total: GOLD_SOURCES.reduce((a, k) => a + Math.max(0, by[k]), 0), by };
+}
+// ゴールドコインを増やす（購入・配布）。同じ ref は2回足さない
+async function addGold(env, id, source, amount, reason, ref) {
+  const t = nowSec();
+  const res = await env.DB.batch([
+    env.DB.prepare('INSERT OR IGNORE INTO ledger (account_id, source, delta, reason, ref, created_at) VALUES (?, ?, ?, ?, ?, ?)').bind(id, source, amount, reason, ref, t),
+  ]);
+  if (!res[0].meta.changes) return false;                     // もう処理済み
+  await env.DB.prepare('INSERT INTO wallet (account_id, source, balance) VALUES (?, ?, ?) ON CONFLICT(account_id, source) DO UPDATE SET balance = balance + excluded.balance').bind(id, source, amount).run();
+  return true;
+}
+
+async function api(env, req, url) {
+  const p = url.pathname, M = req.method;
+  if (p === '/api/ping') return json(env, req, { ok: true, now: nowSec(), logins: Object.keys(PROVIDERS).filter(k => PROVIDERS[k].id(env)).concat(env.DEV_LOGIN === '1' ? ['dev'] : []) });
+
+  // ランキング一覧はだれでも見られる
+  if (p === '/api/top' && M === 'GET') return rankTop(env, req, url);
+  // ゲスト登録：名前だけでアカウントを作る（ランキング用）。あとで Google などをつなげられる
+  if (p === '/api/guest' && M === 'POST') {
+    if (env.GUEST_SIGNUP === '0') return fail(env, req, 'ゲスト登録は終わりました。ログインしてください', 403);
+    const b = await req.json().catch(() => ({}));
+    const t = nowSec(), ip = (req.headers.get('CF-Connecting-IP') || 'local').slice(0, 64);
+    const c = await env.DB.prepare('SELECT COUNT(*) AS c FROM guest_log WHERE ip = ? AND t > ?').bind(ip, t - 86400).first();
+    if (c && c.c >= GUEST_PER_IP_DAY) return fail(env, req, '登録が多すぎます。時間をおいてください', 429);
+    const id = randId(12), name = cleanName(b.name);
+    await env.DB.batch([
+      env.DB.prepare('INSERT INTO accounts (id, name, created_at, last_login) VALUES (?, ?, ?, ?)').bind(id, name, t, t),
+      env.DB.prepare('INSERT INTO identities (provider, sub, account_id, created_at) VALUES (?, ?, ?, ?)').bind('guest', id, id, t),
+      env.DB.prepare('INSERT INTO guest_log (ip, t) VALUES (?, ?)').bind(ip, t),
+      env.DB.prepare('DELETE FROM guest_log WHERE t < ?').bind(t - 86400 * 2),
+    ]);
+    return json(env, req, { ok: true, token: await makeSession(env, id), name });
+  }
+
+  const me = await who(env, req);
+  if (!me) return fail(env, req, 'ログインしてください', 401);
+
+  if (p === '/api/me' && M === 'GET') {
+    const { results } = await env.DB.prepare('SELECT provider FROM identities WHERE account_id = ?').bind(me.id).all();
+    const sv = await env.DB.prepare('SELECT rev, updated_at, device FROM saves WHERE account_id = ?').bind(me.id).first();
+    return json(env, req, { id: me.id, name: me.name, since: me.created_at, logins: (results || []).map(r => r.provider), gold: await walletOf(env, me.id), save: sv ? { rev: sv.rev, updated: sv.updated_at, device: sv.device } : null });
+  }
+  if (p === '/api/me/name' && M === 'POST') {
+    const b = await req.json().catch(() => ({}));
+    const name = cleanName(b.name);
+    await env.DB.batch([
+      env.DB.prepare('UPDATE accounts SET name = ? WHERE id = ?').bind(name, me.id),
+      env.DB.prepare('UPDATE scores SET name = ? WHERE player = ?').bind(name, me.id),
+    ]);
+    return json(env, req, { ok: true, name });
+  }
+  // アカウントを消す（ストアの決まりで必要）。ゴールドコインの記録は会計のため名前をはずして残す
+  if (p === '/api/me' && M === 'DELETE') {
+    const b = await req.json().catch(() => ({}));
+    if (b.confirm !== 'DELETE') return fail(env, req, '確認の文字が違います');
+    await env.DB.batch([
+      env.DB.prepare('DELETE FROM identities WHERE account_id = ?').bind(me.id),
+      env.DB.prepare('DELETE FROM saves WHERE account_id = ?').bind(me.id),
+      env.DB.prepare('DELETE FROM wallet WHERE account_id = ?').bind(me.id),
+      env.DB.prepare('DELETE FROM scores WHERE player = ?').bind(me.id),
+      env.DB.prepare("UPDATE ledger SET account_id = 'deleted' WHERE account_id = ?").bind(me.id),
+      env.DB.prepare('DELETE FROM accounts WHERE id = ?').bind(me.id),
+    ]);
+    return json(env, req, { ok: true });
+  }
+
+  // セーブ
+  if (p === '/api/save' && M === 'GET') {
+    const sv = await env.DB.prepare('SELECT rev, data, updated_at, device FROM saves WHERE account_id = ?').bind(me.id).first();
+    return json(env, req, sv ? { rev: sv.rev, data: JSON.parse(sv.data), updated: sv.updated_at, device: sv.device } : { rev: 0, data: null });
+  }
+  if (p === '/api/save' && M === 'PUT') {
+    const raw = await req.text();
+    if (raw.length > SAVE_MAX_BYTES) return fail(env, req, 'セーブが大きすぎます', 413);
+    let b; try { b = JSON.parse(raw); } catch (e) { return fail(env, req, 'JSONが読めません'); }
+    if (!b.data || typeof b.data !== 'object') return fail(env, req, 'data がありません');
+    const cur = await env.DB.prepare('SELECT rev, data, updated_at, device FROM saves WHERE account_id = ?').bind(me.id).first();
+    const curRev = cur ? cur.rev : 0;
+    // ほかの端末が先に保存していたら、上書きせずにサーバーの方を返す（端末側でどちらを使うか決める）
+    if (!b.force && Number(b.baseRev) !== curRev) return json(env, req, { conflict: true, rev: curRev, data: cur ? JSON.parse(cur.data) : null, updated: cur ? cur.updated_at : 0, device: cur ? cur.device : '' }, 409);
+    const rev = curRev + 1, t = nowSec(), device = String(b.device || '').slice(0, 40), data = JSON.stringify(b.data);
+    await env.DB.prepare('INSERT INTO saves (account_id, rev, data, device, updated_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT(account_id) DO UPDATE SET rev = excluded.rev, data = excluded.data, device = excluded.device, updated_at = excluded.updated_at').bind(me.id, rev, data, device, t).run();
+    return json(env, req, { ok: true, rev, updated: t });
+  }
+
+  // ゴールドコイン
+  if (p === '/api/wallet' && M === 'GET') return json(env, req, await walletOf(env, me.id));
+  if (p === '/api/wallet/spend' && M === 'POST') {
+    const b = await req.json().catch(() => ({}));
+    const amount = Math.floor(Number(b.amount)), reason = String(b.reason || 'spend').slice(0, 24), ref = String(b.ref || '').slice(0, 64);
+    if (!(amount > 0 && amount <= 100000)) return fail(env, req, '数が不正です');
+    if (!/^[A-Za-z0-9_-]{8,64}$/.test(ref)) return fail(env, req, 'ref が不正です');
+    const done = await env.DB.prepare('SELECT 1 FROM ledger WHERE account_id = ? AND ref = ? LIMIT 1').bind(me.id, ref).first();
+    if (done) return json(env, req, { ok: true, again: true, gold: await walletOf(env, me.id) });   // 同じ支払いを2回しない
+    const w = await walletOf(env, me.id);
+    if (w.total < amount) return json(env, req, { error: 'ゴールドコインが足りません', gold: w }, 402);
+    let left = amount; const stmts = [], t = nowSec();
+    for (const src of GOLD_SOURCES) {
+      const take = Math.min(left, Math.max(0, w.by[src])); if (!take) continue;
+      stmts.push(env.DB.prepare('UPDATE wallet SET balance = balance - ? WHERE account_id = ? AND source = ?').bind(take, me.id, src));
+      stmts.push(env.DB.prepare('INSERT INTO ledger (account_id, source, delta, reason, ref, created_at) VALUES (?, ?, ?, ?, ?, ?)').bind(me.id, src, -take, 'spend:' + reason, ref, t));
+      left -= take; if (!left) break;
+    }
+    await env.DB.batch(stmts);
+    return json(env, req, { ok: true, gold: await walletOf(env, me.id) });
+  }
+
+  // テスト用：ゴールドコインを配る（DEV_LOGIN = "1" のときだけ動く）
+  if (p === '/api/dev/grant' && M === 'POST' && env.DEV_LOGIN === '1') {
+    const b = await req.json().catch(() => ({}));
+    const amount = Math.max(1, Math.min(100000, Math.floor(Number(b.amount) || 1000)));
+    await addGold(env, me.id, 'free', amount, 'grant:test', 'test-' + randId(8));
+    return json(env, req, { ok: true, gold: await walletOf(env, me.id) });
+  }
+
+  // ランキングに登録
+  if (p === '/api/score' && M === 'POST') return rankPost(env, req, me);
+  // 先月の順位のごほうび（見る・受け取る）
+  if (p === '/api/reward' && M === 'GET') return json(env, req, { rewards: await monthRewards(env, me.id) });
+  if (p === '/api/reward/claim' && M === 'POST') {
+    const b = await req.json().catch(() => ({}));
+    const r = (await monthRewards(env, me.id)).find(x => x.mode === b.mode);
+    if (!r) return fail(env, req, '受け取れるごほうびがありません', 404);
+    const res = await env.DB.prepare('INSERT OR IGNORE INTO reward_claims (account_id, month, mode, created_at) VALUES (?, ?, ?, ?)').bind(me.id, r.month, r.mode, nowSec()).run();
+    if (!res.meta.changes) return fail(env, req, 'もう受け取りました', 409);
+    return json(env, req, { ok: true, reward: r });
+  }
+
+  return fail(env, req, 'not found', 404);
+}
+
+// ---------- ランキング ----------
+const PERIODS = ['day', 'week', 'month', 'all'];
+// 今日・今週・今月の区切りは日本時間（RANK_TZ_HOURS で変えられる）
+let TZ = 9 * 3600;
+function since(period, t) {
+  if (period === 'all') return 0;
+  return sinceUtc(period, t + TZ) - TZ;
+}
+function sinceUtc(period, t) {
+  const d = new Date(t * 1000);
+  if (period === 'day') return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) / 1000;
+  if (period === 'week') return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - (d.getUTCDay() + 6) % 7) / 1000;
+  if (period === 'month') return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1) / 1000;
+  return 0;
+}
+async function myRank(env, mode, period, player, t) {
+  const from = since(period, t);
+  const best = await env.DB.prepare('SELECT MAX(score) AS s FROM scores WHERE mode = ? AND player = ? AND created_at >= ?').bind(mode, player, from).first();
+  const s = best && best.s != null ? best.s : null;
+  if (s == null) return { best: null, rank: null, total: null };
+  const above = await env.DB.prepare('SELECT COUNT(*) AS c FROM (SELECT player, MAX(score) AS m FROM scores WHERE mode = ? AND created_at >= ? GROUP BY player) WHERE m > ?').bind(mode, from, s).first();
+  const total = await env.DB.prepare('SELECT COUNT(DISTINCT player) AS c FROM scores WHERE mode = ? AND created_at >= ?').bind(mode, from).first();
+  return { best: s, rank: (above.c || 0) + 1, total: total.c || 0 };
+}
+async function rankTop(env, req, url) {
+  const t = nowSec();
+  const mode = (url.searchParams.get('mode') || 'sixty').slice(0, 16);
+  const period = PERIODS.includes(url.searchParams.get('period')) ? url.searchParams.get('period') : 'day';
+  const limit = Math.min(100, Math.max(1, Number(url.searchParams.get('limit') || 20)));
+  const { results } = await env.DB.prepare('SELECT player, name, MAX(score) AS score, MAX(created_at) AS at FROM scores WHERE mode = ? AND created_at >= ? GROUP BY player ORDER BY score DESC, at ASC LIMIT ?').bind(mode, since(period, t), limit).all();
+  const me = await who(env, req);
+  return json(env, req, {
+    period, mode,
+    top: (results || []).map((r, i) => ({ rank: i + 1, name: r.name, score: r.score, me: !!(me && r.player === me.id) })),
+    me: me ? await myRank(env, mode, period, me.id, t) : null,
+  });
+}
+async function rankPost(env, req, me) {
+  const t = nowSec();
+  const b = await req.json().catch(() => null); if (!b) return fail(env, req, 'JSONが読めません');
+  const row = {
+    mode: String(b.mode || 'sixty').slice(0, 16), score: Math.floor(Number(b.score)),
+    blocks: Math.floor(Number(b.blocks || 0)), dur: Math.floor(Number(b.dur || 0)),
+    ver: String(b.ver || '').slice(0, 16), log: b.log ? String(b.log).slice(0, 20000) : null,
+  };
+  const maxPer = Number(env.MAX_SCORE_PER_BLOCK || 200), minSec = Number(env.MIN_SEC_PER_BLOCK || 0.12);
+  if (!Number.isFinite(row.score) || row.score < 0 || row.score > 50000000) return fail(env, req, 'スコアの値が不正です');
+  if (row.score > 0 && row.blocks === 0) return fail(env, req, 'ブロックを消さずに得点しています');
+  if (row.blocks > 0 && row.score > row.blocks * maxPer) return fail(env, req, 'スコアがブロック数に対して多すぎます');
+  if (row.blocks > 0 && row.dur > 0 && row.dur < row.blocks * minSec) return fail(env, req, 'プレイ時間が短すぎます');
+  const last = await env.DB.prepare('SELECT created_at FROM scores WHERE player = ? ORDER BY created_at DESC LIMIT 1').bind(me.id).first();
+  if (last && t - last.created_at < 10) return fail(env, req, '送信が早すぎます', 429);
+  await env.DB.prepare('INSERT INTO scores (player, name, mode, score, blocks, dur, ver, log, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)').bind(me.id, me.name, row.mode, row.score, row.blocks, row.dur, row.ver, row.log, t).run();
+  const ranks = {}; for (const pd of PERIODS) ranks[pd] = await myRank(env, row.mode, pd, me.id, t);
+  return json(env, req, { ok: true, ranks });
+}
+
+// ---------- 月間ランキングのごほうび ----------
+// 先月（日本時間）の自己ベストの順位で決まる。中身はここで変えられる（ゲームの更新なしで変わる）
+const MONTH_REWARDS = [
+  { upTo: 1,   label: '1位',       items: { pot_SR: 1, refresh100: 3, star9: 1 } },
+  { upTo: 3,   label: '2〜3位',    items: { pot_R: 2, refresh80: 3, star6: 1 } },
+  { upTo: 10,  label: '4〜10位',   items: { pot_N: 3, refresh50: 3, star3: 2 } },
+  { upTo: 50,  label: '11〜50位',  items: { refresh30: 3, slow: 1 } },
+  { upTo: 100, label: '51〜100位', items: { refresh30: 2 } },
+  { upTo: 0,   label: '参加賞',    items: { refresh30: 1 } },          // 0 は「それ以下ぜんぶ」
+];
+const REWARD_MODES = ['sixty', 'rank'];
+function lastMonth(t) {
+  const to = since('month', t), from = since('month', to - 1);
+  const d = new Date((from + TZ) * 1000);
+  return { from, to, key: d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0') };
+}
+async function monthRewards(env, player) {
+  const m = lastMonth(nowSec()), out = [];
+  for (const mode of REWARD_MODES) {
+    const best = await env.DB.prepare('SELECT MAX(score) AS s FROM scores WHERE mode = ? AND player = ? AND created_at >= ? AND created_at < ?').bind(mode, player, m.from, m.to).first();
+    if (!best || best.s == null) continue;
+    const done = await env.DB.prepare('SELECT 1 FROM reward_claims WHERE account_id = ? AND month = ? AND mode = ?').bind(player, m.key, mode).first();
+    if (done) continue;
+    const above = await env.DB.prepare('SELECT COUNT(*) AS c FROM (SELECT player, MAX(score) AS b FROM scores WHERE mode = ? AND created_at >= ? AND created_at < ? GROUP BY player) WHERE b > ?').bind(mode, m.from, m.to, best.s).first();
+    const total = await env.DB.prepare('SELECT COUNT(DISTINCT player) AS c FROM scores WHERE mode = ? AND created_at >= ? AND created_at < ?').bind(mode, m.from, m.to).first();
+    const rank = (above.c || 0) + 1, tier = MONTH_REWARDS.find(x => !x.upTo || rank <= x.upTo);
+    out.push({ month: m.key, mode, rank, total: total.c || 0, best: best.s, label: tier.label, items: tier.items });
+  }
+  return out;
+}
+
+// ---------- 準備（テーブルを作る・署名用の秘密を用意する）。1つの実行環境につき1回だけ ----------
+let ready = null;
+function prepared(env) {
+  if (!ready) ready = (async () => {
+    await env.DB.batch(SCHEMA.map(q => env.DB.prepare(q)));
+    let secret = env.SESSION_SECRET;
+    if (!secret) {
+      await env.DB.prepare("INSERT OR IGNORE INTO meta (k, v) VALUES ('session_secret', ?)").bind(randId(48)).run();
+      secret = (await env.DB.prepare("SELECT v FROM meta WHERE k = 'session_secret'").first()).v;
+    }
+    if (env.RANK_TZ_HOURS != null && env.RANK_TZ_HOURS !== '') TZ = Number(env.RANK_TZ_HOURS) * 3600;
+    return secret;
+  })().catch(e => { ready = null; throw e; });
+  return ready.then(secret => Object.assign({}, env, { SESSION_SECRET: secret }));
+}
+
+// ---------- 入口 ----------
+export default {
+  async fetch(req, env) {
+    const url = new URL(req.url);
+    if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders(env, req) });
+    try {
+      env = await prepared(env);
+      const m = /^\/auth\/([a-z]+)\/(start|callback)$/.exec(url.pathname);
+      if (m) return m[2] === 'start' ? authStart(env, req, m[1]) : authCallback(env, req, m[1]);
+      if (url.pathname.startsWith('/api/')) return await api(env, req, url);
+      return new Response('TWIST RUSH server', { status: 200 });
+    } catch (e) {
+      return fail(env, req, 'サーバーのエラー：' + (e && e.message || e), 500);
+    }
+  },
+};
+// addGold() は、あとで Stripe・ストアの購入通知を受けたときに使う

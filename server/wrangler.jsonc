@@ -1,0 +1,23 @@
+{
+  // TWIST RUSH サーバー（アカウント・クラウドセーブ・ゴールドコイン・ランキング）
+  // GitHub の twistrush リポジトリの server フォルダから、Cloudflare Workers Builds で自動公開する
+  "name": "twistrush-server",
+  "main": "src/index.js",
+  "compatibility_date": "2025-09-01",
+  // サーバーの住所（twistrush.com は Cloudflare のドメインなので、公開すると自動でつながる）
+  "routes": [{ "pattern": "api.twistrush.com", "custom_domain": true }],
+  // データベース（D1）。はじめての公開のときに自動で作られる
+  "d1_databases": [{ "binding": "DB", "database_name": "twistrush-db" }],
+  // ダッシュボードで入れた秘密の値（ログイン用のIDなど）を、公開のたびに消さない
+  "keep_vars": true,
+  "vars": {
+    "RETURN_ORIGINS": "https://twistrush.com,https://www.twistrush.com,http://localhost:8788",
+    "ALLOW_ORIGINS": "https://twistrush.com,https://www.twistrush.com,http://localhost:8788",
+    "MAX_SCORE_PER_BLOCK": "200",
+    "MIN_SEC_PER_BLOCK": "0.12",
+    "RANK_TZ_HOURS": "9",
+    "DEV_LOGIN": "0",
+    // ゲスト登録（ログインなしでランキングに載る）。本番でログインだけにするときは "0" にする
+    "GUEST_SIGNUP": "1"
+  }
+}
