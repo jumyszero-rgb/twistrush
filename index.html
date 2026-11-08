@@ -738,6 +738,9 @@
   .botrow{display:flex;justify-content:center;align-items:center;gap:6px;margin-bottom:4px;}
   .botrow .skillbar{margin:0;flex-wrap:nowrap;gap:6px;}
   .sqbtn{width:44px;height:44px;padding:0;font-size:20px;flex:none;border-radius:12px;}
+  /* 一時停止と設定：いちばん下の段（右はし） */
+  .sysrow{display:flex;justify-content:flex-end;align-items:center;gap:8px;padding:0 4px;margin-bottom:2px;}
+  .sysrow .sqbtn{width:40px;height:34px;font-size:17px;border-radius:10px;}
   .skbtn,.skbtn.main,.skbtn.sub{flex:none;width:52px;height:52px;min-width:0;padding:0;border-radius:12px;overflow:hidden;background:rgba(20,10,40,.6);}
   .skbtn .skic{position:absolute;inset:2px;width:auto;height:auto;margin:0;display:block;} .skbtn .skic .cicon{border-radius:9px;width:100% !important;height:100% !important;}
   .skbtn::after{content:'';position:absolute;left:0;right:0;top:0;height:calc((100 - var(--p)) * 1%);background:rgba(10,5,25,.62);pointer-events:none;}
@@ -1297,7 +1300,8 @@
   <div class="controls">
     <div class="itembar hidden" id="itemBar"></div>
     <div class="combo" id="combo" aria-live="polite"></div>
-    <div class="botrow"><div class="skillbar hidden" id="skillBar"></div><button class="iconbtn sqbtn" id="pauseBtn" aria-label="一時停止" style="font-size:15px;letter-spacing:-2px;">❚❚</button><button class="iconbtn sqbtn" id="gearBtn" aria-label="設定">⚙</button></div>
+    <div class="botrow"><div class="skillbar hidden" id="skillBar"></div></div>
+    <div class="sysrow"><button class="iconbtn sqbtn" id="pauseBtn" aria-label="一時停止" style="font-size:15px;letter-spacing:-2px;">❚❚</button><button class="iconbtn sqbtn" id="gearBtn" aria-label="設定">⚙</button></div>
     <div class="hint" id="hint"></div>
   </div>
 </div>
