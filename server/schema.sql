@@ -128,3 +128,33 @@ CREATE TABLE IF NOT EXISTS ratings_month (
   PRIMARY KEY (account_id, kind, month)
 );
 CREATE INDEX IF NOT EXISTS idx_ratings_month ON ratings_month(kind, month, rate DESC);
+
+-- オートバトル：防衛チーム（ほかの人の対戦相手になる）
+CREATE TABLE IF NOT EXISTS defense (
+  account_id  TEXT PRIMARY KEY,
+  team        TEXT NOT NULL,             -- JSON（4人ぶんのステータスと技の強さ）
+  power       INTEGER NOT NULL,          -- 戦闘力
+  updated_at  INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_defense_power ON defense(power);
+-- オートバトル：アリーナコイン（交換専用）・ポイント・1日の挑戦回数
+CREATE TABLE IF NOT EXISTS arena (
+  account_id  TEXT PRIMARY KEY,
+  coins       INTEGER NOT NULL DEFAULT 0,
+  points      INTEGER NOT NULL DEFAULT 1000,
+  win         INTEGER NOT NULL DEFAULT 0,
+  lose        INTEGER NOT NULL DEFAULT 0,
+  day         TEXT NOT NULL DEFAULT '',
+  tries       INTEGER NOT NULL DEFAULT 0
+);
+-- オートバトル：防衛の記録（だれに挑まれて、勝ったか）
+CREATE TABLE IF NOT EXISTS arena_log (
+  id             INTEGER PRIMARY KEY AUTOINCREMENT,
+  defender       TEXT NOT NULL,
+  attacker       TEXT NOT NULL,
+  attacker_name  TEXT NOT NULL,
+  attacker_cc    TEXT NOT NULL DEFAULT '',
+  win            INTEGER NOT NULL,       -- 1＝防衛成功
+  created_at     INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_arena_log ON arena_log(defender, created_at);

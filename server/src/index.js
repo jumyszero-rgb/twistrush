@@ -1,3 +1,4 @@
+import { arenaHome, arenaSetDefense, arenaFight, arenaBuy } from './arena.js';
 import { Lobby, Room, MEDAL, MEDAL_SHOP, VS_KINDS, medalOf, medalDaily, medalTake, vsTop, vsRewards, vsClaim } from './vs.js';
 export { Lobby, Room };
 // TWIST RUSH サーバー（Cloudflare Workers + D1）
@@ -36,7 +37,12 @@ const SCHEMA = [
   "CREATE TABLE IF NOT EXISTS ratings ( account_id TEXT NOT NULL, kind TEXT NOT NULL, rate INTEGER NOT NULL, win INTEGER NOT NULL DEFAULT 0, lose INTEGER NOT NULL DEFAULT 0, draw INTEGER NOT NULL DEFAULT 0, updated_at INTEGER NOT NULL, PRIMARY KEY (account_id, kind) )",
   "CREATE INDEX IF NOT EXISTS idx_ratings ON ratings(kind, rate DESC)",
   "CREATE TABLE IF NOT EXISTS ratings_month ( account_id TEXT NOT NULL, kind TEXT NOT NULL, month TEXT NOT NULL, rate INTEGER NOT NULL, games INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (account_id, kind, month) )",
-  "CREATE INDEX IF NOT EXISTS idx_ratings_month ON ratings_month(kind, month, rate DESC)"
+  "CREATE INDEX IF NOT EXISTS idx_ratings_month ON ratings_month(kind, month, rate DESC)",
+  "CREATE TABLE IF NOT EXISTS defense ( account_id TEXT PRIMARY KEY, team TEXT NOT NULL, power INTEGER NOT NULL, updated_at INTEGER NOT NULL )",
+  "CREATE INDEX IF NOT EXISTS idx_defense_power ON defense(power)",
+  "CREATE TABLE IF NOT EXISTS arena ( account_id TEXT PRIMARY KEY, coins INTEGER NOT NULL DEFAULT 0, points INTEGER NOT NULL DEFAULT 1000, win INTEGER NOT NULL DEFAULT 0, lose INTEGER NOT NULL DEFAULT 0, day TEXT NOT NULL DEFAULT '', tries INTEGER NOT NULL DEFAULT 0 )",
+  "CREATE TABLE IF NOT EXISTS arena_log ( id INTEGER PRIMARY KEY AUTOINCREMENT, defender TEXT NOT NULL, attacker TEXT NOT NULL, attacker_name TEXT NOT NULL, attacker_cc TEXT NOT NULL DEFAULT '', win INTEGER NOT NULL, created_at INTEGER NOT NULL )",
+  "CREATE INDEX IF NOT EXISTS idx_arena_log ON arena_log(defender, created_at)"
   ];
 
 // ---------- 小さな道具 ----------
@@ -330,6 +336,14 @@ async function api(env, req, url) {
 
   // ランキングに登録
   if (p === '/api/score' && M === 'POST') { await setCountry(env, req, me.id); return rankPost(env, req, me); }
+  // ---- オートバトル（オフライン対戦）----
+  if (p === '/api/arena' && M === 'GET') return json(env, req, await arenaHome(env, me, nowSec()));
+  if (p.startsWith('/api/arena/') && M === 'POST') {
+    const b = await req.json().catch(() => ({})), op = p.slice(11), t = nowSec();
+    const me2 = Object.assign({}, me, { cc: (await env.DB.prepare('SELECT country FROM accounts WHERE id = ?').bind(me.id).first() || {}).country || '' });
+    const r = op === 'defense' ? await arenaSetDefense(env, me2, b.team, t) : op === 'fight' ? await arenaFight(env, me2, b, t) : op === 'buy' ? await arenaBuy(env, me2, String(b.k || ''), t) : { error: 'not found' };
+    return r.error ? fail(env, req, r.error, 409) : json(env, req, r);
+  }
   // ---- 対戦の月間プレゼント ----
   if (p === '/api/vs/reward' && M === 'GET') return json(env, req, { rewards: await vsRewards(env, me.id) });
   if (p === '/api/vs/reward/claim' && M === 'POST') { const b = await req.json().catch(() => ({})); const r = await vsClaim(env, me.id, String(b.kind || '')); return r.error ? fail(env, req, r.error, 409) : json(env, req, r); }

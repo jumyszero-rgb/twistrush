@@ -318,6 +318,56 @@
   .onlres .or-again:disabled{opacity:.5;}
   .onlres .or-sub{color:#fff;background:rgba(255,255,255,.16);}
   .onlres.lose{background:radial-gradient(120% 90% at 50% 0%,#3a3f58 0%,#1c1f30 60%,#10121c 100%);border-color:#8a90b0;}
+
+  /* ===== オートバトル ===== */
+  .ar-head{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
+  .ar-head span{flex:1;min-width:90px;padding:8px;border-radius:12px;background:rgba(255,255,255,.08);text-align:center;font-size:11px;color:#cbb8ff;}
+  .ar-head b{display:block;font-size:20px;color:#fff;}
+  .ar-cand{display:flex;align-items:center;gap:8px;padding:10px;border-radius:14px;margin-top:8px;background:linear-gradient(90deg,rgba(255,95,158,.18),rgba(122,92,255,.18));border:1.5px solid rgba(255,255,255,.2);}
+  .ar-cand .ar-info{flex:1;min-width:0;font-size:12px;color:#efe7ff;}
+  .ar-cand .ar-info b{display:block;font-size:14px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .ar-cand .ar-team{display:flex;gap:3px;margin-top:4px;}
+  .ar-cand .ar-team .olav{width:30px;height:30px;border-width:1px;border-radius:6px;}
+  .ar-cand button{padding:10px 14px;border:0;border-radius:12px;font-weight:900;color:#fff;background:linear-gradient(#ff5f9e,#c03a7a);box-shadow:0 3px 0 #7a1f4a;}
+  .ar-cand button:disabled{opacity:.4;}
+  .ar-pw{font-weight:900;color:#ffd24a;}
+  .ar-log{font-size:12px;color:#efe7ff;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.08);}
+  .abat{position:fixed;inset:0;z-index:72;display:flex;flex-direction:column;background:radial-gradient(120% 70% at 50% 50%,#3a2366,#0e0620 80%);color:#fff;overflow:hidden;padding:12px 10px calc(12px + env(safe-area-inset-bottom));}
+  .abat.hidden{display:none;}
+  .ab-top{display:flex;justify-content:space-between;align-items:center;font-size:13px;}
+  .ab-top b{font-size:15px;}
+  .ab-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0;}
+  .ab-u{position:relative;text-align:center;transition:transform .2s,opacity .5s,filter .5s;}
+  .ab-u .olav{width:100%;height:auto;aspect-ratio:1;border-radius:14px;border:3px solid #fff;box-shadow:0 4px 14px rgba(0,0,0,.4);}
+  .ab-en .ab-u .olav{border-color:#ff9bd0;}
+  .ab-me .ab-u .olav{border-color:#9bd0ff;}
+  .ab-u.lead .olav{box-shadow:0 0 16px rgba(255,210,74,.9);}
+  .ab-u .hp{height:8px;margin-top:5px;border-radius:5px;background:rgba(255,255,255,.18);overflow:hidden;}
+  .ab-u .hp i{display:block;height:100%;background:linear-gradient(90deg,#3ddc97,#9dffb0);transition:width .3s;}
+  .ab-u .hp i.mid{background:linear-gradient(90deg,#ffc23d,#ffe08a);} .ab-u .hp i.low{background:linear-gradient(90deg,#ff5f7a,#ff9bb0);}
+  .ab-u .ch{height:4px;margin-top:2px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden;} .ab-u .ch i{display:block;height:100%;background:#b89bff;transition:width .3s;}
+  .ab-u.act{transform:translateY(-12px) scale(1.08);}
+  .ab-en .ab-u.act{transform:translateY(12px) scale(1.08);}
+  .ab-u.ko{opacity:.35;filter:grayscale(1);}
+  .ab-u.shake{animation:abShake .3s;}
+  .ab-u .buf{position:absolute;top:-6px;right:-4px;font-size:14px;}
+  @keyframes abShake{0%,100%{transform:none;}25%{transform:translateX(-5px);}75%{transform:translateX(5px);}}
+  .ab-mid{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;min-height:110px;position:relative;}
+  .ab-vs{font-size:34px;font-weight:900;font-style:italic;color:#ffd24a;text-shadow:0 3px 0 #8a4b00;opacity:.6;}
+  .ab-sk{position:absolute;left:-10px;right:-10px;padding:10px;text-align:center;font-weight:900;font-size:20px;background:linear-gradient(90deg,transparent,rgba(0,0,0,.85) 15%,rgba(0,0,0,.85) 85%,transparent);animation:abSk .9s ease-out forwards;}
+  .ab-sk.og{background:linear-gradient(90deg,transparent,rgba(184,134,11,.95) 15%,rgba(255,215,90,.95) 50%,rgba(184,134,11,.95) 85%,transparent);color:#3a2000;}
+  .ab-sk.en{background:linear-gradient(90deg,transparent,rgba(120,0,80,.9) 15%,rgba(200,30,120,.9) 50%,rgba(120,0,80,.9) 85%,transparent);color:#fff;}
+  @keyframes abSk{0%{transform:scaleX(0);opacity:0;}15%{transform:none;opacity:1;}80%{opacity:1;}100%{opacity:0;}}
+  .ab-shot{position:fixed;z-index:75;width:16px;height:16px;border-radius:50%;pointer-events:none;background:radial-gradient(#fff,#ffd24a);box-shadow:0 0 14px #ffd24a;transition:left .28s ease-in,top .28s ease-in;}
+  .ab-shot.en{background:radial-gradient(#fff,#ff5f9e);box-shadow:0 0 14px #ff5f9e;}
+  .ab-num{position:fixed;z-index:76;font-weight:900;font-size:20px;pointer-events:none;text-shadow:0 2px 0 rgba(0,0,0,.6);animation:ooFly .9s ease-out forwards;}
+  .ab-num.dmg{color:#fff;} .ab-num.crit{color:#ffd24a;font-size:26px;} .ab-num.heal{color:#7dff8a;}
+  .ab-ctl{display:flex;gap:8px;}
+  .ab-ctl button{flex:1;padding:10px;border-radius:12px;border:0;font-weight:900;color:#fff;background:rgba(255,255,255,.15);}
+  .ab-res{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:rgba(10,4,24,.82);animation:rkFade .4s both;}
+  .ab-res h2{margin:0;font-size:52px;font-weight:900;font-style:italic;color:#ffd24a;text-shadow:0 4px 0 #8a4b00,0 0 24px rgba(255,210,74,.8);}
+  .ab-res.lose h2{color:#c9cfe8;text-shadow:0 4px 0 #3a3f58;}
+  .ab-res .rkres{width:min(320px,92%);}
   .rjoin.hidden,.rkres.hidden,#rankMe.hidden{display:none;}
   .prz{margin-top:12px;padding:10px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,210,74,.5);}
   .prz-h{font-weight:900;color:#ffe9a8;font-size:15px;}
@@ -1342,6 +1392,8 @@
       <div class="how-body" id="olBody"></div>
       <div class="how-foot"><button class="btn" id="onlineClose">とじる</button></div>
     </div>
+    <!-- オートバトルの戦闘 -->
+    <div class="abat hidden" id="aBat"></div>
     <!-- 対戦の始まり（VS） -->
     <div class="vsintro hidden" id="vsIntro"></div>
 
@@ -5003,7 +5055,8 @@
       };
       olMedalShow(); return;
     }
-    if (olView === 'shop') return drawOlShop();
+    if (olView === 'shop' || olView === 'ashop') return drawOlShop();
+    if (olKind === 'auto' && olView === 'top') return drawArena();
     if (olView === 'rank') return drawOlRank();
     if (olView === 'join') return drawOlJoin();
     body.innerHTML = '<div class="olwait"><div class="olspin"></div>読み込み中…</div>';
@@ -5016,7 +5069,7 @@
     const t = myTeamInfo();
     body.innerHTML =
       (olInfo.daily ? '<button class="oldaily" id="olDaily">🎁 今日の対戦メダルを受け取る（+' + (olInfo.first ? olInfo.firstN : olInfo.dailyN) + '）</button>' : '') +
-      '<div class="oltabs">' + Object.keys(OL_KIND).map(k => '<button data-k="' + k + '" class="' + (k === olKind ? 'on' : '') + '">' + OL_KIND[k] + '</button>').join('') + '</div>' +
+      olTabsHTML() +
       '<div class="olsec"><div class="olrate"><span>レート</span><b>' + me.rate.toLocaleString() + '</b><span>' + me.win + '勝' + me.lose + '敗' + (me.rank ? '<br>世界 ' + me.rank + '位' : '') + '</span></div>' +
       (olKind === 'chara' ? '<div class="olteam">' + (teamMembers().map(u => olAv(u.id)).join('') || '<span>チームがいません</span>') + '<button class="btn gray" id="olTeam" style="width:auto;margin:0 0 0 auto;padding:8px 10px;white-space:nowrap">チーム変更</button></div>' +
         '<p style="margin:6px 0 0;font-size:12px">カラーHPはチームの体力、送るダメージは攻撃力と相手の防御力で決まります。必殺技・奥義も使えます。</p>'
@@ -5037,6 +5090,9 @@
     $('olRank').onclick = () => { olView = 'rank'; drawOnline(); };
     $('olShop').onclick = () => { olView = 'shop'; drawOnline(); };
   }
+  const OL_TABS = {simple: 'シンプル', chara: 'キャラ', auto: 'オート'};
+  const olTabsHTML = () => '<div class="oltabs">' + Object.keys(OL_TABS).map(k => '<button data-k="' + k + '" class="' + (k === olKind ? 'on' : '') + '">' + OL_TABS[k] + '</button>').join('') + '</div>';
+  const olTabsBind = root => root.querySelectorAll('.oltabs button').forEach(b => b.onclick = () => { olKind = b.dataset.k; save('ol_kind', olKind); drawOnline(); });
   function olNeedTeam(){ if (olKind === 'chara' && !teamMembers().length) { toast('キャラ対戦はチームが必要です'); return true; } return false; }
   async function olQuick(){
     if (olNeedTeam()) return;
@@ -5075,19 +5131,21 @@
     $('olJoinGo').onclick = go; $('olCode').onkeydown = e => { if (e.key === 'Enter') go(); };
   }
   async function drawOlShop(){
-    const body = $('olBody');
-    if (!olInfo) try { olInfo = await api('/api/medal', {tok: rankTok()}); } catch (_) {}
-    olMedalShow();
-    const shop = (olInfo && olInfo.shop) || [];
+    const body = $('olBody'), ar = olView === 'ashop';
+    if (ar) { try { arInfo = await api('/api/arena', {tok: rankTok()}); } catch (_) {} }
+    else if (!olInfo) try { olInfo = await api('/api/medal', {tok: rankTok()}); } catch (_) {}
+    const wal = ar ? {balance: arInfo ? arInfo.coins : 0} : olInfo, mark = ar ? '🪙' : '🏅';
+    if (ar) $('olMedal').textContent = '🪙 ' + (wal.balance || 0).toLocaleString(); else olMedalShow();
+    const shop = ((ar ? arInfo : olInfo) || {}).shop || [];
     const img = k => k.startsWith('pot_') ? potImg(k.slice(4)) : itemImg(k);
-    body.innerHTML = '<div class="olsec"><h3>🛒 対戦メダルで交換</h3><p>対戦メダルは対戦専用のコインです（お金では買えません）。</p><div class="olshop">' +
-      shop.map(x => '<div class="olitem"><img src="' + img(x.k) + '" alt=""><b>' + itemLabel(x.k) + '</b><small>持っている数 ' + own(x.k) + '</small><button data-k="' + x.k + '"' + (olInfo && olInfo.balance < x.price ? ' disabled' : '') + '>🏅 ' + x.price + '</button></div>').join('') +
+    body.innerHTML = '<div class="olsec"><h3>🛒 ' + (ar ? 'アリーナ交換所' : '対戦メダルで交換') + '</h3><p>' + (ar ? 'アリーナコインはオートバトルでもらえる交換専用のコインです。' : '対戦メダルは対戦専用のコインです（お金では買えません）。') + '</p><div class="olshop">' +
+      shop.map(x => '<div class="olitem"><img src="' + img(x.k) + '" alt=""><b>' + itemLabel(x.k) + '</b><small>持っている数 ' + own(x.k) + '</small><button data-k="' + x.k + '"' + (wal && wal.balance < x.price ? ' disabled' : '') + '>' + mark + ' ' + x.price + '</button></div>').join('') +
       '</div><button class="btn gray" id="olBackTop" style="margin-top:12px">もどる</button></div>';
     $('olBackTop').onclick = () => { olView = 'top'; drawOnline(); };
     body.querySelectorAll('.olitem button').forEach(b => b.onclick = async () => {
       b.disabled = true;
-      try { const r = await api('/api/medal/buy', {method: 'POST', body: JSON.stringify({k: b.dataset.k}), tok: rankTok()});
-        inv[r.k] = own(r.k) + 1; saveInv(); olInfo.balance = r.balance; toast(itemLabel(r.k) + ' を交換しました'); drawOlShop(); }
+      try { const r = await api(ar ? '/api/arena/buy' : '/api/medal/buy', {method: 'POST', body: JSON.stringify({k: b.dataset.k}), tok: rankTok()});
+        inv[r.k] = own(r.k) + 1; saveInv(); if (ar) arInfo.coins = r.coins; else olInfo.balance = r.balance; toast(itemLabel(r.k) + ' を交換しました'); drawOlShop(); }
       catch (e) { toast(e.message || 'サーバーにつながりませんでした'); b.disabled = false; }
     });
   }
@@ -5314,6 +5372,138 @@
     $('onlOpp').classList.add('hidden'); $('onlRes').classList.add('hidden');
     document.body.classList.remove('onl');
     $('titleBtn').click();
+  }
+
+  // ===== オートバトル（オフライン対戦）：ほかの人の防衛チームと自動で戦う。1日3回、報酬はアリーナコイン（交換専用）=====
+  let arInfo = null;
+  // 技の中身を、自動戦闘で使う5つの強さにまとめる（攻撃・回復・強化・妨害・クリティカル）
+  function skCat(fx){
+    const o = {dmg: 0, heal: 0, buf: 0, deb: 0, crit: 0};
+    (fx || []).forEach(f => {
+      const k = f[0];
+      if (k === 'heart') o.heal += 10 * f[1]; else if (k === 'sheart') o.heal += 30 * f[1]; else if (k === 'gheart') o.heal += 50 * f[1]; else if (k === 'heal') o.heal += f[1];
+      else if (k === 'buf' || k === 'atk2' || k === 'def2' || k === 'chg' || k === 'score') o.buf += fxPow([f]);
+      else if (k === 'eslow' || k === 'mslow' || k === 'stop') o.deb += fxPow([f]);
+      else if (k === 'crit') o.crit += f[1];
+      else o.dmg += fxPow([f]);
+    });
+    Object.keys(o).forEach(k => o[k] = Math.round(o[k] * 10) / 10);
+    return o;
+  }
+  function arenaTeam(){
+    return teamMembers().slice(0, 4).map((u, k) => {
+      const cs = CHAR_STAT[u.id] || {}, sm = starMaxOf(u);
+      const cat = kind => { if (!(FX_DEF[u.id] && FX_DEF[u.id][kind])) return null; const nm = kind === 'sp' ? (SPECIAL_NAME[u.id] || '').replace('！', '') : (OUGI_NAME[u.id] || ''); return Object.assign({nm}, skCat(fxAt(u.id, kind, u.star || 0, sm))); };
+      return {id: u.id, g: cs.grade || 'N', ty: cs.type || 'hp', lv: u.lv, st: unitStats(u).map(v => Math.round(v)), sp: cat('sp'), og: k === 0 ? cat('ougi') : null};
+    });
+  }
+  // 戦闘力（サーバーと同じ計算）
+  function arenaPower(team){
+    let p = 0;
+    team.forEach(u => { const [h, a, d, s] = u.st; p += h * 3 + a * 4 + d * 3 + s * 2;
+      [u.sp, u.og].forEach(k => { if (k) p += (k.dmg * 6 + k.heal * 3 + k.buf * 4 + k.deb * 4 + k.crit * 5) * (1 + u.lv / 60); }); });
+    return Math.round(p);
+  }
+  async function drawArena(){
+    const body = $('olBody');
+    body.innerHTML = '<div class="olwait"><div class="olspin"></div>読み込み中…</div>';
+    try { arInfo = await api('/api/arena', {tok: rankTok()}); } catch (e) { body.innerHTML = '<div class="olsec">サーバーにつながりませんでした</div>'; return; }
+    const a = arInfo, my = arenaTeam(), myPw = my.length ? arenaPower(my) : 0;
+    $('olMedal').textContent = '🪙 ' + a.coins.toLocaleString();
+    body.innerHTML = olTabsHTML() +
+      '<div class="ar-head"><span>アリーナコイン<b>🪙 ' + a.coins.toLocaleString() + '</b></span><span>今日の挑戦<b>' + a.left + ' / ' + a.tries + '</b></span><span>ポイント<b>' + a.points + '</b>' + a.win + '勝' + a.lose + '敗</span></div>' +
+      '<div class="olsec"><div style="display:flex;align-items:center;gap:8px"><b style="flex:1">あなたのチーム</b><span>戦闘力 <span class="ar-pw">' + myPw.toLocaleString() + '</span></span></div>' +
+      '<div class="olteam">' + (teamMembers().map(u => olAv(u.id)).join('') || '<span>チームがいません</span>') + '<button class="btn gray" id="arTeam" style="width:auto;margin:0 0 0 auto;padding:8px 10px;white-space:nowrap">チーム変更</button></div>' +
+      '<p style="margin:6px 0 0;font-size:12px">' + (a.defense ? '防衛チーム：登録済み（戦闘力 ' + a.power.toLocaleString() + '）。ほかの人がこのチームに挑んできます。' : '防衛チームがまだです。登録すると、ほかの人の対戦相手になります。') + '</p>' +
+      '<button class="btn" id="arDef" style="margin-top:8px">🛡 今のチームを防衛チームにする</button></div>' +
+      '<div class="olsec"><b>⚔ 対戦相手をえらぶ</b>' +
+      (a.cands.length ? a.cands.map(c => '<div class="ar-cand"><div class="ar-info"><b>' + flagOf(c.cc) + olEsc(c.name) + '</b>戦闘力 <span class="ar-pw">' + c.power.toLocaleString() + '</span>' +
+        '<div class="ar-team">' + c.team.map(u => olAv(u.id)).join('') + '</div></div><button data-o="' + c.id + '"' + (a.left <= 0 || !my.length ? ' disabled' : '') + '>挑戦</button></div>').join('')
+        : '<p>まだ相手がいません。防衛チームを登録した人が増えると出てきます。</p>') +
+      '<button class="btn gray" id="arReload" style="margin-top:8px">🔄 相手を入れかえる</button></div>' +
+      '<div class="olsec"><b>🏆 報酬</b><p style="margin:4px 0 0;font-size:12px">勝つと 🪙' + a.reward.win + '（戦闘力が上の相手に勝つと +' + a.reward.upset + '）、負けても 🪙' + a.reward.lose + '。アリーナコインは交換専用です。<br>戦闘力がすべてではありません。タイプのバランス、回復・強化・妨害の技、タイプの相性で勝ち負けが変わります。</p>' +
+      '<button class="btn" id="arShop" style="margin-top:8px">🛒 アリーナ交換所</button></div>' +
+      (a.logs.length ? '<div class="olsec"><b>🛡 防衛の記録</b>' + a.logs.map(l => '<div class="ar-log">' + (l.win ? '✅ 防衛成功' : '❌ 防衛失敗') + '　' + flagOf(l.cc) + olEsc(l.name) + '　<small>' + fmtTime(l.at) + '</small></div>').join('') + '</div>' : '');
+    olFill(body); olTabsBind(body);
+    $('arTeam').onclick = () => { $('online').classList.add('hidden'); openBox('char'); };
+    $('arDef').onclick = async () => { if (!my.length) { toast('チームがいません'); return; }
+      try { const r = await api('/api/arena/defense', {method: 'POST', body: JSON.stringify({team: my}), tok: rankTok()}); toast('防衛チームにしました（戦闘力 ' + r.power.toLocaleString() + '）'); drawArena(); } catch (e) { toast(e.message || 'サーバーにつながりませんでした'); } };
+    $('arReload').onclick = drawArena;
+    $('arShop').onclick = () => { olView = 'ashop'; drawOnline(); };
+    body.querySelectorAll('.ar-cand button').forEach(b => b.onclick = () => arenaFight(b.dataset.o, b));
+  }
+  async function arenaFight(opp, btn){
+    const team = arenaTeam(); if (!team.length) { toast('チームがいません'); return; }
+    btn.disabled = true;
+    try {
+      if (!arInfo.defense) await api('/api/arena/defense', {method: 'POST', body: JSON.stringify({team}), tok: rankTok()});   // はじめての人は、今のチームを防衛にも
+      const r = await api('/api/arena/fight', {method: 'POST', body: JSON.stringify({opp, team}), tok: rankTok()});
+      playArena(r);
+    } catch (e) { toast(e.message || 'サーバーにつながりませんでした'); btn.disabled = false; }
+  }
+  // 戦闘を見せる：4対4が並んで撃ち合う（サーバーの記録をそのまま再生）
+  function playArena(r){
+    const el = $('aBat'), B = r.battle, hp = [B.hp[0].slice(), B.hp[1].slice()], mx = B.hp, ch = [[0, 0, 0, 0], [0, 0, 0, 0]];
+    const unit = (u, s, i) => '<div class="ab-u' + (i === 0 ? ' lead' : '') + '" data-s="' + s + '" data-i="' + i + '">' + olAv(u.id) + '<div class="hp"><i style="width:100%"></i></div><div class="ch"><i style="width:0%"></i></div><span class="buf"></span></div>';
+    el.innerHTML = '<div class="ab-top"><span>' + flagOf(r.opp.cc) + '<b>' + olEsc(r.opp.name) + '</b>　戦闘力 ' + r.opp.power.toLocaleString() + '</span><span>🪙 アリーナ</span></div>' +
+      '<div class="ab-row ab-en">' + r.opp.team.map((u, i) => unit(u, 1, i)).join('') + '</div>' +
+      '<div class="ab-mid" id="abMid"><div class="ab-vs">VS</div></div>' +
+      '<div class="ab-row ab-me">' + r.me.map((u, i) => unit(u, 0, i)).join('') + '</div>' +
+      '<div class="ab-top"><span><b>あなた</b>　戦闘力 ' + r.myPower.toLocaleString() + '</span></div>' +
+      '<div class="ab-ctl"><button id="abFast">⏩ 2倍速</button><button id="abSkip">⏭ スキップ</button></div>';
+    el.classList.remove('hidden'); olFill(el);
+    try { bgmPlay('calm'); } catch (_) {}
+    let speed = 1, i = 0, done = false, timer = null;
+    const U = (s, k) => el.querySelector('.ab-u[data-s="' + s + '"][data-i="' + k + '"]');
+    const setHp = (s, k) => { const b = U(s, k).querySelector('.hp i'), p = Math.max(0, hp[s][k] / mx[s][k] * 100); b.style.width = p + '%'; b.className = p < 30 ? 'low' : p < 60 ? 'mid' : ''; };
+    const num = (s, k, txt, cls) => { const r0 = U(s, k).getBoundingClientRect(), d = document.createElement('div'); d.className = 'ab-num ' + cls; d.textContent = txt;
+      d.style.left = (r0.left + r0.width / 2 - 20 + Math.random() * 20) + 'px'; d.style.top = (r0.top + r0.height * 0.3) + 'px'; document.body.appendChild(d); setTimeout(() => d.remove(), 950); };
+    const shot = (from, to, en) => { const a = U(from[0], from[1]).getBoundingClientRect(), b = U(to[0], to[1]).getBoundingClientRect(), d = document.createElement('div');
+      d.className = 'ab-shot' + (en ? ' en' : ''); d.style.left = (a.left + a.width / 2 - 8) + 'px'; d.style.top = (a.top + a.height / 2 - 8) + 'px'; document.body.appendChild(d);
+      requestAnimationFrame(() => { d.style.transitionDuration = (0.28 / speed) + 's'; d.style.left = (b.left + b.width / 2 - 8) + 'px'; d.style.top = (b.top + b.height / 2 - 8) + 'px'; });
+      setTimeout(() => d.remove(), 320 / speed); };
+    const apply = (ev, instant) => {
+      const s = ev.s[0], k = ev.s[1];
+      ev.to.forEach(e => { const [ts, ti, v] = e; hp[ts][ti] = Math.max(0, Math.min(mx[ts][ti], hp[ts][ti] + v)); if (!instant) { setHp(ts, ti);
+          num(ts, ti, (v > 0 ? '+' : '') + Math.abs(v), v > 0 ? 'heal' : e.includes('crit') ? 'crit' : 'dmg');
+          if (v < 0) { const uu = U(ts, ti); uu.classList.remove('shake'); void uu.offsetWidth; uu.classList.add('shake'); } }
+        if (e.includes('ko')) U(ts, ti).classList.add('ko'); });
+      if (ev.t === 'sp' || ev.t === 'og') ch[s][k] = 0; else ch[s][k] = Math.min(3, ch[s][k] + 1);
+      if (!instant) U(s, k).querySelector('.ch i').style.width = (ch[s][k] / 3 * 100) + '%';
+      if (ev.buf && !instant) el.querySelectorAll('.ab-u[data-s="' + s + '"] .buf').forEach(b => { b.textContent = '⬆'; setTimeout(() => b.textContent = '', 2500 / speed); });
+    };
+    const step = () => {
+      if (done) return;
+      if (i >= B.log.length) return finish();
+      const ev = B.log[i++], s = ev.s[0], k = ev.s[1], au = U(s, k);
+      au.classList.add('act'); setTimeout(() => au.classList.remove('act'), 260 / speed);
+      let wait = 520;
+      if (ev.t === 'sp' || ev.t === 'og') {                   // 技：名前の帯を出す
+        const mid = $('abMid'), d = document.createElement('div'); d.className = 'ab-sk ' + (ev.t === 'og' ? 'og' : '') + (s ? ' en' : '');
+        d.textContent = (ev.t === 'og' ? '奥義 ' : '必殺技 ') + (ev.nm || '') + (ev.buf ? '　攻撃・防御アップ' : '') + (ev.deb ? '　相手を遅く' : ''); mid.appendChild(d); setTimeout(() => d.remove(), 900 / speed);
+        try { sndShine(T(), ev.t === 'og'); } catch (_) {}
+        wait = 950;
+      }
+      ev.to.filter(e => e[2] < 0).forEach(e => shot(ev.s, e, s === 1));
+      setTimeout(() => { apply(ev); try { if (ev.to.some(e => e[2] < 0)) sndEnemyAttack(Math.min(9, ev.to.length * 2)); } catch (_) {} }, 300 / speed);
+      timer = setTimeout(step, wait / speed);
+    };
+    const finish = () => {
+      if (done) return; done = true; clearTimeout(timer);
+      while (i < B.log.length) apply(B.log[i++], true);
+      [0, 1].forEach(s => [0, 1, 2, 3].forEach(k => { if (U(s, k)) setHp(s, k); }));
+      const res = document.createElement('div'); res.className = 'ab-res' + (r.win ? '' : ' lose');
+      res.innerHTML = '<h2>' + (r.win ? 'WIN!' : 'LOSE') + '</h2><div class="rkres ' + (r.win ? 't1' : '') + '"><div class="rk-head">🪙 アリーナ</div>' +
+        '<div class="or-row" style="display:flex;justify-content:center;gap:10px;margin-top:8px"><div class="or-box" style="padding:8px 12px;border-radius:12px;background:rgba(255,255,255,.12)">アリーナコイン<b style="display:block;font-size:24px">+' + r.coin + '</b><span>のこり ' + r.coins.toLocaleString() + '</span></div>' +
+        '<div class="or-box" style="padding:8px 12px;border-radius:12px;background:rgba(255,255,255,.12)">今日の挑戦<b style="display:block;font-size:24px">あと' + r.left + '</b><span>ポイント ' + r.points + '</span></div></div>' +
+        '<button class="rk-see" id="abBack" style="margin-top:12px">もどる</button></div>';
+      el.appendChild(res);
+      try { if (r.win) sndFanfare(T(), 0.08); } catch (_) {}
+      $('abBack').onclick = () => { el.classList.add('hidden'); el.innerHTML = ''; try { titleBgm(); } catch (_) {} drawArena(); };
+    };
+    $('abFast').onclick = () => { speed = speed === 1 ? 2 : 1; $('abFast').textContent = speed === 1 ? '⏩ 2倍速' : '▶ ふつう'; };
+    $('abSkip').onclick = finish;
+    setTimeout(step, 700);
   }
   // 月間ランキングのごほうび：先月の順位でアイテムがもらえる（起動したとき・登録したときに確認）
   const RW_MODE = {sixty: '60秒アタック', rank: 'エンドレス'};
