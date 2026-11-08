@@ -1,5 +1,5 @@
 // テスト期間だけの「合言葉」ゲート
-// Cloudflare Pages の環境変数 TESTER_PASS に合言葉を入れると有効になる（消すと誰でも入れる状態に戻る）
+// Cloudflare Workers の変数（シークレット）TESTER_PASS に合言葉を入れると有効になる（消すと誰でも入れる状態に戻る）
 // 合言葉はコードに書かない（リポジトリが公開のため）。合言葉を変えると、前の合言葉で入った人ももう一度入力が必要になる
 const COOKIE = 'tr_gate';
 const DAYS = 30;
@@ -33,7 +33,7 @@ ${wrong ? '<div class="ng">合言葉がちがいます</div>' : ''}
   return new Response(html, {status: wrong ? 401 : 200, headers: {'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex'}});
 }
 
-export async function onRequest(ctx) {
+async function gate(ctx) {
   const pass = ctx.env && ctx.env.TESTER_PASS;
   if (!pass) return ctx.next();                       // 合言葉が設定されていなければ、ゲートなし
   const url = new URL(ctx.request.url);
@@ -62,3 +62,10 @@ export async function onRequest(ctx) {
   if (!accept.includes('text/html')) return new Response('locked', {status: 401, headers: {'Cache-Control': 'no-store'}});
   return page(url.pathname + url.search, false);
 }
+
+// Workers（静的アセットつき）の入口：すべてのリクエストをここで受けて、通すときは静的ファイルを返す
+export default {
+  async fetch(request, env) {
+    return gate({request, env, next: () => env.ASSETS.fetch(request)});
+  },
+};
