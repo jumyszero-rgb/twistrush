@@ -723,6 +723,7 @@
   .cutin.ougi .cname{text-shadow:0 2px 0 rgba(90,50,0,.55),0 0 8px rgba(90,50,0,.5);}
   .cutin.enemy .cband{background:linear-gradient(100deg,rgba(150,0,30,0),rgba(150,0,30,.95) 8%,rgba(210,20,60,.95) 50%,rgba(150,0,30,.95) 92%,rgba(150,0,30,0));flex-direction:row-reverse;}
   .cutin.enemy.ougi .cband{background:linear-gradient(100deg,rgba(80,0,90,0),rgba(80,0,90,.96) 8%,rgba(200,30,120,.96) 50%,rgba(80,0,90,.96) 92%,rgba(80,0,90,0));box-shadow:0 0 26px rgba(255,40,120,.6);}
+  .d.tries{color:#ffd24a;font-weight:800;} .d.tries.none{color:#ff6b8a;}
   #heartTray{position:absolute;z-index:12;display:flex;gap:3px;transform:translateY(calc(-100% - 6px));}
   #heartTray button{width:30px;height:30px;border:2px solid #fff;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffd1e2,#ff4f8b);font-size:15px;line-height:1;padding:0;box-shadow:0 2px 6px rgba(0,0,0,.35),0 0 8px rgba(255,90,150,.7);animation:hpop .35s cubic-bezier(.2,1.6,.4,1) both;touch-action:manipulation;}
   #heartTray button.g{background:radial-gradient(circle at 35% 30%,#fff3c4,#ffb21f);box-shadow:0 2px 6px rgba(0,0,0,.35),0 0 10px rgba(255,190,40,.9);}
@@ -4155,6 +4156,7 @@
     opt = opt || lastOpt; lastOpt = opt;                  // 「もう一度」で同じ設定を引き継ぐ
     if (mode) gameMode = mode;
     const stage = gameMode === 'story' ? STORY[opt.stage || 0] : null;
+    if (stage) countPlay(opt.stage || 0);
     diffLv = gameMode === 'practice' ? (opt.lv || 5) : (stage ? stage.diff : 5);   // ランキング（60秒・エンドレス）はLv5固定
     vsInit(stage ? 2 : 1, null, stage);
     Object.assign(CFG, diffOf(diffLv));                  // 難易度の数値を当てる
@@ -4435,8 +4437,20 @@
   $('easyBtn').addEventListener('click', () => { markSel('prac', String(pracLv)); $('prac').classList.remove('hidden'); });
   $('pracBack').addEventListener('click', () => $('prac').classList.add('hidden'));
   $('pracStart').addEventListener('click', () => { $('prac').classList.add('hidden'); start('practice', {lv: pracLv}); });
-  $('retryBtn').addEventListener('click', () => start());   // 同じモード・同じ設定でもう一度
-  $('nextBtn').addEventListener('click', () => { if (nextStage >= 0) { hideFighters(); startStory(nextStage); } });
+  // 1つのステージは、最初の1回＋リトライ3回まで（毎日リセット）。ストーリーだけ
+  const RETRY_MAX = 3;
+  function triesToday(){ let t = loadJ('tries', null); if (!t || t.day !== today()) t = {day: today(), n: {}}; return t; }
+  const playsLeft = i => Math.max(0, RETRY_MAX + 1 - (triesToday().n[i] || 0));
+  function canPlayStage(i){
+    if (playsLeft(i) > 0) return true;
+    toast('このステージは今日はもう挑戦できません（リトライは1日' + RETRY_MAX + '回まで。明日リセット）'); return false;
+  }
+  function countPlay(i){ const t = triesToday(); t.n[i] = (t.n[i] || 0) + 1; save('tries', JSON.stringify(t)); }
+  $('retryBtn').addEventListener('click', () => {   // 同じモード・同じ設定でもう一度
+    if (gameMode === 'story' && !canPlayStage((lastOpt && lastOpt.stage) || 0)) { $('stageBtn').click(); return; }
+    start();
+  });
+  $('nextBtn').addEventListener('click', () => { if (nextStage >= 0) { if (!canPlayStage(nextStage)) return; hideFighters(); startStory(nextStage); } });
   // 結果画面からステージ選択へ戻る
   $('stageBtn').addEventListener('click', () => {
     hideFighters();
@@ -4879,6 +4893,7 @@
         '<div class="g">' + goalText(st) + '</div>' +
         '<ul class="ml">' + st.missions.map((m, j) => '<li class="' + (storyMask[pickStage] >> j & 1 ? 'on' : '') + '">' +
           rb(storyMask[pickStage] >> j & 1) + ' ' + misText(m) + '</li>').join('') + '</ul>' +
+        (() => { const n = triesToday().n[pickStage] || 0; return n ? '<div class="d tries' + (playsLeft(pickStage) ? '' : ' none') + '">今日のリトライ：あと ' + Math.max(0, RETRY_MAX + 1 - n) + '回（1日' + RETRY_MAX + '回まで）</div>' : ''; })() +
         '<div class="d">難しさ Lv' + st.diff + (storyClr[pickStage] ? '　クリア済み' : '') +
         (st.ready ? '' : '<br>おじゃまブロックは準備中です。いまは通常の盤面で遊べます。') + '</div>';
     } else {
@@ -5042,6 +5057,7 @@
       toast(!curTeam()[0] ? 'チームのメイン（①）がいません' : 'チームが ' + tn + '人です。4人そろえてください');
       $('story').classList.add('hidden'); openBox('char'); return;
     }
+    if (!canPlayStage(pickStage)) return;
     $('story').classList.add('hidden'); startStory(pickStage);
   });
 
@@ -6205,10 +6221,10 @@
       '<div class="dtabs">' + [['info', 'ステータス・技'], ['feed', 'LVアップ（合成）'], ['lb', '限界突破']].map(([k, n]) => '<button data-ftab="' + k + '" class="' + (detTab === k ? 'on' : '') + '">' + n + '</button>').join('') + '</div>';
     if (detTab === 'info') {
       h += '<div class="dsec"><div class="stt">' + ST_NAME.map((n, k) => '<div>' + n + '<b>' + st[k] + '</b></div>').join('') + '</div></div>' +
-        (isZakoId(c.id) ? '<div class="dsec"><h4>必殺技 <span>' + (SPECIAL_NAME[c.id] || '').replace('！', '') + '</span><em>基準30秒（スピードで変わる）</em></h4><p>' + skDescU(c.id, 'sp', u) + '</p>' +
+        (isZakoId(c.id) ? '<div class="dsec"><h4>必殺技 <span>' + (SPECIAL_NAME[c.id] || '').replace('！', '') + '</span><em>基準' + skBaseSec(c.id, 'sp') + '秒（スピードで変わる）</em></h4><p>' + skDescU(c.id, 'sp', u) + '</p>' +
           '<p class="dnote">N・Rは必殺技だけ（奥義なし）。サブ（②〜④）に入れて使います。メイン（①）にはなれません。</p></div>'
-        : SKILLS[c.id] ? '<div class="dsec"><h4>必殺技 <span>' + (SPECIAL_NAME[c.id] || '').replace('！', '') + '</span><em>基準30秒（スピードで変わる）</em></h4><p>' + skDescU(c.id, 'sp', u) + '</p>' +
-        '<h4>奥義 <span>' + (OUGI_NAME[c.id] || '') + '</span><em>基準60秒（スピードで変わる）</em></h4><p>' + skDescU(c.id, 'ougi', u) + '</p>' +
+        : SKILLS[c.id] ? '<div class="dsec"><h4>必殺技 <span>' + (SPECIAL_NAME[c.id] || '').replace('！', '') + '</span><em>基準' + skBaseSec(c.id, 'sp') + '秒（スピードで変わる）</em></h4><p>' + skDescU(c.id, 'sp', u) + '</p>' +
+        '<h4>奥義 <span>' + (OUGI_NAME[c.id] || '') + '</span><em>基準' + skBaseSec(c.id, 'ougi') + '秒（スピードで変わる）</em></h4><p>' + skDescU(c.id, 'ougi', u) + '</p>' +
         '<p class="dnote">チームのメインは必殺技と奥義の両方、サブはどちらか1つを使います。</p></div>'
         : '<div class="dsec"><h4>技</h4><p>このキャラは、まだ技を持っていません。サブ（②〜④）に入れて、ステータスでチームを強くします。メイン（①）にはなれません。</p></div>') +
         '<div class="dsec"><h4>プロフィール</h4><p>' + (CHAR_BIO[c.id] || '') + '</p></div>';
@@ -6515,16 +6531,57 @@
   const SK_MS = {sp: 30000, ougi: 60000};               // 基準の時間。キャラのスピードと敵のスピードの比べ合いで 0.5〜1.5倍 に変わる
   const clampF = (v, a, b) => Math.max(a, Math.min(b, v));
   // 自分の技：そのキャラのスピード（レベル込みの最終値）と、敵1人分のスピードを比べる。同じなら基準どおり、2倍速いと0.75倍、半分だと1.5倍
+  // 技の強さ（効果の中身を「ブロック何個ぶん」に直した点数）。★最大のときの中身で決める（★を上げても待ち時間は変わらない）
+  const POW_REF = {sp: 8, ougi: 16};                     // この点数で基準どおり（必殺技30秒・奥義60秒）
+  function fxPow(fx){
+    let p = 0;
+    (fx || []).forEach(f => { switch (f[0]) {
+      case 'clr': case 'cross': p += f[1]; break;
+      case 'rect': p += f[1] * f[2]; break;
+      case 'rects': p += f[1] * f[2] * f[3]; break;
+      case 'rows': p += 6 * f[1]; break;
+      case 'claws': p += 7; break;
+      case 'octaRect': p += 1.5 * f[1] * f[2]; break;
+      case 'octa': p += 1.5 * f[1]; break;
+      case 'octaDrop': p += 1.2 * f[1]; break;
+      case 'heart': p += 3 * f[1]; break;
+      case 'gheart': p += 10 * f[1]; break;
+      case 'heal': p += 0.6 * f[1]; break;
+      case 'atk2': p += 1.2 * f[1]; break;
+      case 'def2': p += f[1]; break;
+      case 'buf': p += Math.max(0, f[3] - 100) / 100 * f[2] * 1.5; break;
+      case 'eslow': case 'mslow': p += f[1] / 100 * f[2] * 2; break;
+      case 'stop': p += 3 * f[1]; break;
+      case 'chg': p += 0.8 * f[1]; break;
+      case 'score': p += f[1] / 1000; break;
+      case 'crit': p += 0.6 * f[1]; break;
+      case 'cut': p += 0.4 * f[1]; break;
+      case 'dmg': p += 0.5 * f[1]; break;
+      case 'doom': p += f[1] === 'all' ? 36 : 18; break;
+      case 'shuf': p += 4; break;
+      case 'tempest': p += 15; break;
+    } });
+    return p;
+  }
+  const powCache = {};
+  // 弱い技は早く、強い技はゆっくりたまる：0.7〜1.5倍
+  function skPowMul(id, kind){
+    const key = id + ':' + kind; if (powCache[key] != null) return powCache[key];
+    const fx = FX_DEF[id] && FX_DEF[id][kind];
+    const m = fx ? clampF(Math.sqrt(Math.max(1, fxPow(fx)) / POW_REF[kind]), 0.7, 1.5) : 1;
+    return (powCache[key] = m);
+  }
+  const skBaseSec = (id, kind) => Math.round(SK_MS[kind] * skPowMul(id, kind) / 1000);
   function skMs(s2){
-    const base = SK_MS[s2.kind];
-    if (!statOn() || !s2.spd) return base;
+    const base = SK_MS[s2.kind] * skPowMul(s2.id, s2.kind);
+    if (!statOn() || !s2.spd) return Math.round(base);
     const en = Math.max(1, runEn[3] / 4), me = s2.spd * bm('spd');
     return Math.round(base * clampF((me + en) / (2 * me), 0.5, 1.5));
   }
   // 敵の技：敵のスピードとチームのスピードを比べる。敵が速いほど早くたまる
   function enMs(kind){
-    const base = SK_MS[kind];
-    if (!statOn()) return base;
+    const base = SK_MS[kind] * skPowMul(enId(), kind);
+    if (!statOn()) return Math.round(base);
     const en = Math.max(1, runEn[3]), me = Math.max(1, runMy[3]);
     return Math.round(base * clampF((en + me) / (2 * en), 0.5, 1.5));
   }
@@ -7025,7 +7082,7 @@
       else if (f[0] === 'eslow') { ebuf = [1 - f[1] / 100, now() + f[2] * 1000]; fxExtra.push('🐢 敵のスピード −' + f[1] + '%（' + f[2] + '秒）'); }
       else if (f[0] === 'mslow') { tslow = [f[1] / 100, now() + f[2] * 1000]; fxExtra.push('⏳ 時間の流れ −' + f[1] + '%（' + f[2] + '秒）'); }
       else if (f[0] === 'stop') { tstop = Math.max(tstop, now() + f[1] * 1000); document.body.classList.add('tstop'); fxExtra.push('⏸ 敵の時を止めた（' + f[1] + '秒）'); }
-      else if (f[0] === 'chg') { let k = 0; skList.forEach(o => { if (o === skUsing || o.ready) return; o.charge = Math.min(SK_MS[o.kind], o.charge + f[1] * 1000); k++; }); fxExtra.push('⚡ ほかの技のチャージ +' + f[1] + '秒'); }
+      else if (f[0] === 'chg') { let k = 0; skList.forEach(o => { if (o === skUsing || o.ready) return; o.charge = Math.min(skMs(o), o.charge + f[1] * 1000); k++; }); fxExtra.push('⚡ ほかの技のチャージ +' + f[1] + '秒'); }
       else if (f[0] === 'score') { score += f[1]; updateHUD(); fxExtra.push('⭐ 点数 +' + f[1].toLocaleString()); }
       else if (f[0] === 'doom') doom = f[1];
     });
