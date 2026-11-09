@@ -1041,7 +1041,19 @@
   @keyframes autoBlink{50%{filter:brightness(1.25);box-shadow:0 0 10px #ffd24a;}}
   .btn.gold{background:linear-gradient(#ffe27a,#f0b422);color:#3a2210;box-shadow:0 4px 0 #b97c0c;margin-top:8px;}
   .btn.gold:disabled{opacity:.45;}
-  #story .how-foot #storyStart{flex:1.3;} #storyAuto{flex:1;margin-top:0;font-size:13px;line-height:1.3;padding-left:6px;padding-right:6px;} #storyAuto img{width:16px;height:16px;vertical-align:-3px;margin-right:2px;}
+  #story .how-foot #storyStart{flex:1.2;}
+  .autobox{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0;} .autobox[hidden]{display:none!important;}
+  .autobtns{display:flex;gap:6px;flex:1;} .autobtns .btn{flex:1;margin:0;font-size:13px;line-height:1.2;padding:6px 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .autobtns .btn small{font-size:10px;font-weight:800;white-space:nowrap;} .autobtns .btn img{width:13px;height:13px;vertical-align:-2px;margin-right:2px;}
+  #autoNote{font-size:10px;text-align:center;color:#ffd24a;} #autoNote[hidden]{display:none;}
+  #askBox .skipn{display:flex;justify-content:center;align-items:center;gap:10px;margin:10px 0 4px;} #askBox .skipn button{min-width:40px;height:36px;border-radius:10px;border:2px solid #ffd24a;background:transparent;color:#fff;font-weight:900;font-size:16px;} #askBox .skipn b{font-size:24px;min-width:36px;}
+  #skipRes{position:fixed;inset:0;z-index:210;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;padding:16px;}
+  #skipRes .srin{background:#24123f;border:2px solid #ffd24a;border-radius:16px;padding:16px;width:100%;max-width:360px;max-height:90vh;overflow:auto;color:#fff;text-align:center;}
+  #skipRes h3{margin:0;color:#ffd24a;font-size:20px;} #skipRes .srst{margin:2px 0 10px;font-size:12px;opacity:.85;}
+  #skipRes .srrow{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.08);border-radius:10px;padding:8px 10px;margin:4px 0;font-weight:800;font-size:13px;} #skipRes .srrow img{width:18px;height:18px;} #skipRes .srrow b{margin-left:auto;color:#ffe27a;font-size:16px;}
+  #skipRes .srups{font-size:12px;text-align:left;margin:6px 0;color:#9ff0b0;font-weight:800;}
+  #skipRes .srget p{margin:8px 0 4px;font-weight:900;color:#ff9db8;} #skipRes .srgl{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;} #skipRes .srg{width:72px;display:flex;flex-direction:column;align-items:center;font-size:9px;} #skipRes .srg b{font-size:11px;color:#ffd24a;}
+  #skipRes .btn{margin-top:12px;}
   .skbtn,.skbtn.main,.skbtn.sub{flex:none;width:52px;height:52px;min-width:0;padding:0;border-radius:12px;overflow:hidden;background:rgba(20,10,40,.6);}
   .skbtn .skic{position:absolute;inset:2px;width:auto;height:auto;margin:0;display:block;} .skbtn .skic .cicon{border-radius:9px;width:100% !important;height:100% !important;}
   .skbtn::after{content:'';position:absolute;left:0;right:0;top:0;height:calc((100 - var(--p)) * 1%);background:rgba(10,5,25,.62);pointer-events:none;}
@@ -1393,7 +1405,7 @@
         <div class="loadout" id="loadout"></div>
         <p class="maptotal" id="mapTotal"></p>
       </div>
-      <div class="how-foot"><button class="btn" id="storyStart">このステージに挑戦</button><button class="btn gold" id="storyAuto" hidden>オートで挑戦</button></div>
+      <div class="how-foot"><button class="btn" id="storyStart">このステージに挑戦</button><div class="autobox" id="autoBox" hidden><div class="autobtns"><button class="btn gold" id="storyAuto">オート</button><button class="btn gold" id="storySkip">スキップ</button></div><small id="autoNote">コンティニューなしでクリアすると使えます</small></div></div>
     </div>
 
     <!-- 練習（5段階） -->
@@ -3816,6 +3828,7 @@
       const runMask = misFinal(), oldMask = storyMask[i];
       firstClear = !storyClr[i]; bossBefore = bossesBeaten();
       storyClr[i] = 1; if (!continued) storyNC[i] = 1; storyMask[i] = oldMask | runMask; saveStars();
+      userExpAdd(stamCost(i));                              // 勝つと、使ったスタミナ分の経験値をもう一度
       got = storyStars[i];
       coinNote = storyWinCoins(i, curStage.area, firstClear, got - bits(oldMask)) + teamExp(curStage) + zakoDrop();
       seqExtra = [];
@@ -4795,7 +4808,7 @@
     toast('スタミナが足りません（あと ' + (need - v) + '・約' + Math.ceil(w / 60000) + '分で回復）');
     stamRefill(); return false;
   }
-  function countPlay(i){ stamNow(); stam.v = Math.max(0, stam.v - stamCost(i)); save('stam', JSON.stringify(stam)); drawStam(); }
+  function countPlay(i){ stamNow(); stam.v = Math.max(0, stam.v - stamCost(i)); save('stam', JSON.stringify(stam)); drawStam(); userExpAdd(stamCost(i)); }
   $('retryBtn').addEventListener('click', () => {   // 同じモード・同じ設定でもう一度
     if (gameMode === 'story' && !canPlayStage((lastOpt && lastOpt.stage) || 0)) { $('stageBtn').click(); return; }
     start();
@@ -5634,8 +5647,8 @@
   }
   // 月間ランキングのごほうび：先月の順位でアイテムがもらえる（起動したとき・登録したときに確認）
   const RW_MODE = {sixty: '60秒アタック', rank: 'エンドレス'};
-  const TICKET_LABEL = {gticket: 'ガチャチケット', gticket_hi: 'SR以上確定チケット', aticket: 'オートチケット'};
-  const tkImg = k => gImg(k === 'gticket_hi' ? 'ticket_hi' : 'ticket');   // オートチケットの絵はまだないので、ガチャチケットの絵で代用
+  const TICKET_LABEL = {gticket: 'ガチャチケット', gticket_hi: 'SR以上確定チケット', aticket: 'スキップチケット'};
+  const tkImg = k => gImg(k === 'gticket_hi' ? 'ticket_hi' : 'ticket');   // スキップチケットの絵はまだないので、ガチャチケットの絵で代用
   const itemLabel = k => TICKET_LABEL[k] || (k.startsWith('pot_') ? potName(k.slice(4)) : (ITEMS[k] ? ITEMS[k].name : k));
   const invImg = k => TICKET_LABEL[k] ? tkImg(k) : k.startsWith('pot_') ? potImg(k.slice(4)) : itemImg(k);
   const ownAny = k => TICKET_LABEL[k] ? (+load(k, '0') || 0) : own(k);
@@ -6084,44 +6097,102 @@
     $('story').classList.add('hidden'); startStory(pickStage);
   });
 
-  // ===== オートで挑戦（コンティニューなしでクリアしたステージだけ） =====
-  // 1回ごとにオートチケット1枚。チケットがなければシルバーコインで払う
+  // ===== オート・スキップ（どちらもコンティニューなしでクリアしたステージだけ） =====
+  // オート：自動で戦うのを見る。スタミナだけ使う
+  // スキップ：戦わずに結果だけもらう（勝ち確定）。1回ごとにスキップチケット1枚、なければシルバー。まとめて最大10回。お題（レインボーブロック）は取れない
   let autoOn = false, autoNext = 0, autoPlan = null;
-  const aTickets = () => +load('aticket', '0') || 0;
+  const SKIP_MAX = 10;
+  const aTickets = () => +load('aticket', '0') || 0;       // スキップチケット（保存名は前のまま）
   const autoOk = i => storyNC[i] > 0 && stageOpen(i);
   function drawAutoBtn(){
-    const b = $('storyAuto'); if (!b) return;
+    const box = $('autoBox'); if (!box) return;
     const inArea = Math.floor(pickStage / PER) === mapArea && stageOpen(pickStage);
-    b.hidden = !inArea || !storyClr[pickStage];
-    if (b.hidden) return;
+    box.hidden = !inArea || !storyClr[pickStage];
+    if (box.hidden) return;
     const ok = autoOk(pickStage), tk = aTickets();
-    b.disabled = !ok || (!tk && coins < AUTO_SILVER);
-    b.innerHTML = ok ? 'オートで挑戦<br><small>' + (tk ? 'オートチケット1枚（所持 ' + tk + '）' : coinTag() + AUTO_SILVER) + '</small>'
-                     : 'オート<br><small>コンティニューなしでクリアすると使えます</small>';
+    $('storyAuto').disabled = !ok; $('storySkip').disabled = !ok || (!tk && coins < AUTO_SILVER);
+    $('storyAuto').innerHTML = 'オート<small>⚡' + stamCost(pickStage) + '</small>';
+    $('storySkip').innerHTML = 'スキップ<small>' + (tk ? 'チケット ' + tk + '枚' : coinTag() + AUTO_SILVER) + '</small>';
+    $('autoNote').hidden = ok;
+  }
+  function teamReady(){
+    const tn = curTeam().filter(Boolean).length;
+    if (curTeam()[0] && tn >= 4) return true;
+    $('storyStart').click(); return false;           // チームの確認はふつうの挑戦と同じ
   }
   $('storyAuto').addEventListener('click', () => {
     if (!autoOk(pickStage)) { toast('コンティニューなしでクリアしたステージだけオートで戦えます'); return; }
-    const tn = curTeam().filter(Boolean).length;
-    if (!curTeam()[0] || tn < 4) { $('storyStart').click(); return; }   // チームの確認はふつうの挑戦と同じ
-    if (!canPlayStage(pickStage)) return;
-    const tk = aTickets();
-    if (!tk && coins < AUTO_SILVER) { toast('オートチケットかシルバーコイン ' + AUTO_SILVER + '枚が必要です'); return; }
-    const pay = tk ? 'オートチケットを1枚使います（所持 ' + tk + '枚）' : 'シルバーコインを ' + AUTO_SILVER + '枚使います（いま ' + coins.toLocaleString() + '枚）';
-    askYes('オートで挑戦しますか？\n' + pay + '\n途中で「AUTO」を押すと手動に切り替えられます（払ったぶんは戻りません）', () => {
-      if (!autoOk(pickStage) || !canPlayStage(pickStage)) return;
-      if (aTickets()) save('aticket', String(aTickets() - 1)); else if (coins >= AUTO_SILVER) addCoins(-AUTO_SILVER); else return;
-      $('story').classList.add('hidden'); startStory(pickStage, true);
-    });
+    if (!teamReady() || !canPlayStage(pickStage)) return;
+    $('story').classList.add('hidden'); startStory(pickStage, true);
   });
   function drawAutoBadge(){
     const b = $('autoBadge'); if (!b) return;
     b.hidden = !autoOn; b.classList.remove('off'); b.textContent = 'AUTO ▶';
   }
-  $('autoBadge').addEventListener('click', () => {
+  $('autoBadge').addEventListener('click', () => {           // 押すと手動に切り替える
     if (!autoOn) return;
     autoOn = false; autoPlan = null; toast('手動に切り替えました');
     const b = $('autoBadge'); b.classList.add('off'); b.textContent = '手動'; setTimeout(() => { if (!autoOn) b.hidden = true; }, 1500);
   });
+  // スキップ：回数を選んで、まとめて結果を出す
+  function skipCanN(i){
+    const byStam = Math.floor(stamNow() / stamCost(i)), byPay = aTickets() + Math.floor(coins / AUTO_SILVER);
+    return Math.max(0, Math.min(SKIP_MAX, byStam, byPay));
+  }
+  function skipCostText(i, n){
+    const tk = Math.min(aTickets(), n), sv = (n - tk) * AUTO_SILVER;
+    return '⚡' + stamCost(i) * n + (tk ? '・スキップチケット ' + tk + '枚' : '') + (sv ? '・シルバー ' + sv : '');
+  }
+  let skipN = 1;
+  $('storySkip').addEventListener('click', () => {
+    const i = pickStage;
+    if (!autoOk(i)) { toast('コンティニューなしでクリアしたステージだけスキップできます'); return; }
+    if (!teamReady()) return;
+    const mx = skipCanN(i);
+    if (mx < 1) { if (stamNow() < stamCost(i)) canPlayStage(i); else toast('スキップチケットかシルバー ' + AUTO_SILVER + '枚が必要です'); return; }
+    skipN = Math.min(skipN, mx) || 1;
+    const draw = () => { const b = $('skipNum'), c = $('skipCost'); if (b) b.textContent = skipN; if (c) c.textContent = skipCostText(i, skipN); };
+    askYes('<b>スキップ</b>（戦わずに勝ち。お題は取れません）<div class="skipn"><button data-sn="-1">−</button><b id="skipNum">1</b><button data-sn="1">＋</button><button data-sn="99">最大</button></div><small id="skipCost"></small>', () => doSkip(i, skipN));
+    const box = $('askBox');
+    box.querySelectorAll('[data-sn]').forEach(b => b.onclick = e => { e.stopPropagation(); const d = +b.dataset.sn; skipN = d === 99 ? mx : Math.max(1, Math.min(mx, skipN + d)); draw(); });
+    draw();
+  });
+  function doSkip(i, n){
+    n = Math.min(n, skipCanN(i)); if (n < 1) return;
+    const st = STORY[i], c0 = coins, keepSt = curStage, keepZ = zakoNow;
+    const lv0 = teamMembers().map(u => ({u, lv: u.lv}));
+    let exp = 0, paid = 0; winGets = [];
+    curStage = st;
+    for (let k = 0; k < n; k++) {
+      if (aTickets() > 0) save('aticket', String(aTickets() - 1)); else { addCoins(-AUTO_SILVER); paid += AUTO_SILVER; }
+      countPlay(i); userExpAdd(stamCost(i));          // 勝ち扱い：スタミナ分の経験値をもう一度
+      zakoNow = st.char == null ? pickZako(st) : null;
+      storyWinCoins(i, st.area, false, 0);
+      teamExp(st); exp += lastExpInfo ? lastExpInfo.gain : 0;
+      zakoDrop();
+    }
+    curStage = keepSt; zakoNow = keepZ;
+    const gets = winGets; winGets = [];
+    const ups = lv0.filter(x => x.u.lv > x.lv).map(x => fullName(ALLC[ciOf(x.u)]) + ' LV' + x.lv + '→' + x.u.lv);
+    showSkipResult(n, coins - c0 + paid, exp, ups, gets, st);
+    drawStory();
+  }
+  function showSkipResult(n, coinGain, exp, ups, gets, st){
+    let d = $('skipRes');
+    if (!d) { d = document.createElement('div'); d.id = 'skipRes'; document.body.appendChild(d);
+      d.addEventListener('click', e => { if (e.target.closest('[data-close]')) d.style.display = 'none'; }); }
+    const silverIn = coinGain;
+    d.innerHTML = '<div class="srin"><h3>スキップ ×' + n + '</h3><p class="srst">' + st.label + '　' + st.name + '</p>' +
+      '<div class="srrow">' + coinTag() + 'シルバー（報酬）<b>' + (silverIn >= 0 ? '+' : '') + silverIn.toLocaleString() + '</b></div>' +
+      '<div class="srrow">経験値（1人あたり）<b>+' + exp.toLocaleString() + '</b></div>' +
+      (ups.length ? '<div class="srups">' + ups.map(x => '<div>⬆ ' + x + '</div>').join('') + '</div>' : '') +
+      (gets.length ? '<div class="srget"><p>仲間になった！</p><div class="srgl"></div></div>' : '') +
+      '<button class="btn" data-close>OK</button></div>';
+    const gl = d.querySelector('.srgl');
+    if (gl) gets.forEach(ci => { const w = document.createElement('div'); w.className = 'srg g-' + CHAR_STAT[ALLC[ci].id].grade; w.appendChild(charIcon(ci, 56)); w.insertAdjacentHTML('beforeend', '<b>' + CHAR_STAT[ALLC[ci].id].grade + '</b><small>' + fullName(ALLC[ci]) + '</small>'); gl.appendChild(w); });
+    if (gets.length) try { sndGCard(true); } catch(_) {}
+    d.style.display = 'flex';
+  }
   // ---- 考える部分：盤面を写して、回したらどれだけ消えるかを数える ----
   function autoRot(g, r, c, dir){
     const tl = g[r][c], tr = g[r][c+1], br = g[r+1][c+1], bl = g[r+1][c];
@@ -6262,19 +6333,19 @@
   const potNeed = u => { const t = tierOf(u.id); return t >= 3 ? 3 : t === 2 ? 2 : 1; };
   const LOAD_MAX = 2;          // 持っていけるアイテムの種類
   const CONT_MAX = 3;          // ストーリーのコンティニュー（1ステージ）
-  const AUTO_SILVER = 50;      // オート1回：オートチケット1枚、なければシルバー50枚（仮の値）
+  const AUTO_SILVER = 50;      // スキップ1回：スキップチケット1枚、なければシルバー50枚（仮の値）
   const SLOW_MS = 10000;       // スピードダウンの長さ
   const LOSE_COIN = 3, STAR_COIN = 5;
   // 毎日のプレゼント（7日で1周。休んでも1日目には戻らない）。グレードで倍率が上がる
   const DAILY = [20, 20, 30, 30, 40, 40, 100];
   const DAILY_HI = 1;                                      // 7日目はSR以上確定チケットもつく（週に1枚）
-  // グレード：倒したボスの数で決まる
+  // グレード：ユーザー経験値で決まる（仮の値）。経験値＝ストーリーで使ったスタミナ（勝つともう一度同じだけ）
   const GRADES = [
     {name: 'ルーキー', min: 0, mul: 1},
-    {name: 'ブロンズ', min: 2, mul: 1.25},
-    {name: 'シルバー', min: 4, mul: 1.5},
-    {name: 'ゴールド', min: 6, mul: 1.75},
-    {name: 'マスター', min: 9, mul: 2},
+    {name: 'ブロンズ', min: 200, mul: 1.25},
+    {name: 'シルバー', min: 800, mul: 1.5},
+    {name: 'ゴールド', min: 2000, mul: 1.75},
+    {name: 'マスター', min: 5000, mul: 2},
   ];
   // 課金（アプリ版で使う。いまは表示だけ）。ゴールド1枚 ≒ 1円。ガチャは1回300枚・10連3,000枚（ほかのスマホゲームの相場：10連2,000〜3,000円）
   // 大きいパックほどおまけが多い（10連1回あたり 約2,600〜3,000円）
@@ -6296,7 +6367,18 @@
   const own = k => Math.max(0, inv[k] | 0);
   function saveInv(){ save('inv', JSON.stringify(inv)); }
   function useInv(k){ inv[k] = Math.max(0, own(k) - 1); saveInv(); }
-  function gradeNow(){ const b = bossesBeaten(); let g = GRADES[0]; GRADES.forEach(x => { if (b >= x.min) g = x; }); return g; }
+  // ユーザー経験値：はじめて読むとき、前のデータはクリアした面の数から決める（ふつう10・ボス20）
+  let uexp;
+  function userExp(){
+    if (uexp === undefined) {
+      const v = load('uexp', '');
+      uexp = v === '' ? STORY.reduce((a, st, i) => a + (storyClr[i] ? (st.kind === 'boss' ? 20 : 10) : 0), 0) : (+v || 0);
+      if (v === '') save('uexp', String(uexp));
+    }
+    return uexp;
+  }
+  function userExpAdd(n){ const g0 = gradeNow(); uexp = userExp() + n; save('uexp', String(uexp)); const g1 = gradeNow(); if (g1 !== g0) { toast('グレードアップ！「' + g1.name + '」になりました'); stamNow(); refreshCoins(); } }
+  function gradeNow(){ const b = userExp(); let g = GRADES[0]; GRADES.forEach(x => { if (b >= x.min) g = x; }); return g; }
   function addCoins(n){ coins = Math.max(0, coins + n); save('coins', String(coins)); refreshCoins(); }
   function refreshCoins(){
     $('menuCoin').innerHTML = coinTag() + coins.toLocaleString() + '<span class="gr">' + gradeNow().name + '</span>';
@@ -6356,7 +6438,7 @@
   const TICKET_SHOP = [
     {k: 'gticket',    name: 'ガチャチケット', desc: 'シルバーガチャを1回引ける', silver: 100, gold: 300},
     {k: 'gticket_hi', name: '確定チケット',   desc: 'SR以上が1体確定のガチャを1回引ける', silver: 3000, gold: 900},
-    {k: 'aticket',    name: 'オートチケット', desc: 'コンティニューなしでクリアしたステージを、1回オートで戦える', silver: AUTO_SILVER, gold: 30},
+    {k: 'aticket',    name: 'スキップチケット', desc: 'コンティニューなしでクリアしたステージを、戦わずに1回クリアできる', silver: AUTO_SILVER, gold: 30},
   ];
   function drawTickets(){
     let el = $('shopTickets');
@@ -6364,7 +6446,7 @@
     el.innerHTML = '<h3>チケット</h3>' + TICKET_SHOP.map((t, j) => '<div class="shoprow"><img src="' + tkImg(t.k) + '" alt=""><div class="tx"><div class="nm">' + t.name + '<small>所持 ' + (+load(t.k, '0') || 0) + '</small></div><div class="ds">' + t.desc + '</div></div>' +
       '<div class="tkbtns"><button class="buybtn" data-tk="' + j + ':s"' + (coins < t.silver ? ' disabled' : '') + '>' + coinTag() + t.silver.toLocaleString() + '</button>' +
       '<button class="buybtn" data-tk="' + j + ':g"><img src="' + gImg('coin_gold') + '" alt="">' + t.gold.toLocaleString() + '</button></div></div>').join('') +
-      '<p class="note">ガチャチケットはガチャの画面、オートチケットはストーリーの「オートで挑戦」で使えます。</p>';
+      '<p class="note">ガチャチケットはガチャの画面、スキップチケットはストーリーの「スキップ」で使えます。</p>';
   }
   async function buyTicket(tag){
     const [j, cur] = tag.split(':'), t = TICKET_SHOP[+j]; if (!t) return;
@@ -8653,7 +8735,7 @@
     $('dailyGrade').textContent = 'グレード：' + g.name + '（もらえる数 ×' + g.mul + '）';
     $('dailyRow').innerHTML = DAILY.map((_, k) => '<div class="d' + (k < d.i ? ' done' : '') + (k === d.i ? ' now' : '') + (k === 6 ? ' big' : '') + '">' +
       (k + 1) + '日目' + coinTag() + '<b>' + dailyAmt(k, g) + '</b>' + (k === 6 ? '<small class="dgold"><img src="' + gImg('ticket_hi') + '" alt="">+' + DAILY_HI + '</small>' : '') + '</div>').join('');
-    $('dailyNote').textContent = nx ? 'ボスをあと' + (nx.min - bossesBeaten()) + '人倒すと「' + nx.name + '」（×' + nx.mul + '）になります。' : 'いちばん上のグレードです。';
+    $('dailyNote').textContent = nx ? 'ユーザー経験値をあと ' + (nx.min - userExp()).toLocaleString() + ' ためると「' + nx.name + '」（×' + nx.mul + '）になります。経験値はストーリーで使ったスタミナでたまります。' : 'いちばん上のグレードです。';
     $('dailyAd').disabled = false; $('dailyGet').disabled = false;
     $('daily').classList.remove('hidden');
     const claim = m => {
