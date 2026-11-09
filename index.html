@@ -1109,6 +1109,32 @@
   #coach .cb{display:flex;gap:8px;justify-content:flex-end;margin-top:8px;}
   #coach button{border:none;border-radius:10px;padding:7px 14px;font-family:inherit;font-weight:800;font-size:13px;cursor:pointer;}
   #coach .ok{background:#ffd24a;color:#3a2210;} #coach .skip{background:transparent;color:#bba9d8;font-size:11px;padding:7px 6px;}
+  /* はじめての案内：スライドとスポットライト */
+  #tutIntro{position:fixed;inset:0;z-index:9100;display:flex;align-items:center;justify-content:center;padding:16px;background:radial-gradient(120% 80% at 50% 0%,#5b3bb0,#1a0d36 70%);animation:rkFade .3s both;}
+  #tutIntro .ti-card{position:relative;width:100%;max-width:420px;max-height:100%;overflow:auto;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.2);border-radius:20px;padding:14px 14px 12px;color:#fff;text-align:center;}
+  #tutIntro .ti-skip{position:absolute;top:8px;right:8px;z-index:2;border:0;background:rgba(0,0,0,.35);color:#cbb8ff;font-size:11px;border-radius:999px;padding:4px 10px;font-family:inherit;}
+  #tutIntro .ti-img{border-radius:14px;overflow:hidden;background:#000;max-height:38vh;}
+  #tutIntro .ti-img img{display:block;width:100%;height:38vh;object-fit:cover;object-position:50% 20%;}
+  #tutIntro .ti-img.face{width:min(52vw,190px);margin:4px auto 0;border-radius:50%;border:4px solid #ff8ad8;box-shadow:0 0 24px rgba(255,138,216,.7);}
+  #tutIntro .ti-img.face img{height:auto;aspect-ratio:1;}
+  #tutIntro h2{margin:12px 0 6px;font-size:20px;font-weight:900;color:#ffd24a;}
+  #tutIntro p{margin:0;font-size:13.5px;line-height:1.75;color:#efe7ff;text-align:left;} #tutIntro p b{color:#fff;} #tutIntro p small{color:#cbb8ff;}
+  #tutIntro .ti-dots{display:flex;gap:6px;justify-content:center;margin:12px 0 8px;} #tutIntro .ti-dots i{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.3);} #tutIntro .ti-dots i.on{background:#ffd24a;width:22px;border-radius:4px;}
+  #tutIntro .ti-nav{display:flex;gap:8px;} #tutIntro .ti-nav button{flex:1;border:0;border-radius:14px;padding:13px 8px;font-family:inherit;font-weight:900;font-size:15px;}
+  #tutIntro .ti-next,#tutIntro .ti-go{color:#3a2000;background:linear-gradient(#fff3c4,#ffc93d);box-shadow:0 4px 0 #b8841a;} #tutIntro .ti-back{flex:0 0 30%!important;color:#fff;background:rgba(255,255,255,.15);}
+  #tutIntro .ti-go{animation:meGlow 1.4s ease-in-out infinite;}
+  #tut{position:fixed;inset:0;z-index:9000;pointer-events:none;display:none;} #tut.on{display:block;}
+  #tut .tb{position:fixed;background:rgba(8,3,20,.74);pointer-events:auto;}
+  #tut .tring{position:fixed;border:3px solid #ffd24a;border-radius:14px;pointer-events:none;box-shadow:0 0 0 3px rgba(255,210,74,.35),0 0 26px rgba(255,210,74,.9);animation:tutRing 1.1s ease-in-out infinite;}
+  @keyframes tutRing{0%,100%{box-shadow:0 0 0 3px rgba(255,210,74,.35),0 0 18px rgba(255,210,74,.6)}50%{box-shadow:0 0 0 7px rgba(255,210,74,.2),0 0 34px rgba(255,210,74,1)}}
+  #tut .tbub{position:fixed;left:10px;right:10px;max-width:440px;margin:0 auto;display:flex;gap:10px;align-items:flex-start;background:#fff;color:#3a2748;border:3px solid #ff8ad8;border-radius:18px;padding:10px 12px;pointer-events:auto;box-shadow:0 8px 24px rgba(0,0,0,.45);}
+  #tut .tbub.pop{animation:tutPop .35s cubic-bezier(.2,1.6,.4,1) both;} @keyframes tutPop{from{transform:scale(.85);opacity:0}to{transform:none;opacity:1}}
+  #tut .tface{width:58px;height:58px;border-radius:50%;flex:none;border:3px solid #ff8ad8;object-fit:cover;}
+  #tut .tcol{flex:1;min-width:0;} #tut .tname{display:block;font-size:11px;color:#d0459f;font-weight:900;}
+  #tut .ttx{font-size:14px;line-height:1.6;font-weight:700;} #tut .ttx b{color:#d0459f;}
+  #tut .tbtn{display:flex;gap:6px;justify-content:flex-end;margin-top:6px;} #tut .tbtn:empty{display:none;}
+  #tut .tbtn button{border:0;border-radius:10px;padding:8px 16px;font-family:inherit;font-weight:900;font-size:14px;color:#3a2000;background:linear-gradient(#fff3c4,#ffc93d);box-shadow:0 3px 0 #b8841a;}
+  #tut .tbtn button.sub{background:#ece3f7;color:#5a4a70;box-shadow:0 3px 0 #c9bcd9;}
   .tutglow{animation:tutg 1s ease-in-out infinite !important;outline:3px solid #ffd24a !important;outline-offset:2px;}
   @keyframes tutg{0%,100%{box-shadow:0 0 0 0 rgba(255,210,74,.9);}50%{box-shadow:0 0 0 10px rgba(255,210,74,0);}}
   .ibtn.pick{border-color:#ffd24a;box-shadow:0 0 14px #ffd24a;animation:ipulse .6s infinite alternate;}
@@ -9011,60 +9037,169 @@
   // 操作はスワイプだけ。画面下のボタンは帯の左右を切り替える
 
   $('gearBtn').addEventListener('click', openSettings);
-  // ===== はじめての人への案内（①ガチャ ②配置 ③ストーリー ④コイン ⑤LVアップ ⑥限界突破）=====
+  // ===== はじめての案内（2026-11-10 作り直し）=====
+  // ① ゲームの紹介（スライド）→ ② 押せるボタンだけ明るくして、ほかは暗くして押せなくする案内
+  //    ガチャ → 無料10連 → ボックス → チーム（おまかせ／自分で）→ 戻る → ストーリー → 最初の面 → 挑戦 → 戦い方 → 技 → おわり
+  //    案内役：レインボー（タイトルの女の子）
   (function(){
+    const BLOB = {guide: '/_blob/cf083b513a065893609050d3d170c733', story: '/_blob/9e77623ac56dce61d273a6668d66b64e', simple: '/_blob/6f1d848ade01b262d8836fd7cc065aa0', online: '/_blob/f9cbec288ab3e814af25b42c32a872dc'};
+    const IMG = k => LOCAL_ART ? 'img/intro/' + k + '.webp' : BLOB[k];
     let step = load('tut', '');
-    if (!step) step = storyClr.some(v => v > 0) ? 'done' : '1';
-    const setStep = v => { step = String(v); save('tut', step); };
-    const box = document.createElement('div'); box.id = 'coach';
-    box.innerHTML = '<div class="cs"></div><div class="ct"></div><div class="cb"><button class="skip">案内をとばす</button><button class="ok">OK</button></div>';
-    document.body.appendChild(box);
-    let okFn = null, glow = null;
-    box.querySelector('.ok').addEventListener('click', () => { if (okFn) okFn(); });
-    box.querySelector('.skip').addEventListener('click', () => askYes('はじめての案内をとばしますか？', () => setStep('done')));
+    if (!step || /^[0-9]$/.test(step)) step = storyClr.some(v => v > 0) ? 'done' : 'intro';   // 前の案内（1〜6）の人も、まだ遊んでいなければ最初から
+    const setStep = v => { step = v; save('tut', v); };
     const vis = id => { const e = $(id); return !!(e && !e.classList.contains('hidden') && e.style.display !== 'none'); };
-    const findBtn = (root, txt) => [...(root ? root.querySelectorAll('button') : [])].find(b => b.textContent.includes(txt) && b.offsetParent);
-    function show(no, text, target, ok){
-      if (glow && glow !== target) glow.classList.remove('tutglow');
-      glow = target || null; if (glow) glow.classList.add('tutglow');
-      box.querySelector('.cs').textContent = 'はじめての案内　' + no + ' / 6';
-      box.querySelector('.ct').innerHTML = text;
-      okFn = ok || null; box.querySelector('.ok').style.display = ok ? '' : 'none';
-      const r = target && target.getBoundingClientRect();
-      const low = r && r.top + r.height / 2 > innerHeight * 0.55;   // 光らせる場所とかぶらない側に出す
-      box.style.top = low ? 'calc(env(safe-area-inset-top,0px) + 12px)' : 'auto';
-      box.style.bottom = low ? 'auto' : 'calc(env(safe-area-inset-bottom,0px) + 16px)';
-      box.classList.add('on');
+    const askOpen = () => { const a = $('askBox'); return !!(a && a.style.display === 'flex'); };
+
+    // ---- 紹介スライド ----
+    const PAGES = [
+      {img: 'guide', face: true, t: 'TWIST RUSHへようこそ！', b: 'このゲームは、ブロックを<b>回転</b>させて色をあわせて、<b>点数を競い合う</b>かんたんなゲームです。<br>モードは主に<b>4種類</b>あります。'},
+      {img: 'story', t: '① ストーリーモード', b: '奪われた<b>虹色のブロック</b>を取り戻す旅！ 敵は強大です。<br><b>ガチャ</b>でキャラクターをゲットして<b>チーム</b>を組み、各ステージの敵キャラ・ボスを倒して<b>経験値とコイン</b>をゲット！<br>キャラの<b>合成・限界突破</b>で味方をどんどん強くしよう！'},
+      {img: 'simple', t: '② 60秒アタック・エンドレス', b: 'キャラやスキルなどは一切なし。シンプルに<b>的確な判断とスピード</b>が問われます。<br>時間内の点数を競う<b>60秒アタック</b>、だんだん速くなる<b>エンドレス</b>。どちらも<b>リアルタイム世界ランキング</b>に記録を残せます。<br><small>※上位に入ると、ストーリーで使えるアイテムがもらえます</small>'},
+      {img: 'online', t: '③ オンライン対戦', b: '2人でオンライン対決！ キャラなしの<b>シンプル版</b>と、キャラを使う<b>キャラ版</b>があります。<br>キャラどうしを自動で戦わせる<b>オートバトル</b>も。遊ぶと<b>対戦メダル</b>が集まります。'},
+      {img: 'guide', face: true, t: '最強を目指そう！', b: 'いろんなモードを使いこなして、<b>最強</b>を目指そう！<br>まずは<b>ストーリーモード</b>から。わたし、レインボーが案内するね！', last: true},
+    ];
+    let page = 0, introEl = null;
+    function drawIntro(){
+      if (!introEl) { introEl = document.createElement('div'); introEl.id = 'tutIntro'; document.body.appendChild(introEl); }
+      const p = PAGES[page];
+      introEl.innerHTML = '<div class="ti-card"><button class="ti-skip">案内をとばす</button>' +
+        '<div class="ti-img' + (p.face ? ' face' : '') + '"><img src="' + IMG(p.img) + '" alt=""></div>' +
+        '<h2>' + p.t + '</h2><p>' + p.b + '</p>' +
+        '<div class="ti-dots">' + PAGES.map((_, i) => '<i class="' + (i === page ? 'on' : '') + '"></i>').join('') + '</div>' +
+        '<div class="ti-nav">' + (page ? '<button class="ti-back">戻る</button>' : '') +
+        (p.last ? '<button class="ti-go">ストーリーモードをスタートしよう！</button>' : '<button class="ti-next">次のページへ</button>') + '</div></div>';
+      introEl.querySelector('.ti-next') && (introEl.querySelector('.ti-next').onclick = () => { page++; drawIntro(); });
+      introEl.querySelector('.ti-back') && (introEl.querySelector('.ti-back').onclick = () => { page--; drawIntro(); });
+      introEl.querySelector('.ti-go') && (introEl.querySelector('.ti-go').onclick = () => { introEl.remove(); introEl = null; setStep('gacha'); });
+      introEl.querySelector('.ti-skip').onclick = () => askYesTop('はじめての案内をとばしますか？', () => { introEl.remove(); introEl = null; setStep('done'); });
     }
-    function hide(){ box.classList.remove('on'); if (glow) { glow.classList.remove('tutglow'); glow = null; } }
+    function askYesTop(msg, yes){ askYes(msg, yes); const a = $('askBox'); if (a) a.style.zIndex = 9600; }
+
+    // ---- スポットライト（押せる場所だけ明るく。ほかは暗くして押せない）----
+    const L = document.createElement('div'); L.id = 'tut';
+    L.innerHTML = '<i class="tb"></i><i class="tb"></i><i class="tb"></i><i class="tb"></i><i class="tring"></i>' +
+      '<div class="tbub"><img class="tface" alt=""><div class="tcol"><b class="tname">レインボー</b><div class="ttx"></div><div class="tbtn"></div></div></div>';
+    document.body.appendChild(L);
+    L.querySelector('.tface').src = IMG('guide');
+    const blk = [...L.querySelectorAll('.tb')], ring = L.querySelector('.tring'), bub = L.querySelector('.tbub');
+    let cur = null, curKey = '';
+    const box4 = (e, x, y, w, h) => { e.style.left = x + 'px'; e.style.top = y + 'px'; e.style.width = Math.max(0, w) + 'px'; e.style.height = Math.max(0, h) + 'px'; };
+    function show(o){                                     // o = {target: () => 要素, text, btns: [[文字, 関数]]}
+      cur = o; const key = o.text + '|' + (o.btns || []).map(b => b[0]).join();
+      if (key !== curKey) {
+        curKey = key; L.querySelector('.ttx').innerHTML = o.text;
+        const bb = L.querySelector('.tbtn'); bb.innerHTML = '';
+        (o.btns || []).forEach(([t, fn], i) => { const b = document.createElement('button'); b.textContent = t; if (i) b.className = 'sub'; b.onclick = e => { e.stopPropagation(); fn(); }; bb.appendChild(b); });
+        bub.classList.remove('pop'); void bub.offsetWidth; bub.classList.add('pop');
+      }
+      L.classList.add('on');
+    }
+    function hide(){ cur = null; curKey = ''; L.classList.remove('on'); }
+    function place(){
+      requestAnimationFrame(place);
+      if (!cur) return;
+      const W = innerWidth, H = innerHeight, el = cur.target && cur.target();
+      let r = el && el.getBoundingClientRect ? el.getBoundingClientRect() : null;
+      if (r && (r.width < 4 || r.height < 4 || r.bottom < 0 || r.top > H)) r = null;
+      if (r) {
+        const p = 6, x = Math.max(0, r.left - p), y = Math.max(0, r.top - p), x2 = Math.min(W, r.right + p), y2 = Math.min(H, r.bottom + p);
+        box4(blk[0], 0, 0, W, y); box4(blk[1], 0, y2, W, H - y2); box4(blk[2], 0, y, x, y2 - y); box4(blk[3], x2, y, W - x2, y2 - y);
+        ring.style.display = 'block'; box4(ring, x, y, x2 - x, y2 - y);
+        const bh = bub.offsetHeight || 120, big = y2 - y > H * 0.55;
+        if (big) { bub.style.top = ''; bub.style.bottom = '12px'; }
+        else if ((y + y2) / 2 > H * 0.5) { bub.style.bottom = ''; bub.style.top = Math.max(8, y - bh - 14) + 'px'; }
+        else { bub.style.bottom = ''; bub.style.top = Math.min(H - bh - 8, y2 + 14) + 'px'; }
+      } else {
+        box4(blk[0], 0, 0, W, H); [1, 2, 3].forEach(i => box4(blk[i], 0, 0, 0, 0)); ring.style.display = 'none';
+        bub.style.bottom = ''; bub.style.top = Math.max(8, (H - (bub.offsetHeight || 120)) / 2) + 'px';
+      }
+    }
+    requestAnimationFrame(place);
+    const say = (text, target, btn) => new Promise(res => show({text, target, btns: [[btn || 'つぎへ', () => { hide(); res(); }]]}));
+    const waitFor = (fn, ms) => new Promise(res => { const t0 = Date.now(); const iv = setInterval(() => { if (fn() || (ms && Date.now() - t0 > ms)) { clearInterval(iv); res(); } }, 100); });
+    const team4 = () => curTeam().filter(Boolean).length >= 4;
+    const firstNode = () => document.querySelector('#story .mnode');
+
+    // ---- 戦い方の案内（最初のバトルで1回だけ）----
+    let tour = false;
+    async function battleTour(){
+      tour = true;
+      const stillOn = () => running && gameMode === 'story';
+      try {
+        await waitFor(() => !stillOn() || phase === 'idle', 4000); if (!stillOn()) return;
+        pauseClock();
+        await say('戦い方を説明するね！<br>敵のHPを0にしたら勝ち。ブロックを消すと攻撃できるよ。', null, 'うん！');
+        await say('<b>盤面の左側をドラッグ</b>すると、<b>2×2の枠</b>が動くよ。', () => $('game'));
+        const sz = $('swipeZone');
+        await say('<b>右の帯を上下にスワイプ</b>すると、枠の中のブロックが<b>回転</b>するよ。<br>上へで右回り、下へで左回り！', () => (sz && !sz.classList.contains('hidden') ? sz : $('game')));
+        await say('じゃあ、実際にやってみるね！<br><b>同じ色を縦か横に3つ以上</b>そろえると消えるよ。よく見ててね！', null, '見てみる');
+        if (!stillOn()) return;
+        resumeClock(); const s0 = score; autoOn = true;
+        await waitFor(() => !stillOn() || score > s0, 12000);
+        autoOn = false;
+        await waitFor(() => !stillOn() || phase === 'idle', 6000); if (!stillOn()) return;
+        pauseClock();
+        await say('こんなふうに消していくよ！<br>たくさん消すほど、敵に大ダメージ！');
+        if (!stillOn()) return;
+        resumeClock();
+        const k = skList.findIndex(s2 => s2.main && s2.kind === 'sp') >= 0 ? skList.findIndex(s2 => s2.main && s2.kind === 'sp') : 0;
+        if (skList[k]) { skList[k].charge = skMs(skList[k]); skList[k].ready = true; }
+        await new Promise(res => { show({text: '今回は特別に<b>技</b>をためておいたよ！<br>光っている<b>技ボタン</b>を押して使ってみよう！', target: () => document.querySelector('.skbtn[data-i="' + k + '"]')});
+          waitFor(() => !stillOn() || !(skList[k] && skList[k].ready)).then(() => { hide(); res(); }); });
+        await waitFor(() => !stillOn(), 2200);
+        if (stillOn()) pauseClock();
+        await say('すごい！ これが<b>技</b>だよ。時間でたまるから、ここぞというときに使おう！<br>あとは操作に慣れて、どんどんチャレンジしてみてね。<br><b>60秒アタック・エンドレス・オンライン対戦</b>でもアイテムがゲットできるから、遊んでみてね！', null, 'がんばる！');
+        if (stillOn()) resumeClock();
+        setStep('done');
+      } finally { tour = false; autoOn = false; hide(); }
+    }
+
+    // ---- 毎回のチェック ----
     function tick(){
-      if (step === 'done' || $('tapStart') || vis('daily') || running || vis('settings') || ($('askBox') && $('askBox').style.display === 'flex')) { hide(); return; }
-      const team = curTeam ? curTeam().filter(Boolean).length : 0;
-      if (step === '1') {
-        if (units.length && !freeTenLeft()) { if (!vis('gacha')) { setStep(2); return tick(); } return show(1, '仲間がそろいました！ 最後まで見たら「‹ 戻る」でもどろう。'); }
-        if (!vis('gacha')) return show(1, 'まずは<b>ガチャ</b>を開いて、<b>無料の11連ガチャ</b>を回そう！（SR以上が1体かならず出ます）', $('gachaBtn'));
-        const b = findBtn($('gacha'), '初回限定');
-        return show(1, '<b>「初回限定 無料10連」</b>を押そう。タップで1体ずつ見られます。', b);
+      if (tour) return;
+      if (step === 'done') { hide(); return; }
+      if (step === 'intro') { hide(); if (!introEl && !$('tapStart')) drawIntro(); return; }
+      if ($('tapStart') || vis('daily') || vis('settings') || askOpen()) { hide(); return; }
+      if (running) {
+        if (gameMode === 'story' && (step === 'story' || step === 'battle')) { setStep('battle'); hide(); battleTour(); return; }
+        hide(); return;
       }
-      if (step === '2') {
-        if (!vis('box')) { if (team >= 4) { setStep(3); return tick(); } return show(2, '<b>ボックス</b>を開いて、チームにキャラを<b>配置</b>しよう。', $('boxBtn')); }
-        return show(2, 'チームは4人。<b>①（メイン）</b>は必殺技と奥義の両方、<b>②〜④</b>はどちらか1つを使います。<br>枠を押してから、下の一覧のキャラを押すと入ります。' +
-          (team >= 4 ? '<br><b>4人そろったら「‹ 戻る」</b>' : '（いま ' + team + '人）'), team >= 4 ? null : document.querySelector('#box .tgrid'));
+      if (step === 'gacha') {
+        if (vis('box') && units.length && !freeTenLeft()) { setStep('team'); return tick(); }   // ガチャ画面の「ボックス」から開いた
+        if (units.length && !freeTenLeft() && !gRev && !vis('gacha')) { setStep('box'); return tick(); }
+        if (!vis('gacha')) return show({target: () => $('gachaBtn'), text: 'ストーリーモードには<b>キャラクター</b>が必要だよ。<br>初回無料の<b>10連ガチャ</b>を用意したから、まずは<b>ガチャ</b>を回そう！'});
+        if (gRev) return show({target: () => $('gacha').querySelector('[data-g="skip"]') || $('gacha').querySelector('[data-g="next"]'), text: '仲間が来たよ！<br>「スキップ」でまとめて見られるよ。'});
+        if (freeTenLeft()) return show({target: () => $('gacha').querySelector('[data-g="free"]'), text: '<b>「初回限定 無料10連」</b>を押そう！<br>11人の仲間が来るよ（SR以上が1人かならず！）'});
+        return show({target: () => $('gachaBox'), text: '<b>11人のキャラクター</b>を手に入れたよ！<br>次は<b>チーム</b>を組もう。「ボックス」を押してね。'});
       }
-      if (step === '3') {
-        if (storyClr.some(v => v > 0)) { setStep(4); return tick(); }
-        if (!vis('story')) return show(3, '<b>ストーリー</b>を始めよう！ ブロックを消して、敵のHPを削りきれば勝ち。', $('storyBtn'));
-        return show(3, '光っているマスを選んで、<b>「このステージに挑戦」</b>。', $('storyStart'));
+      if (step === 'box') {
+        if (vis('box')) { setStep('team'); return tick(); }
+        if (vis('gacha')) return show({target: () => $('gachaBox'), text: '「ボックス」を押して、<b>チーム</b>を組もう！'});
+        return show({target: () => $('boxBtn'), text: '「ボックス」を押して、<b>チーム</b>を組もう！'});
       }
-      if (step === '4') return show(4, '勝つと<b>シルバーコイン</b>がもらえます。<b>毎日のプレゼント</b>や、ステージの<b>お題</b>を達成しても増えます。<br>コインは<b>ガチャ</b>や<b>ショップ</b>（アイテム）で使おう。', null, () => setStep(5));
-      if (step === '5') {
-        if (!vis('box')) return show(5, 'キャラを育てよう。<b>ボックス</b>を開いてね。', $('boxBtn'));
-        return show(5, '<b>レベルアップ</b>：キャラを押して「詳細」→<b>「LVアップ（合成）」</b>。<br>使わないキャラを材料にすると経験値が入ります。ストーリーで勝っても経験値が入ります。', null, () => setStep(6));
+      if (step === 'team' || step === 'manual') {
+        if (!vis('box')) { setStep('box'); return tick(); }
+        if (team4()) { setStep('back'); return tick(); }
+        if (step === 'team') return show({target: null, text: 'チームは<b>4人</b>で組むよ。<br>今回は最初でわからないと思うから、わたしがチームを組もうか？',
+          btns: [['はい', () => { boxDetail = null; boxTab = 'char'; applyRecommend('best'); setStep('back'); }], ['いいえ', () => setStep('manual')]]});
+        return show({target: () => $('boxBody'), text: 'チームの<b>枠（＋）</b>を押して、下の一覧から好きなキャラを選んでね。<b>長押し</b>で簡易ステータスが見られるよ。（いま ' + curTeam().filter(Boolean).length + ' / 4人）'});
       }
-      if (step === '6') return show(6, '<b>限界突破</b>：レベルが上限（★0ならLV10）に届いたら、詳細の<b>「限界突破」</b>で同じキャラ1体を材料に★を上げよう（同じグレードのほかのキャラ2体や、アイテムガチャで出る<b>限界突破ポット</b>でもOK）。<br>★が1つ増えると<b>レベル上限 +10</b>、<b>必殺技と奥義も強く</b>なります。', null, () => { setStep('done'); hide(); toast('案内はここまで。楽しんでね！'); });
+      if (step === 'back') {
+        if (!vis('box')) { setStep('story'); return tick(); }
+        return show({target: () => $('boxBack'), text: 'チームができたね！<br>「‹ 戻る」で戻ろう。'});
+      }
+      if (step === 'story' || step === 'battle') {
+        if (vis('box')) return show({target: () => $('boxBack'), text: '「‹ 戻る」で戻ろう。'});
+        if (vis('gacha')) return show({target: () => $('gachaBack'), text: '「‹ 戻る」でトップに戻ろう。'});
+        if (!vis('story')) return show({target: () => $('storyBtn'), text: 'いよいよ<b>ストーリーモード</b>！<br>「ストーリー」を押そう！'});
+        if (pickStage !== 0) return show({target: firstNode, text: '<b>ふつうルート</b>の最初のステージを選ぼう！'});
+        return show({target: () => $('storyStart'), text: '「<b>このステージに挑戦</b>」を押して、バトル開始！'});
+      }
+      hide();
     }
-    setInterval(tick, 400);
+    setInterval(tick, 200);
     window.__tutStep = () => step;
+    window.__tutRestart = () => { setStep('intro'); page = 0; };
   })();
   // ===== 一時停止：再開／やめてトップ（ストーリーはマップ）へ戻る =====
   (function(){
