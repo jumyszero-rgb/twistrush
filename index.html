@@ -7745,10 +7745,25 @@
     d.addEventListener('click', close);
     setTimeout(close, kind === 'limit' ? 4200 : hit + 2600);
   }
+  // 材料にしてキャラが減るときの見張り：チームに入っているキャラは使わせない。持ちキャラが4体以上いるときは、4体より少なくなる使い方を止める
+  // （4人そろわないとキャラのモードで遊べなくなるため）。止めたら true
+  function guardLose(goneIds){
+    const gone = goneIds.filter(id => unitOf(id));
+    const inT = gone.filter(id => teams.some(t => t.includes(id)));
+    if (inT.length) {
+      const k = teams.findIndex(t => t.includes(inT[0]));
+      toast(fullName(ALLC[ciOf(unitOf(inT[0]))]) + ' はチーム' + (k + 1) + 'に入っているので材料にできません。先にチームから外してください'); return true;
+    }
+    if (units.length >= 4 && units.length - gone.length < 4) {
+      toast('材料にすると持ちキャラが' + (units.length - gone.length) + '体になり、4人のチームが組めなくなります。やめておきました'); return true;
+    }
+    return false;
+  }
   function feedGo(uid){
     const u = unitOf(uid); if (!u || !feedSel.size) return;
     if (u.lv >= capOf(u)) { toast('レベル上限です。先に限界突破してください'); return; }
     const ids = [...feedSel].filter(id => id !== uid && unitOf(id) && !unitOf(id).lock && !teams.some(t => t.includes(id)));
+    if (guardLose(ids)) return;
     const pv = feedPreview(u);
     const hasHi = ids.some(id => GRADE_RANK[CHAR_STAT[unitOf(id).id].grade] >= 3);
     askYes(ids.length + '体を材料にして、経験値 +' + pv.gain.toLocaleString() + ' を入れますか？<br>（LV' + u.lv + ' → LV' + pv.lv + '）<br>材料にしたキャラはいなくなります。' + (hasHi ? '<br><b style="color:#ff9db8">※SR以上のキャラがふくまれています。</b>' : ''), () => {
@@ -7783,7 +7798,7 @@
     const need = lbOtherNeed(u), pn = potNeed(u), have = own(potKey(g)), rd = u.lv >= capOf(u);
     let h = '<div class="dsec lbsub"><p><b>ほかのキャラで限界突破</b>：同じグレード（' + g + '）のほかのキャラ <b>' + need + '体</b>で★+1（同じキャラの2倍以上かかります' + (g === 'LR' ? '。LRで中の段が違うキャラがまざると3体' : '') + '）。' +
       (GRADE_DOWN[g] ? '<br><small>' + GRADE_DOWN[g] + 'で★もレベルも最大（<i class="maxmk">MAX</i>）まで育てたキャラも使えます。使うと消えずに LV1・★1 に戻ります。</small>' : '') + '</p>';
-    h += ot.length ? '<div class="lbmats">' + ot.slice(0, MAT_PER).map(m => '<button data-osel="' + m.u + '" class="' + (m.lock ? 'lk' : lbSel.has(m.u) ? 'sel' : '') + '"><span class="tic" data-ci="' + ciOf(m) + '"></span>' + (isUpMat(u, m) ? '<i class="maxmk">' + CHAR_STAT[m.id].grade + ' MAX</i>' : '') + 'LV' + m.lv + (m.star ? ' ★' + m.star : '') + (m.lock ? '<i>🔒ロック中</i>' : teams.some(tt => tt.includes(m.u)) ? '<i>編成中</i>' : '') + '</button>').join('') + '</div>' +
+    h += ot.length ? '<div class="lbmats">' + ot.slice(0, MAT_PER).map(m => '<button data-osel="' + m.u + '" class="' + (m.lock || (!isUpMat(u, m) && teams.some(t => t.includes(m.u))) ? 'lk' : lbSel.has(m.u) ? 'sel' : '') + '"><span class="tic" data-ci="' + ciOf(m) + '"></span>' + (isUpMat(u, m) ? '<i class="maxmk">' + CHAR_STAT[m.id].grade + ' MAX</i>' : '') + 'LV' + m.lv + (m.star ? ' ★' + m.star : '') + (m.lock ? '<i>🔒ロック中</i>' : teams.some(tt => tt.includes(m.u)) ? '<i>編成中</i>' : '') + '</button>').join('') + '</div>' +
          '<button class="lbgo" data-ogo="1"' + (rd && lbSel.size >= need ? '' : ' disabled') + '>選んだ' + lbSel.size + '体で★+1（必要 ' + need + '体）</button>'
        : '<p>同じグレードのほかのキャラがいません。</p>';
     if (isXpPot(g)) return h + '</div>';                // N・Rは限界突破ポットなし（同じキャラ・ほかのキャラで上げる）
@@ -7811,6 +7826,7 @@
     if (pick.length < need) { toast('あと' + (need - pick.length) + '体選んでください'); return; }
     const use = pick.slice(0, need).map(m => m.u);
     const nKeep = use.filter(id => isUpMat(u, unitOf(id))).length, nGone = use.length - nKeep;
+    if (guardLose(use.filter(id => !isUpMat(u, unitOf(id))))) return;   // MAXのキャラは消えないので数えない
     askYes('選んだ' + use.length + '体を材料にして、★を1つ上げますか？<br>レベル上限 LV' + capOf(u) + ' → LV' + Math.min(lvMaxOf(u), capOf(u) + 10) +
       (nGone ? '<br>材料にしたキャラ（' + nGone + '体）はいなくなります。' : '') + (nKeep ? '<br>MAXのキャラ（' + nKeep + '体）は、いなくならずに LV1・★1 に戻ります。' : ''), () => lbStarUp(u, use, 'ほかのキャラ ' + use.length + '体で突破'));
   }
@@ -7829,6 +7845,7 @@
     if (!u || !m || u.id !== m.id || uid === mid || (u.star || 0) >= starMaxOf(u)) return;
     if (!lbReady(u)) return;
     if (m.lock) { toast('ロック中のキャラは材料にできません（詳細でロックを外せます）'); return; }
+    if (guardLose([mid])) return;
     askYes(fullName(ALLC[ciOf(m)]) + '（LV' + m.lv + '）を材料にして、★を1つ上げますか？<br>レベル上限 LV' + capOf(u) + ' → LV' + Math.min(lvMaxOf(u), capOf(u) + 10) + '<br>材料にしたキャラはいなくなります。', () => {
       const mci = ciOf(m);
       units = units.filter(x => x.u !== mid);
@@ -7929,7 +7946,7 @@
       if (e.target.closest('[data-act="back"]')) { boxDetail = null; lbSel.clear(); drawBox(); return; }
       if (e.target.closest('[data-act="dlock"]')) { toggleLock(unitOf(boxDetail)); drawBox(); return; }
       const mb2 = e.target.closest('[data-mat]'); if (mb2) { limitBreak(boxDetail, mb2.dataset.mat); return; }
-      const os = e.target.closest('[data-osel]'); if (os) { const id = os.dataset.osel, m = unitOf(id); if (m && m.lock) { toast('ロック中のキャラは材料にできません'); return; } lbSel.has(id) ? lbSel.delete(id) : lbSel.add(id); drawBox(); return; }
+      const os = e.target.closest('[data-osel]'); if (os) { const id = os.dataset.osel, m = unitOf(id); if (m && m.lock) { toast('ロック中のキャラは材料にできません'); return; } if (m && !isUpMat(unitOf(boxDetail), m) && teams.some(t => t.includes(id))) { toast('チームに入っているキャラは材料にできません'); return; } lbSel.has(id) ? lbSel.delete(id) : lbSel.add(id); drawBox(); return; }
       if (e.target.closest('[data-ogo]')) { limitBreakOthers(boxDetail); return; }
       if (e.target.closest('[data-pot]')) { limitBreakPot(boxDetail); return; }
       const xb = e.target.closest('[data-xp]'); if (xb) { const [g, m] = xb.dataset.xp.split(':'); useXpPot(boxDetail, g, m); return; }
