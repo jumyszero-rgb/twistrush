@@ -17,7 +17,7 @@
   html.iospwa{height:var(--fullh);}
   html.iospwa body{height:100%;}
   html.iospwa .stagebg,html.iospwa .intro,html.iospwa #askBox,html.iospwa #tapStart,
-  html.iospwa #menu.overlay,html.iospwa #settings.overlay,html.iospwa #rank.overlay,html.iospwa #howto.overlay,html.iospwa #news.overlay,html.iospwa #story.overlay,
+  html.iospwa #menu.overlay,html.iospwa #settings.overlay,html.iospwa #rank.overlay,html.iospwa #howto.overlay,html.iospwa #news.overlay,html.iospwa #achv.overlay,html.iospwa #story.overlay,
   html.iospwa #prac.overlay,html.iospwa #online.overlay,html.iospwa #vs.overlay,html.iospwa #gacha.overlay,html.iospwa #box.overlay,
   html.iospwa #shop.overlay,html.iospwa #daily.overlay{bottom:auto!important;height:var(--fullh)!important;}
 </style>
@@ -116,7 +116,7 @@
 
   .btn.vs{background:#6f7cff;color:#fff;box-shadow:0 5px 0 #3b45b8;}
   .btn.vs:active{box-shadow:0 2px 0 #3b45b8;}
-  #settings.overlay,#rank.overlay,#howto.overlay,#news.overlay,#story.overlay,#prac.overlay,#online.overlay{position:fixed;inset:0;z-index:22;border-radius:0;padding:0;gap:0;justify-content:flex-start;text-align:left;color:#f6f0ff;
+  #settings.overlay,#rank.overlay,#howto.overlay,#news.overlay,#achv.overlay,#story.overlay,#prac.overlay,#online.overlay{position:fixed;inset:0;z-index:22;border-radius:0;padding:0;gap:0;justify-content:flex-start;text-align:left;color:#f6f0ff;
     background:linear-gradient(180deg, rgba(22,10,44,.92), rgba(22,10,44,.96)),
       var(--title-img, url('img/title.jpg')) center / cover no-repeat, #1f1236;}
   #story .modesel,#prac .modesel{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.25);}
@@ -710,6 +710,13 @@
   .mrow2{grid-column:1 / -1;display:grid;grid-template-columns:1fr 1fr;gap:10px;}
   .mtile.low{flex-direction:row;min-height:58px;gap:8px;} .mtile.low .mi img{width:42px;height:42px;} .mtile.low .ml{font-size:12px;}
   #menu h1.logo{margin-top:58px;}
+  .ugrade{background:rgba(255,255,255,.08);border-radius:14px;padding:10px 12px;margin:6px 0 10px;font-weight:800;font-size:13px;}
+  .ugrade b{color:#ffd24a;font-size:18px;} .ugbar{height:8px;border-radius:6px;background:rgba(255,255,255,.15);overflow:hidden;margin-top:6px;} .ugbar i{display:block;height:100%;background:linear-gradient(90deg,#9ff0b0,#ffd24a);}
+  .ugrade small{display:block;margin-top:4px;font-size:11px;opacity:.85;font-weight:700;}
+  .achrow{background:rgba(0,0,0,.28);border-radius:12px;padding:8px 10px;margin:5px 0;font-size:13px;font-weight:800;}
+  .achrow .ah{display:flex;align-items:center;gap:6px;} .achrow .ah span{margin-left:auto;font-size:12px;color:#ffe27a;}
+  .achrow .at{display:flex;gap:4px;margin-top:5px;flex-wrap:wrap;} .achrow .at i{font-style:normal;font-size:10px;border-radius:6px;padding:1px 6px;background:rgba(255,255,255,.1);color:#ccc;} .achrow .at i.ok{background:#ffd24a;color:#3a2210;}
+  .achrow.done{opacity:.6;}
   .mtop{position:absolute;top:calc(env(safe-area-inset-top,0px) + 8px);left:10px;display:flex;gap:6px;z-index:3;}
   .mtile.mini{position:relative;} .nbadge{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#ff3b5c;color:#fff;font-size:11px;font-weight:900;line-height:18px;text-align:center;box-shadow:0 0 0 2px #1f1236;animation:nbPop .4s ease-out;}
   @keyframes nbPop{0%{transform:scale(0)}70%{transform:scale(1.25)}100%{transform:scale(1)}}
@@ -1260,6 +1267,7 @@
         <button class="mtile mini" id="howBtn" data-tip="ルールと操作のしかたを見る"><span class="mi"><img data-mimg="howto" alt=""></span><span class="ml">遊び方</span></button>
         <button class="mtile mini" id="setBtn" data-tip="背景・操作・音などを変える"><span class="mi"><img data-mimg="settings" alt=""></span><span class="ml">設定</span></button>
         <button class="mtile mini" id="newsBtn" data-tip="お知らせ・イベント・アップデートの情報"><span class="mi" style="font-size:26px;line-height:34px">📰</span><span class="ml">ニュース</span></button>
+        <button class="mtile mini" id="achvBtn" data-tip="実績：達成するとユーザー経験値がもらえる"><span class="mi" style="font-size:26px;line-height:34px">🏆</span><span class="ml">実績</span></button>
       </div>
       <div class="menu-bottom mgrid">
         <button class="mtile wide story" id="storyBtn" data-tip="CPUと1対1で戦うメインのモード。ボスに勝つとキャラが仲間になる"><span class="mi"><img data-mimg="story" alt=""></span><span class="ml">ストーリー<small></small></span></button>
@@ -1286,6 +1294,13 @@
         <h2>ニュース</h2>
       </div>
       <div class="how-body" id="newsBody"></div>
+    </div>
+    <div class="overlay hidden" id="achv" role="dialog" aria-label="実績">
+      <div class="how-head">
+        <button class="how-back" id="achvBack" aria-label="タイトルに戻る">‹ 戻る</button>
+        <h2>実績</h2>
+      </div>
+      <div class="how-body" id="achvBody"></div>
     </div>
     <div class="overlay hidden" id="howto" role="dialog" aria-label="遊び方">
       <div class="how-head">
@@ -3829,6 +3844,7 @@
       firstClear = !storyClr[i]; bossBefore = bossesBeaten();
       storyClr[i] = 1; if (!continued) storyNC[i] = 1; storyMask[i] = oldMask | runMask; saveStars();
       userExpAdd(stamCost(i));                              // 勝つと、使ったスタミナ分の経験値をもう一度
+      achvCheck();
       got = storyStars[i];
       coinNote = storyWinCoins(i, curStage.area, firstClear, got - bits(oldMask)) + teamExp(curStage) + zakoDrop();
       seqExtra = [];
@@ -4679,7 +4695,12 @@
     }
     else $('over').classList.remove('hidden');
   }
-  function endGame(){ $('cont').classList.add('hidden'); awardLoss(); $('over').classList.remove('hidden'); }
+  function endGame(){ $('cont').classList.add('hidden'); awardLoss(); pracExp(); $('over').classList.remove('hidden'); }
+  function pracExp(){                                    // 練習：やめたときに、遊んだ時間で経験値
+    if (gameMode !== 'practice') return;
+    const ux = Math.max(UEXP.pracMin, Math.min(UEXP.pracMax, Math.round((now() - runStart) / 60000 * UEXP.pracPerMin)));
+    userExpAdd(ux); $('finalNote').textContent += '　経験値 +' + ux;
+  }
   // 広告（プロトタイプはダミーのカウントダウン。本番はAdMobのリワード広告に差し替え）
   function watchAd(){
     if (gameMode === 'story') contLeft = Math.max(0, contLeft - 1);
@@ -4917,6 +4938,9 @@
   }
   $('newsBtn').addEventListener('click', () => { audio(); drawNews(); $('news').classList.remove('hidden'); $('newsBody').scrollTop = 0; newsFetch().then(() => { if (!$('news').classList.contains('hidden')) drawNews(); }); });
   $('newsBack').addEventListener('click', () => { $('news').classList.add('hidden'); newsBadge(); });
+  $('achvBtn').addEventListener('click', () => { audio(); drawAchv(); $('achv').classList.remove('hidden'); $('achvBody').scrollTop = 0; });
+  setTimeout(achvCheck, 3000);                               // 前のデータで、もう達成している実績をもらう
+  $('achvBack').addEventListener('click', () => { $('achv').classList.add('hidden'); refreshCoins(); });
   setTimeout(() => { newsBadge(); newsFetch(); setInterval(newsFetch, 10 * 60 * 1000); }, 0);   // 下で作る道具（loadJなど）がそろってから
   document.addEventListener('visibilitychange', () => { if (!document.hidden) newsFetch(); });
   $('howStart').addEventListener('click', () => { $('howto').classList.add('hidden'); start('rank', {}); });
@@ -5473,8 +5497,11 @@
     if (r && !r.paid) {                                  // シルバー：ランダム対戦は満額、部屋番号の対戦は半分
       r.paid = true; const base = SILVER.online[r.res] || 0, c = Math.round(base * (r.rated === false ? SILVER.roomMul : 1));
       if (c) { addCoins(c); r.silver = c; }
+      r.uexp = Math.round((UEXP.online[r.res] || 0) * (r.rated === false ? SILVER.roomMul : 1)); if (r.uexp) userExpAdd(r.uexp);
+      if (r.res === 'win') astAdd('olwin');
     }
     if (r && r.silver) $('finalNote').textContent += '　シルバー +' + r.silver;
+    if (r && r.uexp) $('finalNote').textContent += '　経験値 +' + r.uexp;
     if (r) {
       const from = (onl.me ? onl.me.rate : r.rate - r.delta);
       el.className = 'rkres onlres ' + (r.res === 'win' ? 't1' : r.res === 'lose' ? 'lose' : '');
@@ -5578,6 +5605,7 @@
       if (!arInfo.defense) await api('/api/arena/defense', {method: 'POST', body: JSON.stringify({team}), tok: rankTok()});   // はじめての人は、今のチームを防衛にも
       const r = await api('/api/arena/fight', {method: 'POST', body: JSON.stringify({opp, team}), tok: rankTok()});
       r.silver = r.win ? SILVER.arena.win : SILVER.arena.lose; addCoins(r.silver);
+      userExpAdd(r.win ? UEXP.arena.win : UEXP.arena.lose); if (r.win) astAdd('arwin');
       playArena(r);
     } catch (e) { toast(e.message || 'サーバーにつながりませんでした'); btn.disabled = false; }
   }
@@ -6339,7 +6367,7 @@
   // 毎日のプレゼント（7日で1周。休んでも1日目には戻らない）。グレードで倍率が上がる
   const DAILY = [20, 20, 30, 30, 40, 40, 100];
   const DAILY_HI = 1;                                      // 7日目はSR以上確定チケットもつく（週に1枚）
-  // グレード：ユーザー経験値で決まる（仮の値）。経験値＝ストーリーで使ったスタミナ（勝つともう一度同じだけ）
+  // グレード：ユーザー経験値で決まる（仮の値）。経験値はすべてのモードと実績でたまる（UEXP・ACHV を見る）
   const GRADES = [
     {name: 'ルーキー', min: 0, mul: 1},
     {name: 'ブロンズ', min: 200, mul: 1.25},
@@ -6379,6 +6407,53 @@
   }
   function userExpAdd(n){ const g0 = gradeNow(); uexp = userExp() + n; save('uexp', String(uexp)); const g1 = gradeNow(); if (g1 !== g0) { toast('グレードアップ！「' + g1.name + '」になりました'); stamNow(); refreshCoins(); } }
   function gradeNow(){ const b = userExp(); let g = GRADES[0]; GRADES.forEach(x => { if (b >= x.min) g = x; }); return g; }
+  // ===== ユーザー経験値：すべてのモードでたまる（仮の値） =====
+  //   ストーリー＝使ったスタミナ（勝つと2倍）／エンドレス＝1分5（3〜50）／60秒アタック＝5／練習＝1分2（1〜10）
+  //   オンライン対戦＝勝ち20・引き分け10・負け6（部屋番号の対戦は半分）／オートバトル＝勝ち10・負け4／実績＝下の表
+  const UEXP = {endlessPerMin: 5, endlessMin: 3, endlessMax: 50, sixty: 5, pracPerMin: 2, pracMin: 1, pracMax: 10, online: {win: 20, draw: 10, lose: 6}, arena: {win: 10, lose: 4}};
+  // ===== 実績：段階ごとにユーザー経験値。達成したらその場で自動でもらえる =====
+  const ACHV_EXP = [30, 80, 200, 500];
+  const ast = k => (loadJ('achst', {}) || {})[k] | 0;
+  function astAdd(k, n){ const o = loadJ('achst', {}) || {}; o[k] = (o[k] | 0) + (n || 1); save('achst', JSON.stringify(o)); achvCheck(); }
+  const ACHV = [
+    {k: 'clear',   name: 'ステージをクリア',          u: '面', tiers: () => [10, 30, 60, STORY.length], val: () => storyClr.filter(Boolean).length},
+    {k: 'boss',    name: 'ボスを倒す',                u: '人', tiers: () => [1, 3, 6, AREAS.length], val: () => bossesBeaten()},
+    {k: 'nc',      name: 'コンティニューなしでクリア', u: '面', tiers: () => [10, 30, 60, STORY.length], val: () => storyNC.filter(Boolean).length},
+    {k: 'rainbow', name: 'レインボーブロックを集める', u: '個', tiers: () => [30, 100, 200, STORY.length * 3], val: () => starTotal()},
+    {k: 'endless', name: 'エンドレスで遊ぶ',          u: '回', tiers: () => [10, 50, 200, 500]},
+    {k: 'sixty',   name: '60秒アタックで遊ぶ',        u: '回', tiers: () => [10, 50, 200, 500]},
+    {k: 'olwin',   name: 'オンライン対戦で勝つ',      u: '勝', tiers: () => [1, 10, 50, 200]},
+    {k: 'arwin',   name: 'オートバトルで勝つ',        u: '勝', tiers: () => [1, 10, 50, 200]},
+    {k: 'gacha',   name: 'ガチャを引く',              u: '回', tiers: () => [10, 100, 500, 1000]},
+    {k: 'chars',   name: '仲間の種類を増やす',        u: '種', tiers: () => [10, 30, 60, 100], val: () => new Set(units.map(x => x.id)).size},
+    {k: 'days',    name: 'ログインする',              u: '日', tiers: () => [7, 30, 100, 365]},
+  ];
+  const achvVal = a => a.val ? a.val() : ast(a.k);
+  let achvBusy = false;
+  function achvCheck(){
+    if (achvBusy) return; achvBusy = true;
+    try {
+      const got = loadJ('achv', {}) || {}; let add = 0; const msg = [];
+      ACHV.forEach(a => {
+        const v = achvVal(a), t = a.tiers(); let k = got[a.k] | 0;
+        while (k < t.length && v >= t[k]) { add += ACHV_EXP[k] || 0; msg.push('「' + a.name + ' ' + t[k] + a.u + '」'); k++; }
+        got[a.k] = k;
+      });
+      if (add) { save('achv', JSON.stringify(got)); toast('🏆 実績達成 ' + msg.join('') + '　経験値 +' + add); userExpAdd(add); }
+    } catch(e) {} finally { achvBusy = false; }
+  }
+  function drawAchv(){
+    achvCheck();
+    const g = gradeNow(), gi = GRADES.indexOf(g), nx = GRADES[gi + 1], e = userExp();
+    const pct = nx ? Math.round((e - g.min) / (nx.min - g.min) * 100) : 100;
+    const got = loadJ('achv', {}) || {};
+    $('achvBody').innerHTML = '<div class="ugrade">ユーザーグレード <b>' + g.name + '</b>　経験値 ' + e.toLocaleString() +
+      '<div class="ugbar"><i style="width:' + pct + '%"></i></div><small>' + (nx ? '「' + nx.name + '」まで あと ' + (nx.min - e).toLocaleString() : 'いちばん上のグレードです') +
+      '。経験値は、どのモードで遊んでもたまります。実績を達成してももらえます。</small></div>' +
+      ACHV.map(a => { const t = a.tiers(), k = got[a.k] | 0, v = achvVal(a), next = t[k];
+        return '<div class="achrow' + (k >= t.length ? ' done' : '') + '"><div class="ah">' + a.name + '<span>' + (next ? Math.min(v, next) + ' / ' + next + a.u + '（経験値 +' + ACHV_EXP[k] + '）' : 'すべて達成') + '</span></div>' +
+          '<div class="at">' + t.map((x, j) => '<i class="' + (j < k ? 'ok' : '') + '">' + x + a.u + '</i>').join('') + '</div></div>'; }).join('');
+  }
   function addCoins(n){ coins = Math.max(0, coins + n); save('coins', String(coins)); refreshCoins(); }
   function refreshCoins(){
     $('menuCoin').innerHTML = coinTag() + coins.toLocaleString() + '<span class="gr">' + gradeNow().name + '</span>';
@@ -7368,6 +7443,7 @@
   function gachaGo(n, kind){
     gBusy = true;
     const res = gachaPull(n, kind);
+    try { astAdd('gacha', Array.isArray(res) ? res.length : n); } catch(e) {}
     const cube = $('gCube'), burst = $('gBurst'), box = $('gResult');
     box.innerHTML = ''; burst.className = 'g-burst'; cube.className = 'g-cube'; void cube.offsetWidth;
     cube.className = 'g-cube spin'; sndGSpin();
@@ -8719,6 +8795,9 @@
     const sec = (now() - runStart) / 1000;
     const c = gameMode === 'sixty' ? SILVER.sixty : Math.max(SILVER.endlessMin, Math.min(SILVER.endlessMax, Math.round(sec / 60 * SILVER.endlessPerMin)));
     addCoins(c); $('finalNote').textContent += '　シルバー +' + c;
+    const ux = gameMode === 'sixty' ? UEXP.sixty : Math.max(UEXP.endlessMin, Math.min(UEXP.endlessMax, Math.round(sec / 60 * UEXP.endlessPerMin)));
+    userExpAdd(ux); $('finalNote').textContent += '　経験値 +' + ux;
+    astAdd(gameMode === 'sixty' ? 'sixty' : 'endless');
   }
   function awardLoss(){
     if (gameMode !== 'story' || lossPaid) return;
@@ -8735,13 +8814,13 @@
     $('dailyGrade').textContent = 'グレード：' + g.name + '（もらえる数 ×' + g.mul + '）';
     $('dailyRow').innerHTML = DAILY.map((_, k) => '<div class="d' + (k < d.i ? ' done' : '') + (k === d.i ? ' now' : '') + (k === 6 ? ' big' : '') + '">' +
       (k + 1) + '日目' + coinTag() + '<b>' + dailyAmt(k, g) + '</b>' + (k === 6 ? '<small class="dgold"><img src="' + gImg('ticket_hi') + '" alt="">+' + DAILY_HI + '</small>' : '') + '</div>').join('');
-    $('dailyNote').textContent = nx ? 'ユーザー経験値をあと ' + (nx.min - userExp()).toLocaleString() + ' ためると「' + nx.name + '」（×' + nx.mul + '）になります。経験値はストーリーで使ったスタミナでたまります。' : 'いちばん上のグレードです。';
+    $('dailyNote').textContent = nx ? 'ユーザー経験値をあと ' + (nx.min - userExp()).toLocaleString() + ' ためると「' + nx.name + '」（×' + nx.mul + '）になります。経験値はどのモードで遊んでも、実績を達成してもたまります。' : 'いちばん上のグレードです。';
     $('dailyAd').disabled = false; $('dailyGet').disabled = false;
     $('daily').classList.remove('hidden');
     const claim = m => {
       const a = dailyAmt(d.i, g) * m;
       save('daily', JSON.stringify({i: (d.i + 1) % DAILY.length, last: today()}));
-      addCoins(a); $('daily').classList.add('hidden');
+      addCoins(a); $('daily').classList.add('hidden'); astAdd('days');
       if (d.i === 6) { giveItem('gticket_hi', DAILY_HI); toast('SR以上確定チケット +' + DAILY_HI); }
       toast('コイン +' + a);
     };
