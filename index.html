@@ -1431,7 +1431,7 @@
         <div class="loadout" id="loadout"></div>
         <p class="maptotal" id="mapTotal"></p>
       </div>
-      <div class="how-foot"><button class="btn" id="storyStart">このステージに挑戦</button><div class="autobox" id="autoBox" hidden><div class="autobtns"><button class="btn gold" id="storyAuto">オート</button><button class="btn gold" id="storySkip">スキップ</button></div><small id="autoNote">コンティニューなしでクリアすると使えます</small></div></div>
+      <div class="how-foot"><button class="btn" id="storyStart">このステージに挑戦</button><div class="autobox" id="autoBox" hidden><div class="autobtns"><button class="btn gold" id="storyAuto">オート</button><button class="btn gold" id="storySkip">スキップ</button></div><small id="autoNote">コンティニュー・アイテムなしでクリアすると使えます</small></div></div>
     </div>
 
     <!-- 練習（5段階） -->
@@ -3863,7 +3863,7 @@
       const i = curStage.no - 1;
       const runMask = misFinal(), oldMask = storyMask[i];
       firstClear = !storyClr[i]; bossBefore = bossesBeaten();
-      storyClr[i] = 1; if (!continued) storyNC[i] = 1; storyMask[i] = oldMask | runMask; saveStars();
+      storyClr[i] = 1; if (!continued && !usedItems.size) storyNC[i] = 1;   // オート・スキップOK：広告のコンティニューもアイテムも使わずに勝った（お題は関係ない） storyMask[i] = oldMask | runMask; saveStars();
       userExpAdd(stamCost(i));                              // 勝つと、使ったスタミナ分の経験値をもう一度
       achvCheck();
       got = storyStars[i];
@@ -4653,7 +4653,7 @@
   let storyNC = STORY.map(() => 0);
   try { const a = JSON.parse(load('nc11', 'null'));
     if (Array.isArray(a)) storyNC = STORY.map((_, i) => a[i] ? 1 : 0);
-    else storyNC = STORY.map((st, i) => (storyClr[i] && (st.missions || []).some((m, j) => m.t === 'nocont' && (storyMask[i] >> j & 1))) ? 1 : 0);   // 前のデータ：お題「コンティニューなし」を取った面
+    else storyNC = STORY.map(() => 0);                    // 記録がない前のデータは0から（お題では決めない）
   } catch(e) {}
   const saveStars = () => { storyStars = storyMask.map(bits); save('clears11', JSON.stringify(storyClr)); save('mask11', JSON.stringify(storyMask)); save('nc11', JSON.stringify(storyNC)); };
   const openAll = () => load('openall', '0') === '1';                 // テスト用：全部開放
@@ -6147,7 +6147,7 @@
     $('story').classList.add('hidden'); startStory(pickStage);
   });
 
-  // ===== オート・スキップ（どちらもコンティニューなしでクリアしたステージだけ） =====
+  // ===== オート・スキップ（どちらも、広告のコンティニューもアイテムも使わずにクリアしたステージだけ。お題は関係ない） =====
   // オート：自動で戦うのを見る。スタミナだけ使う
   // スキップ：戦わずに結果だけもらう（勝ち確定）。1回ごとにスタミナだけ使う（コインは使わない）。まとめて最大10回。お題（レインボーブロック）は取れない
   let autoOn = false, autoNext = 0, autoPlan = null;
@@ -6171,7 +6171,7 @@
     $('storyStart').click(); return false;           // チームの確認はふつうの挑戦と同じ
   }
   $('storyAuto').addEventListener('click', () => {
-    if (!autoOk(pickStage)) { toast('コンティニューなしでクリアしたステージだけオートで戦えます'); return; }
+    if (!autoOk(pickStage)) { toast('コンティニュー・アイテムなしでクリアしたステージだけオートで戦えます'); return; }
     if (!teamReady() || !canPlayStage(pickStage)) return;
     $('story').classList.add('hidden'); startStory(pickStage, true);
   });
@@ -6194,7 +6194,7 @@
   let skipN = 1;
   $('storySkip').addEventListener('click', () => {
     const i = pickStage;
-    if (!autoOk(i)) { toast('コンティニューなしでクリアしたステージだけスキップできます'); return; }
+    if (!autoOk(i)) { toast('コンティニュー・アイテムなしでクリアしたステージだけスキップできます'); return; }
     if (!teamReady()) return;
     const mx = skipCanN(i);
     if (mx < 1) { canPlayStage(i); return; }            // スタミナが足りない（回復の案内が出る）
@@ -6450,7 +6450,7 @@
   const ACHV = [
     {k: 'clear',   name: 'ステージをクリア',          u: '面', tiers: () => [10, 30, 60, STORY.length], val: () => storyClr.filter(Boolean).length},
     {k: 'boss',    name: 'ボスを倒す',                u: '人', tiers: () => [1, 3, 6, AREAS.length], val: () => bossesBeaten()},
-    {k: 'nc',      name: 'コンティニューなしでクリア', u: '面', tiers: () => [10, 30, 60, STORY.length], val: () => storyNC.filter(Boolean).length},
+    {k: 'nc',      name: 'コンティニュー・アイテムなしでクリア', u: '面', tiers: () => [10, 30, 60, STORY.length], val: () => storyNC.filter(Boolean).length},
     {k: 'rainbow', name: 'レインボーブロックを集める', u: '個', tiers: () => [30, 100, 200, STORY.length * 3], val: () => starTotal()},
     {k: 'endless', name: 'エンドレスで遊ぶ',          u: '回', tiers: () => [10, 50, 200, 500]},
     {k: 'sixty',   name: '60秒アタックで遊ぶ',        u: '回', tiers: () => [10, 50, 200, 500]},
