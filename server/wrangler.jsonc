@@ -21,6 +21,7 @@
     "RANK_TZ_HOURS": "9",
     "DEV_LOGIN": "0",
     // ゲスト登録（ログインなしでランキングに載る）。本番でログインだけにするときは "0" にする
-    "GUEST_SIGNUP": "1"
+    "GUEST_SIGNUP": "1",
+    "DUMMY_RANK": "1"
   }
 }

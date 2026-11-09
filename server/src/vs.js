@@ -17,9 +17,10 @@ export const MEDAL_SHOP = [
   { k: 'star3', price: 90 },
   { k: 'star6', price: 180 },
   { k: 'charm', price: 200 },
-  { k: 'pot_N', price: 300 },
-  { k: 'pot_R', price: 900 },
+  { k: 'gticket', price: 150 },
+  { k: 'gticket_hi', price: 2000 },
 ];
+// ポットはここには並べない（アイテムガチャとゴールドの秘密のショップだけ）
 export const VS_KINDS = ['simple', 'chara'];
 export const VS_LIMIT_SEC = 180;           // 3分たったら、カラーHPのいちばん高い色が低い方の勝ち
 const RATE_START = 1000, RATE_K = 32;
@@ -28,17 +29,17 @@ const RATE_START = 1000, RATE_K = 32;
 export const VS_MIN_GAMES = 5;
 export const VS_REWARDS = {
   simple: [
-    { upTo: 1,   label: '1位',       items: { pot_SR: 1, refresh100: 3, star9: 1 } },
-    { upTo: 3,   label: '2〜3位',    items: { pot_R: 2, refresh80: 3, star6: 1 } },
-    { upTo: 10,  label: '4〜10位',   items: { pot_N: 3, refresh50: 3, star3: 2 } },
-    { upTo: 50,  label: '11〜50位',  items: { refresh30: 3, slow: 1 } },
-    { upTo: 100, label: '51〜100位', items: { refresh30: 2 } },
+    { upTo: 1,   label: '1位',       items: { gticket_hi: 3, refresh100: 3, star9: 1 } },
+    { upTo: 3,   label: '2〜3位',    items: { gticket_hi: 2, refresh80: 3, star6: 1 } },
+    { upTo: 10,  label: '4〜10位',   items: { gticket_hi: 1, refresh50: 3, star3: 2 } },
+    { upTo: 50,  label: '11〜50位',  items: { gticket: 3, refresh30: 3, slow: 1 } },
+    { upTo: 100, label: '51〜100位', items: { gticket: 1, refresh30: 2 } },
     { upTo: 0,   label: '参加賞',    items: { refresh30: 1 } },
   ],
   chara: [
-    { upTo: 1,   label: '1位',       items: { pot_R: 1, refresh100: 2, star6: 1 } },
-    { upTo: 3,   label: '2〜3位',    items: { pot_R: 1, refresh80: 2, star3: 1 } },
-    { upTo: 10,  label: '4〜10位',   items: { pot_N: 2, refresh50: 2, star3: 1 } },
+    { upTo: 1,   label: '1位',       items: { gticket_hi: 2, refresh100: 2, star6: 1 } },
+    { upTo: 3,   label: '2〜3位',    items: { gticket_hi: 1, refresh80: 2, star3: 1 } },
+    { upTo: 10,  label: '4〜10位',   items: { gticket: 3, refresh50: 2, star3: 1 } },
     { upTo: 50,  label: '11〜50位',  items: { refresh30: 2 } },
     { upTo: 100, label: '51〜100位', items: { refresh30: 1 } },
   ],

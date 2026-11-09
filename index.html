@@ -17,7 +17,7 @@
   html.iospwa{height:var(--fullh);}
   html.iospwa body{height:100%;}
   html.iospwa .stagebg,html.iospwa .intro,html.iospwa #askBox,html.iospwa #tapStart,
-  html.iospwa #menu.overlay,html.iospwa #settings.overlay,html.iospwa #rank.overlay,html.iospwa #howto.overlay,html.iospwa #story.overlay,
+  html.iospwa #menu.overlay,html.iospwa #settings.overlay,html.iospwa #rank.overlay,html.iospwa #howto.overlay,html.iospwa #news.overlay,html.iospwa #story.overlay,
   html.iospwa #prac.overlay,html.iospwa #online.overlay,html.iospwa #vs.overlay,html.iospwa #gacha.overlay,html.iospwa #box.overlay,
   html.iospwa #shop.overlay,html.iospwa #daily.overlay{bottom:auto!important;height:var(--fullh)!important;}
 </style>
@@ -116,7 +116,7 @@
 
   .btn.vs{background:#6f7cff;color:#fff;box-shadow:0 5px 0 #3b45b8;}
   .btn.vs:active{box-shadow:0 2px 0 #3b45b8;}
-  #settings.overlay,#rank.overlay,#howto.overlay,#story.overlay,#prac.overlay,#online.overlay{position:fixed;inset:0;z-index:22;border-radius:0;padding:0;gap:0;justify-content:flex-start;text-align:left;color:#f6f0ff;
+  #settings.overlay,#rank.overlay,#howto.overlay,#news.overlay,#story.overlay,#prac.overlay,#online.overlay{position:fixed;inset:0;z-index:22;border-radius:0;padding:0;gap:0;justify-content:flex-start;text-align:left;color:#f6f0ff;
     background:linear-gradient(180deg, rgba(22,10,44,.92), rgba(22,10,44,.96)),
       var(--title-img, url('img/title.jpg')) center / cover no-repeat, #1f1236;}
   #story .modesel,#prac .modesel{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.25);}
@@ -711,6 +711,14 @@
   .mtile.low{flex-direction:row;min-height:58px;gap:8px;} .mtile.low .mi img{width:42px;height:42px;} .mtile.low .ml{font-size:12px;}
   #menu h1.logo{margin-top:58px;}
   .mtop{position:absolute;top:calc(env(safe-area-inset-top,0px) + 8px);left:10px;display:flex;gap:6px;z-index:3;}
+  .mtile.mini{position:relative;} .nbadge{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#ff3b5c;color:#fff;font-size:11px;font-weight:900;line-height:18px;text-align:center;box-shadow:0 0 0 2px #1f1236;animation:nbPop .4s ease-out;}
+  @keyframes nbPop{0%{transform:scale(0)}70%{transform:scale(1.25)}100%{transform:scale(1)}}
+  .news-item{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:14px;margin-top:10px;overflow:hidden;}
+  .news-item>button{all:unset;box-sizing:border-box;display:flex;gap:8px;align-items:center;width:100%;padding:12px 14px;cursor:pointer;}
+  .news-item .nt{flex:1;min-width:0;font-weight:800;font-size:14px;color:#fff;} .news-item .nd{font-size:11px;opacity:.7;white-space:nowrap;}
+  .news-item .nnew{background:#ff3b5c;color:#fff;font-size:10px;font-weight:900;border-radius:6px;padding:1px 6px;}
+  .news-item .nb{display:none;padding:0 14px 12px;font-size:13px;line-height:1.75;color:#eee6ff;white-space:pre-wrap;} .news-item.open .nb{display:block;}
+  .news-tag{font-size:10px;font-weight:800;border-radius:6px;padding:1px 6px;background:rgba(255,255,255,.18);}
   .mtile.mini{min-height:0;width:52px;padding:3px 0 4px;border-radius:12px;gap:1px;} .mtile.mini .mi img{width:34px;height:34px;} .mtile.mini .ml{font-size:9px;}
   .mtip{position:absolute;left:4px;right:4px;z-index:5;background:rgba(10,5,25,.95);border:2px solid #ffd24a;border-radius:14px;padding:10px 12px;color:#fff;font-size:13px;font-weight:700;line-height:1.5;text-align:left;pointer-events:none;box-shadow:0 6px 20px rgba(0,0,0,.6);}
   .mtip b{display:block;color:#ffd24a;font-size:14px;margin-bottom:2px;} .mtip.hidden{display:none;}
@@ -898,6 +906,7 @@
   .ustar{display:block;font-size:9px;line-height:1;color:#ffd24a;letter-spacing:-1px;text-shadow:0 0 3px #000;}
   .lbbox{margin-top:8px;padding:8px;border-radius:10px;background:rgba(255,210,74,.1);border:1px solid rgba(255,210,74,.35);line-height:1.6;}
   .lbbox .ustar{display:inline;font-size:13px;letter-spacing:0;}
+  .xprow{display:flex;align-items:center;gap:6px;margin-top:6px;background:rgba(0,0,0,.3);border-radius:10px;padding:4px 8px;font-size:12px;} .xprow img{width:34px;height:34px;} .xprow span{flex:1;min-width:0;} .xprow small{display:block;opacity:.8;} .xprow button{padding:6px 10px;border-radius:8px;border:0;font-weight:800;background:#2fc46a;color:#fff;} .xprow button:disabled{opacity:.4;}
   .potlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;} .potrow{display:flex;align-items:center;gap:6px;background:rgba(0,0,0,.3);border-radius:10px;padding:4px 8px;font-size:12px;} .potrow img{width:36px;height:36px;} .potrow span{margin-left:auto;color:#ffd24a;font-weight:800;}
   .lbsub{margin-top:10px;padding-top:8px;border-top:1px dashed rgba(255,255,255,.25);} .lbgo{margin-top:6px;border:0;border-radius:10px;padding:8px 12px;font-weight:900;background:linear-gradient(#ffd24a,#ff9d2a);color:#3a2000;} .lbgo:disabled{opacity:.4;}
   .potbtn{display:flex;align-items:center;gap:8px;} .potbtn img{width:34px;height:34px;}
@@ -1186,7 +1195,7 @@
   <img src="img/qr.png" width="220" height="220" alt="twistrush.com" style="background:#fff;border-radius:12px;">
   <p style="margin:14px 0 26px;font-size:18px;font-weight:bold;">twistrush.com</p>
   <button onclick="document.getElementById('pcGuard').style.display='none';try{sessionStorage.setItem('pcok','1')}catch(e){}" style="border:1px solid #888;background:transparent;color:#bbb;border-radius:8px;padding:8px 16px;font-size:12px;">このまま遊ぶ</button>
-  <nav style="margin-top:26px;display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;font-size:13px;"><a style="color:#bcaee0" href="/guide.html">遊び方</a><a style="color:#bcaee0" href="/terms.html">利用規約</a><a style="color:#bcaee0" href="/privacy.html">プライバシーポリシー</a><a style="color:#bcaee0" href="/law.html">特定商取引法に基づく表記</a><a style="color:#bcaee0" href="/payment.html">資金決済法に基づく表示</a><a style="color:#bcaee0" href="/contact.html">お問い合わせ</a></nav>
+  <nav style="margin-top:26px;display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;font-size:13px;"><a style="color:#bcaee0" href="/guide.html">遊び方</a><a style="color:#bcaee0" href="/terms.html">利用規約</a><a style="color:#bcaee0" href="/privacy.html">プライバシーポリシー</a><a style="color:#bcaee0" href="/law.html">特定商取引法に基づく表記</a><a style="color:#bcaee0" href="/payment.html">ゴールドコインについて</a><a style="color:#bcaee0" href="/contact.html">お問い合わせ</a></nav>
 </div>
 <script>
 (function(){
@@ -1222,6 +1231,7 @@
       <div class="mtop">
         <button class="mtile mini" id="howBtn" data-tip="ルールと操作のしかたを見る"><span class="mi"><img data-mimg="howto" alt=""></span><span class="ml">遊び方</span></button>
         <button class="mtile mini" id="setBtn" data-tip="背景・操作・音などを変える"><span class="mi"><img data-mimg="settings" alt=""></span><span class="ml">設定</span></button>
+        <button class="mtile mini" id="newsBtn" data-tip="お知らせ・イベント・アップデートの情報"><span class="mi" style="font-size:26px;line-height:34px">📰</span><span class="ml">ニュース</span></button>
       </div>
       <div class="menu-bottom mgrid">
         <button class="mtile wide story" id="storyBtn" data-tip="CPUと1対1で戦うメインのモード。ボスに勝つとキャラが仲間になる"><span class="mi"><img data-mimg="story" alt=""></span><span class="ml">ストーリー<small></small></span></button>
@@ -1237,11 +1247,18 @@
         </div>
         <div class="mtip hidden" id="menuTip"></div>
         <p class="mhint">長押しで説明が出ます</p>
-        <nav class="mlegal"><a href="/guide.html">遊び方</a><a href="/terms.html">利用規約</a><a href="/privacy.html">プライバシーポリシー</a><a href="/law.html">特定商取引法に基づく表記</a><a href="/payment.html">資金決済法に基づく表示</a><a href="/contact.html">お問い合わせ</a></nav>
+        <nav class="mlegal"><a href="/guide.html">遊び方</a><a href="/terms.html">利用規約</a><a href="/privacy.html">プライバシーポリシー</a><a href="/law.html">特定商取引法に基づく表記</a><a href="/payment.html">ゴールドコインについて</a><a href="/contact.html">お問い合わせ</a></nav>
       </div>
     </div>
 
     <!-- 遊び方ページ -->
+    <div class="overlay hidden" id="news" role="dialog" aria-label="ニュース">
+      <div class="how-head">
+        <button class="how-back" id="newsBack" aria-label="タイトルに戻る">‹ 戻る</button>
+        <h2>ニュース</h2>
+      </div>
+      <div class="how-body" id="newsBody"></div>
+    </div>
     <div class="overlay hidden" id="howto" role="dialog" aria-label="遊び方">
       <div class="how-head">
         <button class="how-back" id="howBack" aria-label="タイトルに戻る">‹ 戻る</button>
@@ -4751,7 +4768,7 @@
     {k: 'well',    ic: '⛲', t: '願いの泉にコインが沈んでいた！', d: '泉の精が「持っていきなさい」とほほえんだ。'},
   ];
   const evtImg = k => LOCAL_ART || !EVENT_BLOB[k] ? 'img/event/' + k + '.webp' : blobU(EVENT_BLOB[k]);
-  function mapEvtAmount(){ const r = Math.random(); const lo = r < 0.6 ? 10 : r < 0.9 ? 45 : 75, hi = r < 0.6 ? 40 : r < 0.9 ? 70 : 100; return lo + 5 * Math.floor(Math.random() * ((hi - lo) / 5 + 1)); }
+  function mapEvtAmount(){ const r = Math.random(); const lo = r < 0.6 ? 10 : r < 0.9 ? 25 : 40, hi = r < 0.6 ? 20 : r < 0.9 ? 35 : 50; return lo + 5 * Math.floor(Math.random() * ((hi - lo) / 5 + 1)); }
   function showMapEvent(){
     if ($('story').classList.contains('hidden')) return;
     const ev = MAP_EVT[Math.floor(Math.random() * MAP_EVT.length)], amt = mapEvtAmount();
@@ -4791,6 +4808,39 @@
   // 遊び方ページ
   $('howBtn').addEventListener('click', () => { audio(); $('howto').classList.remove('hidden'); $('howto').querySelector('.how-body').scrollTop = 0; });
   $('howBack').addEventListener('click', () => $('howto').classList.add('hidden'));
+  // ===== ニュース：news.json を書きかえて公開すると、新しいお知らせとして未読の数が出る =====
+  // 読んだかどうかは端末ごとに覚える。サーバーにつながらないときは、ゲームに入っているぶんを出す
+  const NEWS_URL = /^(localhost|127\.0\.0\.1|(www\.)?twistrush\.com)$/.test(location.hostname) ? '/news.json' : 'https://twistrush.com/news.json';
+  const NEWS_BUILTIN = [{id: 'n20261109', date: '2026-11-09', tag: 'お知らせ', title: 'ニュースができました', body: 'イベントやアップデートのお知らせは、ここに出ます。\n新しいお知らせが来ると、メニューの「ニュース」に数字が出ます。'}];
+  let news = NEWS_BUILTIN;
+  const newsEsc = t => String(t).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'})[c]);
+  const newsRead = () => new Set(loadJ('news_read', []));
+  const newsUnread = () => { const r = newsRead(); return news.filter(n => !r.has(n.id)).length; };
+  function newsBadge(){
+    const b = $('newsBtn'); let el = b.querySelector('.nbadge'); const c = newsUnread();
+    if (!c) { if (el) el.remove(); return; }
+    if (!el) { el = document.createElement('i'); el.className = 'nbadge'; b.appendChild(el); }
+    el.textContent = c > 99 ? '99+' : c;
+  }
+  async function newsFetch(){
+    try { const r = await fetch(NEWS_URL, {cache: 'no-store'}); if (!r.ok) throw 0; const j = await r.json(); const list = Array.isArray(j) ? j : j.items;
+      if (Array.isArray(list)) news = list.filter(n => n && n.id && n.title).sort((a, b) => String(b.date).localeCompare(String(a.date))); } catch (_) {}
+    newsBadge();
+  }
+  function markNews(ids){ const r = newsRead(); ids.forEach(id => r.add(id)); save('news_read', JSON.stringify([...r].slice(-300))); newsBadge(); }
+  function drawNews(){
+    const r = newsRead(), body = $('newsBody');
+    body.innerHTML = (news.length ? news.map(n => '<div class="news-item" data-id="' + newsEsc(n.id) + '"><button>' + (r.has(n.id) ? '' : '<span class="nnew">NEW</span>') +
+      (n.tag ? '<span class="news-tag">' + newsEsc(n.tag) + '</span>' : '') + '<span class="nt">' + newsEsc(n.title) + '</span><span class="nd">' + newsEsc(n.date || '') + '</span></button><div class="nb">' + newsEsc(n.body || '') + '</div></div>').join('')
+      : '<section><p>お知らせはまだありません。</p></section>') +
+      (newsUnread() ? '<button class="btn gray" id="newsAll" style="margin:14px 0">すべて読んだことにする</button>' : '');
+    body.querySelectorAll('.news-item>button').forEach(b => b.onclick = () => { const it = b.parentNode; it.classList.toggle('open'); if (it.classList.contains('open')) { markNews([it.dataset.id]); const nw = b.querySelector('.nnew'); if (nw) nw.remove(); } });
+    const all = $('newsAll'); if (all) all.onclick = () => { markNews(news.map(n => n.id)); drawNews(); };
+  }
+  $('newsBtn').addEventListener('click', () => { audio(); drawNews(); $('news').classList.remove('hidden'); $('newsBody').scrollTop = 0; newsFetch().then(() => { if (!$('news').classList.contains('hidden')) drawNews(); }); });
+  $('newsBack').addEventListener('click', () => { $('news').classList.add('hidden'); newsBadge(); });
+  setTimeout(() => { newsBadge(); newsFetch(); setInterval(newsFetch, 10 * 60 * 1000); }, 0);   // 下で作る道具（loadJなど）がそろってから
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) newsFetch(); });
   $('howStart').addEventListener('click', () => { $('howto').classList.add('hidden'); start('rank', {}); });
   $('howPractice').addEventListener('click', () => { $('howto').classList.add('hidden'); start('practice', {lv: pracLv}); });
   // 遊び方の見本ブロックを描く
@@ -4951,8 +5001,10 @@
   function sendScore(){
     clearInterval(overWait);
     $('rankJoin').classList.add('hidden'); $('rankRes').classList.add('hidden'); $('rankJoin').classList.remove('bye');
-    if (!isRec(gameMode) || score <= 0) return;
+    if (!isRec(gameMode)) return;
     if (!overVisible()) { whenOverShown(sendScore); return; }   // 広告で続けたら、最後のスコアだけを送る
+    awardPlay();
+    if (score <= 0) return;
     const b = {mode: gameMode, score, blocks: broken, dur: Math.round((now() - runStart) / 1000), ver: GAME_VER};
     if (rankTok()) { postScore(b); return; }
     rankPend = b;
@@ -5044,6 +5096,7 @@
     return {lead: ids[0] || null, ids: olKind === 'chara' ? ids : undefined, st: olKind === 'chara' ? teamStats() : undefined};
   }
   function olMedalShow(){ $('olMedal').textContent = '🏅 ' + (olInfo ? olInfo.balance.toLocaleString() : '—'); }
+  function olMedalSet(n){ if (olInfo) olInfo.balance = n || 0; $('olMedal').textContent = '🏅 ' + (n || 0).toLocaleString(); }
   function openOnline(){ $('online').classList.remove('hidden'); olView = 'top'; drawOnline(); }
   async function drawOnline(){
     const body = $('olBody');
@@ -5059,7 +5112,7 @@
       };
       olMedalShow(); return;
     }
-    if (olView === 'shop' || olView === 'ashop') return drawOlShop();
+    if (olView === 'shop') return drawOlShop();
     if (olKind === 'auto' && olView === 'top') return drawArena();
     if (olView === 'rank') return drawOlRank();
     if (olView === 'join') return drawOlJoin();
@@ -5135,21 +5188,20 @@
     $('olJoinGo').onclick = go; $('olCode').onkeydown = e => { if (e.key === 'Enter') go(); };
   }
   async function drawOlShop(){
-    const body = $('olBody'), ar = olView === 'ashop';
-    if (ar) { try { arInfo = await api('/api/arena', {tok: rankTok()}); } catch (_) {} }
-    else if (!olInfo) try { olInfo = await api('/api/medal', {tok: rankTok()}); } catch (_) {}
-    const wal = ar ? {balance: arInfo ? arInfo.coins : 0} : olInfo, mark = ar ? '🪙' : '🏅';
-    if (ar) $('olMedal').textContent = '🪙 ' + (wal.balance || 0).toLocaleString(); else olMedalShow();
-    const shop = ((ar ? arInfo : olInfo) || {}).shop || [];
-    const img = k => k.startsWith('pot_') ? potImg(k.slice(4)) : itemImg(k);
-    body.innerHTML = '<div class="olsec"><h3>🛒 ' + (ar ? 'アリーナ交換所' : '対戦メダルで交換') + '</h3><p>' + (ar ? 'アリーナコインはオートバトルでもらえる交換専用のコインです。' : '対戦メダルは対戦専用のコインです（お金では買えません）。') + '</p><div class="olshop">' +
-      shop.map(x => '<div class="olitem"><img src="' + img(x.k) + '" alt=""><b>' + itemLabel(x.k) + '</b><small>持っている数 ' + own(x.k) + '</small><button data-k="' + x.k + '"' + (wal && wal.balance < x.price ? ' disabled' : '') + '>' + mark + ' ' + x.price + '</button></div>').join('') +
+    const body = $('olBody');
+    if (!olInfo) try { olInfo = await api('/api/medal', {tok: rankTok()}); } catch (_) {}
+    const wal = olInfo, mark = '🏅';
+    olMedalShow();
+    const shop = (olInfo || {}).shop || [];
+    const img = invImg;
+    body.innerHTML = '<div class="olsec"><h3>🛒 対戦メダルで交換</h3><p>対戦メダルは、毎日のメダル・オンライン対戦・アリーナでもらえる交換専用のコインです（お金では買えません）。</p><div class="olshop">' +
+      shop.map(x => '<div class="olitem"><img src="' + img(x.k) + '" alt=""><b>' + itemLabel(x.k) + '</b><small>持っている数 ' + ownAny(x.k) + '</small><button data-k="' + x.k + '"' + (wal && wal.balance < x.price ? ' disabled' : '') + '>' + mark + ' ' + x.price + '</button></div>').join('') +
       '</div><button class="btn gray" id="olBackTop" style="margin-top:12px">もどる</button></div>';
     $('olBackTop').onclick = () => { olView = 'top'; drawOnline(); };
     body.querySelectorAll('.olitem button').forEach(b => b.onclick = async () => {
       b.disabled = true;
-      try { const r = await api(ar ? '/api/arena/buy' : '/api/medal/buy', {method: 'POST', body: JSON.stringify({k: b.dataset.k}), tok: rankTok()});
-        inv[r.k] = own(r.k) + 1; saveInv(); if (ar) arInfo.coins = r.coins; else olInfo.balance = r.balance; toast(itemLabel(r.k) + ' を交換しました'); drawOlShop(); }
+      try { const r = await api('/api/medal/buy', {method: 'POST', body: JSON.stringify({k: b.dataset.k}), tok: rankTok()});
+        giveItem(r.k, 1); olInfo.balance = r.balance; toast(itemLabel(r.k) + ' を交換しました'); drawOlShop(); }
       catch (e) { toast(e.message || 'サーバーにつながりませんでした'); b.disabled = false; }
     });
   }
@@ -5340,6 +5392,11 @@
     $('finalNote').textContent = !r ? '結果を待っています…' : ((OL_WHY[r.why] || {})[r.res] || '');
     $('rankJoin').classList.add('hidden'); $('rankRes').classList.add('hidden'); $('resStars').classList.add('hidden');
     const el = $('onlRes');
+    if (r && !r.paid) {                                  // シルバー：ランダム対戦は満額、部屋番号の対戦は半分
+      r.paid = true; const base = SILVER.online[r.res] || 0, c = Math.round(base * (r.rated === false ? SILVER.roomMul : 1));
+      if (c) { addCoins(c); r.silver = c; }
+    }
+    if (r && r.silver) $('finalNote').textContent += '　シルバー +' + r.silver;
     if (r) {
       const from = (onl.me ? onl.me.rate : r.rate - r.delta);
       el.className = 'rkres onlres ' + (r.res === 'win' ? 't1' : r.res === 'lose' ? 'lose' : '');
@@ -5378,7 +5435,7 @@
     $('titleBtn').click();
   }
 
-  // ===== オートバトル（オフライン対戦）：ほかの人の防衛チームと自動で戦う。1日3回、報酬はアリーナコイン（交換専用）=====
+  // ===== オートバトル（オフライン対戦）：ほかの人の防衛チームと自動で戦う。1日3回、報酬は対戦メダル（交換専用）とシルバー少し =====
   let arInfo = null;
   // 技の中身を、自動戦闘で使う5つの強さにまとめる（攻撃・回復・強化・妨害・クリティカル）
   function skCat(fx){
@@ -5413,9 +5470,9 @@
     body.innerHTML = '<div class="olwait"><div class="olspin"></div>読み込み中…</div>';
     try { arInfo = await api('/api/arena', {tok: rankTok()}); } catch (e) { body.innerHTML = '<div class="olsec">サーバーにつながりませんでした</div>'; return; }
     const a = arInfo, my = arenaTeam(), myPw = my.length ? arenaPower(my) : 0;
-    $('olMedal').textContent = '🪙 ' + a.coins.toLocaleString();
+    olMedalSet(a.medals);
     body.innerHTML = olTabsHTML() +
-      '<div class="ar-head"><span>アリーナコイン<b>🪙 ' + a.coins.toLocaleString() + '</b></span><span>今日の挑戦<b>' + a.left + ' / ' + a.tries + '</b></span><span>ポイント<b>' + a.points + '</b>' + a.win + '勝' + a.lose + '敗</span></div>' +
+      '<div class="ar-head"><span>対戦メダル<b>🏅 ' + (a.medals || 0).toLocaleString() + '</b></span><span>今日の挑戦<b>' + a.left + ' / ' + a.tries + '</b></span><span>ポイント<b>' + a.points + '</b>' + a.win + '勝' + a.lose + '敗</span></div>' +
       '<div class="olsec"><div style="display:flex;align-items:center;gap:8px"><b style="flex:1">あなたのチーム</b><span>戦闘力 <span class="ar-pw">' + myPw.toLocaleString() + '</span></span></div>' +
       '<div class="olteam">' + (teamMembers().map(u => olAv(u.id)).join('') || '<span>チームがいません</span>') + '<button class="btn gray" id="arTeam" style="width:auto;margin:0 0 0 auto;padding:8px 10px;white-space:nowrap">チーム変更</button></div>' +
       '<p style="margin:6px 0 0;font-size:12px">' + (a.defense ? '防衛チーム：登録済み（戦闘力 ' + a.power.toLocaleString() + '）。ほかの人がこのチームに挑んできます。' : '防衛チームがまだです。登録すると、ほかの人の対戦相手になります。') + '</p>' +
@@ -5425,15 +5482,15 @@
         '<div class="ar-team">' + c.team.map(u => olAv(u.id)).join('') + '</div></div><button data-o="' + c.id + '"' + (a.left <= 0 || !my.length ? ' disabled' : '') + '>挑戦</button></div>').join('')
         : '<p>まだ相手がいません。防衛チームを登録した人が増えると出てきます。</p>') +
       '<button class="btn gray" id="arReload" style="margin-top:8px">🔄 相手を入れかえる</button></div>' +
-      '<div class="olsec"><b>🏆 報酬</b><p style="margin:4px 0 0;font-size:12px">勝つと 🪙' + a.reward.win + '（戦闘力が上の相手に勝つと +' + a.reward.upset + '）、負けても 🪙' + a.reward.lose + '。アリーナコインは交換専用です。<br>戦闘力がすべてではありません。タイプのバランス、回復・強化・妨害の技、タイプの相性で勝ち負けが変わります。</p>' +
-      '<button class="btn" id="arShop" style="margin-top:8px">🛒 アリーナ交換所</button></div>' +
+      '<div class="olsec"><b>🏆 報酬</b><p style="margin:4px 0 0;font-size:12px">勝つと 🏅' + a.reward.win + '・シルバー ' + SILVER.arena.win + '（戦闘力が上の相手に勝つと 🏅+' + a.reward.upset + '）、負けても 🏅' + a.reward.lose + '・シルバー ' + SILVER.arena.lose + '。メダルは対戦メダルの交換所で使えます。<br>戦闘力がすべてではありません。タイプのバランス、回復・強化・妨害の技、タイプの相性で勝ち負けが変わります。</p>' +
+      '<button class="btn" id="arShop" style="margin-top:8px">🛒 対戦メダルの交換所</button></div>' +
       (a.logs.length ? '<div class="olsec"><b>🛡 防衛の記録</b>' + a.logs.map(l => '<div class="ar-log">' + (l.win ? '✅ 防衛成功' : '❌ 防衛失敗') + '　' + flagOf(l.cc) + olEsc(l.name) + '　<small>' + fmtTime(l.at) + '</small></div>').join('') + '</div>' : '');
     olFill(body); olTabsBind(body);
     $('arTeam').onclick = () => { $('online').classList.add('hidden'); openBox('char'); };
     $('arDef').onclick = async () => { if (!my.length) { toast('チームがいません'); return; }
       try { const r = await api('/api/arena/defense', {method: 'POST', body: JSON.stringify({team: my}), tok: rankTok()}); toast('防衛チームにしました（戦闘力 ' + r.power.toLocaleString() + '）'); drawArena(); } catch (e) { toast(e.message || 'サーバーにつながりませんでした'); } };
     $('arReload').onclick = drawArena;
-    $('arShop').onclick = () => { olView = 'ashop'; drawOnline(); };
+    $('arShop').onclick = () => { olView = 'shop'; olInfo = null; drawOnline(); };
     body.querySelectorAll('.ar-cand button').forEach(b => b.onclick = () => arenaFight(b.dataset.o, b));
   }
   async function arenaFight(opp, btn){
@@ -5442,6 +5499,7 @@
     try {
       if (!arInfo.defense) await api('/api/arena/defense', {method: 'POST', body: JSON.stringify({team}), tok: rankTok()});   // はじめての人は、今のチームを防衛にも
       const r = await api('/api/arena/fight', {method: 'POST', body: JSON.stringify({opp, team}), tok: rankTok()});
+      r.silver = r.win ? SILVER.arena.win : SILVER.arena.lose; addCoins(r.silver);
       playArena(r);
     } catch (e) { toast(e.message || 'サーバーにつながりませんでした'); btn.disabled = false; }
   }
@@ -5449,7 +5507,7 @@
   function playArena(r){
     const el = $('aBat'), B = r.battle, hp = [B.hp[0].slice(), B.hp[1].slice()], mx = B.hp, ch = [[0, 0, 0, 0], [0, 0, 0, 0]];
     const unit = (u, s, i) => '<div class="ab-u' + (i === 0 ? ' lead' : '') + '" data-s="' + s + '" data-i="' + i + '">' + olAv(u.id) + '<div class="hp"><i style="width:100%"></i></div><div class="ch"><i style="width:0%"></i></div><span class="buf"></span></div>';
-    el.innerHTML = '<div class="ab-top"><span>' + flagOf(r.opp.cc) + '<b>' + olEsc(r.opp.name) + '</b>　戦闘力 ' + r.opp.power.toLocaleString() + '</span><span>🪙 アリーナ</span></div>' +
+    el.innerHTML = '<div class="ab-top"><span>' + flagOf(r.opp.cc) + '<b>' + olEsc(r.opp.name) + '</b>　戦闘力 ' + r.opp.power.toLocaleString() + '</span><span>🛡 アリーナ</span></div>' +
       '<div class="ab-row ab-en">' + r.opp.team.map((u, i) => unit(u, 1, i)).join('') + '</div>' +
       '<div class="ab-mid" id="abMid"><div class="ab-vs">VS</div></div>' +
       '<div class="ab-row ab-me">' + r.me.map((u, i) => unit(u, 0, i)).join('') + '</div>' +
@@ -5497,8 +5555,8 @@
       while (i < B.log.length) apply(B.log[i++], true);
       [0, 1].forEach(s => [0, 1, 2, 3].forEach(k => { if (U(s, k)) setHp(s, k); }));
       const res = document.createElement('div'); res.className = 'ab-res' + (r.win ? '' : ' lose');
-      res.innerHTML = '<h2>' + (r.win ? 'WIN!' : 'LOSE') + '</h2><div class="rkres ' + (r.win ? 't1' : '') + '"><div class="rk-head">🪙 アリーナ</div>' +
-        '<div class="or-row" style="display:flex;justify-content:center;gap:10px;margin-top:8px"><div class="or-box" style="padding:8px 12px;border-radius:12px;background:rgba(255,255,255,.12)">アリーナコイン<b style="display:block;font-size:24px">+' + r.coin + '</b><span>のこり ' + r.coins.toLocaleString() + '</span></div>' +
+      res.innerHTML = '<h2>' + (r.win ? 'WIN!' : 'LOSE') + '</h2><div class="rkres ' + (r.win ? 't1' : '') + '"><div class="rk-head">🛡 アリーナ</div>' +
+        '<div class="or-row" style="display:flex;justify-content:center;gap:10px;margin-top:8px"><div class="or-box" style="padding:8px 12px;border-radius:12px;background:rgba(255,255,255,.12)">対戦メダル<b style="display:block;font-size:24px">+' + r.coin + '</b><span>のこり ' + (r.medals || 0).toLocaleString() + '　シルバー +' + r.silver + '</span></div>' +
         '<div class="or-box" style="padding:8px 12px;border-radius:12px;background:rgba(255,255,255,.12)">今日の挑戦<b style="display:block;font-size:24px">あと' + r.left + '</b><span>ポイント ' + r.points + '</span></div></div>' +
         '<button class="rk-see" id="abBack" style="margin-top:12px">もどる</button></div>';
       el.appendChild(res);
@@ -5511,7 +5569,11 @@
   }
   // 月間ランキングのごほうび：先月の順位でアイテムがもらえる（起動したとき・登録したときに確認）
   const RW_MODE = {sixty: '60秒アタック', rank: 'エンドレス'};
-  const itemLabel = k => k.startsWith('pot_') ? potName(k.slice(4)) : (ITEMS[k] ? ITEMS[k].name : k);
+  const TICKET_LABEL = {gticket: 'ガチャチケット', gticket_hi: 'SR以上確定チケット'};
+  const itemLabel = k => TICKET_LABEL[k] || (k.startsWith('pot_') ? potName(k.slice(4)) : (ITEMS[k] ? ITEMS[k].name : k));
+  const invImg = k => TICKET_LABEL[k] ? gImg(k === 'gticket' ? 'ticket' : 'ticket_hi') : k.startsWith('pot_') ? potImg(k.slice(4)) : itemImg(k);
+  const ownAny = k => TICKET_LABEL[k] ? (+load(k, '0') || 0) : own(k);
+  function giveItem(k, n){ if (TICKET_LABEL[k]) save(k, String((+load(k, '0') || 0) + n)); else { inv[k] = own(k) + n; saveInv(); } }
   async function checkRewards(){
     if (!rankTok()) return;
     if (running || !$('daily').classList.contains('hidden')) { setTimeout(checkRewards, 2000); return; }   // 毎日のプレゼントや試合が終わってから
@@ -5524,7 +5586,7 @@
         async () => {
           try {
             const c = await api('/api/reward/claim', {method: 'POST', body: JSON.stringify({mode: x.mode}), tok: rankTok()});
-            Object.entries(c.reward.items).forEach(([k, n]) => { inv[k] = own(k) + n; });
+            Object.entries(c.reward.items).forEach(([k, n]) => giveItem(k, n));
             saveInv(); toast('ごほうびを受け取りました'); setTimeout(checkRewards, 600);
           } catch (e) { toast(e.status === 409 ? 'もう受け取っています' : 'サーバーにつながりませんでした'); }
         }, () => {});
@@ -5540,7 +5602,7 @@
         '受け取る', 'あとで',
         async () => {
           try { const c = await api('/api/vs/reward/claim', {method: 'POST', body: JSON.stringify({kind: x.kind}), tok: rankTok()});
-            Object.entries(c.reward.items).forEach(([k, n]) => { inv[k] = own(k) + n; }); saveInv(); toast('プレゼントを受け取りました'); setTimeout(checkVsRewards, 600); }
+            Object.entries(c.reward.items).forEach(([k, n]) => giveItem(k, n)); toast('プレゼントを受け取りました'); setTimeout(checkVsRewards, 600); }
           catch (e) { toast(e.status === 409 ? 'もう受け取っています' : 'サーバーにつながりませんでした'); }
         }, () => {});
     } catch (_) {}
@@ -6008,15 +6070,22 @@
     star9:   {name: 'オクタ変換 9個', price: 350, desc: 'ふつうのブロック9個をランダムにオクタブロックへ変える', n: 9},
   };
   const ITEM_KEYS = Object.keys(ITEMS);
-  // 限界突破ポット：ショップでは買えない。アイテムガチャだけで出る。1個で★+1（LR2は2個、LR3〜LR5は3個）
+  // ポット：アイテムガチャとゴールドの秘密のショップだけで手に入る（メダル交換・ランキングの賞品には入らない）
+  // SR・MR・LR＝限界突破ポット（1個で★+1。LR2は2個、LR3〜LR5は3個）
+  // N・R＝経験値ポット（小・大）。中のキーは pot_N・pot_R のまま（前に持っていたN・Rのポットはそのまま経験値ポットになる）
   const POT_G = ['N', 'R', 'SR', 'MR', 'LR'];
-  const POT_COL = {N: '#c9c9c9', R: '#4fa8ff', SR: '#b77bff', MR: '#ffc83d', LR: '#ff5fd0'};
+  const XP_POT = {N: 1000, R: 5000};                 // 1個で入る経験値
+  const isXpPot = g => g in XP_POT;
+  const LB_POT_G = POT_G.filter(g => !isXpPot(g));
+  const POT_COL = {N: '#8ee66b', R: '#2fc46a', SR: '#b77bff', MR: '#ffc83d', LR: '#ff5fd0'};
   const potKey = g => 'pot_' + g;
-  const potName = g => '限界突破ポット（' + g + '）';
+  const potName = g => isXpPot(g) ? '経験値ポット（' + (g === 'N' ? '小' : '大') + '）' : '限界突破ポット（' + g + '）';
   const potImg = g => { const c = POT_COL[g];
     return 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><radialGradient id="a" cx=".4" cy=".35"><stop offset="0" stop-color="#fff"/><stop offset=".35" stop-color="' + c + '"/><stop offset="1" stop-color="#222"/></radialGradient></defs>' +
       '<circle cx="32" cy="34" r="30" fill="' + c + '" opacity=".25"/><rect x="24" y="8" width="16" height="8" rx="3" fill="#8a5a2b"/><path d="M22 16h20l-2 6c9 4 14 11 14 19 0 11-10 17-22 17S10 52 10 41c0-8 5-15 14-19z" fill="url(#a)" stroke="#fff" stroke-width="2"/>' +
-      '<path d="M32 30l3 7 7 .6-5.4 4.6 1.7 7-6.3-3.8-6.3 3.8 1.7-7L22 37.6l7-.6z" fill="#fff"/><text x="32" y="62" font-size="11" font-weight="900" text-anchor="middle" fill="#fff" stroke="#000" stroke-width="2" paint-order="stroke" font-family="sans-serif">' + g + '</text></svg>'); };
+      (isXpPot(g) ? '<text x="32" y="44" font-size="13" font-weight="900" text-anchor="middle" fill="#fff" stroke="#145a2a" stroke-width="2.5" paint-order="stroke" font-family="sans-serif">EXP</text>'
+        : '<path d="M32 30l3 7 7 .6-5.4 4.6 1.7 7-6.3-3.8-6.3 3.8 1.7-7L22 37.6l7-.6z" fill="#fff"/>') +
+      '<text x="32" y="62" font-size="11" font-weight="900" text-anchor="middle" fill="#fff" stroke="#000" stroke-width="2" paint-order="stroke" font-family="sans-serif">' + (g === 'N' ? 'S' : g === 'R' ? 'L' : g) + '</text></svg>'); };
   const potNeed = u => { const t = tierOf(u.id); return t >= 3 ? 3 : t === 2 ? 2 : 1; };
   const LOAD_MAX = 2;          // 持っていけるアイテムの種類
   const CONT_MAX = 3;          // ストーリーのコンティニュー（1ステージ）
@@ -6024,14 +6093,14 @@
   const LOSE_COIN = 3, STAR_COIN = 5;
   // 毎日のプレゼント（7日で1周。休んでも1日目には戻らない）。グレードで倍率が上がる
   const DAILY = [20, 20, 30, 30, 40, 40, 100];
-  const DAILY_GOLD = 10;                                   // 7日目はゴールドも少しもらえる
+  const DAILY_HI = 1;                                      // 7日目はSR以上確定チケットもつく（週に1枚）
   // グレード：倒したボスの数で決まる
   const GRADES = [
     {name: 'ルーキー', min: 0, mul: 1},
-    {name: 'ブロンズ', min: 2, mul: 1.5},
-    {name: 'シルバー', min: 4, mul: 2},
-    {name: 'ゴールド', min: 6, mul: 2.5},
-    {name: 'マスター', min: 9, mul: 3},
+    {name: 'ブロンズ', min: 2, mul: 1.25},
+    {name: 'シルバー', min: 4, mul: 1.5},
+    {name: 'ゴールド', min: 6, mul: 1.75},
+    {name: 'マスター', min: 9, mul: 2},
   ];
   // 課金（アプリ版で使う。いまは表示だけ）
   const PACKS = [
@@ -6855,8 +6924,9 @@
   }
   // シルバーガチャ（無料コイン）とゴールドガチャ（有料コイン）。確率は G_RATE
   let gTab = 'silver';
+  const TK_MULTI = 10;                                  // チケットをまとめて使うときの最大枚数
   const G_COST = {silver: {one: 100, ten: 1000}, gold: {one: 100, ten: 1000}, item: {one: 100, ten: 1000}};
-  // アイテムガチャ：ショップで買えないアイテム（いまは限界突破ポット）だけが出る。シルバーコインで引く。10連は1個SR以上確定
+  // アイテムガチャ：ショップでは買えないポットだけが出る（N・Rは経験値ポット、SR以上は限界突破ポット）。シルバーコインで引く。10連は1個SR以上確定
   // 出るものは同じ。ゴールド（課金）版のほうが上のポットが出やすい
   const IG_RATE = {silver: {LR: 1, MR: 5, SR: 14, R: 30, N: 50}, gold: {LR: 4, MR: 12, SR: 34, R: 40, N: 10}};
   const igRateText = k => { const r = IG_RATE[k]; return ['LR', 'MR', 'SR', 'R', 'N'].map(g => g + ' ' + r[g] + '%').join('／'); };
@@ -6915,14 +6985,16 @@
       if (freeTenLeft()) h += '<button class="btn gacha" data-g="free">初回限定 無料10連（11体）</button>';
       h += '<button class="btn" data-g="one">1回 ' + coinImg('coin_silver') + G_COST.silver.one + '</button><button class="btn gacha" data-g="ten">10連（11体） ' + coinImg('coin_silver') + G_COST.silver.ten.toLocaleString() + '</button>';
       if (t.ticket > 0) h += '<button class="btn" data-g="ticket">' + coinImg('ticket') + 'チケットで1回（' + t.ticket + '枚）</button>';
+      if (t.ticket > 1) h += '<button class="btn gacha" data-g="ticket_m">' + coinImg('ticket') + 'チケットでまとめて' + Math.min(t.ticket, TK_MULTI) + '回</button>';
     } else {
       h += '<button class="btn shop" data-g="gone">1回 ' + coinImg('coin_gold') + G_COST.gold.one + '</button><button class="btn shop" data-g="goldten">10連（11体） ' + coinImg('coin_gold') + G_COST.gold.ten.toLocaleString() + '</button>';
       if (t.ticket_hi > 0) h += '<button class="btn shop" data-g="ticket_hi">' + coinImg('ticket_hi') + '確定チケット（' + t.ticket_hi + '枚）</button>';
+      if (t.ticket_hi > 1) h += '<button class="btn shop" data-g="ticket_hi_m">' + coinImg('ticket_hi') + '確定チケットでまとめて' + Math.min(t.ticket_hi, TK_MULTI) + '回</button>';
     }
     if (gTab !== 'item') { const ct = cTickets(); Object.keys(ct).filter(id => ct[id] > 0 && ALLC_IDX.has(id)).forEach(id => {
       h += '<button class="btn shop" data-g="char:' + id + '">' + coinImg('ticket_hi') + fullName(ALLC[ALLC_IDX.get(id)]) + ' 確定チケット（' + ct[id] + '枚）</button>'; }); }
     if (!gRev) h += '<button class="btn gray" data-g="test">テスト用：コイン・チケットを増やす（公開前に消す）</button>' +
-      (gTab === 'item' ? '<div class="rate">アイテムガチャ：ショップでは買えないアイテムが出る（いまは限界突破ポット）。' + 'シルバー版：' + igRateText('silver') + '。ゴールド版（課金）：' + igRateText('gold') + '。出るものは同じ。10連は1個SR以上が確定。</div>' : '<div class="rate">' + (gTab === 'silver' ? 'シルバーガチャ：無料のシルバーコインで引ける。' : 'ゴールドガチャ：有料のゴールドコインで引ける。高グレードが出やすい（予定）。') +
+      (gTab === 'item' ? '<div class="rate">アイテムガチャ：ショップでは買えないポットが出る（N＝経験値ポット小、R＝経験値ポット大、SR・MR・LR＝限界突破ポット）。' + 'シルバー版：' + igRateText('silver') + '。ゴールド版（課金）：' + igRateText('gold') + '。出るものは同じ。10連は1個SR以上が確定。</div>' : '<div class="rate">' + (gTab === 'silver' ? 'シルバーガチャ：無料のシルバーコインで引ける。' : 'ゴールドガチャ：有料のゴールドコインで引ける。高グレードが出やすい（予定）。') +
       (gTab === 'gold' ? '出る確率：' + rateText(G_RATE.gold) + '。確定チケット（SR以上確定）：' + rateText(G_RATE.hi) + '。' : '出る確率：' + rateText(G_RATE.silver) + '（ガチャチケットも同じ）。') + '10連は1体SR以上が確定。キャラ確定チケットはそのキャラが100%。同じキャラも1体ずつボックスに入ります。</div>');
     $('gachaFoot').innerHTML = h;
     $('gachaCoin').innerHTML = '';
@@ -6995,6 +7067,10 @@
       if (!payG(c)) return;
     }
     else if (String(kind).startsWith('char:')) { const t = cTickets(), id = kind.slice(5); if (!(t[id] > 0)) return; t[id]--; if (!t[id]) delete t[id]; save('cticket', JSON.stringify(t)); }
+    else if (kind === 'ticket_m' || kind === 'ticket_hi_m') {   // チケットをまとめて（最大10枚）
+      const base = kind === 'ticket_m' ? 'ticket' : 'ticket_hi', k2 = base === 'ticket' ? 'gticket' : 'gticket_hi', c = +load(k2, '0') || 0;
+      n = Math.min(c, TK_MULTI); if (n <= 0) return; save(k2, String(c - n)); gachaGo(n, base); return;
+    }
     else if (kind === 'ticket' || kind === 'ticket_hi') { const k2 = kind === 'ticket' ? 'gticket' : 'gticket_hi', c = +load(k2, '0') || 0; if (c <= 0) return; save(k2, String(c - 1)); }
     gachaGo(n, kind);
   }
@@ -7119,9 +7195,9 @@
       fillFaces(body);
     } else {
       body.innerHTML = '<section><h3>アイテム（ストーリーに2つまで持っていける）</h3><div class="loadout" id="boxLoad"></div></section>' +
-        '<section><h3>限界突破ポット（アイテムガチャで出る・ショップでは買えない）</h3><div class="potlist">' +
-        POT_G.map(g => '<div class="potrow"><img src="' + potImg(g) + '" alt=""><b>' + potName(g) + '</b><span>所持 ' + own(potKey(g)) + '</span></div>').join('') +
-        '</div><p class="thint">キャラの詳細 →「限界突破」で使います。同じグレードのキャラに1個で★+1。</p></section>';
+        '<section><h3>ポット（アイテムガチャ・秘密のショップで手に入る）</h3><div class="potlist">' +
+        LB_POT_G.concat(['N', 'R']).map(g => '<div class="potrow"><img src="' + potImg(g) + '" alt=""><b>' + potName(g) + '</b><span>所持 ' + own(potKey(g)) + '</span></div>').join('') +
+        '</div><p class="thint">限界突破ポット：キャラの詳細 →「限界突破」で、同じグレードのキャラに使います。<br>経験値ポット：キャラの詳細 →「LVアップ」で、どのキャラにも使えます（小 +' + XP_POT.N.toLocaleString() + '・大 +' + XP_POT.R.toLocaleString() + '）。</p></section>';
       const lo = $('loadout'); body.querySelector('#boxLoad').replaceWith(lo); lo.classList.add('inbox'); drawLoadout();
     }
   }
@@ -7193,6 +7269,7 @@
       const pn = Math.max(1, Math.ceil(mats.length / MAT_PER)); if (matPage >= pn) matPage = pn - 1; if (matPage < 0) matPage = 0;
       const pg = mats.slice(matPage * MAT_PER, matPage * MAT_PER + MAT_PER);
       const pv = feedPreview(u);
+      h += xpPotHTML(u, atCap);
       h += '<div class="dsec"><p>材料を押して選び（何体でもOK）、「まとめて合成」で経験値を入れます。材料にしたキャラはいなくなります。同じキャラは1.5倍。チームに入っているキャラとロック中のキャラ（🔒）は材料にできません。' + (nLock ? '（ロック中 ' + nLock + '体は一覧に出していません）' : '') + '</p>' +
         (atCap ? '<p class="dwarn">今はレベル上限です。先に限界突破で上限を上げてください。</p>' : '') +
         '<div class="cfilt"><b>しぼりこみ</b>' + [['all', '全部']].concat(GR5.map(g => [g, g]), [['same', '同じキャラ']]).map(([k, n]) => '<button data-mf="' + k + '" class="' + (matF === k ? 'on' : '') + '">' + n + '</button>').join('') + '</div>' +
@@ -7215,6 +7292,23 @@
     body.innerHTML = h;
     body.querySelectorAll('.tic').forEach(el => el.appendChild(charIcon(+el.dataset.ci, 40)));
     const di = body.querySelector('.dimg'); if (di) di.appendChild(charIcon(ci, 120));
+  }
+  // 経験値ポット：材料のキャラを使わずに経験値を入れる
+  function xpPotHTML(u, atCap){
+    return '<div class="dsec lbsub"><p><b>経験値ポットを使う</b>：キャラを材料にしないで経験値を入れます。上限をこえる分はむだになります。</p>' +
+      ['N', 'R'].map(g => { const have = own(potKey(g));
+        return '<div class="xprow"><img src="' + potImg(g) + '" alt=""><span>' + potName(g) + '<small>+' + XP_POT[g].toLocaleString() + '／所持 ' + have + '</small></span>' +
+          '<button data-xp="' + g + ':1"' + (have && !atCap ? '' : ' disabled') + '>1個</button><button data-xp="' + g + ':max"' + (have && !atCap ? '' : ' disabled') + '>上限まで</button></div>'; }).join('') + '</div>';
+  }
+  function useXpPot(uid, g, mode){
+    const u = unitOf(uid), k = potKey(g); if (!u || !isXpPot(g)) return;
+    if (u.lv >= capOf(u)) { toast('レベル上限です。先に限界突破してください'); return; }
+    let n = 0; const have = own(k);
+    while (n < have && (n === 0 || (mode === 'max' && lvAfter(u, n * XP_POT[g]).lv < capOf(u)))) n++;
+    if (!n) { toast(potName(g) + 'がありません'); return; }
+    const was = u.lv, gain = n * XP_POT[g], r = lvAfter(u, gain);
+    inv[k] = have - n; saveInv(); u.lv = r.lv; u.exp = r.exp; saveUnits(); drawBox();
+    upFx(ciOf(u), [], r.lv > was ? 'LEVEL UP!' : 'EXP UP!', (r.lv > was ? 'LV' + was + ' → <b>LV' + r.lv + '</b>' : '経験値 <b>+' + gain.toLocaleString() + '</b>') + '<br><small>' + potName(g) + ' ×' + n + '</small>', r.lv > was ? 'lvup' : 'exp');
   }
   // ロック：大事なキャラを材料に使えないようにする
   function toggleLock(u){ if (!u) return; u.lock = !u.lock; if (!u.lock) delete u.lock; else feedSel.delete(u.u); saveUnits(); toast(u.lock ? '🔒 ロックしました（材料にできなくなります）' : '🔓 ロックを外しました'); }
@@ -7321,7 +7415,8 @@
     h += ot.length ? '<div class="lbmats">' + ot.slice(0, MAT_PER).map(m => '<button data-osel="' + m.u + '" class="' + (m.lock ? 'lk' : lbSel.has(m.u) ? 'sel' : '') + '"><span class="tic" data-ci="' + ciOf(m) + '"></span>' + (isUpMat(u, m) ? '<i class="maxmk">' + CHAR_STAT[m.id].grade + ' MAX</i>' : '') + 'LV' + m.lv + (m.star ? ' ★' + m.star : '') + (m.lock ? '<i>🔒ロック中</i>' : teams.some(tt => tt.includes(m.u)) ? '<i>編成中</i>' : '') + '</button>').join('') + '</div>' +
          '<button class="lbgo" data-ogo="1"' + (rd && lbSel.size >= need ? '' : ' disabled') + '>選んだ' + lbSel.size + '体で★+1（必要 ' + need + '体）</button>'
        : '<p>同じグレードのほかのキャラがいません。</p>';
-    h += '</div><div class="dsec lbsub"><p><b>ポットで限界突破</b>：' + potName(g) + 'を <b>' + pn + '個</b>使って★+1。ポットはアイテムガチャで出ます（ショップでは買えません）。</p>' +
+    if (isXpPot(g)) return h + '</div>';                // N・Rは限界突破ポットなし（同じキャラ・ほかのキャラで上げる）
+    h += '</div><div class="dsec lbsub"><p><b>ポットで限界突破</b>：' + potName(g) + 'を <b>' + pn + '個</b>使って★+1。ポットはアイテムガチャと、ゴールドの秘密のショップで手に入ります。</p>' +
          '<button class="lbgo potbtn" data-pot="1"' + (rd && have >= pn ? '' : ' disabled') + '><img src="' + potImg(g) + '" alt="">ポットを使う（所持 ' + have + '個／必要 ' + pn + '個）</button></div>';
     return h;
   }
@@ -7351,6 +7446,7 @@
   function limitBreakPot(uid){
     const u = unitOf(uid); if (!u || (u.star || 0) >= starMaxOf(u) || !lbReady(u)) return;
     const g = CHAR_STAT[u.id].grade, k = potKey(g), pn = potNeed(u);
+    if (isXpPot(g)) return;
     if (own(k) < pn) { toast(potName(g) + 'が足りません'); return; }
     askYes(potName(g) + 'を' + pn + '個使って、★を1つ上げますか？<br>レベル上限 LV' + capOf(u) + ' → LV' + Math.min(lvMaxOf(u), capOf(u) + 10), () => {
       inv[k] = own(k) - pn; saveInv(); lbStarUp(u, [], potName(g) + ' ×' + pn);
@@ -7445,6 +7541,7 @@
       const os = e.target.closest('[data-osel]'); if (os) { const id = os.dataset.osel, m = unitOf(id); if (m && m.lock) { toast('ロック中のキャラは材料にできません'); return; } lbSel.has(id) ? lbSel.delete(id) : lbSel.add(id); drawBox(); return; }
       if (e.target.closest('[data-ogo]')) { limitBreakOthers(boxDetail); return; }
       if (e.target.closest('[data-pot]')) { limitBreakPot(boxDetail); return; }
+      const xb = e.target.closest('[data-xp]'); if (xb) { const [g, m] = xb.dataset.xp.split(':'); useXpPot(boxDetail, g, m); return; }
       const fb = e.target.closest('[data-feed]'); if (fb) { const id = fb.dataset.feed; feedSel.has(id) ? feedSel.delete(id) : feedSel.add(id); drawBox(); return; }
       const mf = e.target.closest('[data-mf]'); if (mf) { matF = mf.dataset.mf; matPage = 0; drawBox(); return; }
       const fa = e.target.closest('[data-fact]');
@@ -8326,6 +8423,15 @@
     return (c ? ' コイン +' + c + '（' + parts.join('・') + '）。' : '') +
       (limited ? ' このステージの再クリアのコインは今日はもらいました（また明日）。' : '');
   }
+  // シルバーの配り方（どのモードも1分あたり だいたい10枚にそろえる）
+  const SILVER = {endlessPerMin: 10, endlessMin: 3, endlessMax: 60, sixty: 10, online: {win: 25, draw: 12, lose: 8}, roomMul: 0.5, arena: {win: 10, lose: 3}};
+  function awardPlay(){
+    if (lossPaid || (gameMode !== 'rank' && gameMode !== 'sixty')) return;
+    lossPaid = true;
+    const sec = (now() - runStart) / 1000;
+    const c = gameMode === 'sixty' ? SILVER.sixty : Math.max(SILVER.endlessMin, Math.min(SILVER.endlessMax, Math.round(sec / 60 * SILVER.endlessPerMin)));
+    addCoins(c); $('finalNote').textContent += '　シルバー +' + c;
+  }
   function awardLoss(){
     if (gameMode !== 'story' || lossPaid) return;
     lossPaid = true; addCoins(LOSE_COIN);
@@ -8340,7 +8446,7 @@
     const g = gradeNow(), gi = GRADES.indexOf(g), nx = GRADES[gi + 1];
     $('dailyGrade').textContent = 'グレード：' + g.name + '（もらえる数 ×' + g.mul + '）';
     $('dailyRow').innerHTML = DAILY.map((_, k) => '<div class="d' + (k < d.i ? ' done' : '') + (k === d.i ? ' now' : '') + (k === 6 ? ' big' : '') + '">' +
-      (k + 1) + '日目' + coinTag() + '<b>' + dailyAmt(k, g) + '</b>' + (k === 6 ? '<small class="dgold"><img src="' + gImg('coin_gold') + '" alt="">+' + DAILY_GOLD + '</small>' : '') + '</div>').join('');
+      (k + 1) + '日目' + coinTag() + '<b>' + dailyAmt(k, g) + '</b>' + (k === 6 ? '<small class="dgold"><img src="' + gImg('ticket_hi') + '" alt="">+' + DAILY_HI + '</small>' : '') + '</div>').join('');
     $('dailyNote').textContent = nx ? 'ボスをあと' + (nx.min - bossesBeaten()) + '人倒すと「' + nx.name + '」（×' + nx.mul + '）になります。' : 'いちばん上のグレードです。';
     $('dailyAd').disabled = false; $('dailyGet').disabled = false;
     $('daily').classList.remove('hidden');
@@ -8348,7 +8454,7 @@
       const a = dailyAmt(d.i, g) * m;
       save('daily', JSON.stringify({i: (d.i + 1) % DAILY.length, last: today()}));
       addCoins(a); $('daily').classList.add('hidden');
-      if (d.i === 6) { if (!acctToken) { gold += DAILY_GOLD; save('gold', String(gold)); } toast('ゴールド +' + DAILY_GOLD); }
+      if (d.i === 6) { giveItem('gticket_hi', DAILY_HI); toast('SR以上確定チケット +' + DAILY_HI); }
       toast('コイン +' + a);
     };
     $('dailyGet').onclick = () => claim(1);

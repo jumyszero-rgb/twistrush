@@ -1,4 +1,4 @@
-import { arenaHome, arenaSetDefense, arenaFight, arenaBuy } from './arena.js';
+import { arenaHome, arenaSetDefense, arenaFight } from './arena.js';
 import { Lobby, Room, MEDAL, MEDAL_SHOP, VS_KINDS, medalOf, medalDaily, medalTake, vsTop, vsRewards, vsClaim } from './vs.js';
 export { Lobby, Room };
 // TWIST RUSH サーバー（Cloudflare Workers + D1）
@@ -343,17 +343,18 @@ async function api(env, req, url) {
     const w = await walletOf(env, me.id);
     if (w.total < amount) return json(env, req, { error: 'ゴールドコインが足りません', gold: w }, 402);
     // 買ったゴールド（期限の近いものから）→ 配ったゴールド の順に減らす
-    let left = amount; const stmts = [], t = nowSec();
+    let left = amount, nLog = 0; const stmts = [], t = nowSec();
+    const refN = sfx => (nLog++ ? ref + '-' + sfx : ref);   // 1つ目はそのままの ref（2回払いの確認に使う）。2つ目からは後ろに印
     const lots = (await env.DB.prepare('SELECT id, source, left_n FROM gold_lots WHERE account_id = ? AND left_n > 0 AND expires_at > ? ORDER BY expires_at ASC, id ASC').bind(me.id, t).all()).results || [];
     for (const l of lots) {
       const take = Math.min(left, l.left_n); if (!take) continue;
       stmts.push(env.DB.prepare('UPDATE gold_lots SET left_n = left_n - ? WHERE id = ? AND left_n >= ?').bind(take, l.id, take));
-      stmts.push(env.DB.prepare('INSERT INTO ledger (account_id, source, delta, reason, ref, created_at) VALUES (?, ?, ?, ?, ?, ?)').bind(me.id, l.source, -take, 'spend:' + reason, ref + (stmts.length ? '-' + l.id : ''), t));
+      stmts.push(env.DB.prepare('INSERT INTO ledger (account_id, source, delta, reason, ref, created_at) VALUES (?, ?, ?, ?, ?, ?)').bind(me.id, l.source, -take, 'spend:' + reason, refN(l.id), t));
       left -= take; if (!left) break;
     }
     if (left > 0) {
       stmts.push(env.DB.prepare("UPDATE wallet SET balance = balance - ? WHERE account_id = ? AND source = 'free'").bind(left, me.id));
-      stmts.push(env.DB.prepare('INSERT INTO ledger (account_id, source, delta, reason, ref, created_at) VALUES (?, ?, ?, ?, ?, ?)').bind(me.id, 'free', -left, 'spend:' + reason, ref + (stmts.length ? '-free' : ''), t));
+      stmts.push(env.DB.prepare('INSERT INTO ledger (account_id, source, delta, reason, ref, created_at) VALUES (?, ?, ?, ?, ?, ?)').bind(me.id, 'free', -left, 'spend:' + reason, refN('free'), t));
     }
     await env.DB.batch(stmts);
     return json(env, req, { ok: true, gold: await walletOf(env, me.id) });
@@ -374,7 +375,7 @@ async function api(env, req, url) {
   if (p.startsWith('/api/arena/') && M === 'POST') {
     const b = await req.json().catch(() => ({})), op = p.slice(11), t = nowSec();
     const me2 = Object.assign({}, me, { cc: (await env.DB.prepare('SELECT country FROM accounts WHERE id = ?').bind(me.id).first() || {}).country || '' });
-    const r = op === 'defense' ? await arenaSetDefense(env, me2, b.team, t) : op === 'fight' ? await arenaFight(env, me2, b, t) : op === 'buy' ? await arenaBuy(env, me2, String(b.k || ''), t) : { error: 'not found' };
+    const r = op === 'defense' ? await arenaSetDefense(env, me2, b.team, t) : op === 'fight' ? await arenaFight(env, me2, b, t) : { error: 'not found' };
     return r.error ? fail(env, req, r.error, 409) : json(env, req, r);
   }
   // ---- 対戦の月間プレゼント ----
@@ -494,11 +495,11 @@ async function rankPost(env, req, me) {
 // ---------- 月間ランキングのごほうび ----------
 // 先月（日本時間）の自己ベストの順位で決まる。中身はここで変えられる（ゲームの更新なしで変わる）
 const MONTH_REWARDS = [
-  { upTo: 1,   label: '1位',       items: { pot_SR: 1, refresh100: 3, star9: 1 } },
-  { upTo: 3,   label: '2〜3位',    items: { pot_R: 2, refresh80: 3, star6: 1 } },
-  { upTo: 10,  label: '4〜10位',   items: { pot_N: 3, refresh50: 3, star3: 2 } },
-  { upTo: 50,  label: '11〜50位',  items: { refresh30: 3, slow: 1 } },
-  { upTo: 100, label: '51〜100位', items: { refresh30: 2 } },
+  { upTo: 1,   label: '1位',       items: { gticket_hi: 3, refresh100: 3, star9: 1 } },
+  { upTo: 3,   label: '2〜3位',    items: { gticket_hi: 2, refresh80: 3, star6: 1 } },
+  { upTo: 10,  label: '4〜10位',   items: { gticket_hi: 1, refresh50: 3, star3: 2 } },
+  { upTo: 50,  label: '11〜50位',  items: { gticket: 3, refresh30: 3, slow: 1 } },
+  { upTo: 100, label: '51〜100位', items: { gticket: 1, refresh30: 2 } },
   { upTo: 0,   label: '参加賞',    items: { refresh30: 1 } },          // 0 は「それ以下ぜんぶ」
 ];
 const REWARD_MODES = ['sixty', 'rank'];
@@ -528,6 +529,39 @@ async function setCountry(env, req, id) { const c = countryOf(req); if (c) await
 
 // ---------- 準備（テーブルを作る・署名用の秘密を用意する）。1つの実行環境につき1回だけ ----------
 let ready = null;
+// ---------- テスト用のダミー（ランキングがさびしくないように）----------
+// DUMMY_RANK="1" のあいだだけ20人ぶん入れる。毎日入れなおすので「今日」「今週」にも出る。
+// 公開前に DUMMY_RANK="0" にすると、次に起動したとき全部消える（IDが dummy_ で始まるものだけ）
+const DUMMY = [
+  ['Sora', 'JP'], ['Mia', 'US'], ['Lucas', 'BR'], ['Haneul', 'KR'], ['Emma', 'FR'], ['Ken', 'JP'], ['Noah', 'CA'], ['Lina', 'DE'],
+  ['Arjun', 'IN'], ['Yui', 'JP'], ['Mateo', 'MX'], ['Chloe', 'GB'], ['Ploy', 'TH'], ['Rizky', 'ID'], ['Ana', 'ES'], ['Wei', 'TW'],
+  ['Giulia', 'IT'], ['Minh', 'VN'], ['Jack', 'AU'], ['Riko', 'JP'],
+];
+async function dummyRank(env) {
+  const on = String(env.DUMMY_RANK || '0') === '1', del = [
+    "DELETE FROM scores WHERE player LIKE 'dummy\\_%' ESCAPE '\\'", "DELETE FROM ratings WHERE account_id LIKE 'dummy\\_%' ESCAPE '\\'",
+    "DELETE FROM ratings_month WHERE account_id LIKE 'dummy\\_%' ESCAPE '\\'", "DELETE FROM accounts WHERE id LIKE 'dummy\\_%' ESCAPE '\\'"];
+  const t = nowSec(), day = new Date((t + TZ) * 1000).toISOString().slice(0, 10);
+  const mk = await env.DB.prepare("SELECT v FROM meta WHERE k = 'dummy_day'").first();
+  if (!on) { if (mk) { await env.DB.batch(del.concat("DELETE FROM meta WHERE k = 'dummy_day'").map(q => env.DB.prepare(q))); } return; }
+  if (mk && mk.v === day) return;
+  const month = new Date((t + TZ) * 1000).toISOString().slice(0, 7), dayStart = t - ((t + TZ) % 86400);
+  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const q = del.map(x => env.DB.prepare(x));
+  DUMMY.forEach(([name, cc], i) => {
+    const id = 'dummy_' + String(i + 1).padStart(2, '0'), at = Math.min(t, dayStart + rnd(60, Math.max(120, t - dayStart)));
+    q.push(env.DB.prepare('INSERT INTO accounts (id, name, created_at, last_login, banned, country) VALUES (?, ?, ?, ?, 0, ?)').bind(id, name, t, t, cc));
+    q.push(env.DB.prepare('INSERT INTO scores (player, name, mode, score, blocks, dur, ver, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').bind(id, name, 'sixty', rnd(15, 120) * 100, rnd(30, 200), 60, 'dummy', at));
+    q.push(env.DB.prepare('INSERT INTO scores (player, name, mode, score, blocks, dur, ver, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').bind(id, name, 'rank', rnd(30, 400) * 100, rnd(60, 900), rnd(120, 900), 'dummy', at));
+    for (const kind of ['simple', 'chara']) {
+      const rate = rnd(880, 1420), w = rnd(3, 30), l = rnd(3, 25);
+      q.push(env.DB.prepare('INSERT INTO ratings (account_id, kind, rate, win, lose, draw, updated_at) VALUES (?, ?, ?, ?, ?, 0, ?)').bind(id, kind, rate, w, l, t));
+      q.push(env.DB.prepare('INSERT INTO ratings_month (account_id, kind, month, rate, games) VALUES (?, ?, ?, ?, ?)').bind(id, kind, month, rate, w + l));
+    }
+  });
+  q.push(env.DB.prepare("INSERT INTO meta (k, v) VALUES ('dummy_day', ?) ON CONFLICT(k) DO UPDATE SET v = excluded.v").bind(day));
+  await env.DB.batch(q);
+}
 function prepared(env) {
   if (!ready) ready = (async () => {
     await env.DB.batch(SCHEMA.map(q => env.DB.prepare(q)));
@@ -539,6 +573,7 @@ function prepared(env) {
       secret = (await env.DB.prepare("SELECT v FROM meta WHERE k = 'session_secret'").first()).v;
     }
     if (env.RANK_TZ_HOURS != null && env.RANK_TZ_HOURS !== '') TZ = Number(env.RANK_TZ_HOURS) * 3600;
+    try { await dummyRank(env); } catch (e) {}
     return secret;
   })().catch(e => { ready = null; throw e; });
   return ready.then(secret => Object.assign({}, env, { SESSION_SECRET: secret }));

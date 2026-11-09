@@ -1,12 +1,9 @@
 // ===== オートバトル（オフライン対戦）=====
 // ほかの人の「防衛チーム」と自動で戦う。戦闘はサーバーで計算し、記録（ログ）を返す。ゲーム側はそれを見せるだけ
 // 1日3回まで。報酬は交換専用の「アリーナコイン」（賭けには使えない）
-export const ARENA = { tries: 3, win: 30, lose: 5, upset: 15 };   // upset＝戦闘力が上の相手に勝ったときの上乗せ
-export const ARENA_SHOP = [
-  { k: 'refresh30', price: 20 }, { k: 'refresh50', price: 35 }, { k: 'refresh80', price: 55 }, { k: 'refresh100', price: 70 },
-  { k: 'slow', price: 45 }, { k: 'star3', price: 45 }, { k: 'star6', price: 90 }, { k: 'charm', price: 100 },
-  { k: 'pot_N', price: 150 }, { k: 'pot_R', price: 450 }, { k: 'pot_SR', price: 1200 },
-];
+import { medalGive, medalOf } from './vs.js';
+// 報酬は対戦メダル（オンライン対戦と同じ交換所で使う）。upset＝戦闘力が上の相手に勝ったときの上乗せ
+export const ARENA = { tries: 3, win: 20, lose: 5, upset: 10 };
 const TZ = 9 * 3600;
 const dayKey = t => { const d = new Date((t + TZ) * 1000); return d.toISOString().slice(0, 10); };
 const clampN = (v, a, b) => Math.max(a, Math.min(b, Number(v) || 0));
@@ -99,6 +96,11 @@ export function simulate(teamA, teamB, seed) {
 export async function arenaOf(env, id, t) {
   let r = await env.DB.prepare('SELECT coins, points, win, lose, day, tries FROM arena WHERE account_id = ?').bind(id).first();
   if (!r) { await env.DB.prepare('INSERT OR IGNORE INTO arena (account_id, coins, points, win, lose, day, tries) VALUES (?, 0, 1000, 0, 0, ?, 0)').bind(id, dayKey(t)).run(); r = { coins: 0, points: 1000, win: 0, lose: 0, day: dayKey(t), tries: 0 }; }
+  if (r.coins > 0) {                         // 前のアリーナコインは対戦メダルに移す（1枚＝1枚）
+    const m = await env.DB.prepare('UPDATE arena SET coins = 0 WHERE account_id = ? AND coins = ?').bind(id, r.coins).run();
+    if (m.meta.changes) await medalGive(env, id, r.coins, 'arena-coin', t);
+    r.coins = 0;
+  }
   if (r.day !== dayKey(t)) r.tries = 0;
   r.left = Math.max(0, ARENA.tries - r.tries);
   return r;
@@ -113,8 +115,9 @@ export async function arenaHome(env, me, t) {
   if (c.length < 3) { const more = (await env.DB.prepare('SELECT d.account_id AS id, a.name, a.country AS cc, d.team, d.power FROM defense d JOIN accounts a ON a.id = d.account_id WHERE d.account_id <> ? ORDER BY ABS(d.power - ?) LIMIT 6').bind(me.id, pw).all()).results || [];
     for (const x of more) if (c.length < 3 && !c.some(y => y.id === x.id)) c.push(x); }
   const logs = (await env.DB.prepare('SELECT attacker_name AS name, attacker_cc AS cc, win, created_at AS at FROM arena_log WHERE defender = ? ORDER BY created_at DESC LIMIT 10').bind(me.id).all()).results || [];
-  return { coins: a.coins, points: a.points, win: a.win, lose: a.lose, left: a.left, tries: ARENA.tries, power: pw, defense: def ? JSON.parse(def.team) : null,
-    cands: c.map(x => ({ id: x.id, name: x.name, cc: x.cc || '', power: x.power, team: JSON.parse(x.team) })), logs, shop: ARENA_SHOP, reward: ARENA };
+  const md = await medalOf(env, me.id);
+  return { medals: md ? md.balance : 0, points: a.points, win: a.win, lose: a.lose, left: a.left, tries: ARENA.tries, power: pw, defense: def ? JSON.parse(def.team) : null,
+    cands: c.map(x => ({ id: x.id, name: x.name, cc: x.cc || '', power: x.power, team: JSON.parse(x.team) })), logs, reward: ARENA };
 }
 export async function arenaSetDefense(env, me, team, t) {
   const tm = cleanTeam(team); if (!tm) return { error: 'チームがありません' };
@@ -134,16 +137,10 @@ export async function arenaFight(env, me, b, t) {
   const dp = won ? 12 : -8;
   const today = dayKey(t);
   await env.DB.batch([
-    env.DB.prepare('UPDATE arena SET coins = coins + ?, points = MAX(0, points + ?), win = win + ?, lose = lose + ?, tries = CASE WHEN day = ? THEN tries + 1 ELSE 1 END, day = ? WHERE account_id = ?').bind(coin, dp, won ? 1 : 0, won ? 0 : 1, today, today, me.id),
+    env.DB.prepare('UPDATE arena SET points = MAX(0, points + ?), win = win + ?, lose = lose + ?, tries = CASE WHEN day = ? THEN tries + 1 ELSE 1 END, day = ? WHERE account_id = ?').bind(dp, won ? 1 : 0, won ? 0 : 1, today, today, me.id),
     env.DB.prepare('INSERT INTO arena_log (defender, attacker, attacker_name, attacker_cc, win, created_at) VALUES (?, ?, ?, ?, ?, ?)').bind(String(b.opp), me.id, me.name, me.cc || '', won ? 0 : 1, t),
   ]);
-  const after = await arenaOf(env, me.id, t);
-  return { ok: true, win: won, coin, points: after.points, coins: after.coins, left: after.left, myPower: myPw, opp: { name: op.name, cc: op.cc || '', power: op.power, team: ot }, me: tm, battle: r };
-}
-export async function arenaBuy(env, me, k, t) {
-  const it = ARENA_SHOP.find(x => x.k === k); if (!it) return { error: 'その品物はありません' };
-  const r = await env.DB.prepare('UPDATE arena SET coins = coins - ? WHERE account_id = ? AND coins >= ?').bind(it.price, me.id, it.price).run();
-  if (!r.meta.changes) return { error: 'アリーナコインが足りません' };
-  const a = await arenaOf(env, me.id, t);
-  return { ok: true, k, coins: a.coins };
+  await medalGive(env, me.id, coin, won ? 'arena-win' : 'arena-lose', t);
+  const after = await arenaOf(env, me.id, t), md = await medalOf(env, me.id);
+  return { ok: true, win: won, coin, points: after.points, medals: md ? md.balance : 0, left: after.left, myPower: myPw, opp: { name: op.name, cc: op.cc || '', power: op.power, team: ot }, me: tm, battle: r };
 }
