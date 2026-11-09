@@ -6239,7 +6239,7 @@
   function doSkip(i, n){
     n = Math.min(n, skipCanN(i)); if (n < 1) return;
     const st = STORY[i], c0 = coins, keepSt = curStage, keepZ = zakoNow;
-    const lv0 = teamMembers().map(u => ({u, lv: u.lv}));
+    const lv0 = teamMembers().map(u => ({u, lv: u.lv, e: u.exp || 0}));
     let exp = 0, paid = 0; winGets = [];
     curStage = st;
     for (let k = 0; k < n; k++) {
@@ -6252,7 +6252,9 @@
     curStage = keepSt; zakoNow = keepZ;
     const gets = winGets; winGets = [];
     const ups = lv0.filter(x => x.u.lv > x.lv).map(x => fullName(ALLC[ciOf(x.u)]) + ' LV' + x.lv + '→' + x.u.lv);
-    showSkipResult(n, coins - c0 + paid, exp, ups, gets, st);
+    // 勝ったときと同じ見せ方：SKIP CLEAR! → 仲間（手裏剣のように飛んでくる）→ コイン・経験値のダイヤル → チームのレベルアップ
+    const list = lv0.map(x => ({ci: ciOf(x.u), lv0: x.lv, e0: x.e, cap: capOf(x.u), lv1: x.u.lv, e1: x.u.exp || 0}));
+    storyResultSeq({skip: true, label: st.label + '　' + st.name, score: n, gets, coins: coins - c0 + paid, exp: {gain: exp, list}});
     drawStory();
   }
   function showSkipResult(n, coinGain, exp, ups, gets, st){
@@ -7109,7 +7111,7 @@
     steps.push(() => {
       lockUntil = performance.now() + 800;
       let stH = ''; if (r.stars) { showResStars(r.stars); stH = $('resStars').innerHTML; }
-      const p = pane('<div class="rsq-ttl">STAGE CLEAR!</div><div class="rsq-sub">' + (r.label || '') + '</div><div class="rsq-sub" style="margin-top:8px">スコア</div><div class="rsq-score">0</div>' +
+      const p = pane('<div class="rsq-ttl">' + (r.skip ? 'SKIP CLEAR!' : 'STAGE CLEAR!') + '</div><div class="rsq-sub">' + (r.label || '') + '</div><div class="rsq-sub" style="margin-top:8px">' + (r.skip ? 'スキップした回数' : 'スコア') + '</div><div class="rsq-score">0</div>' +
         (stH ? '<div class="resstars">' + stH + '</div>' : '') + '<div class="rsq-tap">タップで次へ</div>');
       const el = p.querySelector('.rsq-score'), t0 = performance.now();
       const run = () => { const k = Math.min(1, (performance.now() - t0) / 900); el.textContent = Math.round((r.score || 0) * k).toLocaleString(); if (k < 1 && el.isConnected) requestAnimationFrame(run); };
@@ -7163,7 +7165,8 @@
         '<div class="rsq-row">' + coinTag() + 'コイン ' + dial(r.coins) + '</div>' +
         '<div class="rsq-row">EXP ' + dial(ex.gain) + '</div>' + (r.extra || []).map(t => '<div class="rsq-row rsq-ex">🎉 ' + t + '</div>').join('') + '</div>' +
         (ex.list.length ? '<div class="rsq-team">' + ex.list.map(() => '<div class="rsq-mem"><span class="lvb"></span><div class="ic"></div><div class="lv"></div><div class="bar"><i></i></div></div>').join('') + '</div>' : '') +
-        '<div class="resbtns rsq-btns"><button class="rbtn next" data-rsq="map"><i>🗺</i><span>マップへ</span></button><button class="rbtn" data-rsq="retry"><i>↻</i><span>もう一度</span></button><button class="rbtn" data-rsq="title"><i>⌂</i><span>タイトル</span></button></div>');
+        (r.skip ? '<div class="resbtns rsq-btns"><button class="rbtn next" data-rsq="close"><i>🗺</i><span>マップへ</span></button></div>'   // スキップはマップの上で出しているので、閉じるだけ
+        : '<div class="resbtns rsq-btns"><button class="rbtn next" data-rsq="map"><i>🗺</i><span>マップへ</span></button><button class="rbtn" data-rsq="retry"><i>↻</i><span>もう一度</span></button><button class="rbtn" data-rsq="title"><i>⌂</i><span>タイトル</span></button></div>'));
       // ダイヤル
       const vals = [r.coins, ex.gain]; let longest = 0;
       p.querySelectorAll('.rsq-dial').forEach((dl, j) => {
