@@ -6102,12 +6102,14 @@
     {name: 'ゴールド', min: 6, mul: 1.75},
     {name: 'マスター', min: 9, mul: 2},
   ];
-  // 課金（アプリ版で使う。いまは表示だけ）
+  // 課金（アプリ版で使う。いまは表示だけ）。ゴールド1枚 ≒ 1円。ガチャは1回300枚・10連3,000枚（ほかのスマホゲームの相場：10連2,000〜3,000円）
+  // 大きいパックほどおまけが多い（10連1回あたり 約2,600〜3,000円）
   const PACKS = [
-    {price: '¥120', name: 'ゴールドコイン 300枚', coin: 300},
-    {price: '¥370', name: 'ゴールドコイン 1,000枚', coin: 1000},
-    {price: '¥610', name: 'ゴールドコイン 1,800枚', coin: 1800},
-    {price: '¥1,200', name: 'ゴールドコイン 4,000枚', coin: 4000},
+    {price: '¥300', name: 'ゴールドコイン 300枚', coin: 300},
+    {price: '¥1,000', name: 'ゴールドコイン 1,050枚', coin: 1050},
+    {price: '¥3,000', name: 'ゴールドコイン 3,200枚', coin: 3200},
+    {price: '¥5,000', name: 'ゴールドコイン 5,500枚', coin: 5500},
+    {price: '¥10,000', name: 'ゴールドコイン 11,500枚', coin: 11500},
     {price: '¥160', name: '初心者パック', desc: '最初の1回だけ買えるお得なセット'},
     {price: '¥600', name: '広告削除', desc: 'コンティニューと毎日プレゼントの2倍を、広告なしで使える'},
   ];
@@ -6128,7 +6130,7 @@
   }
 
   // ----- ポットの販売（ふだんはショップに並ばない） -----
-  const POT_PRICE = {N: 30, R: 100, SR: 300, MR: 800, LR: 2000};   // ゴールドコイン
+  const POT_PRICE = {N: 90, R: 300, SR: 900, MR: 2400, LR: 6000};   // ゴールドコイン
   // イベント販売：期間と個数を決めて並べる（例）{id: 'xmas26', name: 'クリスマス', from: '2026-12-20', to: '2026-12-26', items: [{g: 'SR', limit: 2}, {g: 'LR', limit: 1}]}
   const EVENT_SALE = [];
   const evNow = () => { const d = today(); return EVENT_SALE.filter(e => e.from <= d && d <= e.to); };
@@ -6178,8 +6180,8 @@
   }
   // ----- チケット：シルバーでもゴールドでも買える -----
   const TICKET_SHOP = [
-    {k: 'gticket',    name: 'ガチャチケット', desc: 'シルバーガチャを1回引ける', silver: 100, gold: 100},
-    {k: 'gticket_hi', name: '確定チケット',   desc: 'SR以上が1体確定のガチャを1回引ける', silver: 3000, gold: 300},
+    {k: 'gticket',    name: 'ガチャチケット', desc: 'シルバーガチャを1回引ける', silver: 100, gold: 300},
+    {k: 'gticket_hi', name: '確定チケット',   desc: 'SR以上が1体確定のガチャを1回引ける', silver: 3000, gold: 900},
   ];
   function drawTickets(){
     let el = $('shopTickets');
@@ -6925,7 +6927,7 @@
   // シルバーガチャ（無料コイン）とゴールドガチャ（有料コイン）。確率は G_RATE
   let gTab = 'silver';
   const TK_MULTI = 10;                                  // チケットをまとめて使うときの最大枚数
-  const G_COST = {silver: {one: 100, ten: 1000}, gold: {one: 100, ten: 1000}, item: {one: 100, ten: 1000}};
+  const G_COST = {silver: {one: 100, ten: 1000}, gold: {one: 300, ten: 3000}, item: {one: 100, ten: 1000}, itemGold: {one: 300, ten: 3000}};
   // アイテムガチャ：ショップでは買えないポットだけが出る（N・Rは経験値ポット、SR以上は限界突破ポット）。シルバーコインで引く。10連は1個SR以上確定
   // 出るものは同じ。ゴールド（課金）版のほうが上のポットが出やすい
   const IG_RATE = {silver: {LR: 1, MR: 5, SR: 14, R: 30, N: 50}, gold: {LR: 4, MR: 12, SR: 34, R: 40, N: 10}};
@@ -6980,7 +6982,7 @@
            '<button class="btn gray" data-g="skip">スキップ</button>';
     } else if (gTab === 'item') {
       h += '<button class="btn" data-g="ione">1回 ' + coinImg('coin_silver') + G_COST.item.one + '</button><button class="btn gacha" data-g="iten">10連（11個） ' + coinImg('coin_silver') + G_COST.item.ten.toLocaleString() + '</button>' +
-           '<button class="btn shop" data-g="igone">1回 ' + coinImg('coin_gold') + G_COST.item.one + '</button><button class="btn shop" data-g="igten">10連（11個） ' + coinImg('coin_gold') + G_COST.item.ten.toLocaleString() + '</button>';
+           '<button class="btn shop" data-g="igone">1回 ' + coinImg('coin_gold') + G_COST.itemGold.one + '</button><button class="btn shop" data-g="igten">10連（11個） ' + coinImg('coin_gold') + G_COST.itemGold.ten.toLocaleString() + '</button>';
     } else if (gTab === 'silver') {
       if (freeTenLeft()) h += '<button class="btn gacha" data-g="free">初回限定 無料10連（11体）</button>';
       h += '<button class="btn" data-g="one">1回 ' + coinImg('coin_silver') + G_COST.silver.one + '</button><button class="btn gacha" data-g="ten">10連（11体） ' + coinImg('coin_silver') + G_COST.silver.ten.toLocaleString() + '</button>';
@@ -7058,7 +7060,7 @@
     else if (kind === 'ten') { if (!payS(G_COST.silver.ten)) return; n = 11; }
     else if (kind === 'ione' || kind === 'iten') { const c = kind === 'ione' ? G_COST.item.one : G_COST.item.ten; if (!payS(c)) return; itemGachaGo(kind === 'ione' ? 1 : 11, 'silver'); return; }
     else if (kind === 'igone' || kind === 'igten') {        // アイテムガチャのゴールド版
-      const c = kind === 'igone' ? G_COST.item.one : G_COST.item.ten, n2 = kind === 'igone' ? 1 : 11;
+      const c = kind === 'igone' ? G_COST.itemGold.one : G_COST.itemGold.ten, n2 = kind === 'igone' ? 1 : 11;
       gBusy = true; spendGold(c, 'itemgacha').then(ok => { gBusy = false; if (ok) itemGachaGo(n2, 'gold'); else drawGachaFoot(); }); return;
     }
     else if (kind === 'gone' || kind === 'goldten') {      // ゴールドコイン：ログイン中はサーバーで減らしてから引く
