@@ -820,6 +820,7 @@
   #pityPick{position:fixed;inset:0;z-index:150;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;padding:16px;}
   #pityPick .pp-in{background:#241640;border:2px solid #ffd24a;border-radius:16px;padding:14px;width:100%;max-width:420px;max-height:90vh;overflow:auto;color:#fff;text-align:center;}
   #pityPick h3{margin:0 0 4px;color:#ffd24a;} #pityPick p{margin:0 0 10px;font-size:12px;opacity:.85;}
+  .tneed{font-size:12px;font-weight:900;color:#ff8aa0;}
   .tacts{display:flex;gap:8px;margin:8px 0 2px;} .tacts button{flex:1;border:0;border-radius:10px;padding:9px 6px;font-weight:800;font-size:13px;color:#fff;background:linear-gradient(#7a4dff,#5a2fd6);font-family:inherit;} .tacts button.gray{background:#4a3a66;} .tacts button:disabled{opacity:.4;}
   .pp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;}
   .pp-grid button{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;background:rgba(255,255,255,.08);border-radius:10px;padding:6px 2px;font-size:10px;line-height:1.3;}
@@ -5232,7 +5233,7 @@
       (olInfo.daily ? '<button class="oldaily" id="olDaily">🎁 今日の対戦メダルを受け取る（+' + (olInfo.first ? olInfo.firstN : olInfo.dailyN) + '）</button>' : '') +
       olTabsHTML() +
       '<div class="olsec"><div class="olrate"><span>レート</span><b>' + me.rate.toLocaleString() + '</b><span>' + me.win + '勝' + me.lose + '敗' + (me.rank ? '<br>世界 ' + me.rank + '位' : '') + '</span></div>' +
-      (olKind === 'chara' ? '<div class="olteam">' + (teamMembers().map(u => olAv(u.id)).join('') || '<span>チームがいません</span>') + '<button class="btn gray" id="olTeam" style="width:auto;margin:0 0 0 auto;padding:8px 10px;white-space:nowrap">チーム変更</button></div>' +
+      (olKind === 'chara' ? '<div class="olteam">' + (teamMembers().map(u => olAv(u.id)).join('') ) + (teamFull() ? '' : '<span class="tneed">' + (4 - curTeam().filter(Boolean).length) + '人たりません（4人必要）</span>') + '<button class="btn gray" id="olTeam" style="width:auto;margin:0 0 0 auto;padding:8px 10px;white-space:nowrap">チーム変更</button></div>' +
         '<p style="margin:6px 0 0;font-size:12px">カラーHPはチームの体力、送るダメージは攻撃力と相手の防御力で決まります。必殺技・奥義も使えます。</p>'
         : '<p style="margin:6px 0 0;font-size:12px">キャラなし。パズルの腕だけで勝負します。</p>') + '</div>' +
       '<div class="olsec"><b>🏅 対戦メダルを賭ける</b><div class="olbets">' + olInfo.bets.map(b => '<button data-b="' + b + '" class="' + (b === olBet ? 'on' : '') + '"' + (b > olInfo.balance ? ' disabled' : '') + '>' + (b ? b : 'なし') + '</button>').join('') + '</div>' +
@@ -5254,7 +5255,7 @@
   const OL_TABS = {simple: 'シンプル', chara: 'キャラ', auto: 'オート'};
   const olTabsHTML = () => '<div class="oltabs">' + Object.keys(OL_TABS).map(k => '<button data-k="' + k + '" class="' + (k === olKind ? 'on' : '') + '">' + OL_TABS[k] + '</button>').join('') + '</div>';
   const olTabsBind = root => root.querySelectorAll('.oltabs button').forEach(b => b.onclick = () => { olKind = b.dataset.k; save('ol_kind', olKind); drawOnline(); });
-  function olNeedTeam(){ if (olKind === 'chara' && !curTeam()[0]) { toast('キャラ対戦はチームのメイン（①）が必要です。チーム編成で入れてください'); return true; } return false; }
+  function olNeedTeam(){ if (olKind === 'chara' && !teamFull()) { toast('キャラ対戦：' + teamNeedMsg()); return true; } return false; }
   async function olQuick(){
     if (olNeedTeam()) return;
     try { const r = await api('/api/vs/quick', {method: 'POST', body: JSON.stringify({kind: olKind, bet: olBet}), tok: rankTok()}); olView = 'wait'; olConnect(r.room); drawOnline(); }
@@ -5581,7 +5582,7 @@
     body.innerHTML = olTabsHTML() +
       '<div class="ar-head"><span>対戦メダル<b>🏅 ' + (a.medals || 0).toLocaleString() + '</b></span><span>今日の挑戦<b>' + a.left + ' / ' + a.tries + '</b></span><span>ポイント<b>' + a.points + '</b>' + a.win + '勝' + a.lose + '敗</span></div>' +
       '<div class="olsec"><div style="display:flex;align-items:center;gap:8px"><b style="flex:1">あなたのチーム</b><span>戦闘力 <span class="ar-pw">' + myPw.toLocaleString() + '</span></span></div>' +
-      '<div class="olteam">' + (teamMembers().map(u => olAv(u.id)).join('') || '<span>チームがいません</span>') + '<button class="btn gray" id="arTeam" style="width:auto;margin:0 0 0 auto;padding:8px 10px;white-space:nowrap">チーム変更</button></div>' +
+      '<div class="olteam">' + (teamMembers().map(u => olAv(u.id)).join('') ) + (teamFull() ? '' : '<span class="tneed">' + (4 - curTeam().filter(Boolean).length) + '人たりません（4人必要）</span>') + '<button class="btn gray" id="arTeam" style="width:auto;margin:0 0 0 auto;padding:8px 10px;white-space:nowrap">チーム変更</button></div>' +
       '<p style="margin:6px 0 0;font-size:12px">' + (a.defense ? '防衛チーム：登録済み（戦闘力 ' + a.power.toLocaleString() + '）。ほかの人がこのチームに挑んできます。' : '防衛チームがまだです。登録すると、ほかの人の対戦相手になります。') + '</p>' +
       '<button class="btn" id="arDef" style="margin-top:8px">🛡 今のチームを防衛チームにする</button></div>' +
       '<div class="olsec"><b>⚔ 対戦相手をえらぶ</b>' +
@@ -5594,14 +5595,14 @@
       (a.logs.length ? '<div class="olsec"><b>🛡 防衛の記録</b>' + a.logs.map(l => '<div class="ar-log">' + (l.win ? '✅ 防衛成功' : '❌ 防衛失敗') + '　' + flagOf(l.cc) + olEsc(l.name) + '　<small>' + fmtTime(l.at) + '</small></div>').join('') + '</div>' : '');
     olFill(body); olTabsBind(body);
     $('arTeam').onclick = () => { $('online').classList.add('hidden'); openBox('char'); };
-    $('arDef').onclick = async () => { if (!my.length) { toast('チームがいません'); return; }
+    $('arDef').onclick = async () => { if (!teamFull() || !my.length) { toast('防衛チーム：' + teamNeedMsg()); return; }
       try { const r = await api('/api/arena/defense', {method: 'POST', body: JSON.stringify({team: my}), tok: rankTok()}); toast('防衛チームにしました（戦闘力 ' + r.power.toLocaleString() + '）'); drawArena(); } catch (e) { toast(e.message || 'サーバーにつながりませんでした'); } };
     $('arReload').onclick = drawArena;
     $('arShop').onclick = () => { olView = 'shop'; olInfo = null; drawOnline(); };
     body.querySelectorAll('.ar-cand button').forEach(b => b.onclick = () => arenaFight(b.dataset.o, b));
   }
   async function arenaFight(opp, btn){
-    const team = arenaTeam(); if (!curTeam()[0] || !team.length) { toast('チームのメイン（①）がいません。チーム編成で入れてください'); return; }
+    const team = arenaTeam(); if (!teamFull() || !team.length) { toast('アリーナ：' + teamNeedMsg()); return; }
     btn.disabled = true;
     try {
       if (!arInfo.defense) await api('/api/arena/defense', {method: 'POST', body: JSON.stringify({team}), tok: rankTok()});   // はじめての人は、今のチームを防衛にも
@@ -6958,6 +6959,9 @@
     const m = unitOf(teams[teamNo][0]); myChar = m ? ciOf(m) : 0;
   }
   const curTeam = () => teams[teamNo];
+  // キャラを使うモード（ストーリー・キャラ対戦・アリーナ）は4人そろわないと始められない
+  const teamFull = () => !!curTeam()[0] && curTeam().filter(Boolean).length >= 4;
+  const teamNeedMsg = () => { const n = curTeam().filter(Boolean).length; return !curTeam()[0] ? 'チームのメイン（①）がいません。4人そろえてください' : 'チームが ' + n + '人です。4人そろえてください'; };
   // サブが使う技（'sp'＝必殺技／'ougi'＝奥義）。メインは両方使うので [0] は使わない
   let teamSk = loadJ('teamsk', null);
   if (!Array.isArray(teamSk) || teamSk.length !== 4) teamSk = [0, 1, 2, 3].map(() => ['both', 'sp', 'sp', 'sp']);
