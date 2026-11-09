@@ -7523,7 +7523,7 @@
         '<section class="teamsec"><h3>チーム編成（4つまで保存）</h3>' + teamTabs() + '<div class="tgrid">';
       t.forEach((uid, k) => { h += slotHTML(uid, k, boxSlot === k); });
       h += '</div><div class="tsum">' + ST_NAME.map((n, k) => n + ' <b>' + sum[k] + '</b>').join('　') + '</div>' +
-           '<div class="tacts"><button data-tact="best">✨ おすすめ</button><button data-tact="grow" class="grow">🌱 育成おすすめ</button><button data-tact="clear" class="gray"' + (t.some(Boolean) ? '' : ' disabled') + '>🗑 空にする</button></div>' +
+           '<div class="tacts"><button data-tact="best">おすすめ</button><button data-tact="grow" class="grow">育成おすすめ</button><button data-tact="clear" class="gray"' + (t.some(Boolean) ? '' : ' disabled') + '>空にする</button></div>' +
            '<p class="thint"><b>枠をタップ</b>＝下の一覧から選んで入れる（入れかえ）　<b>ダブルタップ</b>＝外す　<b>長押し</b>＝詳細<br>①（メイン）は必殺技と奥義の両方。サブは枠の下の「必殺技」「奥義」から1つ選びます。<br>' + (boxPut ? '入れる枠を押してください（' + ALLC[ciOf(unitOf(boxPut))].name + '）' : boxSlot >= 0 ? '下の一覧から、入れるキャラを選んでください' + (boxSlot >= 0 && t[boxSlot] ? '（<button data-clear="1">外す</button>）' : '') : '') + '</p></section>';
       const all = sortUnits();
       const list0 = all.filter(u => (boxFG === 'all' || CHAR_STAT[u.id].grade === boxFG) && (boxFT === 'all' || CHAR_STAT[u.id].type === boxFT));
