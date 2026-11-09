@@ -749,6 +749,7 @@
   .cd-box .btn{font-size:20px;padding:16px 36px;}
   @media (prefers-reduced-motion:reduce){.stk.hit{animation:none;}}
   /* ===== コイン・ショップ・アイテム ===== */
+  .stamchip{margin-left:auto;border:0;font-family:inherit;color:#9ff0b0;flex-direction:column;align-items:flex-end;gap:0;line-height:1.1;padding-top:3px;padding-bottom:3px;} .stamchip small{font-size:9px;color:#cfe;font-weight:700;} .stamchip + .headcoin{margin-left:6px;}
   .coinchip{display:inline-flex;align-items:center;gap:4px;background:rgba(0,0,0,.35);color:#ffe27a;font-weight:800;font-size:14px;
     border:1px solid rgba(255,226,122,.45);border-radius:999px;padding:3px 10px 3px 4px;font-variant-numeric:tabular-nums;white-space:nowrap;}
   .coinchip img{width:22px;height:22px;}
@@ -1376,6 +1377,7 @@
       <div class="how-head">
         <button class="how-back" id="storyBack" aria-label="タイトルに戻る">‹ 戻る</button>
         <h2>ストーリー</h2>
+        <button class="coinchip stamchip" id="storyStam" aria-label="スタミナ"></button>
         <div class="coinchip headcoin" id="storyCoin"></div>
       </div>
       <div class="how-body">
@@ -4749,15 +4751,51 @@
   $('easyBtn').addEventListener('click', () => { markSel('prac', String(pracLv)); $('prac').classList.remove('hidden'); });
   $('pracBack').addEventListener('click', () => $('prac').classList.add('hidden'));
   $('pracStart').addEventListener('click', () => { $('prac').classList.add('hidden'); start('practice', {lv: pracLv}); });
-  // 1つのステージは、最初の1回＋リトライ3回まで（毎日リセット）。ストーリーだけ
-  const RETRY_MAX = 3;
-  function triesToday(){ let t = loadJ('tries', null); if (!t || t.day !== today()) t = {day: today(), n: {}}; return t; }
-  const playsLeft = i => Math.max(0, RETRY_MAX + 1 - (triesToday().n[i] || 0));
-  function canPlayStage(i){
-    if (playsLeft(i) > 0) return true;
-    toast('このステージは今日はもう挑戦できません（リトライは1日' + RETRY_MAX + '回まで。明日リセット）'); return false;
+  // ===== スタミナ（ストーリー）：上限はユーザーグレードで決まる。時間で回復。1日の挑戦回数の上限はなし =====
+  const STAM_MAX = [50, 60, 70, 85, 100];      // ルーキー／ブロンズ／シルバー／ゴールド／マスター（仮の値）
+  const STAM_REGEN_MIN = 5;                     // 5分で1回復
+  const STAM_GOLD = 100;                        // ゴールドで満タンにする値段（仮の値）
+  const stamCost = i => { const st = STORY[i]; return st && st.kind === 'boss' ? 10 : 5; };   // ふつうの面5・ボス10
+  const gradeIdx = () => Math.max(0, GRADES.indexOf(gradeNow()));
+  const stamMax = () => STAM_MAX[gradeIdx()] || STAM_MAX[0];
+  let stam;                                     // 読み込みは初めて使うときに（loadJ はこのあとで決まるため）
+  function stamNow(){
+    if (stam === undefined) stam = loadJ('stam', null);
+    const mx = stamMax(), gi = gradeIdx(), t = Date.now(), step = STAM_REGEN_MIN * 60000;
+    if (!stam || typeof stam.v !== 'number') stam = {v: mx, t, g: gi};
+    if (gi > (stam.g | 0)) { stam.v = Math.max(stam.v, mx); stam.g = gi; stam.t = t; toast('グレードアップ！スタミナが満タンになりました（上限 ' + mx + '）'); }   // グレードが上がったら満タン
+    if (stam.v >= mx) stam.t = t;                // 満タン以上のときは回復しない
+    else { const n = Math.floor((t - stam.t) / step); if (n > 0) { stam.v = Math.min(mx, stam.v + n); stam.t += n * step; if (stam.v >= mx) stam.t = t; } }
+    save('stam', JSON.stringify(stam));
+    return stam.v;
   }
-  function countPlay(i){ const t = triesToday(); t.n[i] = (t.n[i] || 0) + 1; save('tries', JSON.stringify(t)); }
+  const stamWait = () => { const v = stamNow(); if (v >= stamMax()) return 0; return Math.max(0, STAM_REGEN_MIN * 60000 - (Date.now() - stam.t)); };
+  const mmss = ms => { const s2 = Math.ceil(ms / 1000); return Math.floor(s2 / 60) + ':' + String(s2 % 60).padStart(2, '0'); };
+  function drawStam(){
+    const el = $('storyStam'); if (!el) return;
+    const v = stamNow(), mx = stamMax(), w = stamWait();
+    el.innerHTML = '⚡' + v + ' / ' + mx + (w ? '<small>+1まで ' + mmss(w) + '</small>' : '<small>満タン</small>');
+  }
+  setInterval(() => { if (!$('story').classList.contains('hidden')) drawStam(); }, 1000);
+  function stamRefill(){
+    const mx = stamMax();
+    if (stamNow() >= mx) { toast('スタミナは満タンです'); return; }
+    askYes('ゴールドコイン ' + STAM_GOLD + '枚でスタミナを満タン（' + mx + '）にしますか？', async () => {
+      if (!(await spendGold(STAM_GOLD, 'stamina'))) return;
+      stamNow(); stam.v = Math.max(stam.v, mx); stam.t = Date.now(); save('stam', JSON.stringify(stam));
+      try { sndSpeed(); } catch(_) {}
+      toast('スタミナが満タンになりました'); drawStam(); drawStory();
+    });
+  }
+  $('storyStam').addEventListener('click', stamRefill);
+  function canPlayStage(i){
+    const need = stamCost(i), v = stamNow();
+    if (v >= need) return true;
+    const w = Math.max(0, (need - v - 1) * STAM_REGEN_MIN * 60000 + stamWait());
+    toast('スタミナが足りません（あと ' + (need - v) + '・約' + Math.ceil(w / 60000) + '分で回復）');
+    stamRefill(); return false;
+  }
+  function countPlay(i){ stamNow(); stam.v = Math.max(0, stam.v - stamCost(i)); save('stam', JSON.stringify(stam)); drawStam(); }
   $('retryBtn').addEventListener('click', () => {   // 同じモード・同じ設定でもう一度
     if (gameMode === 'story' && !canPlayStage((lastOpt && lastOpt.stage) || 0)) { $('stageBtn').click(); return; }
     start();
@@ -5877,7 +5915,7 @@
         '<div class="g">' + goalText(st) + '</div>' +
         '<ul class="ml">' + st.missions.map((m, j) => '<li class="' + (storyMask[pickStage] >> j & 1 ? 'on' : '') + '">' +
           rb(storyMask[pickStage] >> j & 1) + ' ' + misText(m) + '</li>').join('') + '</ul>' +
-        (() => { const n = triesToday().n[pickStage] || 0; return n ? '<div class="d tries' + (playsLeft(pickStage) ? '' : ' none') + '">今日のリトライ：あと ' + Math.max(0, RETRY_MAX + 1 - n) + '回（1日' + RETRY_MAX + '回まで）</div>' : ''; })() +
+        '<div class="d tries' + (stamNow() >= stamCost(pickStage) ? '' : ' none') + '">スタミナ ⚡' + stamCost(pickStage) + '（いま ' + stamNow() + '）</div>' +
         '<div class="d">難しさ Lv' + st.diff + (storyClr[pickStage] ? '　クリア済み' : '') +
         (st.ready ? '' : '<br>おじゃまブロックは準備中です。いまは通常の盤面で遊べます。') + '</div>';
     } else {
@@ -5885,7 +5923,7 @@
     }
     $('storyStart').disabled = !inArea;
     drawAutoBtn();
-    drawTeam(); drawLoadout(); refreshCoins();
+    drawTeam(); drawLoadout(); refreshCoins(); drawStam();
     if (areaOpen(mapArea)) mapBgm();                         // 入れるエリアなら、そのエリアの曲にする
     $('mapTotal').innerHTML = rb(1) + ' レインボーブロック ' + starTotal() + '個 ／ 倒したボス ' + bossesBeaten() + '人。勝ったうえで、お題を1つ達成するごとにレインボーブロック1つ（1ステージ最大3つ）。';
   }
@@ -8584,10 +8622,7 @@
     let c = 0, parts = [], limited = false;
     if (firstClear) { c += base; parts.push('クリア ' + base); }
     else {
-      let rp = loadJ('replay', null);
-      if (!rp || rp.d !== today() || !Array.isArray(rp.s)) rp = {d: today(), s: []};
-      if (!rp.s.includes(i)) { const h = Math.floor(base / 2); c += h; parts.push('再クリア ' + h); rp.s.push(i); save('replay', JSON.stringify(rp)); }
-      else limited = true;
+      const h = Math.floor(base / 2); c += h; parts.push('再クリア ' + h);   // 1日の上限はなし（スタミナで絞る）
     }
     if (newStars > 0) { c += newStars * STAR_COIN; parts.push('お題 ' + newStars * STAR_COIN); }
     if (c) addCoins(c);
