@@ -2588,7 +2588,7 @@
   // ===== キャラごとの曲 =====
   // 曲ファイルの一覧。ここに1行足すと使えるようになる
   const BGM_CLIPS = {
-    // タイトル曲（歌入り）。title_song1「One More Time」ほか、ここに足すとランダムで流れる（下の2か所の一覧にも足す）
+    // タイトル曲（歌入り）。title_song1「One More Time」ほか、ここに足すとランダムで流れる（title_song○ の名前なら自動で入る）
     title_song1: {local: 'bgm/title_song1.mp3', blob: '/_blob/a7b4d066c7a8a2a8571b549bc053ef51'},
     title_song2: {local: 'bgm/title_song2.mp3', blob: '/_blob/156c1644eb58175b539948503d52dbc6'},   // Just Five Minutes
     title_song3: {local: 'bgm/title_song3.mp3', blob: '/_blob/a08b8eb9c59b86cfe79b641c1720107e'},   // Twist My Luck
@@ -2597,6 +2597,14 @@
     title_song6: {local: 'bgm/title_song6.mp3', blob: '/_blob/f7d9366d8685ab801ae1d593985bf36f'},   // BLOOM
     title_song7: {local: 'bgm/title_song7.mp3', blob: '/_blob/f7a18a0a1e22f1bd033d364653b99110'},   // Next Try, Next Me
     title_song8: {local: 'bgm/title_song8.mp3', blob: '/_blob/c46b53ae120d792961d6f6196191eb12'},   // Game Over Is Just the Start
+    title_song9: {local: 'bgm/title_song9.mp3', blob: '/_blob/7363c1732bc9fff966832c3e7e6e410b'},   // High Score Night
+    title_song10: {local: 'bgm/title_song10.mp3', blob: '/_blob/ba3cfca91c3bb6ebc9f878ca32d1633f'},   // Midnight Ranker
+    title_song11: {local: 'bgm/title_song11.mp3', blob: '/_blob/953fbed9338dc5bfa7dbe112f35663af'},   // Lucky Spin
+    title_song12: {local: 'bgm/title_song12.mp3', blob: '/_blob/990d71b0003b9d09cb583d4265083680'},   // Shining Star
+    title_song13: {local: 'bgm/title_song13.mp3', blob: '/_blob/b231851d691575843a6e94012d2aebc1'},   // Rivals & Friends
+    title_song14: {local: 'bgm/title_song14.mp3', blob: '/_blob/7de93631fe802cd6f9ce2746fa0a77b7'},   // Team Up!
+    title_song15: {local: 'bgm/title_song15.mp3', blob: '/_blob/667663e9119e98dbe7e15b45250197b4'},   // Level Up Days
+    title_song16: {local: 'bgm/title_song16.mp3', blob: '/_blob/8f6fcf64e1f7a571c4faf34ac2661ff2'},   // Little Steps, Big Dreams
     gacha_bgm1: {local: 'bgm/gacha_bgm1.mp3', blob: '/_blob/6ce89fca5ad13c55d8ff8df49514b08d'},   // ガチャ画面「Gathering the Chosen Ones」
     gilbert_calm1: {local: 'bgm/gilbert_calm1.mp3', blob: '/_blob/dc4d32c224c99a649ea09a022fc87fde'},
     gilbert_calm2: {local: 'bgm/gilbert_calm2.mp3', blob: '/_blob/193b9a2d8887248e3cb0d63040604d35'},
@@ -2719,7 +2727,7 @@
   // 次に流す曲を1つ選ぶ。キャラ専用があればそちらから、なければ共通から
   let titlePlays = 0, titleBag = [];
   // 起動して最初に流す曲もランダム（ページを開いた瞬間に決めて、先に読み込んでおく）
-  const TITLE_FIRST = (() => { const l = ['title_song1', 'title_song2', 'title_song3', 'title_song4', 'title_song5', 'title_song6', 'title_song7', 'title_song8'].filter(x => BGM_CLIPS[x]); return l[Math.floor(Math.random() * l.length)] || 'title_song1'; })();
+  const TITLE_FIRST = (() => { const l = Object.keys(BGM_CLIPS).filter(k => /^title_song\d+$/.test(k)).filter(x => BGM_CLIPS[x]); return l[Math.floor(Math.random() * l.length)] || 'title_song1'; })();
   function bgmPick(mode){
     if (mode === 'gacha' && BGM_CLIPS.gacha_bgm1) return [BGM_CLIPS.gacha_bgm1.blob, BGM_CLIPS.gacha_bgm1.local];
     if (mode === 'map') {                                 // ストーリーのマップ：そのエリアのボスの「ゆっくり」の曲
@@ -2729,7 +2737,7 @@
       mode = 'title';
     }
     if (mode === 'title') {                               // タイトル画面：1回目は読み込み済みの1曲目、そのあとは入っている歌入りの曲からランダム（同じ曲は続けない）
-      const list = ['title_song1', 'title_song2', 'title_song3', 'title_song4', 'title_song5', 'title_song6', 'title_song7', 'title_song8'].filter(x => BGM_CLIPS[x]);
+      const list = Object.keys(BGM_CLIPS).filter(k => /^title_song\d+$/.test(k)).filter(x => BGM_CLIPS[x]);
       let id = TITLE_FIRST;
       if (titlePlays++ > 0 && list.length > 1) {          // シャッフル：全部の曲を1回ずつ流してから、また並べ直す
         if (!titleBag.length) { titleBag = list.slice().sort(() => Math.random() - 0.5); if (titleBag[0] === bgmLast.titleId) titleBag.push(titleBag.shift()); }
