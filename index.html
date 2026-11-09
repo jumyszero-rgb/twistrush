@@ -2182,16 +2182,21 @@
     return out;
   }
   const STORY = [];
+  // 難しさの物差しは「最初の9エリア」で固定する（エリアを足しても、今あるステージの強さは変わらない）
+  // 10エリア目からは k が 1 をこえて、HP・ステータスがそのまま伸びていく
+  const AREA_REF = 9;
+  // ボスHPの倍率：9エリアまでは今の曲線（1.3倍→2.25倍）、そこから先は1エリアごとに約+0.15倍ずつ（急に跳ね上がらないように直線で）
+  const bossMul = k => k <= 1 ? 1.3 + 0.5 * k + 0.45 * k * k : 2.25 + 1.4 * (k - 1);
   AREAS.forEach((ar, a) => {
     for (let i = 0; i < PER; i++) {
       const route = i === BOSS_I ? -1 : (i >= 5 ? 1 : 0), step = i === BOSS_I ? 5 : i % 5;
-      const g = a * PER + i + 1, k = (a * 6 + step) / (AREAS.length * 6 - 1);   // 通し番号と、その進み具合（ルートの何面目か）
-      const kind = i === BOSS_I ? 'boss' : (AREA_GIMMICK[a][step] || 'normal');
+      const g = a * PER + i + 1, k = (a * 6 + step) / (AREA_REF * 6 - 1);   // 通し番号と、その進み具合（ルートの何面目か）
+      const kind = i === BOSS_I ? 'boss' : ((AREA_GIMMICK[a] || AREA_GIMMICK[AREA_GIMMICK.length - 1])[step] || 'normal')   /* 決めていないエリアは最後のエリアのしかけ */;
       const big = kind === 'boss' || kind === 'mid';
       // HP：ザコは少なめでテンポよく。中ボスはザコの1.5倍、ボスは強め
       // HP：ザコは少し多め、ボスは進むほど倍率が上がる（エリア1は1.3倍→エリア9は2倍）。長く戦うほど速くなるので、その分苦戦する
       const zhp = Math.round((12 + 14 * k) * 1.2);
-      let hp = kind === 'boss' ? Math.round((32 + 28 * k) * (1.3 + 0.5 * k + 0.45 * k * k)) : (kind === 'mid' ? Math.round(zhp * 1.5) : zhp);
+      let hp = kind === 'boss' ? Math.round((32 + 28 * k) * bossMul(k)) : (kind === 'mid' ? Math.round(zhp * 1.5) : zhp);
       if (a === 0 && kind === 'boss') hp = Math.round(hp * 0.8);
       hp *= 4;                                          // 自分は4人チームなので、敵のHPも4人分（ステータスはチーム合計と比べる数字なのでそのまま）
       if (route === 1) hp = Math.round(hp * ROUTE_UP);
@@ -7019,9 +7024,12 @@
   const EN_TABLE = [[40, 45, 52], [55, 62, 72], [75, 84, 96], [95, 105, 120], [120, 135, 155],
                     [145, 160, 185], [170, 190, 220], [200, 225, 260], [230, 260, 300]];
   const WEAK = {spd: 2, def: 3, atk: 0, hp: 3};
+  // 表にないエリア（10エリア目から）：最後の2行の伸び（ザコ+30・中ボス+35・ボス+40）を、1エリアごとに足していく
+  const enRow = a => { const n = EN_TABLE.length; if (a < n) return EN_TABLE[Math.max(0, a)];
+    const L = EN_TABLE[n - 1], P = EN_TABLE[n - 2]; return L.map((v, i) => v + (v - P[i]) * (a - n + 1)); };
   function enemyStats(st){
     if (!st) return [100, 100, 100, 100];
-    const row = EN_TABLE[Math.min(EN_TABLE.length - 1, st.area)] || EN_TABLE[0];
+    const row = enRow(st.area);
     // 面ごとの固定値：ザコはエリアの1面目が表の数字、そこから1面ごとに+3.5%（5面目で+14%。次のエリアの1面目を超えない）。中ボスは表の中ボスの数字以上、ボスは表のボスの数字
     const zk = Math.round(row[0] * (1 + 0.035 * Math.min(4, st.step || 0)));
     let base = st.kind === 'boss' ? row[2] : (st.kind === 'mid' ? Math.max(row[1], zk) : zk);
