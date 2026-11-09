@@ -6945,7 +6945,7 @@
     return '<div class="pity"><div class="pity-t"><b>天井</b><span>' + Math.min(p, PITY_N) + ' / ' + PITY_N + (p > PITY_N ? '（+' + (p - PITY_N) + '）' : '') + '</span></div><div class="pbar"><i style="width:' + pct + '%"></i></div>' +
       (p >= PITY_N ? '<button class="btn gacha" data-g="pity">🌟 好きなLRと交換する</button>' : '<small>あと' + (PITY_N - p) + '回で、好きなLRと交換できます</small>') + '</div>';
   }
-  const pityPool = () => ALLC.map((c, i) => i).filter(i => !STORY_IDS.has(ALLC[i].id) && CHAR_STAT[ALLC[i].id] && CHAR_STAT[ALLC[i].id].grade === 'LR');
+  const pityPool = () => ALLC.map((c, i) => i).filter(i => !STORY_IDS.has(ALLC[i].id) && CHAR_STAT[ALLC[i].id] && CHAR_STAT[ALLC[i].id].grade === 'LR' && tierOf(ALLC[i].id) === 0);   // 天井で選べるのはLR0だけ（LR1以上は対象外）
   function openPityPick(){
     if (pityNow() < PITY_N) return;
     const old = document.getElementById('pityPick'); if (old) old.remove();
