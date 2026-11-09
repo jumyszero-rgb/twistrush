@@ -6891,7 +6891,8 @@
   const gTickets = () => ({ticket: +load('gticket', '0') || 0, ticket_hi: +load('gticket_hi', '0') || 0});
   const freeTenLeft = () => load('freeten', '0') !== '1';
   // 出る確率（グレードごと）。MR・LRはキャラがいないので、いまは出ない（いない分は下のグレードに回す）
-  const G_RATE = {silver: {LR: 1, MR: 4, SR: 15, R: 30, N: 50}, gold: {LR: 2, MR: 8, SR: 30, R: 60, N: 0}, hi: {LR: 1, MR: 4, SR: 95, R: 0, N: 0}};   // hi＝SR以上確定チケット（LR・MRの出やすさはシルバーガチャと同じ）
+  // シルバー（1回100・無料で毎日たまる）は、ゴールド（1回300≒300円）より上のグレードをぐっと出にくくする
+  const G_RATE = {silver: {LR: 0.3, MR: 1.5, SR: 8.2, R: 30, N: 60}, gold: {LR: 2, MR: 8, SR: 30, R: 60, N: 0}, hi: {LR: 1, MR: 4, SR: 95, R: 0, N: 0}};   // hi＝SR以上確定チケット
   const rateText = r => ['LR', 'MR', 'SR', 'R', 'N'].filter(g => r[g]).map(g => g + ' ' + r[g] + '%').join('／');
   // キャラ確定チケット：そのキャラが100%出る。{キャラid: 枚数}
   const cTickets = () => loadJ('cticket', {}) || {};
@@ -6930,7 +6931,7 @@
   const G_COST = {silver: {one: 100, ten: 1000}, gold: {one: 300, ten: 3000}, item: {one: 100, ten: 1000}, itemGold: {one: 300, ten: 3000}};
   // アイテムガチャ：ショップでは買えないポットだけが出る（N・Rは経験値ポット、SR以上は限界突破ポット）。シルバーコインで引く。10連は1個SR以上確定
   // 出るものは同じ。ゴールド（課金）版のほうが上のポットが出やすい
-  const IG_RATE = {silver: {LR: 1, MR: 5, SR: 14, R: 30, N: 50}, gold: {LR: 4, MR: 12, SR: 34, R: 40, N: 10}};
+  const IG_RATE = {silver: {LR: 0.3, MR: 2, SR: 8, R: 30, N: 59.7}, gold: {LR: 4, MR: 12, SR: 34, R: 40, N: 10}};
   const igRateText = k => { const r = IG_RATE[k]; return ['LR', 'MR', 'SR', 'R', 'N'].map(g => g + ' ' + r[g] + '%').join('／'); };
   function itemPull(n, kind){
     const rate = IG_RATE[kind] || IG_RATE.silver;
