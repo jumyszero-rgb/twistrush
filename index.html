@@ -760,7 +760,7 @@
   .coinchip{display:inline-flex;align-items:center;gap:4px;background:rgba(0,0,0,.35);color:#ffe27a;font-weight:800;font-size:14px;
     border:1px solid rgba(255,226,122,.45);border-radius:999px;padding:3px 10px 3px 4px;font-variant-numeric:tabular-nums;white-space:nowrap;}
   .coinchip img{width:22px;height:22px;}
-  .coinchip .gr{font-size:10px;color:#fff;background:rgba(255,255,255,.18);border-radius:999px;padding:1px 6px;margin-left:4px;}
+  .coinchip .gr{font-size:10px;color:#fff;background:rgba(255,255,255,.18);border-radius:999px;padding:1px 6px;margin-left:4px;white-space:nowrap;}
   .menucoin{position:absolute;top:calc(env(safe-area-inset-top,0px) + 10px);right:10px;}
   .headcoin{margin-left:auto;}
   .btn.gacha{background:linear-gradient(90deg,#ff5f9e,#a46bff,#4fb4ff);color:#fff;box-shadow:0 5px 0 #6a3fb8;}
@@ -4786,7 +4786,7 @@
   $('pracBack').addEventListener('click', () => $('prac').classList.add('hidden'));
   $('pracStart').addEventListener('click', () => { $('prac').classList.add('hidden'); start('practice', {lv: pracLv}); });
   // ===== スタミナ（ストーリー）：上限はユーザーグレードで決まる。時間で回復。1日の挑戦回数の上限はなし =====
-  const STAM_MAX = [50, 60, 70, 85, 100];      // ルーキー／ブロンズ／シルバー／ゴールド／マスター（仮の値）
+  const STAM_MAX = [50, 60, 70, 85, 100, 110, 120, 130, 140, 150];   // ルーキー〜マスター、その上の5つ（仮の値）
   const STAM_REGEN_MIN = 5;                     // 5分で1回復
   const STAM_GOLD = 100;                        // ゴールドで満タンにする値段（仮の値）
   const stamCost = i => { const st = STORY[i]; return st && st.kind === 'boss' ? 10 : 5; };   // ふつうの面5・ボス10
@@ -6375,7 +6375,12 @@
     {name: 'ブロンズ', min: 10,  mul: 1.25},    // LV10〜29
     {name: 'シルバー', min: 30,  mul: 1.5},     // LV30〜59
     {name: 'ゴールド', min: 60,  mul: 1.75},    // LV60〜99
-    {name: 'マスター', min: 100, mul: 2},       // LV100〜
+    {name: 'マスター', min: 100, mul: 2},       // LV100〜149
+    {name: 'グランドマスター', min: 150, mul: 2.25},      // LV150〜199（経験値 約63,000）
+    {name: 'チャンピオン', min: 200, mul: 2.5},           // LV200〜249（約109,000）
+    {name: 'グランドチャンピオン', min: 250, mul: 2.75},  // LV250〜299（約168,000）
+    {name: 'エンペラー', min: 300, mul: 3},               // LV300〜399（約239,000）
+    {name: 'アルティメット', min: 400, mul: 3.5},         // LV400〜（約419,000）
   ];
   const lvNeed = L => 50 + 5 * L;                                   // LV L → L+1 に必要な経験値
   const lvTotal = L => { let t = 0; for (let k = 1; k < L; k++) t += lvNeed(k); return t; };   // LV L になるまでの合計
