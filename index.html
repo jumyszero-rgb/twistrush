@@ -820,6 +820,7 @@
   #pityPick{position:fixed;inset:0;z-index:150;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;padding:16px;}
   #pityPick .pp-in{background:#241640;border:2px solid #ffd24a;border-radius:16px;padding:14px;width:100%;max-width:420px;max-height:90vh;overflow:auto;color:#fff;text-align:center;}
   #pityPick h3{margin:0 0 4px;color:#ffd24a;} #pityPick p{margin:0 0 10px;font-size:12px;opacity:.85;}
+  .ccell.nomain{opacity:.35;filter:grayscale(.8);animation:none!important;} .ccell .nomk{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);z-index:3;background:rgba(20,10,40,.85);color:#fff;font-size:11px;font-weight:900;padding:2px 6px;border-radius:6px;white-space:nowrap;}
   .tneed{font-size:12px;font-weight:900;color:#ff8aa0;}
   .tacts{display:flex;gap:8px;margin:8px 0 2px;} .tacts button{flex:1;border:0;border-radius:10px;padding:9px 4px;font-weight:800;font-size:12px;white-space:nowrap;color:#fff;background:linear-gradient(#7a4dff,#5a2fd6);font-family:inherit;} .tacts button.gray{background:#4a3a66;} .tacts button.grow{background:linear-gradient(#3ec46d,#24914c);} .tacts button:disabled{opacity:.4;}
   .pp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;}
@@ -7518,7 +7519,7 @@
     if (boxTab === 'char') {
       fixTeam();
       const t = curTeam(), sum = teamStats();
-      let h = (boxSlot >= 0 && !boxPick ? '<div class="pickbar slotbar"><span>' + '①②③④'[boxSlot] + 'の枠に入れるキャラを、<b>下の一覧</b>から選んでください</span><button data-unslot="1">やめる</button></div>' : '') +
+      let h = (boxSlot >= 0 && !boxPick ? '<div class="pickbar slotbar"><span>' + '①②③④'[boxSlot] + 'の枠に入れるキャラを、<b>下の一覧</b>から選んでください' + (boxSlot === 0 ? '<small style="display:block;font-weight:700;opacity:.9">①（メイン）は奥義を持つキャラ（SR以上）だけ</small>' : '') + '</span><button data-unslot="1">やめる</button></div>' : '') +
         (boxPick ? '<div class="pickbar">' + (boxPick === 'feed' ? '⬆ レベルアップするキャラを選んでください' : '★ 限界突破するキャラを選んでください（レベル上限に届いたキャラ）') + '<button data-unpick="1">やめる</button></div>' : '') +
         '<section class="teamsec"><h3>チーム編成（4つまで保存）</h3>' + teamTabs() + '<div class="tgrid">';
       t.forEach((uid, k) => { h += slotHTML(uid, k, boxSlot === k); });
@@ -7545,7 +7546,8 @@
       if (!list.length) h += '<p>この条件のキャラはいません。</p>';
       list.forEach(u => {
         const ci = ciOf(u), ti = t.indexOf(u.u), lb = cnt[u.id] > 1 && (u.star || 0) < starMaxOf(u);
-        h += '<div class="ccell g-' + CHAR_STAT[u.id].grade + (boxSel === u.u ? ' sel' : '') + (u.lock ? ' locked' : '') + '" data-u="' + u.u + '">' +
+        const noMain = boxSlot === 0 && !canMainId(u.id);   // ①を選んでいるとき、①に入れられないキャラはうすく
+        h += '<div class="ccell g-' + CHAR_STAT[u.id].grade + (boxSel === u.u ? ' sel' : '') + (u.lock ? ' locked' : '') + (noMain ? ' nomain' : '') + '" data-u="' + u.u + '">' + (noMain ? '<span class="nomk">①不可</span>' : '') +
              '<span class="cface" data-ci="' + ci + '"></span>' +
              '<b class="clv">LV' + u.lv + '</b>' + typeBadge(u.id) +
              (ti >= 0 ? '<span class="cno">' + '①②③④'[ti] + '</span>' : '') +
