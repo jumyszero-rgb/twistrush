@@ -809,6 +809,15 @@
   .ccell .clock{position:absolute;bottom:16px;left:2px;width:22px;height:22px;border-radius:50%;background:#2a2a3a;border:2px solid #ffd24a;font-size:12px;line-height:19px;text-align:center;font-style:normal;box-shadow:0 0 5px #000;}
   .ccell.locked{outline:3px solid #ffd24a;outline-offset:-3px;} .ccell.locked::after{content:'🔒';position:absolute;left:3px;top:40%;width:22px;height:22px;border-radius:50%;background:#ffd24a;font-size:12px;line-height:22px;text-align:center;box-shadow:0 0 5px #000;pointer-events:none;}
   .clegend .clock{position:static;display:inline-block;width:18px;height:18px;line-height:18px;font-size:10px;border-radius:50%;background:#ffd24a;border:none;text-align:center;font-style:normal;}
+  #pityPick{position:fixed;inset:0;z-index:150;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;padding:16px;}
+  #pityPick .pp-in{background:#241640;border:2px solid #ffd24a;border-radius:16px;padding:14px;width:100%;max-width:420px;max-height:90vh;overflow:auto;color:#fff;text-align:center;}
+  #pityPick h3{margin:0 0 4px;color:#ffd24a;} #pityPick p{margin:0 0 10px;font-size:12px;opacity:.85;}
+  .pp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;}
+  .pp-grid button{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;background:rgba(255,255,255,.08);border-radius:10px;padding:6px 2px;font-size:10px;line-height:1.3;}
+  .pity{grid-column:1/-1;width:100%;background:rgba(0,0,0,.35);border:1px solid rgba(255,210,74,.5);border-radius:12px;padding:6px 10px;margin:4px 0;color:#fff;font-size:12px;box-sizing:border-box;}
+  .pity-t{display:flex;justify-content:space-between;} .pity-t b{color:#ffd24a;}
+  .pbar{height:8px;border-radius:4px;background:rgba(255,255,255,.15);overflow:hidden;margin:4px 0;} .pbar i{display:block;height:100%;background:linear-gradient(90deg,#ffd24a,#ff5fd0);}
+  .pity small{opacity:.8;} .pity .btn{margin-top:4px;}
   #askBox{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;padding:16px;}
   #askBox .askin{background:#24123f;border:2px solid #ffd24a;border-radius:16px;padding:16px;max-width:340px;width:100%;color:#fff;font-weight:800;font-size:14px;text-align:center;line-height:1.6;}
   #askBox .askin div{display:flex;gap:10px;justify-content:center;margin-top:14px;} #askBox button{flex:1;border:none;border-radius:12px;padding:10px;font-weight:900;font-size:15px;background:#ffd24a;color:#3a1c00;} #askBox button.gray{background:#666;color:#fff;}
@@ -6927,6 +6936,34 @@
   }
   // シルバーガチャ（無料コイン）とゴールドガチャ（有料コイン）。確率は G_RATE
   let gTab = 'silver';
+  // ===== 天井：ゴールドガチャを引くとポイントがたまり、PITY_N ポイントで好きなLRと交換 =====
+  const PITY_N = 100;
+  const pityNow = () => Math.max(0, +load('pity', '0') || 0);
+  function pityAdd(kind){ const n = kind === 'goldten' ? 10 : kind === 'gone' ? 1 : 0; if (n) save('pity', String(pityNow() + n)); }
+  function pityHTML(){
+    const p = pityNow(), pct = Math.min(100, p / PITY_N * 100);
+    return '<div class="pity"><div class="pity-t"><b>天井</b><span>' + Math.min(p, PITY_N) + ' / ' + PITY_N + (p > PITY_N ? '（+' + (p - PITY_N) + '）' : '') + '</span></div><div class="pbar"><i style="width:' + pct + '%"></i></div>' +
+      (p >= PITY_N ? '<button class="btn gacha" data-g="pity">🌟 好きなLRと交換する</button>' : '<small>あと' + (PITY_N - p) + '回で、好きなLRと交換できます</small>') + '</div>';
+  }
+  const pityPool = () => ALLC.map((c, i) => i).filter(i => !STORY_IDS.has(ALLC[i].id) && CHAR_STAT[ALLC[i].id] && CHAR_STAT[ALLC[i].id].grade === 'LR');
+  function openPityPick(){
+    if (pityNow() < PITY_N) return;
+    const old = document.getElementById('pityPick'); if (old) old.remove();
+    const d = document.createElement('div'); d.id = 'pityPick';
+    d.innerHTML = '<div class="pp-in"><h3>🌟 好きなLRを1体えらぶ</h3><p>天井ポイントを' + PITY_N + '使います。持っているキャラもえらべます（★上げに使えます）。</p><div class="pp-grid"></div><button class="btn gray" data-pp="close">やめる</button></div>';
+    const grid = d.querySelector('.pp-grid');
+    pityPool().forEach(ci => { const b = document.createElement('button'); b.dataset.ci = ci; const have = units.some(u => u.id === ALLC[ci].id);
+      b.appendChild(charIcon(ci, 72)); const nm = document.createElement('span'); nm.textContent = fullName(ALLC[ci]) + (have ? '（所持）' : ''); b.appendChild(nm); grid.appendChild(b); });
+    d.onclick = e => {
+      if (e.target.closest('[data-pp="close"]')) { d.remove(); return; }
+      const b = e.target.closest('[data-ci]'); if (!b) return; const ci = +b.dataset.ci;
+      askYes(fullName(ALLC[ci]) + ' と交換しますか？<br>天井ポイント ' + pityNow() + ' → ' + (pityNow() - PITY_N), () => {
+        if (pityNow() < PITY_N) return;
+        save('pity', String(pityNow() - PITY_N)); d.remove(); gachaGo(1, 'char:' + ALLC[ci].id);
+      });
+    };
+    document.body.appendChild(d);
+  }
   const TK_MULTI = 10;                                  // チケットをまとめて使うときの最大枚数
   const G_COST = {silver: {one: 100, ten: 1000}, gold: {one: 300, ten: 3000}, item: {one: 100, ten: 1000}, itemGold: {one: 300, ten: 3000}};
   // アイテムガチャ：ショップでは買えないポットだけが出る（N・Rは経験値ポット、SR以上は限界突破ポット）。シルバーコインで引く。10連は1個SR以上確定
@@ -6992,13 +7029,14 @@
     } else {
       h += '<button class="btn shop" data-g="gone">1回 ' + coinImg('coin_gold') + G_COST.gold.one + '</button><button class="btn shop" data-g="goldten">10連（11体） ' + coinImg('coin_gold') + G_COST.gold.ten.toLocaleString() + '</button>';
       if (t.ticket_hi > 0) h += '<button class="btn shop" data-g="ticket_hi">' + coinImg('ticket_hi') + '確定チケット（' + t.ticket_hi + '枚）</button>';
+      h += pityHTML();
       if (t.ticket_hi > 1) h += '<button class="btn shop" data-g="ticket_hi_m">' + coinImg('ticket_hi') + '確定チケットでまとめて' + Math.min(t.ticket_hi, TK_MULTI) + '回</button>';
     }
     if (gTab !== 'item') { const ct = cTickets(); Object.keys(ct).filter(id => ct[id] > 0 && ALLC_IDX.has(id)).forEach(id => {
       h += '<button class="btn shop" data-g="char:' + id + '">' + coinImg('ticket_hi') + fullName(ALLC[ALLC_IDX.get(id)]) + ' 確定チケット（' + ct[id] + '枚）</button>'; }); }
     if (!gRev) h += '<button class="btn gray" data-g="test">テスト用：コイン・チケットを増やす（公開前に消す）</button>' +
       (gTab === 'item' ? '<div class="rate">アイテムガチャ：ショップでは買えないポットが出る（N＝経験値ポット小、R＝経験値ポット大、SR・MR・LR＝限界突破ポット）。' + 'シルバー版：' + igRateText('silver') + '。ゴールド版（課金）：' + igRateText('gold') + '。出るものは同じ。10連は1個SR以上が確定。</div>' : '<div class="rate">' + (gTab === 'silver' ? 'シルバーガチャ：無料のシルバーコインで引ける。' : 'ゴールドガチャ：有料のゴールドコインで引ける。高グレードが出やすい（予定）。') +
-      (gTab === 'gold' ? '出る確率：' + rateText(G_RATE.gold) + '。確定チケット（SR以上確定）：' + rateText(G_RATE.hi) + '。' : '出る確率：' + rateText(G_RATE.silver) + '（ガチャチケットも同じ）。') + '10連は1体SR以上が確定。キャラ確定チケットはそのキャラが100%。同じキャラも1体ずつボックスに入ります。</div>');
+      (gTab === 'gold' ? '出る確率：' + rateText(G_RATE.gold) + '。天井：ゴールドガチャ1回で1ポイント（10連は10）。' + PITY_N + 'ポイントで好きなLRを1体と交換（LRが出てもポイントは減りません）。確定チケット（SR以上確定）：' + rateText(G_RATE.hi) + '。' : '出る確率：' + rateText(G_RATE.silver) + '（ガチャチケットも同じ）。') + '10連は1体SR以上が確定。キャラ確定チケットはそのキャラが100%。同じキャラも1体ずつボックスに入ります。</div>');
     $('gachaFoot').innerHTML = h;
     $('gachaCoin').innerHTML = '';
     $('gWallet').innerHTML = '<span>' + coinImg('coin_silver') + 'シルバー <b>' + coins.toLocaleString() + '</b></span>' +
@@ -7066,10 +7104,12 @@
     }
     else if (kind === 'gone' || kind === 'goldten') {      // ゴールドコイン：ログイン中はサーバーで減らしてから引く
       const c = kind === 'gone' ? G_COST.gold.one : G_COST.gold.ten; if (kind === 'goldten') n = 11;
-      if (acctToken) { gBusy = true; spendGold(c, 'gacha').then(ok => { gBusy = false; if (ok) gachaGo(n, kind); }); return; }
+      if (acctToken) { gBusy = true; spendGold(c, 'gacha').then(ok => { gBusy = false; if (ok) { pityAdd(kind); gachaGo(n, kind); } }); return; }
       if (!payG(c)) return;
+      pityAdd(kind);
     }
     else if (String(kind).startsWith('char:')) { const t = cTickets(), id = kind.slice(5); if (!(t[id] > 0)) return; t[id]--; if (!t[id]) delete t[id]; save('cticket', JSON.stringify(t)); }
+    else if (kind === 'pity') { openPityPick(); return; }
     else if (kind === 'ticket_m' || kind === 'ticket_hi_m') {   // チケットをまとめて（最大10枚）
       const base = kind === 'ticket_m' ? 'ticket' : 'ticket_hi', k2 = base === 'ticket' ? 'gticket' : 'gticket_hi', c = +load(k2, '0') || 0;
       n = Math.min(c, TK_MULTI); if (n <= 0) return; save(k2, String(c - n)); gachaGo(n, base); return;
