@@ -7186,7 +7186,7 @@
            '<span class="cno">' + '①②③④'[k] + '</span><span class="cbot">' + starsHTMLu(u) + '<small>' + (ALLC[ci].title ? '<i class="cttl">' + ALLC[ci].title + '</i>' : '') + ALLC[ci].name + '</small></span>';
     } else h += '<span class="tplus">＋</span>';
     h += '</div><div class="tskrow">';
-    if (u && k === 0) h += '<span class="tsk both">必殺技＋奥義</span>';
+    if (u && k === 0) h += canMainId(u.id) ? '<span class="tsk both">必殺技＋奥義</span>' : '<span class="tsk sp1">必殺技</span>';
     else if (u && !(SKILLS[u.id] && SKILLS[u.id].ougi)) h += '<span class="tsk sp1">必殺技</span>';
     else if (u) { const kind = teamSk[teamNo][k] === 'ougi' ? 'ougi' : 'sp'; h += '<button data-sk2="' + k + ':sp" class="' + (kind === 'sp' ? 'on sp' : '') + '">必殺技</button><button data-sk2="' + k + ':ougi" class="' + (kind === 'ougi' ? 'on ougi' : '') + '">奥義</button>'; }
     return h + '</div></div>';
@@ -7519,7 +7519,7 @@
     if (boxTab === 'char') {
       fixTeam();
       const t = curTeam(), sum = teamStats();
-      let h = (boxSlot >= 0 && !boxPick ? '<div class="pickbar slotbar"><span>' + '①②③④'[boxSlot] + 'の枠に入れるキャラを、<b>下の一覧</b>から選んでください' + (boxSlot === 0 ? '<small style="display:block;font-weight:700;opacity:.9">①（メイン）は奥義を持つキャラ（SR以上）だけ</small>' : '') + '</span><button data-unslot="1">やめる</button></div>' : '') +
+      let h = (boxSlot >= 0 && !boxPick ? '<div class="pickbar slotbar"><span>' + '①②③④'[boxSlot] + 'の枠に入れるキャラを、<b>下の一覧</b>から選んでください' + (boxSlot === 0 ? '<small style="display:block;font-weight:700;opacity:.9">①（メイン）は必殺技と奥義の両方を使います（奥義のないN・Rは必殺技だけ）</small>' : '') + '</span><button data-unslot="1">やめる</button></div>' : '') +
         (boxPick ? '<div class="pickbar">' + (boxPick === 'feed' ? '⬆ レベルアップするキャラを選んでください' : '★ 限界突破するキャラを選んでください（レベル上限に届いたキャラ）') + '<button data-unpick="1">やめる</button></div>' : '') +
         '<section class="teamsec"><h3>チーム編成（4つまで保存）</h3>' + teamTabs() + '<div class="tgrid">';
       t.forEach((uid, k) => { h += slotHTML(uid, k, boxSlot === k); });
@@ -7546,7 +7546,7 @@
       if (!list.length) h += '<p>この条件のキャラはいません。</p>';
       list.forEach(u => {
         const ci = ciOf(u), ti = t.indexOf(u.u), lb = cnt[u.id] > 1 && (u.star || 0) < starMaxOf(u);
-        const noMain = boxSlot === 0 && !canMainId(u.id);   // ①を選んでいるとき、①に入れられないキャラはうすく
+        const noMain = false;
         h += '<div class="ccell g-' + CHAR_STAT[u.id].grade + (boxSel === u.u ? ' sel' : '') + (u.lock ? ' locked' : '') + (noMain ? ' nomain' : '') + '" data-u="' + u.u + '">' + (noMain ? '<span class="nomk">①不可</span>' : '') +
              '<span class="cface" data-ci="' + ci + '"></span>' +
              '<b class="clv">LV' + u.lv + '</b>' + typeBadge(u.id) +
@@ -7904,7 +7904,8 @@
   function teamPatterns(mode){
     const grow = mode === 'grow', val = u => grow ? growVal(u) : unitPw(u);
     const cand = units.filter(u => CHAR_STAT[u.id]);
-    const mains = cand.filter(u => canMainId(u.id)); if (!mains.length) return [];
+    let mains = cand.filter(u => canMainId(u.id)); if (!mains.length) mains = cand;   // 奥義を持つキャラがいなければ、だれでも①に
+    if (!mains.length) return [];
     const use = u => skRate(u, 'sp', grow) + skRate(u, 'ougi', grow), maxU = Math.max(1e-6, ...mains.map(use));
     const mainSc = u => val(u) * (0.65 + 0.35 * use(u) / maxU);
     const tScore = (m, subs) => { const ty = new Set([m].concat(subs).map(x => CHAR_STAT[x.id].type)).size;
@@ -7930,7 +7931,7 @@
   const teamKey = t => (t[0] || '') + '|' + t.slice(1).filter(Boolean).sort().join(',');
   function applyRecommend(mode){
     const pats = teamPatterns(mode);
-    if (!pats.length) { toast('メイン（①）になれるキャラ（奥義を持つキャラ）がいません'); return; }
+    if (!pats.length) { toast('キャラがいません。まずはガチャで仲間にしよう'); return; }
     const now = teamKey(curTeam()), at = pats.findIndex(p => teamKey([p.m.u].concat(p.subs.map(x => x.u))) === now);
     const k = at < 0 ? 0 : (at + 1) % pats.length, p = pats[k];
     const t = [p.m.u].concat(p.subs.map(x => x.u)); while (t.length < 4) t.push(null);
@@ -7943,8 +7944,7 @@
   // 枠 k に、持ちキャラ uid を入れる（同じ1体がほかの枠にいたら入れかえ）
   function putUnit(k, uid){
     const t = curTeam(), j = t.indexOf(uid), nu = unitOf(uid);
-    if (k === 0 && nu && !canMainId(nu.id)) { toast('このキャラはメイン（①）になれません。②〜④に入れてください'); return; }
-    if (j === 0 && t[k] && !canMainId((unitOf(t[k]) || {}).id)) { toast('入れかえると、メインが技を持たないキャラになります'); return; }
+    // ①にはどのキャラも入れられる（奥義を持たないN・Rは、①でも必殺技だけ使う）
     if (j >= 0) t[j] = t[k];
     t[k] = uid;
     fixTeam();
