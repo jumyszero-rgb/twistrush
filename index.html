@@ -1538,6 +1538,11 @@
       </div>
       <div class="how-body">
         <section>
+          <h3>はじめての案内</h3>
+          <p>ゲームの紹介と、ガチャ・チーム編成・ストーリーの進め方の案内を、もう一度最初から見られます。</p>
+          <button class="btn" id="tutAgain" style="margin-top:8px">はじめての案内をもう一度見る</button>
+        </section>
+        <section>
           <h3>アカウント</h3>
           <p id="acctState">ログインしていません（ゲスト）。ログインしなくても遊べます。</p>
           <p class="acctnote">ログインすると、データがクラウドに保存され、機種変更やWeb・アプリの行き来で引き継げます。ゴールドコインの購入・オンライン対戦・ランキングへの参加にはログインが必要です。</p>
@@ -4841,6 +4846,9 @@
   const STAM_MAX = [50, 60, 70, 85, 100, 110, 120, 130, 140, 150];   // ルーキー〜マスター、その上の5つ（仮の値）
   const STAM_REGEN_MIN = 5;                     // 5分で1回復
   const STAM_GOLD = 100;                        // ゴールドで満タンにする値段（仮の値）
+  const STAM_FIRST = 10;                        // はじめての人のスタミナ：上限のこの倍
+  const STAM_POT = 50;                          // スタミナポット1個で回復する量（上限をこえてもOK）
+  const stamPots = () => +load('stampot', '0') || 0;
   const stamCost = i => { const st = STORY[i]; return st && st.kind === 'boss' ? 10 : 5; };   // ふつうの面5・ボス10
   const gradeIdx = () => Math.max(0, GRADES.indexOf(gradeNow()));
   const stamMax = () => STAM_MAX[gradeIdx()] || STAM_MAX[0];
@@ -4848,7 +4856,7 @@
   function stamNow(){
     if (stam === undefined) stam = loadJ('stam', null);
     const mx = stamMax(), gi = gradeIdx(), t = Date.now(), step = STAM_REGEN_MIN * 60000;
-    if (!stam || typeof stam.v !== 'number') stam = {v: mx, t, g: gi};
+    if (!stam || typeof stam.v !== 'number') stam = {v: mx * STAM_FIRST, t, g: gi, first: 1};   // はじめての人：上限の10倍をプレゼント（上限をこえた分は回復しないで減っていく）
     if (gi < (stam.g | 0)) stam.g = gi;           // グレードの決め方が変わって下がったときは合わせる
     if (gi > (stam.g | 0)) { stam.v = Math.max(stam.v, mx); stam.g = gi; stam.t = t; toast('グレードアップ！スタミナが満タンになりました（上限 ' + mx + '）'); }   // グレードが上がったら満タン
     if (stam.v >= mx) stam.t = t;                // 満タン以上のときは回復しない
@@ -4866,6 +4874,15 @@
   setInterval(() => { if (!$('story').classList.contains('hidden')) drawStam(); }, 1000);
   function stamRefill(){
     const mx = stamMax();
+    if (stamPots() > 0) {                         // スタミナポットがあれば、まずそれを使うか聞く
+      askYes('<b>スタミナポット</b>を1個使って、スタミナを <b>+' + STAM_POT + '</b> しますか？<br><small>いま ⚡' + stamNow() + '　→　⚡' + (stamNow() + STAM_POT) + '（上限をこえてもOK）／所持 ' + stamPots() + '個</small>', () => {
+        if (stamPots() <= 0) return;
+        save('stampot', String(stamPots() - 1)); stamNow(); stam.v += STAM_POT; stam.t = Date.now(); save('stam', JSON.stringify(stam));
+        try { sndSpeed(); } catch(_) {}
+        toast('スタミナ +' + STAM_POT + '（スタミナポット のこり ' + stamPots() + '個）'); drawStam(); drawStory();
+      });
+      return;
+    }
     if (stamNow() >= mx) { toast('スタミナは満タンです'); return; }
     askYes('ゴールドコイン ' + STAM_GOLD + '枚でスタミナを満タン（' + mx + '）にしますか？', async () => {
       if (!(await spendGold(STAM_GOLD, 'stamina'))) return;
@@ -5728,8 +5745,12 @@
   }
   // 月間ランキングのごほうび：先月の順位でアイテムがもらえる（起動したとき・登録したときに確認）
   const RW_MODE = {sixty: '60秒アタック', rank: 'エンドレス'};
-  const TICKET_LABEL = {gticket: 'ガチャチケット', gticket_hi: 'SR以上確定チケット', aticket: 'スキップチケット'};
-  const tkImg = k => gImg(k === 'gticket_hi' ? 'ticket_hi' : 'ticket');   // スキップチケットの絵はまだないので、ガチャチケットの絵で代用
+  const TICKET_LABEL = {gticket: 'ガチャチケット', gticket_hi: 'SR以上確定チケット', aticket: 'スキップチケット', stampot: 'スタミナポット'};
+  // スタミナポットの絵（まだ画像がないので図で描く：黄色い薬びんに⚡）
+  const STAMPOT_IMG = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff59a"/><stop offset="1" stop-color="#ffb21e"/></linearGradient></defs>' +
+    '<rect x="25" y="6" width="14" height="9" rx="3" fill="#b8742a"/><path d="M27 15h10v8l11 14c4 6 0 21-16 21S12 43 16 37l11-14z" fill="url(#g)" stroke="#8a4b00" stroke-width="3"/>' +
+    '<path d="M34 26l-9 14h7l-3 12 11-16h-7l4-10z" fill="#fff" stroke="#8a4b00" stroke-width="2" stroke-linejoin="round"/></svg>');
+  const tkImg = k => k === 'stampot' ? STAMPOT_IMG : gImg(k === 'gticket_hi' ? 'ticket_hi' : 'ticket');   // スキップチケットの絵はまだないので、ガチャチケットの絵で代用
   const itemLabel = k => TICKET_LABEL[k] || (k.startsWith('pot_') ? potName(k.slice(4)) : (ITEMS[k] ? ITEMS[k].name : k));
   const invImg = k => TICKET_LABEL[k] ? tkImg(k) : k.startsWith('pot_') ? potImg(k.slice(4)) : itemImg(k);
   const ownAny = k => TICKET_LABEL[k] ? (+load(k, '0') || 0) : own(k);
@@ -6580,6 +6601,7 @@
   const TICKET_SHOP = [
     {k: 'gticket',    name: 'ガチャチケット', desc: 'シルバーガチャを1回引ける', silver: 100, gold: 300},
     {k: 'gticket_hi', name: '確定チケット',   desc: 'SR以上が1体確定のガチャを1回引ける', silver: 3000, gold: 900},
+    {k: 'stampot',    name: 'スタミナポット', desc: 'ストーリーのスタミナが50回復する（上限をこえてもOK）。ストーリー画面の⚡を押して使う', silver: 300, gold: 50},
   ];
   function drawTickets(){
     let el = $('shopTickets');
@@ -6587,7 +6609,7 @@
     el.innerHTML = '<h3>チケット</h3>' + TICKET_SHOP.map((t, j) => '<div class="shoprow"><img src="' + tkImg(t.k) + '" alt=""><div class="tx"><div class="nm">' + t.name + '<small>所持 ' + (+load(t.k, '0') || 0) + '</small></div><div class="ds">' + t.desc + '</div></div>' +
       '<div class="tkbtns"><button class="buybtn" data-tk="' + j + ':s"' + (coins < t.silver ? ' disabled' : '') + '>' + coinTag() + t.silver.toLocaleString() + '</button>' +
       '<button class="buybtn" data-tk="' + j + ':g"><img src="' + gImg('coin_gold') + '" alt="">' + t.gold.toLocaleString() + '</button></div></div>').join('') +
-      '<p class="note">ガチャチケットはガチャの画面で使えます。</p>';
+      '<p class="note">ガチャチケットはガチャの画面、スタミナポットはストーリー画面の⚡で使えます。</p>';
   }
   async function buyTicket(tag){
     const [j, cur] = tag.split(':'), t = TICKET_SHOP[+j]; if (!t) return;
@@ -9204,13 +9226,14 @@
         if (vis('gacha')) return show({target: () => $('gachaBack'), text: '「‹ 戻る」でトップに戻ろう。'});
         if (!vis('story')) return show({target: () => $('storyBtn'), text: 'いよいよ<b>ストーリーモード</b>！<br>「ストーリー」を押そう！'});
         if (pickStage !== 0) return show({target: firstNode, text: '<b>ふつうルート</b>の最初のステージを選ぼう！'});
-        return show({target: () => $('storyStart'), text: '「<b>このステージに挑戦</b>」を押して、バトル開始！'});
+        return show({target: () => $('storyStart'), text: '「<b>このステージに挑戦</b>」を押して、バトル開始！<br><small>挑戦するとスタミナ⚡を使うよ。はじめての記念に<b>スタミナ10倍</b>をプレゼントしたよ！</small>'});
       }
       hide();
     }
     setInterval(tick, 200);
     window.__tutStep = () => step;
     window.__tutRestart = () => { setStep('intro'); page = 0; };
+    $('tutAgain').addEventListener('click', () => { $('settings').classList.add('hidden'); setStep('intro'); page = 0; });
   })();
   // ===== 一時停止：再開／やめてトップ（ストーリーはマップ）へ戻る =====
   (function(){
