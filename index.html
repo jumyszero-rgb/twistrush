@@ -821,7 +821,7 @@
   #pityPick .pp-in{background:#241640;border:2px solid #ffd24a;border-radius:16px;padding:14px;width:100%;max-width:420px;max-height:90vh;overflow:auto;color:#fff;text-align:center;}
   #pityPick h3{margin:0 0 4px;color:#ffd24a;} #pityPick p{margin:0 0 10px;font-size:12px;opacity:.85;}
   .tneed{font-size:12px;font-weight:900;color:#ff8aa0;}
-  .tacts{display:flex;gap:8px;margin:8px 0 2px;} .tacts button{flex:1;border:0;border-radius:10px;padding:9px 6px;font-weight:800;font-size:13px;color:#fff;background:linear-gradient(#7a4dff,#5a2fd6);font-family:inherit;} .tacts button.gray{background:#4a3a66;} .tacts button:disabled{opacity:.4;}
+  .tacts{display:flex;gap:8px;margin:8px 0 2px;} .tacts button{flex:1;border:0;border-radius:10px;padding:9px 4px;font-weight:800;font-size:12px;white-space:nowrap;color:#fff;background:linear-gradient(#7a4dff,#5a2fd6);font-family:inherit;} .tacts button.gray{background:#4a3a66;} .tacts button.grow{background:linear-gradient(#3ec46d,#24914c);} .tacts button:disabled{opacity:.4;}
   .pp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;}
   .pp-grid button{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;background:rgba(255,255,255,.08);border-radius:10px;padding:6px 2px;font-size:10px;line-height:1.3;}
   .pity{grid-column:1/-1;width:100%;background:rgba(0,0,0,.35);border:1px solid rgba(255,210,74,.5);border-radius:12px;padding:6px 10px;margin:4px 0;color:#fff;font-size:12px;box-sizing:border-box;}
@@ -7523,7 +7523,7 @@
         '<section class="teamsec"><h3>チーム編成（4つまで保存）</h3>' + teamTabs() + '<div class="tgrid">';
       t.forEach((uid, k) => { h += slotHTML(uid, k, boxSlot === k); });
       h += '</div><div class="tsum">' + ST_NAME.map((n, k) => n + ' <b>' + sum[k] + '</b>').join('　') + '</div>' +
-           '<div class="tacts"><button data-tact="best">✨ おすすめ配置</button><button data-tact="clear" class="gray"' + (t.some(Boolean) ? '' : ' disabled') + '>🗑 このチームを空にする</button></div>' +
+           '<div class="tacts"><button data-tact="best">✨ おすすめ</button><button data-tact="grow" class="grow">🌱 育成おすすめ</button><button data-tact="clear" class="gray"' + (t.some(Boolean) ? '' : ' disabled') + '>🗑 空にする</button></div>' +
            '<p class="thint"><b>枠をタップ</b>＝下の一覧から選んで入れる（入れかえ）　<b>ダブルタップ</b>＝外す　<b>長押し</b>＝詳細<br>①（メイン）は必殺技と奥義の両方。サブは枠の下の「必殺技」「奥義」から1つ選びます。<br>' + (boxPut ? '入れる枠を押してください（' + ALLC[ciOf(unitOf(boxPut))].name + '）' : boxSlot >= 0 ? '下の一覧から、入れるキャラを選んでください' + (boxSlot >= 0 && t[boxSlot] ? '（<button data-clear="1">外す</button>）' : '') : '') + '</p></section>';
       const all = sortUnits();
       const list0 = all.filter(u => (boxFG === 'all' || CHAR_STAT[u.id].grade === boxFG) && (boxFT === 'all' || CHAR_STAT[u.id].type === boxFT));
@@ -7884,19 +7884,59 @@
       : boxSort === 'chara' ? -ciOf(u) : unitStats(u)[+boxSort[2]];
     return units.slice().sort((a, b) => ((key(b) - key(a)) * (boxAsc ? -1 : 1)) || (b.lv - a.lv) || (ciOf(a) - ciOf(b)));
   }
-  // おすすめ配置：ステータスの合計が高い順。メインは奥義を持つキャラの中でいちばん強い1人。
-  // サブは強い順に3人。同じくらいの強さなら、まだいないタイプを優先（タイプがばらけると有利）。同じキャラは1体まで
-  function bestTeam(){
-    const pw = u => unitStats(u).reduce((a, b) => a + b, 0), all = units.slice().sort((a, b) => pw(b) - pw(a));
-    const main = all.find(u => canMainId(u.id)); if (!main) return null;
-    const pick = [main], ids = new Set([main.id]), types = new Set([CHAR_STAT[main.id].type]);
-    while (pick.length < 4) {
-      let best = null, bs = -1;
-      all.forEach(u => { if (pick.includes(u) || ids.has(u.id)) return; const sc = pw(u) * (types.has(CHAR_STAT[u.id].type) ? 1 : 1.08); if (sc > bs) { bs = sc; best = u; } });
-      if (!best) break;
-      pick.push(best); ids.add(best.id); types.add(CHAR_STAT[best.id].type);
-    }
-    const t = pick.map(u => u.u); while (t.length < 4) t.push(null); return t;
+  // ===== おすすめ配置 =====
+  // mode 'best'＝いま強いチーム／'grow'＝育てると強くなるチーム（上限が高くて、まだ育ちきっていないキャラ）
+  // ①は「強さ × 技の使いやすさ（1秒あたりの技の強さ。スピードが速いほどたまりやすい）」で選ぶ
+  // 押すたびに次の組み合わせに変わる。いちばんの組み合わせがダントツ（2番目が9割未満）なら、その1つだけ
+  const unitPw = u => unitStats(u).reduce((a, b) => a + b, 0);
+  function skRate(u, kind, atMax){
+    const fx = fxAt(u.id, kind, atMax ? starMaxOf(u) : (u.star || 0), starMaxOf(u)); if (!fx) return 0;
+    const st = atMax ? statsOf(ciOf(u), lvMaxOf(u)) : unitStats(u), avg = st.reduce((a, b) => a + b, 0) / 4;
+    return fxPow(fx) / (SK_MS[kind] * skPowMul(u.id, kind) / 1000) * clampF(st[3] / Math.max(1, avg), 0.7, 1.4);
+  }
+  function growVal(u){
+    const top = statsOf(ciOf(u), lvMaxOf(u)).reduce((a, b) => a + b, 0);
+    const room = 1 - u.lv / lvMaxOf(u), done = u.lv >= lvMaxOf(u) && (u.star || 0) >= starMaxOf(u);
+    return top * (done ? 0.3 : 1 + 0.3 * room);
+  }
+  function teamPatterns(mode){
+    const grow = mode === 'grow', val = u => grow ? growVal(u) : unitPw(u);
+    const cand = units.filter(u => CHAR_STAT[u.id]);
+    const mains = cand.filter(u => canMainId(u.id)); if (!mains.length) return [];
+    const use = u => skRate(u, 'sp', grow) + skRate(u, 'ougi', grow), maxU = Math.max(1e-6, ...mains.map(use));
+    const mainSc = u => val(u) * (0.65 + 0.35 * use(u) / maxU);
+    const tScore = (m, subs) => { const ty = new Set([m].concat(subs).map(x => CHAR_STAT[x.id].type)).size;
+      return (mainSc(m) + subs.reduce((a, x) => a + val(x), 0)) * (1 + 0.04 * ty); };
+    const out = new Map();
+    const ms = mains.slice().sort((a, b) => mainSc(b) - mainSc(a)), topM = mainSc(ms[0]);
+    ms.filter(m => mainSc(m) >= topM * 0.9).slice(0, 4).forEach(m => {   // ①の候補も、いちばんと近い強さのキャラだけ
+      const pool = cand.filter(x => x !== m && x.id !== m.id).sort((a, b) => val(b) - val(a));
+      const base = [], ids = new Set([m.id]), types = new Set([CHAR_STAT[m.id].type]);
+      while (base.length < 3) {                            // 強い順。同じくらいなら、まだいないタイプを優先
+        let best = null, bs = -1;
+        pool.forEach(x => { if (base.includes(x) || ids.has(x.id)) return; const sc = val(x) * (types.has(CHAR_STAT[x.id].type) ? 1 : 1.08); if (sc > bs) { bs = sc; best = x; } });
+        if (!best) break; base.push(best); ids.add(best.id); types.add(CHAR_STAT[best.id].type);
+      }
+      const add = subs => { const key = m.u + '|' + subs.map(x => x.u).sort().join(','); if (!out.has(key)) out.set(key, {m, subs, sc: tScore(m, subs)}); };
+      add(base);
+      const extra = pool.filter(x => !base.includes(x) && !base.some(b => b.id === x.id)).slice(0, 4);
+      base.forEach((b, i) => extra.forEach(x => { if (val(x) < val(b) * 0.9 || base.some((y, k) => k !== i && y.id === x.id)) return; /* 入れかえは近い強さのキャラだけ */ const v = base.slice(); v[i] = x; add(v); }));
+    });
+    const list = [...out.values()].sort((a, b) => b.sc - a.sc); if (!list.length) return [];
+    return list.filter(p => p.sc >= list[0].sc * 0.9).slice(0, 6);
+  }
+  const teamKey = t => (t[0] || '') + '|' + t.slice(1).filter(Boolean).sort().join(',');
+  function applyRecommend(mode){
+    const pats = teamPatterns(mode);
+    if (!pats.length) { toast('メイン（①）になれるキャラ（奥義を持つキャラ）がいません'); return; }
+    const now = teamKey(curTeam()), at = pats.findIndex(p => teamKey([p.m.u].concat(p.subs.map(x => x.u))) === now);
+    const k = at < 0 ? 0 : (at + 1) % pats.length, p = pats[k];
+    const t = [p.m.u].concat(p.subs.map(x => x.u)); while (t.length < 4) t.push(null);
+    teams[teamNo] = t;
+    t.forEach((uid, i) => { if (i > 0 && uid) setSubSkill(i, canMainId(unitOf(uid).id) ? 'ougi' : 'sp'); });   // 奥義があるサブは奥義に
+    boxSlot = -1; fixTeam(); drawBox();
+    const nm = mode === 'grow' ? '育成おすすめ' : 'おすすめ';
+    toast(pats.length === 1 ? nm + '：この4人がダントツです' : nm + ' ' + (k + 1) + '/' + pats.length + '（押すたびに入れかわります）');
   }
   // 枠 k に、持ちキャラ uid を入れる（同じ1体がほかの枠にいたら入れかえ）
   function putUnit(k, uid){
@@ -7938,7 +7978,7 @@
     const ta = e.target.closest('[data-tact]');
     if (ta && !ta.disabled) {
       if (ta.dataset.tact === 'clear') askYes('チーム' + (teamNo + 1) + 'を空にしますか？', () => { teams[teamNo] = [null, null, null, null]; boxSlot = -1; fixTeam(); drawBox(); toast('チーム' + (teamNo + 1) + 'を空にしました'); });
-      else { const b = bestTeam(); if (!b) { toast('メイン（①）になれるキャラがいません'); return; } teams[teamNo] = b; boxSlot = -1; fixTeam(); drawBox(); toast('おすすめの4人を入れました'); }
+      else applyRecommend(ta.dataset.tact);
       return;
     }
     if (e.target.closest('[data-clear]') && boxSlot >= 0) { curTeam()[boxSlot] = null; boxSlot = -1; fixTeam(); drawBox(); return; }
