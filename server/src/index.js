@@ -11,7 +11,9 @@ const enc = new TextEncoder(), dec = new TextDecoder();
 const nowSec = () => Math.floor(Date.now() / 1000);
 const SESSION_DAYS = 90;                    // ログイン状態が続く日数
 const SAVE_MAX_BYTES = 400 * 1024;          // セーブ1件の上限
-const GOLD_SOURCES = ['free', 'web', 'google', 'apple'];   // 使うときはこの順に減らす
+const GOLD_SOURCES = ['free', 'web', 'google', 'apple'];   // どこで手に入れたか
+const PAID_SOURCES = ['web', 'google', 'apple'];           // 買ったゴールド（購入ごとに期限つきで持つ）
+const GOLD_DAYS = 180;                                     // 買ったゴールドの有効期間（購入から180日）
 const GUEST_PER_IP_DAY = 20;                // 同じ場所から1日に作れるゲストの数
 // テーブル（schema.sql と同じ。何度流しても大丈夫）
 const SCHEMA = [
@@ -42,7 +44,9 @@ const SCHEMA = [
   "CREATE INDEX IF NOT EXISTS idx_defense_power ON defense(power)",
   "CREATE TABLE IF NOT EXISTS arena ( account_id TEXT PRIMARY KEY, coins INTEGER NOT NULL DEFAULT 0, points INTEGER NOT NULL DEFAULT 1000, win INTEGER NOT NULL DEFAULT 0, lose INTEGER NOT NULL DEFAULT 0, day TEXT NOT NULL DEFAULT '', tries INTEGER NOT NULL DEFAULT 0 )",
   "CREATE TABLE IF NOT EXISTS arena_log ( id INTEGER PRIMARY KEY AUTOINCREMENT, defender TEXT NOT NULL, attacker TEXT NOT NULL, attacker_name TEXT NOT NULL, attacker_cc TEXT NOT NULL DEFAULT '', win INTEGER NOT NULL, created_at INTEGER NOT NULL )",
-  "CREATE INDEX IF NOT EXISTS idx_arena_log ON arena_log(defender, created_at)"
+  "CREATE INDEX IF NOT EXISTS idx_arena_log ON arena_log(defender, created_at)",
+  "CREATE TABLE IF NOT EXISTS gold_lots ( id INTEGER PRIMARY KEY AUTOINCREMENT, account_id TEXT NOT NULL, source TEXT NOT NULL, amount INTEGER NOT NULL, left_n INTEGER NOT NULL, bought_at INTEGER NOT NULL, expires_at INTEGER NOT NULL, ref TEXT NOT NULL DEFAULT '' )",
+  "CREATE INDEX IF NOT EXISTS idx_gold_lots ON gold_lots(account_id, expires_at)"
   ];
 
 // ---------- 小さな道具 ----------
@@ -212,20 +216,42 @@ async function who(env, req) {
   const acc = await env.DB.prepare('SELECT id, name, banned, created_at FROM accounts WHERE id = ?').bind(s.a).first();
   return acc && !acc.banned ? acc : null;
 }
-async function walletOf(env, id) {
-  const { results } = await env.DB.prepare('SELECT source, balance FROM wallet WHERE account_id = ?').bind(id).all();
-  const by = {}; GOLD_SOURCES.forEach(k => by[k] = 0);
-  (results || []).forEach(r => by[r.source] = r.balance);
-  return { total: GOLD_SOURCES.reduce((a, k) => a + Math.max(0, by[k]), 0), by };
+// ゴールドコインの残高：配ったゴールド（free・期限なし）と、買ったゴールド（購入ごと・購入から180日）を分けて持つ
+// 使うときは合わせて使えるが、買ったゴールドの期限が近いものから先に減る
+async function expireGold(env, id) {
+  const t = nowSec();
+  const { results } = await env.DB.prepare('SELECT id, source, left_n FROM gold_lots WHERE account_id = ? AND left_n > 0 AND expires_at <= ?').bind(id, t).all();
+  if (!results || !results.length) return;
+  const st = [];
+  for (const r of results) {
+    st.push(env.DB.prepare('UPDATE gold_lots SET left_n = 0 WHERE id = ?').bind(r.id));
+    st.push(env.DB.prepare('INSERT INTO ledger (account_id, source, delta, reason, ref, created_at) VALUES (?, ?, ?, ?, ?, ?)').bind(id, r.source, -r.left_n, 'expire', 'lot-' + r.id, t));
+  }
+  await env.DB.batch(st);
 }
-// ゴールドコインを増やす（購入・配布）。同じ ref は2回足さない
+async function walletOf(env, id) {
+  await expireGold(env, id);
+  const t = nowSec();
+  const fr = await env.DB.prepare("SELECT balance FROM wallet WHERE account_id = ? AND source = 'free'").bind(id).first();
+  const { results } = await env.DB.prepare('SELECT source, SUM(left_n) AS n FROM gold_lots WHERE account_id = ? AND left_n > 0 AND expires_at > ? GROUP BY source').bind(id, t).all();
+  const by = {}; GOLD_SOURCES.forEach(k => by[k] = 0);
+  by.free = Math.max(0, fr ? fr.balance : 0);
+  (results || []).forEach(r => by[r.source] = r.n || 0);
+  const paid = PAID_SOURCES.reduce((a, k) => a + by[k], 0);
+  const soon = (await env.DB.prepare('SELECT left_n AS n, expires_at AS at FROM gold_lots WHERE account_id = ? AND left_n > 0 AND expires_at > ? ORDER BY expires_at ASC LIMIT 3').bind(id, t).all()).results || [];
+  return { total: by.free + paid, free: by.free, paid, by, expiring: soon, days: GOLD_DAYS };
+}
+// ゴールドコインを増やす（購入・配布）。同じ ref は2回足さない。買ったゴールドは購入ごとに期限つきで持つ
 async function addGold(env, id, source, amount, reason, ref) {
   const t = nowSec();
   const res = await env.DB.batch([
     env.DB.prepare('INSERT OR IGNORE INTO ledger (account_id, source, delta, reason, ref, created_at) VALUES (?, ?, ?, ?, ?, ?)').bind(id, source, amount, reason, ref, t),
   ]);
   if (!res[0].meta.changes) return false;                     // もう処理済み
-  await env.DB.prepare('INSERT INTO wallet (account_id, source, balance) VALUES (?, ?, ?) ON CONFLICT(account_id, source) DO UPDATE SET balance = balance + excluded.balance').bind(id, source, amount).run();
+  if (PAID_SOURCES.includes(source))
+    await env.DB.prepare('INSERT INTO gold_lots (account_id, source, amount, left_n, bought_at, expires_at, ref) VALUES (?, ?, ?, ?, ?, ?, ?)').bind(id, source, amount, amount, t, t + GOLD_DAYS * 86400, ref).run();
+  else
+    await env.DB.prepare('INSERT INTO wallet (account_id, source, balance) VALUES (?, ?, ?) ON CONFLICT(account_id, source) DO UPDATE SET balance = balance + excluded.balance').bind(id, 'free', amount).run();
   return true;
 }
 
@@ -278,6 +304,7 @@ async function api(env, req, url) {
       env.DB.prepare('DELETE FROM identities WHERE account_id = ?').bind(me.id),
       env.DB.prepare('DELETE FROM saves WHERE account_id = ?').bind(me.id),
       env.DB.prepare('DELETE FROM wallet WHERE account_id = ?').bind(me.id),
+      env.DB.prepare("UPDATE gold_lots SET account_id = 'deleted' WHERE account_id = ?").bind(me.id),
       env.DB.prepare('DELETE FROM scores WHERE player = ?').bind(me.id),
       env.DB.prepare("UPDATE ledger SET account_id = 'deleted' WHERE account_id = ?").bind(me.id),
       env.DB.prepare('DELETE FROM accounts WHERE id = ?').bind(me.id),
@@ -315,12 +342,18 @@ async function api(env, req, url) {
     if (done) return json(env, req, { ok: true, again: true, gold: await walletOf(env, me.id) });   // 同じ支払いを2回しない
     const w = await walletOf(env, me.id);
     if (w.total < amount) return json(env, req, { error: 'ゴールドコインが足りません', gold: w }, 402);
+    // 買ったゴールド（期限の近いものから）→ 配ったゴールド の順に減らす
     let left = amount; const stmts = [], t = nowSec();
-    for (const src of GOLD_SOURCES) {
-      const take = Math.min(left, Math.max(0, w.by[src])); if (!take) continue;
-      stmts.push(env.DB.prepare('UPDATE wallet SET balance = balance - ? WHERE account_id = ? AND source = ?').bind(take, me.id, src));
-      stmts.push(env.DB.prepare('INSERT INTO ledger (account_id, source, delta, reason, ref, created_at) VALUES (?, ?, ?, ?, ?, ?)').bind(me.id, src, -take, 'spend:' + reason, ref, t));
+    const lots = (await env.DB.prepare('SELECT id, source, left_n FROM gold_lots WHERE account_id = ? AND left_n > 0 AND expires_at > ? ORDER BY expires_at ASC, id ASC').bind(me.id, t).all()).results || [];
+    for (const l of lots) {
+      const take = Math.min(left, l.left_n); if (!take) continue;
+      stmts.push(env.DB.prepare('UPDATE gold_lots SET left_n = left_n - ? WHERE id = ? AND left_n >= ?').bind(take, l.id, take));
+      stmts.push(env.DB.prepare('INSERT INTO ledger (account_id, source, delta, reason, ref, created_at) VALUES (?, ?, ?, ?, ?, ?)').bind(me.id, l.source, -take, 'spend:' + reason, ref + (stmts.length ? '-' + l.id : ''), t));
       left -= take; if (!left) break;
+    }
+    if (left > 0) {
+      stmts.push(env.DB.prepare("UPDATE wallet SET balance = balance - ? WHERE account_id = ? AND source = 'free'").bind(left, me.id));
+      stmts.push(env.DB.prepare('INSERT INTO ledger (account_id, source, delta, reason, ref, created_at) VALUES (?, ?, ?, ?, ?, ?)').bind(me.id, 'free', -left, 'spend:' + reason, ref + (stmts.length ? '-free' : ''), t));
     }
     await env.DB.batch(stmts);
     return json(env, req, { ok: true, gold: await walletOf(env, me.id) });

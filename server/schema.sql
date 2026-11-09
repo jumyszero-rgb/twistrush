@@ -158,3 +158,16 @@ CREATE TABLE IF NOT EXISTS arena_log (
   created_at     INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_arena_log ON arena_log(defender, created_at);
+
+-- 買ったゴールドコイン（購入ごと）。購入から180日で期限切れ。使うときは期限の近いものから減る
+CREATE TABLE IF NOT EXISTS gold_lots (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  account_id  TEXT NOT NULL,
+  source      TEXT NOT NULL,             -- 'web' | 'google' | 'apple'
+  amount      INTEGER NOT NULL,          -- 買った数
+  left_n      INTEGER NOT NULL,          -- 残り
+  bought_at   INTEGER NOT NULL,
+  expires_at  INTEGER NOT NULL,
+  ref         TEXT NOT NULL DEFAULT ''   -- 購入番号
+);
+CREATE INDEX IF NOT EXISTS idx_gold_lots ON gold_lots(account_id, expires_at);
