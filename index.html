@@ -821,6 +821,14 @@
   #pityPick .pp-in{background:#241640;border:2px solid #ffd24a;border-radius:16px;padding:14px;width:100%;max-width:420px;max-height:90vh;overflow:auto;color:#fff;text-align:center;}
   #pityPick h3{margin:0 0 4px;color:#ffd24a;} #pityPick p{margin:0 0 10px;font-size:12px;opacity:.85;}
   .ccell.nomain{opacity:.35;filter:grayscale(.8);animation:none!important;} .ccell .nomk{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);z-index:3;background:rgba(20,10,40,.85);color:#fff;font-size:11px;font-weight:900;padding:2px 6px;border-radius:6px;white-space:nowrap;}
+  #qStat{position:fixed;z-index:9500;width:min(300px,calc(100vw - 16px));background:#241640;border:2px solid #b89bff;border-radius:16px;padding:10px 12px;color:#fff;box-shadow:0 8px 24px rgba(0,0,0,.5);animation:rkFade .18s both;}
+  #qStat .qs-head{display:flex;gap:10px;align-items:center;} #qStat .qs-head small{display:block;font-size:11px;color:#cbb8ff;} #qStat .qs-head b{display:block;font-size:14px;} #qStat .qs-head span{font-size:12px;}
+  #qStat .qs-ic .cicon{border-radius:10px;}
+  #qStat .qs-st{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:8px 0 6px;} #qStat .qs-st span{background:rgba(255,255,255,.08);border-radius:8px;padding:4px 2px;text-align:center;font-size:10px;color:#cbb8ff;}
+  #qStat .qs-st span.hi{outline:1.5px solid #ffd24a;} #qStat .qs-st b{display:block;font-size:15px;color:#fff;}
+  #qStat .qs-sk{font-size:12px;margin-top:4px;display:flex;gap:6px;align-items:center;} #qStat .qs-sk b{font-size:10px;padding:1px 6px;border-radius:6px;background:#ff5f9e;flex:none;} #qStat .qs-sk.ougi b{background:#7a5cff;} #qStat .qs-sk small{margin-left:auto;color:#cbb8ff;flex:none;}
+  #qStat p{margin:6px 0 0;font-size:10px;text-align:center;color:#9f8fc0;}
+  .cgrid .ccell{-webkit-touch-callout:none;}
   .tneed{font-size:12px;font-weight:900;color:#ff8aa0;}
   .tacts{display:flex;gap:8px;margin:8px 0 2px;} .tacts button{flex:1;border:0;border-radius:10px;padding:9px 4px;font-weight:800;font-size:12px;white-space:nowrap;color:#fff;background:linear-gradient(#7a4dff,#5a2fd6);font-family:inherit;} .tacts button.gray{background:#4a3a66;} .tacts button.grow{background:linear-gradient(#3ec46d,#24914c);} .tacts button:disabled{opacity:.4;}
   .pp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;}
@@ -7525,7 +7533,7 @@
       t.forEach((uid, k) => { h += slotHTML(uid, k, boxSlot === k); });
       h += '</div><div class="tsum">' + ST_NAME.map((n, k) => n + ' <b>' + sum[k] + '</b>').join('　') + '</div>' +
            '<div class="tacts"><button data-tact="best">おすすめ</button><button data-tact="grow" class="grow">育成おすすめ</button><button data-tact="clear" class="gray"' + (t.some(Boolean) ? '' : ' disabled') + '>空にする</button></div>' +
-           '<p class="thint"><b>枠をタップ</b>＝下の一覧から選んで入れる（入れかえ）　<b>ダブルタップ</b>＝外す　<b>長押し</b>＝詳細<br>①（メイン）は必殺技と奥義の両方。サブは枠の下の「必殺技」「奥義」から1つ選びます。<br>' + (boxPut ? '入れる枠を押してください（' + ALLC[ciOf(unitOf(boxPut))].name + '）' : boxSlot >= 0 ? '下の一覧から、入れるキャラを選んでください' + (boxSlot >= 0 && t[boxSlot] ? '（<button data-clear="1">外す</button>）' : '') : '') + '</p></section>';
+           '<p class="thint"><b>枠をタップ</b>＝下の一覧から選んで入れる（入れかえ）　<b>ダブルタップ</b>＝外す　<b>長押し</b>＝詳細<br>持ちキャラのアイコンを<b>長押し</b>＝かんたんステータス<br>①（メイン）は必殺技と奥義の両方。サブは枠の下の「必殺技」「奥義」から1つ選びます。<br>' + (boxPut ? '入れる枠を押してください（' + ALLC[ciOf(unitOf(boxPut))].name + '）' : boxSlot >= 0 ? '下の一覧から、入れるキャラを選んでください' + (boxSlot >= 0 && t[boxSlot] ? '（<button data-clear="1">外す</button>）' : '') : '') + '</p></section>';
       const all = sortUnits();
       const list0 = all.filter(u => (boxFG === 'all' || CHAR_STAT[u.id].grade === boxFG) && (boxFT === 'all' || CHAR_STAT[u.id].type === boxFT));
       const pn = Math.max(1, Math.ceil(list0.length / BOX_PER)); if (boxPage >= pn) boxPage = pn - 1; if (boxPage < 0) boxPage = 0;
@@ -8071,6 +8079,37 @@
     root.addEventListener('contextmenu', e => { if (e.target.closest('.tslot')) e.preventDefault(); });
   }
   slotGestures($('boxBody'), true);
+  // ---- 持ちキャラ一覧のアイコンを長押し：簡易ステータス ----
+  function quickStat(uid, x, y){
+    const u = unitOf(uid); if (!u) return;
+    const old = $('qStat'); if (old) old.remove();
+    const ci = ciOf(u), cs = CHAR_STAT[u.id], st = unitStats(u), ti = TYPE_INFO[cs.type], tn = curTeam().indexOf(uid);
+    const sk = kind => FX_DEF[u.id] && FX_DEF[u.id][kind] ? '<div class="qs-sk ' + kind + '"><b>' + (kind === 'sp' ? '必殺技' : '奥義') + '</b>' + ((kind === 'sp' ? (SPECIAL_NAME[u.id] || '').replace('！', '') : OUGI_NAME[u.id]) || '') + '<small>約' + skBaseSec(u.id, kind) + '秒</small></div>' : '';
+    const d = document.createElement('div'); d.id = 'qStat';
+    d.innerHTML = '<div class="qs-head"><span class="qs-ic"></span><div><small>' + cs.grade + '　<i style="color:' + ti.col + '">' + ti.mark + ' ' + ti.name + '</i>' + (tn >= 0 ? '　チーム' + '①②③④'[tn] : '') + (u.lock ? '　🔒' : '') + '</small><b>' + fullName(ALLC[ci]) + '</b>' +
+      '<span>LV' + u.lv + ' / ' + capOf(u) + '　' + starsHTMLu(u) + '</span></div></div>' +
+      '<div class="qs-st">' + ST_NAME.map((n, k) => '<span' + (k === ti.i ? ' class="hi"' : '') + '>' + n + '<b>' + st[k] + '</b></span>').join('') + '</div>' +
+      sk('sp') + sk('ougi') + '<p>タップでとじる</p>';
+    d.querySelector('.qs-ic').appendChild(charIcon(ci, 54));
+    document.body.appendChild(d);
+    const r = d.getBoundingClientRect(), W = innerWidth, H = innerHeight;
+    d.style.left = Math.max(8, Math.min(W - r.width - 8, x - r.width / 2)) + 'px';
+    d.style.top = (y - r.height - 16 > 8 ? y - r.height - 16 : Math.min(H - r.height - 8, y + 16)) + 'px';
+    try { navigator.vibrate && navigator.vibrate(12); } catch(_) {}
+    setTimeout(() => { const close = () => { d.remove(); document.removeEventListener('pointerdown', close, true); lpFired = true; setTimeout(() => { lpFired = false; }, 450); }; /* とじるタップで下のキャラを選ばない */ document.addEventListener('pointerdown', close, true); }, 50);
+  }
+  (() => {
+    let tm = 0, st = null, cell = null;
+    const box = $('boxBody'), cancel = () => { clearTimeout(tm); if (cell) cell.classList.remove('pressing'); cell = null; };
+    box.addEventListener('pointerdown', e => {
+      const c = e.target.closest('.cgrid .ccell[data-u]'); if (!c || boxDetail) return;
+      cell = c; st = [e.clientX, e.clientY]; clearTimeout(tm);
+      tm = setTimeout(() => { lpFired = true; const r = c.getBoundingClientRect(); cancel(); quickStat(c.dataset.u, r.left + r.width / 2, r.top); setTimeout(() => { lpFired = false; }, 600); }, 450);
+    });
+    box.addEventListener('pointermove', e => { if (cell && st && Math.hypot(e.clientX - st[0], e.clientY - st[1]) > 10) cancel(); });
+    box.addEventListener('pointerup', cancel); box.addEventListener('pointercancel', cancel);
+    box.addEventListener('contextmenu', e => { if (e.target.closest('.cgrid .ccell')) e.preventDefault(); });
+  })();
   slotGestures($('teamBox'), false);
   // ===== キャラの技（必殺技30秒・奥義60秒で時間チャージ） =====
   const SK_MS = {sp: 30000, ougi: 60000};               // 基準の時間。キャラのスピードと敵のスピードの比べ合いで 0.5〜1.5倍 に変わる
