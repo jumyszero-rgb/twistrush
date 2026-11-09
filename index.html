@@ -7533,7 +7533,7 @@
       t.forEach((uid, k) => { h += slotHTML(uid, k, boxSlot === k); });
       h += '</div><div class="tsum">' + ST_NAME.map((n, k) => n + ' <b>' + sum[k] + '</b>').join('　') + '</div>' +
            '<div class="tacts"><button data-tact="best">おすすめ</button><button data-tact="grow" class="grow">育成おすすめ</button><button data-tact="clear" class="gray"' + (t.some(Boolean) ? '' : ' disabled') + '>空にする</button></div>' +
-           '<p class="thint"><b>枠をタップ</b>＝下の一覧から選んで入れる（入れかえ）　<b>ダブルタップ</b>＝外す　<b>長押し</b>＝詳細<br>持ちキャラのアイコンを<b>長押し</b>＝かんたんステータス<br>①（メイン）は必殺技と奥義の両方。サブは枠の下の「必殺技」「奥義」から1つ選びます。<br>' + (boxPut ? '入れる枠を押してください（' + ALLC[ciOf(unitOf(boxPut))].name + '）' : boxSlot >= 0 ? '下の一覧から、入れるキャラを選んでください' + (boxSlot >= 0 && t[boxSlot] ? '（<button data-clear="1">外す</button>）' : '') : '') + '</p></section>';
+           '<p class="thint"><b>枠をタップ</b>＝下の一覧から選んで入れる（入れかえ）　<b>ダブルタップ</b>＝外す　<b>長押し</b>＝詳細<br>持ちキャラ：<b>タップ</b>＝詳細　<b>ダブルタップ</b>＝ロック・解除　<b>長押し</b>＝かんたんステータス<br>①（メイン）は必殺技と奥義の両方。サブは枠の下の「必殺技」「奥義」から1つ選びます。<br>' + (boxPut ? '入れる枠を押してください（' + ALLC[ciOf(unitOf(boxPut))].name + '）' : boxSlot >= 0 ? '下の一覧から、入れるキャラを選んでください' + (boxSlot >= 0 && t[boxSlot] ? '（<button data-clear="1">外す</button>）' : '') : '') + '</p></section>';
       const all = sortUnits();
       const list0 = all.filter(u => (boxFG === 'all' || CHAR_STAT[u.id].grade === boxFG) && (boxFT === 'all' || CHAR_STAT[u.id].type === boxFT));
       const pn = Math.max(1, Math.ceil(list0.length / BOX_PER)); if (boxPage >= pn) boxPage = pn - 1; if (boxPage < 0) boxPage = 0;
@@ -8031,7 +8031,7 @@
       if (boxSlot >= 0) { putUnit(boxSlot, uid); boxSlot = -1; boxSel = null; }
       else if (boxPut) { boxPut = null; boxSel = uid; }
       else if (boxPick) { openDetail(uid, boxPick); return; }   // レベルアップ・限界突破のキャラ選び：押したらすぐその画面へ
-      else boxSel = boxSel === uid ? null : uid;
+      else return;                                     // ふつうのときはタップ＝詳細／ダブルタップ＝ロック（下の listGestures）
       drawBox();
     }
   });
@@ -8107,7 +8107,17 @@
       tm = setTimeout(() => { lpFired = true; const r = c.getBoundingClientRect(); cancel(); quickStat(c.dataset.u, r.left + r.width / 2, r.top); setTimeout(() => { lpFired = false; }, 600); }, 450);
     });
     box.addEventListener('pointermove', e => { if (cell && st && Math.hypot(e.clientX - st[0], e.clientY - st[1]) > 10) cancel(); });
-    box.addEventListener('pointerup', cancel); box.addEventListener('pointercancel', cancel);
+    // ふつうのとき（チームの枠を選んでいないとき）：タップ＝詳細、ダブルタップ＝ロック・解除
+    let last = null, single = 0;
+    box.addEventListener('pointerup', e => {
+      const c = cell; cancel();
+      if (!c || lpFired || boxSlot >= 0 || boxPut || boxPick || boxDetail || e.target.closest('.cgrid .ccell[data-u]') !== c) return;
+      const uid = c.dataset.u, t = Date.now();
+      if (last && last.uid === uid && t - last.t < 320) { clearTimeout(single); last = null; const u = unitOf(uid); if (u) { toggleLock(u); drawBox(); } return; }
+      last = {uid, t}; clearTimeout(single);
+      single = setTimeout(() => { last = null; if (unitOf(uid) && boxSlot < 0 && !boxDetail) openDetail(uid, 'info'); }, 260);
+    });
+    box.addEventListener('pointercancel', cancel);
     box.addEventListener('contextmenu', e => { if (e.target.closest('.cgrid .ccell')) e.preventDefault(); });
   })();
   slotGestures($('teamBox'), false);
