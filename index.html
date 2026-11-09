@@ -820,6 +820,7 @@
   #pityPick{position:fixed;inset:0;z-index:150;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;padding:16px;}
   #pityPick .pp-in{background:#241640;border:2px solid #ffd24a;border-radius:16px;padding:14px;width:100%;max-width:420px;max-height:90vh;overflow:auto;color:#fff;text-align:center;}
   #pityPick h3{margin:0 0 4px;color:#ffd24a;} #pityPick p{margin:0 0 10px;font-size:12px;opacity:.85;}
+  .tacts{display:flex;gap:8px;margin:8px 0 2px;} .tacts button{flex:1;border:0;border-radius:10px;padding:9px 6px;font-weight:800;font-size:13px;color:#fff;background:linear-gradient(#7a4dff,#5a2fd6);font-family:inherit;} .tacts button.gray{background:#4a3a66;} .tacts button:disabled{opacity:.4;}
   .pp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;}
   .pp-grid button{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;background:rgba(255,255,255,.08);border-radius:10px;padding:6px 2px;font-size:10px;line-height:1.3;}
   .pity{grid-column:1/-1;width:100%;background:rgba(0,0,0,.35);border:1px solid rgba(255,210,74,.5);border-radius:12px;padding:6px 10px;margin:4px 0;color:#fff;font-size:12px;box-sizing:border-box;}
@@ -5253,7 +5254,7 @@
   const OL_TABS = {simple: 'シンプル', chara: 'キャラ', auto: 'オート'};
   const olTabsHTML = () => '<div class="oltabs">' + Object.keys(OL_TABS).map(k => '<button data-k="' + k + '" class="' + (k === olKind ? 'on' : '') + '">' + OL_TABS[k] + '</button>').join('') + '</div>';
   const olTabsBind = root => root.querySelectorAll('.oltabs button').forEach(b => b.onclick = () => { olKind = b.dataset.k; save('ol_kind', olKind); drawOnline(); });
-  function olNeedTeam(){ if (olKind === 'chara' && !teamMembers().length) { toast('キャラ対戦はチームが必要です'); return true; } return false; }
+  function olNeedTeam(){ if (olKind === 'chara' && !curTeam()[0]) { toast('キャラ対戦はチームのメイン（①）が必要です。チーム編成で入れてください'); return true; } return false; }
   async function olQuick(){
     if (olNeedTeam()) return;
     try { const r = await api('/api/vs/quick', {method: 'POST', body: JSON.stringify({kind: olKind, bet: olBet}), tok: rankTok()}); olView = 'wait'; olConnect(r.room); drawOnline(); }
@@ -5600,7 +5601,7 @@
     body.querySelectorAll('.ar-cand button').forEach(b => b.onclick = () => arenaFight(b.dataset.o, b));
   }
   async function arenaFight(opp, btn){
-    const team = arenaTeam(); if (!team.length) { toast('チームがいません'); return; }
+    const team = arenaTeam(); if (!curTeam()[0] || !team.length) { toast('チームのメイン（①）がいません。チーム編成で入れてください'); return; }
     btn.disabled = true;
     try {
       if (!arInfo.defense) await api('/api/arena/defense', {method: 'POST', body: JSON.stringify({team}), tok: rankTok()});   // はじめての人は、今のチームを防衛にも
@@ -6947,23 +6948,12 @@
   const unitStats = u => statsOf(ciOf(u), u.lv);
   // ---- チーム（1人目がメイン）。4つまで保存して切りかえられる ----
   let teams = loadJ('teams', null), teamNo = +load('teamno', '0') || 0;
-  if (!Array.isArray(teams) || teams.length !== 4) {
-    const first = units.find(u => u.id === 'ichigo') || units[0];
-    teams = [[first ? first.u : null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null]];
-  }
+  if (!Array.isArray(teams) || teams.length !== 4) teams = [0, 1, 2, 3].map(() => [null, null, null, null]);   // 最初は空。自分で選んで入れる
   function fixTeam(){
     storyUnits();
     teams = teams.map(t => { const seen = new Set(); return t.slice(0, 4).map(uid => (uid && unitOf(uid) && !seen.has(uid) && seen.add(uid)) ? uid : null); });
-    const canMain = uid => { const x = uid && unitOf(uid); return !!(x && SKILLS[x.id] && SKILLS[x.id].ougi); };
-    teams.forEach(t => {
-      while (t.length < 4) t.push(null);
-      if (!canMain(t[0])) {                                   // メインは技を持つキャラ（ボス）だけ
-        const j = t.findIndex((v, k) => k > 0 && canMain(v));
-        if (j > 0) { const x = t[0]; t[0] = t[j]; t[j] = x; }
-        else if (t[0]) { const fb = units.find(x => SKILLS[x.id] && SKILLS[x.id].ougi && !t.includes(x.u)); const old = t[0]; t[0] = fb ? fb.u : null; const e = t.findIndex((v, k) => k > 0 && !v); if (e > 0) t[e] = old; }
-      }
-    });
-    if (!teams[teamNo][0] && units[0]) { const fb = units.find(u => u.id === 'ichigo') || units.find(u => SKILLS[u.id] && SKILLS[u.id].ougi); if (fb) teams[teamNo][0] = fb.u; }
+    // 勝手に入れたり並べかえたりはしない（いなくなったキャラを外すだけ）。メインに入れられるかは putUnit で確かめる
+    teams.forEach(t => { while (t.length < 4) t.push(null); });
     save('teams', JSON.stringify(teams)); save('teamno', String(teamNo));
     const m = unitOf(teams[teamNo][0]); myChar = m ? ciOf(m) : 0;
   }
@@ -7214,14 +7204,7 @@
     const s2 = e.target.closest('[data-sk2]'); if (s2) { const [k, v] = s2.dataset.sk2.split(':'); setSubSkill(+k, v); drawTeam(); return; }
     const tk = e.target.closest('[data-sk]'); if (tk) { const k = +tk.dataset.sk; setSubSkill(k, teamSk[teamNo][k] === 'ougi' ? 'sp' : 'ougi'); drawTeam(); return; }
     const tb = e.target.closest('[data-team]'); if (tb) { teamNo = +tb.dataset.team; fixTeam(); drawTeam(); return; }
-    const sl = e.target.closest('.tslot');
-    if (sl) {                                            // キャラの入っている枠は詳細へ、空いている枠は入れるキャラ選びへ
-      const k = +sl.dataset.k, cur = curTeam()[k];
-      openBox('char');
-      if (cur && unitOf(cur)) { boxDetail = cur; detTab = 'info'; matPage = 0; matF = 'all'; feedSel.clear(); }
-      else boxSlot = k;
-      drawBox(); $('boxBody').scrollTop = 0; if (!(cur && unitOf(cur))) scrollToList(); return;
-    }
+    if (e.target.closest('.tslot')) return;              // 枠はタップ・ダブルタップ・長押しで別に処理（下の slotGestures）
     if (e.target.closest('#teamBoxBtn')) openBox('char');
   });
 
@@ -7536,7 +7519,8 @@
         '<section class="teamsec"><h3>チーム編成（4つまで保存）</h3>' + teamTabs() + '<div class="tgrid">';
       t.forEach((uid, k) => { h += slotHTML(uid, k, boxSlot === k); });
       h += '</div><div class="tsum">' + ST_NAME.map((n, k) => n + ' <b>' + sum[k] + '</b>').join('　') + '</div>' +
-           '<p class="thint">①（メイン）は必殺技と奥義の両方。サブは枠の下の「必殺技」「奥義」から1つ選びます。<br>' + (boxPut ? '入れる枠を押してください（' + ALLC[ciOf(unitOf(boxPut))].name + '）' : boxSlot >= 0 ? '下の一覧から、入れるキャラを選んでください' + (boxSlot > 0 && t[boxSlot] ? '（<button data-clear="1">外す</button>）' : '') : '<b>枠をタップ</b>＝詳細　<b>枠を長押し</b>＝外す・入れかえ　<b>空いている枠をタップ</b>＝下の一覧から入れるキャラを選ぶ') + '</p></section>';
+           '<div class="tacts"><button data-tact="best">✨ おすすめ配置</button><button data-tact="clear" class="gray"' + (t.some(Boolean) ? '' : ' disabled') + '>🗑 このチームを空にする</button></div>' +
+           '<p class="thint"><b>枠をタップ</b>＝下の一覧から選んで入れる（入れかえ）　<b>ダブルタップ</b>＝外す　<b>長押し</b>＝詳細<br>①（メイン）は必殺技と奥義の両方。サブは枠の下の「必殺技」「奥義」から1つ選びます。<br>' + (boxPut ? '入れる枠を押してください（' + ALLC[ciOf(unitOf(boxPut))].name + '）' : boxSlot >= 0 ? '下の一覧から、入れるキャラを選んでください' + (boxSlot >= 0 && t[boxSlot] ? '（<button data-clear="1">外す</button>）' : '') : '') + '</p></section>';
       const all = sortUnits();
       const list0 = all.filter(u => (boxFG === 'all' || CHAR_STAT[u.id].grade === boxFG) && (boxFT === 'all' || CHAR_STAT[u.id].type === boxFT));
       const pn = Math.max(1, Math.ceil(list0.length / BOX_PER)); if (boxPage >= pn) boxPage = pn - 1; if (boxPage < 0) boxPage = 0;
@@ -7545,7 +7529,7 @@
       h += '<section><h3>持ちキャラ（' + (list0.length === all.length ? all.length : list0.length + ' / ' + all.length) + '体）</h3>' +
            (() => { const sn = (SORTS.find(x => x[0] === boxSort) || ['', '入手順'])[1] + (boxAsc ? '↑' : '↓');
              const fg = boxFG === 'all' ? '' : '・' + boxFG, ft = boxFT === 'all' ? '' : '・' + TYPE_INFO[boxFT].name;
-             const dirty = boxSort !== 'new' || boxAsc || boxFG !== 'all' || boxFT !== 'all';
+             const dirty = boxSort !== 'grade' || boxAsc || boxFG !== 'all' || boxFT !== 'all';
              return '<div class="coptbar"><button data-copt="1" class="copt">' + (boxOpt ? '▲' : '▼') + ' 並べかえ・しぼりこみ<small>' + sn + fg + ft + '</small></button>' +
                '<button data-creset="1" class="creset"' + (dirty ? '' : ' disabled') + '>一括解除</button></div>'; })() +
            '<div class="copts' + (boxOpt ? ' open' : '') + '"><div class="clegend">枠の色＝グレード：' + ['N', 'R', 'SR', 'MR', 'LR'].map(g => '<i class="g-' + g + '">' + g + '</i>').join('') +
@@ -7872,12 +7856,26 @@
   // 並べかえ：入手順・レベル・グレード・各ステータス・キャラ
   const SORTS = [['new', '入手順'], ['lv', 'レベル'], ['star', '★'], ['grade', 'グレード'], ['st0', '体力'], ['st1', '攻撃'], ['st2', '防御'], ['st3', 'スピード'], ['chara', 'キャラ']];
   const GRADE_RANK = {N: 1, R: 2, SR: 3, MR: 4, LR: 5};
-  let boxSort = load('boxsort', 'new') || 'new', boxAsc = load('boxasc', '0') === '1';
+  let boxSort = load('boxsort2', 'grade') || 'grade', boxAsc = load('boxasc', '0') === '1';   // 最初はグレード順（同じグレードはレベル順）
   function sortUnits(){
     const idx = new Map(units.map((u, i) => [u.u, i]));
     const key = u => boxSort === 'new' ? idx.get(u.u) : boxSort === 'lv' ? u.lv : boxSort === 'star' ? (u.star || 0) : boxSort === 'grade' ? GRADE_RANK[CHAR_STAT[u.id].grade] || 0
       : boxSort === 'chara' ? -ciOf(u) : unitStats(u)[+boxSort[2]];
     return units.slice().sort((a, b) => ((key(b) - key(a)) * (boxAsc ? -1 : 1)) || (b.lv - a.lv) || (ciOf(a) - ciOf(b)));
+  }
+  // おすすめ配置：ステータスの合計が高い順。メインは奥義を持つキャラの中でいちばん強い1人。
+  // サブは強い順に3人。同じくらいの強さなら、まだいないタイプを優先（タイプがばらけると有利）。同じキャラは1体まで
+  function bestTeam(){
+    const pw = u => unitStats(u).reduce((a, b) => a + b, 0), all = units.slice().sort((a, b) => pw(b) - pw(a));
+    const main = all.find(u => canMainId(u.id)); if (!main) return null;
+    const pick = [main], ids = new Set([main.id]), types = new Set([CHAR_STAT[main.id].type]);
+    while (pick.length < 4) {
+      let best = null, bs = -1;
+      all.forEach(u => { if (pick.includes(u) || ids.has(u.id)) return; const sc = pw(u) * (types.has(CHAR_STAT[u.id].type) ? 1 : 1.08); if (sc > bs) { bs = sc; best = u; } });
+      if (!best) break;
+      pick.push(best); ids.add(best.id); types.add(CHAR_STAT[best.id].type);
+    }
+    const t = pick.map(u => u.u); while (t.length < 4) t.push(null); return t;
   }
   // 枠 k に、持ちキャラ uid を入れる（同じ1体がほかの枠にいたら入れかえ）
   function putUnit(k, uid){
@@ -7911,12 +7909,18 @@
     const pgb = e.target.closest('[data-pg]');
     if (pgb && !pgb.disabled) { const [k, v] = pgb.dataset.pg.split(':'); if (k === 'box') boxPage = +v; else matPage = +v; drawBox(); const sec = $('boxBody').querySelector(k === 'box' ? '.coptbar' : '.lbmats'); if (sec) sec.scrollIntoView({block: 'start'}); return; }
     if (e.target.closest('[data-copt]')) { boxOpt = !boxOpt; drawBox(); return; }
-    if (e.target.closest('[data-creset]')) { boxSort = 'new'; boxAsc = false; boxFG = 'all'; boxFT = 'all'; boxPage = 0; save('boxsort', 'new'); save('boxasc', '0'); drawBox(); toast('並べかえ・しぼりこみを元に戻しました'); return; }
+    if (e.target.closest('[data-creset]')) { boxSort = 'grade'; boxAsc = false; boxFG = 'all'; boxFT = 'all'; boxPage = 0; save('boxsort2', 'grade'); save('boxasc', '0'); drawBox(); toast('並べかえ・しぼりこみを元に戻しました'); return; }
     const fgb = e.target.closest('[data-fg]'); if (fgb) { boxFG = fgb.dataset.fg; boxPage = 0; drawBox(); return; }
     const ftb = e.target.closest('[data-ft]'); if (ftb) { boxFT = ftb.dataset.ft; boxPage = 0; drawBox(); return; }
     const so = e.target.closest('[data-sort]');
-    if (so) { const k = so.dataset.sort; if (boxSort === k) boxAsc = !boxAsc; else { boxSort = k; boxAsc = false; } save('boxsort', boxSort); save('boxasc', boxAsc ? '1' : '0'); boxPage = 0; drawBox(); return; }
-    if (e.target.closest('[data-clear]') && boxSlot > 0) { curTeam()[boxSlot] = null; boxSlot = -1; fixTeam(); drawBox(); return; }
+    if (so) { const k = so.dataset.sort; if (boxSort === k) boxAsc = !boxAsc; else { boxSort = k; boxAsc = false; } save('boxsort2', boxSort); save('boxasc', boxAsc ? '1' : '0'); boxPage = 0; drawBox(); return; }
+    const ta = e.target.closest('[data-tact]');
+    if (ta && !ta.disabled) {
+      if (ta.dataset.tact === 'clear') askYes('チーム' + (teamNo + 1) + 'を空にしますか？', () => { teams[teamNo] = [null, null, null, null]; boxSlot = -1; fixTeam(); drawBox(); toast('チーム' + (teamNo + 1) + 'を空にしました'); });
+      else { const b = bestTeam(); if (!b) { toast('メイン（①）になれるキャラがいません'); return; } teams[teamNo] = b; boxSlot = -1; fixTeam(); drawBox(); toast('おすすめの4人を入れました'); }
+      return;
+    }
+    if (e.target.closest('[data-clear]') && boxSlot >= 0) { curTeam()[boxSlot] = null; boxSlot = -1; fixTeam(); drawBox(); return; }
     if (boxDetail) {
       if (e.target.closest('[data-act="back"]')) { boxDetail = null; lbSel.clear(); drawBox(); return; }
       if (e.target.closest('[data-act="dlock"]')) { toggleLock(unitOf(boxDetail)); drawBox(); return; }
@@ -7949,14 +7953,7 @@
       else boxSel = null;
       drawBox(); if (a === 'detail') $('boxBody').scrollTop = 0; return;
     }
-    const sl = e.target.closest('.tslot');
-    if (sl) {
-      const k = +sl.dataset.k, cur = curTeam()[k];
-      if (boxPut) { putUnit(k, boxPut); boxPut = null; }
-      else if (cur && unitOf(cur) && boxSlot !== k) { openDetail(cur, boxPick || 'info'); return; }   // キャラが入っている枠：詳細を開く
-      else { boxSlot = boxSlot === k ? -1 : k; boxSel = null; }
-      drawBox(); if (boxSlot >= 0) scrollToList(); return;
-    }
+    if (e.target.closest('.tslot')) return;              // 枠はタップ・ダブルタップ・長押しで別に処理（下の slotGestures）
     const cc = e.target.closest('.ccell');
     if (cc) {
       const uid = cc.dataset.u;
@@ -7967,46 +7964,51 @@
       drawBox();
     }
   });
-  // ---- チームの枠の長押し：外す・入れかえる ----
-  let lpTimer = 0, lpFired = false, lpStart = null;
+  // ---- チームの枠の操作 ----
+  // タップ：その枠に入れるキャラを下の一覧から選ぶ（入っていれば入れかえ）／ダブルタップ：枠から外す／長押し：詳細を開く
+  let lpFired = false;
   function scrollToList(){ const sec = $('boxBody').querySelector('.coptbar') || $('boxBody').querySelector('.cgrid'); if (sec) setTimeout(() => sec.scrollIntoView({block: 'start', behavior: 'smooth'}), 60); }
-  function slotMenu(k){
-    const uid = curTeam()[k], u = unitOf(uid); if (!u) return;
-    const old = $('slotMenu'); if (old) old.remove();
-    const d = document.createElement('div'); d.id = 'slotMenu';
-    d.innerHTML = '<div class="smsheet"><div class="smhead"><span class="smic"></span><div><small>' + '①②③④'[k] + (k === 0 ? '（メイン）' : '') + '</small><b>' + fullName(ALLC[ciOf(u)]) + '</b></div></div>' +
-      '<button data-sm="swap">🔄 入れかえる（下の一覧から選ぶ）</button>' +
-      '<button data-sm="out">➖ チームから外す</button>' +
-      '<button data-sm="detail">🔍 詳細を見る</button>' +
-      '<button data-sm="cancel" class="cancel">やめる</button></div>';
-    d.querySelector('.smic').appendChild(charIcon(ciOf(u), 48));
-    document.body.appendChild(d);
-    try { navigator.vibrate && navigator.vibrate(15); } catch(_) {}
-    d.addEventListener('click', e => {
-      const b = e.target.closest('[data-sm]');
-      if (!b && e.target !== d) return;
-      const a = b ? b.dataset.sm : 'cancel';
-      d.remove();
-      if (a === 'swap') { boxSlot = k; boxSel = null; boxPut = null; drawBox(); scrollToList(); }
-      else if (a === 'out') {
-        curTeam()[k] = null; fixTeam(); boxSlot = -1; drawBox();
-        toast(k === 0 ? 'メインを外しました（技を持つキャラがいれば自動でメインに入ります）' : fullName(ALLC[ciOf(u)]) + ' をチームから外しました');
-      }
-      else if (a === 'detail') openDetail(uid, 'info');
-    });
+  function slotTap(k, inBox){
+    if (!inBox) openBox('char');
+    if (boxPut) { putUnit(k, boxPut); boxPut = null; drawBox(); return; }
+    boxDetail = null; boxSel = null; boxSlot = (inBox && boxSlot === k) ? -1 : k;
+    drawBox(); if (boxSlot >= 0) scrollToList();
   }
-  $('boxBody').addEventListener('pointerdown', e => {
-    const sl = e.target.closest('.tslot'); if (!sl || boxDetail) return;
-    const k = +sl.dataset.k; if (!curTeam()[k]) return;
-    lpStart = [e.clientX, e.clientY]; clearTimeout(lpTimer);
-    sl.classList.add('pressing');
-    lpTimer = setTimeout(() => { lpFired = true; sl.classList.remove('pressing'); slotMenu(k); setTimeout(() => { lpFired = false; }, 700); }, 450);
-  });
-  const lpCancel = () => { clearTimeout(lpTimer); $('boxBody').querySelectorAll('.tslot.pressing').forEach(x => x.classList.remove('pressing')); };
-  $('boxBody').addEventListener('pointerup', lpCancel);
-  $('boxBody').addEventListener('pointercancel', lpCancel);
-  $('boxBody').addEventListener('pointermove', e => { if (lpStart && Math.hypot(e.clientX - lpStart[0], e.clientY - lpStart[1]) > 10) lpCancel(); });
-  $('boxBody').addEventListener('contextmenu', e => { if (e.target.closest('.tslot')) e.preventDefault(); });
+  function slotOut(k, inBox){
+    const uid = curTeam()[k], u = unitOf(uid); if (!u) return;
+    curTeam()[k] = null; fixTeam(); if (boxSlot === k) boxSlot = -1;
+    if (inBox) drawBox(); else drawTeam();
+    toast(fullName(ALLC[ciOf(u)]) + ' を' + '①②③④'[k] + 'から外しました');
+  }
+  function slotDetail(k, inBox){
+    const uid = curTeam()[k]; if (!unitOf(uid)) return;
+    try { navigator.vibrate && navigator.vibrate(15); } catch(_) {}
+    if (!inBox) openBox('char');
+    openDetail(uid, (inBox && boxPick) || 'info');
+  }
+  function slotGestures(root, inBox){
+    let timer = 0, start = null, cur = null, last = null, single = 0;
+    const cancel = () => { clearTimeout(timer); if (cur) cur.classList.remove('pressing'); };
+    root.addEventListener('pointerdown', e => {
+      const sl = e.target.closest('.tslot'); if (!sl || (inBox && boxDetail)) return;
+      cur = sl; start = [e.clientX, e.clientY]; lpFired = false; clearTimeout(timer);
+      const k = +sl.dataset.k;
+      if (curTeam()[k]) { sl.classList.add('pressing'); timer = setTimeout(() => { lpFired = true; sl.classList.remove('pressing'); clearTimeout(single); last = null; slotDetail(k, inBox); setTimeout(() => { lpFired = false; }, 600); }, 450); }
+    });
+    root.addEventListener('pointermove', e => { if (start && cur && Math.hypot(e.clientX - start[0], e.clientY - start[1]) > 10) { cancel(); cur = null; } });
+    root.addEventListener('pointercancel', () => { cancel(); cur = null; });
+    root.addEventListener('pointerup', e => {
+      const sl = cur; cancel(); cur = null;
+      if (!sl || lpFired || !e.target.closest || e.target.closest('.tslot') !== sl) return;
+      const k = +sl.dataset.k, t = Date.now();
+      if (last && last.k === k && t - last.t < 320) { clearTimeout(single); last = null; slotOut(k, inBox); return; }   // ダブルタップ
+      last = {k, t}; clearTimeout(single);
+      single = setTimeout(() => { last = null; slotTap(k, inBox); }, 260);
+    });
+    root.addEventListener('contextmenu', e => { if (e.target.closest('.tslot')) e.preventDefault(); });
+  }
+  slotGestures($('boxBody'), true);
+  slotGestures($('teamBox'), false);
   // ===== キャラの技（必殺技30秒・奥義60秒で時間チャージ） =====
   const SK_MS = {sp: 30000, ougi: 60000};               // 基準の時間。キャラのスピードと敵のスピードの比べ合いで 0.5〜1.5倍 に変わる
   const clampF = (v, a, b) => Math.max(a, Math.min(b, v));
