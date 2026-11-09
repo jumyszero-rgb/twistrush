@@ -6149,7 +6149,7 @@
 
   // ===== オート・スキップ（どちらもコンティニューなしでクリアしたステージだけ） =====
   // オート：自動で戦うのを見る。スタミナだけ使う
-  // スキップ：戦わずに結果だけもらう（勝ち確定）。1回ごとにスキップチケット1枚、なければシルバー。まとめて最大10回。お題（レインボーブロック）は取れない
+  // スキップ：戦わずに結果だけもらう（勝ち確定）。1回ごとにスタミナだけ使う（コインは使わない）。まとめて最大10回。お題（レインボーブロック）は取れない
   let autoOn = false, autoNext = 0, autoPlan = null;
   const SKIP_MAX = 10;
   const aTickets = () => +load('aticket', '0') || 0;       // スキップチケット（保存名は前のまま）
@@ -6159,10 +6159,10 @@
     const inArea = Math.floor(pickStage / PER) === mapArea && stageOpen(pickStage);
     box.hidden = !inArea || !storyClr[pickStage];
     if (box.hidden) return;
-    const ok = autoOk(pickStage), tk = aTickets();
-    $('storyAuto').disabled = !ok; $('storySkip').disabled = !ok || (!tk && coins < AUTO_SILVER);
+    const ok = autoOk(pickStage);
+    $('storyAuto').disabled = !ok; $('storySkip').disabled = !ok;
     $('storyAuto').innerHTML = 'オート<small>⚡' + stamCost(pickStage) + '</small>';
-    $('storySkip').innerHTML = 'スキップ<small>' + (tk ? 'チケット ' + tk + '枚' : coinTag() + AUTO_SILVER) + '</small>';
+    $('storySkip').innerHTML = 'スキップ<small>⚡' + stamCost(pickStage) + '</small>';   // オートもスキップもスタミナだけ
     $('autoNote').hidden = ok;
   }
   function teamReady(){
@@ -6186,12 +6186,10 @@
   });
   // スキップ：回数を選んで、まとめて結果を出す
   function skipCanN(i){
-    const byStam = Math.floor(stamNow() / stamCost(i)), byPay = aTickets() + Math.floor(coins / AUTO_SILVER);
-    return Math.max(0, Math.min(SKIP_MAX, byStam, byPay));
+    return Math.max(0, Math.min(SKIP_MAX, Math.floor(stamNow() / stamCost(i))));   // スタミナだけで決まる
   }
   function skipCostText(i, n){
-    const tk = Math.min(aTickets(), n), sv = (n - tk) * AUTO_SILVER;
-    return '⚡' + stamCost(i) * n + (tk ? '・スキップチケット ' + tk + '枚' : '') + (sv ? '・シルバー ' + sv : '');
+    return 'スタミナ ⚡' + stamCost(i) * n;
   }
   let skipN = 1;
   $('storySkip').addEventListener('click', () => {
@@ -6199,7 +6197,7 @@
     if (!autoOk(i)) { toast('コンティニューなしでクリアしたステージだけスキップできます'); return; }
     if (!teamReady()) return;
     const mx = skipCanN(i);
-    if (mx < 1) { if (stamNow() < stamCost(i)) canPlayStage(i); else toast('スキップチケットかシルバー ' + AUTO_SILVER + '枚が必要です'); return; }
+    if (mx < 1) { canPlayStage(i); return; }            // スタミナが足りない（回復の案内が出る）
     skipN = Math.min(skipN, mx) || 1;
     const draw = () => { const b = $('skipNum'), c = $('skipCost'); if (b) b.textContent = skipN; if (c) c.textContent = skipCostText(i, skipN); };
     askYes('<b>スキップ</b>（戦わずに勝ち。お題は取れません）<div class="skipn"><button data-sn="-1">−</button><b id="skipNum">1</b><button data-sn="1">＋</button><button data-sn="99">最大</button></div><small id="skipCost"></small>', () => doSkip(i, skipN));
@@ -6214,7 +6212,6 @@
     let exp = 0, paid = 0; winGets = [];
     curStage = st;
     for (let k = 0; k < n; k++) {
-      if (aTickets() > 0) save('aticket', String(aTickets() - 1)); else { addCoins(-AUTO_SILVER); paid += AUTO_SILVER; }
       countPlay(i); userExpAdd(stamCost(i));          // 勝ち扱い：スタミナ分の経験値をもう一度
       zakoNow = st.char == null ? pickZako(st) : null;
       storyWinCoins(i, st.area, false, 0);
@@ -6383,7 +6380,7 @@
   const potNeed = u => { const t = tierOf(u.id); return t >= 3 ? 3 : t === 2 ? 2 : 1; };
   const LOAD_MAX = 2;          // 持っていけるアイテムの種類
   const CONT_MAX = 3;          // ストーリーのコンティニュー（1ステージ）
-  const AUTO_SILVER = 50;      // スキップ1回：スキップチケット1枚、なければシルバー50枚（仮の値）
+  const AUTO_SILVER = 50;      // （今は使っていない）前はスキップ1回にシルバー50枚。オート・スキップはスタミナだけ
   const SLOW_MS = 10000;       // スピードダウンの長さ
   const LOSE_COIN = 3, STAR_COIN = 5;
   // 毎日のプレゼント（7日で1周。休んでも1日目には戻らない）。グレードで倍率が上がる
@@ -6550,7 +6547,6 @@
   const TICKET_SHOP = [
     {k: 'gticket',    name: 'ガチャチケット', desc: 'シルバーガチャを1回引ける', silver: 100, gold: 300},
     {k: 'gticket_hi', name: '確定チケット',   desc: 'SR以上が1体確定のガチャを1回引ける', silver: 3000, gold: 900},
-    {k: 'aticket',    name: 'スキップチケット', desc: 'コンティニューなしでクリアしたステージを、戦わずに1回クリアできる', silver: AUTO_SILVER, gold: 30},
   ];
   function drawTickets(){
     let el = $('shopTickets');
@@ -6558,7 +6554,7 @@
     el.innerHTML = '<h3>チケット</h3>' + TICKET_SHOP.map((t, j) => '<div class="shoprow"><img src="' + tkImg(t.k) + '" alt=""><div class="tx"><div class="nm">' + t.name + '<small>所持 ' + (+load(t.k, '0') || 0) + '</small></div><div class="ds">' + t.desc + '</div></div>' +
       '<div class="tkbtns"><button class="buybtn" data-tk="' + j + ':s"' + (coins < t.silver ? ' disabled' : '') + '>' + coinTag() + t.silver.toLocaleString() + '</button>' +
       '<button class="buybtn" data-tk="' + j + ':g"><img src="' + gImg('coin_gold') + '" alt="">' + t.gold.toLocaleString() + '</button></div></div>').join('') +
-      '<p class="note">ガチャチケットはガチャの画面、スキップチケットはストーリーの「スキップ」で使えます。</p>';
+      '<p class="note">ガチャチケットはガチャの画面で使えます。</p>';
   }
   async function buyTicket(tag){
     const [j, cur] = tag.split(':'), t = TICKET_SHOP[+j]; if (!t) return;
