@@ -4797,6 +4797,7 @@
     if (stam === undefined) stam = loadJ('stam', null);
     const mx = stamMax(), gi = gradeIdx(), t = Date.now(), step = STAM_REGEN_MIN * 60000;
     if (!stam || typeof stam.v !== 'number') stam = {v: mx, t, g: gi};
+    if (gi < (stam.g | 0)) stam.g = gi;           // グレードの決め方が変わって下がったときは合わせる
     if (gi > (stam.g | 0)) { stam.v = Math.max(stam.v, mx); stam.g = gi; stam.t = t; toast('グレードアップ！スタミナが満タンになりました（上限 ' + mx + '）'); }   // グレードが上がったら満タン
     if (stam.v >= mx) stam.t = t;                // 満タン以上のときは回復しない
     else { const n = Math.floor((t - stam.t) / step); if (n > 0) { stam.v = Math.min(mx, stam.v + n); stam.t += n * step; if (stam.v >= mx) stam.t = t; } }
@@ -6367,14 +6368,18 @@
   // 毎日のプレゼント（7日で1周。休んでも1日目には戻らない）。グレードで倍率が上がる
   const DAILY = [20, 20, 30, 30, 40, 40, 100];
   const DAILY_HI = 1;                                      // 7日目はSR以上確定チケットもつく（週に1枚）
-  // グレード：ユーザー経験値で決まる（仮の値）。経験値はすべてのモードと実績でたまる（UEXP・ACHV を見る）
+  // ユーザーレベル：経験値でLVが上がり、LVの範囲でグレードが決まる（仮の値）。経験値はすべてのモードと実績でたまる（UEXP・ACHV を見る）
+  //   次のLVまでの経験値＝50＋5×今のLV（LV10まで 約680・LV30まで 約3,600・LV60まで 約11,800・LV100まで 約29,700）
   const GRADES = [
-    {name: 'ルーキー', min: 0, mul: 1},
-    {name: 'ブロンズ', min: 200, mul: 1.25},
-    {name: 'シルバー', min: 800, mul: 1.5},
-    {name: 'ゴールド', min: 2000, mul: 1.75},
-    {name: 'マスター', min: 5000, mul: 2},
+    {name: 'ルーキー', min: 1,   mul: 1},       // LV1〜9
+    {name: 'ブロンズ', min: 10,  mul: 1.25},    // LV10〜29
+    {name: 'シルバー', min: 30,  mul: 1.5},     // LV30〜59
+    {name: 'ゴールド', min: 60,  mul: 1.75},    // LV60〜99
+    {name: 'マスター', min: 100, mul: 2},       // LV100〜
   ];
+  const lvNeed = L => 50 + 5 * L;                                   // LV L → L+1 に必要な経験値
+  const lvTotal = L => { let t = 0; for (let k = 1; k < L; k++) t += lvNeed(k); return t; };   // LV L になるまでの合計
+  function userLv(){ let L = 1, e = userExp(); while (e >= lvNeed(L)) { e -= lvNeed(L); L++; } return L; }
   // 課金（アプリ版で使う。いまは表示だけ）。ゴールド1枚 ≒ 1円。ガチャは1回300枚・10連3,000枚（ほかのスマホゲームの相場：10連2,000〜3,000円）
   // 大きいパックほどおまけが多い（10連1回あたり 約2,600〜3,000円）
   const PACKS = [
@@ -6405,8 +6410,11 @@
     }
     return uexp;
   }
-  function userExpAdd(n){ const g0 = gradeNow(); uexp = userExp() + n; save('uexp', String(uexp)); const g1 = gradeNow(); if (g1 !== g0) { toast('グレードアップ！「' + g1.name + '」になりました'); stamNow(); refreshCoins(); } }
-  function gradeNow(){ const b = userExp(); let g = GRADES[0]; GRADES.forEach(x => { if (b >= x.min) g = x; }); return g; }
+  function userExpAdd(n){ const L0 = userLv(), g0 = gradeNow(); uexp = userExp() + n; save('uexp', String(uexp)); const L1 = userLv(), g1 = gradeNow();
+    if (g1 !== g0) { toast('グレードアップ！ LV' + L1 + '「' + g1.name + '」になりました'); stamNow(); }
+    else if (L1 > L0) toast('ユーザーレベルアップ！ LV' + L1);
+    if (L1 > L0) refreshCoins(); }
+  function gradeNow(){ const b = userLv(); let g = GRADES[0]; GRADES.forEach(x => { if (b >= x.min) g = x; }); return g; }
   // ===== ユーザー経験値：すべてのモードでたまる（仮の値） =====
   //   ストーリー＝使ったスタミナ（勝つと2倍）／エンドレス＝1分5（3〜50）／60秒アタック＝5／練習＝1分2（1〜10）
   //   オンライン対戦＝勝ち20・引き分け10・負け6（部屋番号の対戦は半分）／オートバトル＝勝ち10・負け4／実績＝下の表
@@ -6444,11 +6452,13 @@
   }
   function drawAchv(){
     achvCheck();
-    const g = gradeNow(), gi = GRADES.indexOf(g), nx = GRADES[gi + 1], e = userExp();
-    const pct = nx ? Math.round((e - g.min) / (nx.min - g.min) * 100) : 100;
+    const g = gradeNow(), gi = GRADES.indexOf(g), nx = GRADES[gi + 1], e = userExp(), L = userLv(), inLv = e - lvTotal(L);
+    const pct = Math.round(inLv / lvNeed(L) * 100);
     const got = loadJ('achv', {}) || {};
-    $('achvBody').innerHTML = '<div class="ugrade">ユーザーグレード <b>' + g.name + '</b>　経験値 ' + e.toLocaleString() +
-      '<div class="ugbar"><i style="width:' + pct + '%"></i></div><small>' + (nx ? '「' + nx.name + '」まで あと ' + (nx.min - e).toLocaleString() : 'いちばん上のグレードです') +
+    $('achvBody').innerHTML = '<div class="ugrade">LV<b>' + L + '</b>　グレード <b>' + g.name + '</b>' +
+      '<div class="ugbar"><i style="width:' + pct + '%"></i></div><small>次のLVまで あと ' + (lvNeed(L) - inLv).toLocaleString() + '（経験値 合計 ' + e.toLocaleString() + '）。' +
+      (nx ? 'LV' + nx.min + 'で「' + nx.name + '」' : 'いちばん上のグレードです') +
+      '<br>グレード：' + GRADES.map((x, k) => x.name + ' LV' + x.min + (GRADES[k + 1] ? '〜' + (GRADES[k + 1].min - 1) : '〜')).join('／') +
       '。経験値は、どのモードで遊んでもたまります。実績を達成してももらえます。</small></div>' +
       ACHV.map(a => { const t = a.tiers(), k = got[a.k] | 0, v = achvVal(a), next = t[k];
         return '<div class="achrow' + (k >= t.length ? ' done' : '') + '"><div class="ah">' + a.name + '<span>' + (next ? Math.min(v, next) + ' / ' + next + a.u + '（経験値 +' + ACHV_EXP[k] + '）' : 'すべて達成') + '</span></div>' +
@@ -6456,7 +6466,7 @@
   }
   function addCoins(n){ coins = Math.max(0, coins + n); save('coins', String(coins)); refreshCoins(); }
   function refreshCoins(){
-    $('menuCoin').innerHTML = coinTag() + coins.toLocaleString() + '<span class="gr">' + gradeNow().name + '</span>';
+    $('menuCoin').innerHTML = coinTag() + coins.toLocaleString() + '<span class="gr">LV' + userLv() + ' ' + gradeNow().name + '</span>';
     ['storyCoin', 'shopCoin'].forEach(id => { $(id).innerHTML = coinTag() + coins.toLocaleString(); });
   }
 
@@ -8814,7 +8824,7 @@
     $('dailyGrade').textContent = 'グレード：' + g.name + '（もらえる数 ×' + g.mul + '）';
     $('dailyRow').innerHTML = DAILY.map((_, k) => '<div class="d' + (k < d.i ? ' done' : '') + (k === d.i ? ' now' : '') + (k === 6 ? ' big' : '') + '">' +
       (k + 1) + '日目' + coinTag() + '<b>' + dailyAmt(k, g) + '</b>' + (k === 6 ? '<small class="dgold"><img src="' + gImg('ticket_hi') + '" alt="">+' + DAILY_HI + '</small>' : '') + '</div>').join('');
-    $('dailyNote').textContent = nx ? 'ユーザー経験値をあと ' + (nx.min - userExp()).toLocaleString() + ' ためると「' + nx.name + '」（×' + nx.mul + '）になります。経験値はどのモードで遊んでも、実績を達成してもたまります。' : 'いちばん上のグレードです。';
+    $('dailyNote').textContent = nx ? 'いまLV' + userLv() + '。LV' + nx.min + 'になると「' + nx.name + '」（×' + nx.mul + '）になります。経験値はどのモードで遊んでも、実績を達成してもたまります。' : 'いちばん上のグレードです。';
     $('dailyAd').disabled = false; $('dailyGet').disabled = false;
     $('daily').classList.remove('hidden');
     const claim = m => {
