@@ -19,6 +19,7 @@ export const MEDAL_SHOP = [
   { k: 'charm', price: 200 },
   { k: 'gticket', price: 150 },
   { k: 'gticket_hi', price: 2000 },
+  { k: 'stampot', price: 200 },          // スタミナポット（スタミナ+50）
 ];
 // ポットはここには並べない（アイテムガチャとゴールドの秘密のショップだけ）
 export const VS_KINDS = ['simple', 'chara'];
@@ -29,19 +30,19 @@ const RATE_START = 1000, RATE_K = 32;
 export const VS_MIN_GAMES = 5;
 export const VS_REWARDS = {
   simple: [
-    { upTo: 1,   label: '1位',       items: { gticket_hi: 3, refresh100: 3, star9: 1 } },
-    { upTo: 3,   label: '2〜3位',    items: { gticket_hi: 2, refresh80: 3, star6: 1 } },
-    { upTo: 10,  label: '4〜10位',   items: { gticket_hi: 1, refresh50: 3, star3: 2 } },
-    { upTo: 50,  label: '11〜50位',  items: { gticket: 3, refresh30: 3, slow: 1 } },
-    { upTo: 100, label: '51〜100位', items: { gticket: 1, refresh30: 2 } },
-    { upTo: 0,   label: '参加賞',    items: { refresh30: 1 } },
+    { upTo: 1,   label: '1位',       items: { gticket_hi: 3, refresh100: 3, star9: 1, stampot: 5 } },
+    { upTo: 3,   label: '2〜3位',    items: { gticket_hi: 2, refresh80: 3, star6: 1, stampot: 4 } },
+    { upTo: 10,  label: '4〜10位',   items: { gticket_hi: 1, refresh50: 3, star3: 2, stampot: 3 } },
+    { upTo: 50,  label: '11〜50位',  items: { gticket: 3, refresh30: 3, slow: 1, stampot: 2 } },
+    { upTo: 100, label: '51〜100位', items: { gticket: 1, refresh30: 2, stampot: 1 } },
+    { upTo: 0,   label: '参加賞',    items: { refresh30: 1, stampot: 1 } },
   ],
   chara: [
-    { upTo: 1,   label: '1位',       items: { gticket_hi: 2, refresh100: 2, star6: 1 } },
-    { upTo: 3,   label: '2〜3位',    items: { gticket_hi: 1, refresh80: 2, star3: 1 } },
-    { upTo: 10,  label: '4〜10位',   items: { gticket: 3, refresh50: 2, star3: 1 } },
-    { upTo: 50,  label: '11〜50位',  items: { refresh30: 2 } },
-    { upTo: 100, label: '51〜100位', items: { refresh30: 1 } },
+    { upTo: 1,   label: '1位',       items: { gticket_hi: 2, refresh100: 2, star6: 1, stampot: 3 } },
+    { upTo: 3,   label: '2〜3位',    items: { gticket_hi: 1, refresh80: 2, star3: 1, stampot: 2 } },
+    { upTo: 10,  label: '4〜10位',   items: { gticket: 3, refresh50: 2, star3: 1, stampot: 2 } },
+    { upTo: 50,  label: '11〜50位',  items: { refresh30: 2, stampot: 1 } },
+    { upTo: 100, label: '51〜100位', items: { refresh30: 1, stampot: 1 } },
   ],
 };
 const monthKey = t => { const d = new Date((t + TZ) * 1000); return d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0'); };

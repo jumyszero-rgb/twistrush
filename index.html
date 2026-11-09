@@ -6440,6 +6440,7 @@
   // 毎日のプレゼント（7日で1周。休んでも1日目には戻らない）。グレードで倍率が上がる
   const DAILY = [20, 20, 30, 30, 40, 40, 100];
   const DAILY_HI = 1;                                      // 7日目はSR以上確定チケットもつく（週に1枚）
+  const DAILY_POT = {2: 1, 4: 1};                          // 3日目と5日目はスタミナポットもつく（週に2個）
   // ユーザーレベル：経験値でLVが上がり、LVの範囲でグレードが決まる（仮の値）。経験値はすべてのモードと実績でたまる（UEXP・ACHV を見る）
   //   次のLVまでの経験値＝50＋5×今のLV（LV10まで 約680・LV30まで 約3,600・LV60まで 約11,800・LV100まで 約29,700）
   // 毎日のプレゼントの倍率は、マスターより上はあげすぎないように少しずつ（最大×2.5）
@@ -6601,7 +6602,7 @@
   const TICKET_SHOP = [
     {k: 'gticket',    name: 'ガチャチケット', desc: 'シルバーガチャを1回引ける', silver: 100, gold: 300},
     {k: 'gticket_hi', name: '確定チケット',   desc: 'SR以上が1体確定のガチャを1回引ける', silver: 3000, gold: 900},
-    {k: 'stampot',    name: 'スタミナポット', desc: 'ストーリーのスタミナが50回復する（上限をこえてもOK）。ストーリー画面の⚡を押して使う', silver: 300, gold: 50},
+    {k: 'stampot',    name: 'スタミナポット', desc: 'ストーリーのスタミナが50回復する（上限をこえてもOK）。ストーリー画面の⚡を押して使う', silver: 500, gold: 60},   // 満タン（ゴールド100）より少し得。上のグレードは満タンのほうが得
   ];
   function drawTickets(){
     let el = $('shopTickets');
@@ -9008,7 +9009,7 @@
     const g = gradeNow(), gi = GRADES.indexOf(g), nx = GRADES[gi + 1];
     $('dailyGrade').textContent = 'グレード：' + g.name + '（もらえる数 ×' + g.mul + '）';
     $('dailyRow').innerHTML = DAILY.map((_, k) => '<div class="d' + (k < d.i ? ' done' : '') + (k === d.i ? ' now' : '') + (k === 6 ? ' big' : '') + '">' +
-      (k + 1) + '日目' + coinTag() + '<b>' + dailyAmt(k, g) + '</b>' + (k === 6 ? '<small class="dgold"><img src="' + gImg('ticket_hi') + '" alt="">+' + DAILY_HI + '</small>' : '') + '</div>').join('');
+      (k + 1) + '日目' + coinTag() + '<b>' + dailyAmt(k, g) + '</b>' + (k === 6 ? '<small class="dgold"><img src="' + gImg('ticket_hi') + '" alt="">+' + DAILY_HI + '</small>' : '') + (DAILY_POT[k] ? '<small class="dgold"><img src="' + STAMPOT_IMG + '" alt="">+' + DAILY_POT[k] + '</small>' : '') + '</div>').join('');
     $('dailyNote').textContent = nx ? 'いまLV' + userLv() + '。LV' + nx.min + 'になると「' + nx.name + '」（×' + nx.mul + '）になります。経験値はどのモードで遊んでも、実績を達成してもたまります。' : 'いちばん上のグレードです。';
     $('dailyAd').disabled = false; $('dailyGet').disabled = false;
     $('daily').classList.remove('hidden');
@@ -9017,6 +9018,7 @@
       save('daily', JSON.stringify({i: (d.i + 1) % DAILY.length, last: today()}));
       addCoins(a); $('daily').classList.add('hidden'); astAdd('days');
       if (d.i === 6) { giveItem('gticket_hi', DAILY_HI); toast('SR以上確定チケット +' + DAILY_HI); }
+      if (DAILY_POT[d.i]) { giveItem('stampot', DAILY_POT[d.i]); toast('スタミナポット +' + DAILY_POT[d.i]); }
       toast('コイン +' + a);
     };
     $('dailyGet').onclick = () => claim(1);

@@ -495,12 +495,12 @@ async function rankPost(env, req, me) {
 // ---------- 月間ランキングのごほうび ----------
 // 先月（日本時間）の自己ベストの順位で決まる。中身はここで変えられる（ゲームの更新なしで変わる）
 const MONTH_REWARDS = [
-  { upTo: 1,   label: '1位',       items: { gticket_hi: 3, refresh100: 3, star9: 1 } },
-  { upTo: 3,   label: '2〜3位',    items: { gticket_hi: 2, refresh80: 3, star6: 1 } },
-  { upTo: 10,  label: '4〜10位',   items: { gticket_hi: 1, refresh50: 3, star3: 2 } },
-  { upTo: 50,  label: '11〜50位',  items: { gticket: 3, refresh30: 3, slow: 1 } },
-  { upTo: 100, label: '51〜100位', items: { gticket: 1, refresh30: 2 } },
-  { upTo: 0,   label: '参加賞',    items: { refresh30: 1 } },          // 0 は「それ以下ぜんぶ」
+  { upTo: 1,   label: '1位',       items: { gticket_hi: 3, refresh100: 3, star9: 1, stampot: 5 } },
+  { upTo: 3,   label: '2〜3位',    items: { gticket_hi: 2, refresh80: 3, star6: 1, stampot: 4 } },
+  { upTo: 10,  label: '4〜10位',   items: { gticket_hi: 1, refresh50: 3, star3: 2, stampot: 3 } },
+  { upTo: 50,  label: '11〜50位',  items: { gticket: 3, refresh30: 3, slow: 1, stampot: 2 } },
+  { upTo: 100, label: '51〜100位', items: { gticket: 1, refresh30: 2, stampot: 1 } },
+  { upTo: 0,   label: '参加賞',    items: { refresh30: 1, stampot: 1 } },          // 0 は「それ以下ぜんぶ」
 ];
 const REWARD_MODES = ['sixty', 'rank'];
 function lastMonth(t) {
