@@ -71,8 +71,10 @@ export function simulate(teamA, teamB, seed) {
     if (s.deb > 0) { const k = Math.min(50, s.deb * 1.4); foes(u).forEach(x => { x.g -= k; x.slowT = 3; }); ev.deb = k; }
     return ev;
   };
-  let turns = 0;
-  while (turns < 400 && foes(A[0]).length && foes(B[0]).length) {
+  // 対戦は最大180秒（見せる速さ：ふつうの攻撃0.52秒、技0.95秒で計算）。実力が同じくらいだと終わらないため
+  // 時間切れのときは、残りの体力の割合が多い方の勝ち
+  let turns = 0, ms = 0;
+  while (turns < 400 && ms < ARENA_LIMIT_MS && foes(A[0]).length && foes(B[0]).length) {
     // いちばん早くゲージが100になる人が動く
     let next = null, need = Infinity;
     for (const u of all) if (!u.dead) { const n = (100 - u.g) / u.spd; if (n < need) { need = n; next = u; } }
@@ -84,7 +86,7 @@ export function simulate(teamA, teamB, seed) {
     if (u.lead && u.og && u.ch >= 6) { ev = useSkill(u, u.og, 'og'); u.ch = 0; }
     else if (u.sp && u.ch % 3 === 0) ev = useSkill(u, u.sp, 'sp');
     else { const d = target(u); if (!d) break; ev = { t: 'at', s: [u.side, u.i], to: [hit(u, d, 1)] }; }
-    log.push(ev);
+    log.push(ev); ms += ev.t === 'at' ? 520 : 950;
   }
   const left = side => (side ? B : A).reduce((s, x) => s + x.hp / x.mhp, 0);
   const aliveA = A.some(x => !x.dead), aliveB = B.some(x => !x.dead);
@@ -93,6 +95,8 @@ export function simulate(teamA, teamB, seed) {
 }
 
 // ---------- データベース ----------
+export const ARENA_LIMIT_MS = 180 * 1000;
+
 export async function arenaOf(env, id, t) {
   let r = await env.DB.prepare('SELECT coins, points, win, lose, day, tries FROM arena WHERE account_id = ?').bind(id).first();
   if (!r) { await env.DB.prepare('INSERT OR IGNORE INTO arena (account_id, coins, points, win, lose, day, tries) VALUES (?, 0, 1000, 0, 0, ?, 0)').bind(id, dayKey(t)).run(); r = { coins: 0, points: 1000, win: 0, lose: 0, day: dayKey(t), tries: 0 }; }
