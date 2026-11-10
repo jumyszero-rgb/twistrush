@@ -22,6 +22,9 @@
   html.iospwa #shop.overlay,html.iospwa #daily.overlay{bottom:auto!important;height:var(--fullh)!important;}
 .appver{position:absolute;right:10px;bottom:6px;font-size:10px;opacity:.45;color:#fff;pointer-events:none;z-index:1}
 .appver2{font-size:12px;opacity:.7;margin:0 0 10px;text-align:right}
+#menu .menumain{position:fixed;left:calc(-0.3 * min(64vh, 620px));bottom:calc(-0.06 * min(64vh, 620px));height:min(64vh, 620px);width:auto;max-width:none;z-index:-1;pointer-events:none;
+  filter:drop-shadow(0 8px 18px rgba(0,0,0,.55));opacity:0;transform:translateX(-12px);transition:opacity .45s ease, transform .45s ease;}
+#menu .menumain.on{opacity:1;transform:none;}
 </style>
 <script>
 // iPhoneでホーム画面から開いたとき、画面の高さが時計の帯の分だけ短く伝わることがある → 画面いっぱいの高さに直す
@@ -1307,6 +1310,7 @@
       <div class="coinchip menucoin" id="menuCoin"></div>
       <h1 class="logo">TWIST<span class="dot">·</span>RUSH</h1>
       <div class="appver" data-ver></div>
+      <img id="menuMain" class="menumain" alt="" aria-hidden="true">
       <div class="mtop">
         <button class="mtile mini" id="howBtn" data-tip="ルールと操作のしかたを見る"><span class="mi"><img data-mimg="howto" alt=""></span><span class="ml">遊び方</span></button>
         <button class="mtile mini" id="setBtn" data-tip="背景・操作・音などを変える"><span class="mi"><img data-mimg="settings" alt=""></span><span class="ml">設定</span></button>
@@ -3176,8 +3180,11 @@
   }
   // kind は 'attack' か 'lose'。複数あればランダムで、直前と同じものは避ける
   // 声の大きさをそろえる（大きく録れている声だけ下げる。平均の大きさに合わせた倍率）
-  const VOICE_TRIM = {busy_atk1: 0.85, busy_atk5: 0.93, busy_lose1: 0.81, busy_lose5: 0.89, busy_win1: 0.90, busy_win2: 0.85, busy_win3: 0.84, busy_win4: 0.89, camilla_atk1: 0.92, camilla_lose1: 0.90, camilla_lose2: 0.92, camilla_lose5: 0.89, chiyo_atk3: 0.90, chiyo_atk4: 0.92, chiyo_intro1: 0.91, chiyo_intro2: 0.92, chiyo_lose1: 0.81, chiyo_lose4: 0.81, chiyo_ougi: 0.90, chiyo_sp: 0.82, chiyo_win4: 0.90, gilbert_intro1: 0.92, gilbert_lose5: 0.88, ichigo_4: 0.72, ichigo_lose1: 0.85, ichigo_lose2: 0.61, ichigo_lose3: 0.68, ichigo_lose4: 0.65, ichigo_lose5: 0.76, mocha_intro1: 0.93, rinpan_lose2: 0.90, rinpan_lose3: 0.93, rinpan_ougi: 0.78, rinpan_win2: 0.81, rinpan_win3: 0.88, titan_atk3: 0.87, titan_lose2: 0.89, titan_lose3: 0.86, titan_win4: 0.87, titan_win5: 0.89, v_attack: 0.38, v_lose: 0.35, windy_atk5: 0.93, windy_intro1: 0.91, windy_intro2: 0.82, windy_lose2: 0.89, windy_sp: 0.85, windy_win2: 0.92};
-  const voiceVolOf = (id, kind) => VOICE_VOL * (VOICE_TRIM[id] || 1) * (kind === 'lose' ? 0.75 : 1);   // 負けの声は叫び声なので少し下げる
+  const VOICE_TRIM = {busy_atk2: 0.74, busy_atk3: 0.74, busy_atk4: 0.74, busy_atk5: 0.76, busy_atk6: 0.82, busy_intro1: 1.14, busy_intro2: 0.82, busy_lose1: 0.74, busy_lose2: 0.95, busy_lose3: 1.06, busy_lose4: 0.76, busy_lose5: 0.83, busy_ougi: 0.82, busy_sp: 0.71, busy_win1: 0.74, busy_win2: 0.68, busy_win3: 0.68, busy_win4: 0.75, busy_win5: 0.84, camilla_atk1: 0.65, camilla_atk2: 0.74, camilla_atk3: 0.74, camilla_atk4: 0.74, camilla_atk5: 0.74, camilla_atk6: 0.82, camilla_intro1: 0.74, camilla_intro2: 0.74, camilla_lose1: 0.77, camilla_lose2: 0.75, camilla_lose3: 0.74, camilla_lose4: 0.74, camilla_lose5: 0.73, camilla_ougi: 0.74, camilla_sp: 0.74, camilla_win1: 0.74, camilla_win2: 0.90, camilla_win3: 0.74, camilla_win4: 0.74, camilla_win5: 0.95, chiyo_atk1: 0.75, chiyo_atk2: 0.74, chiyo_atk3: 0.74, chiyo_atk4: 0.74, chiyo_atk5: 0.74, chiyo_intro1: 0.74, chiyo_intro2: 0.69, chiyo_lose1: 0.68, chiyo_lose2: 0.72, chiyo_lose3: 0.72, chiyo_lose4: 0.69, chiyo_lose5: 0.74, chiyo_ougi: 0.61, chiyo_sp: 0.60, chiyo_win1: 0.84, chiyo_win2: 0.78, chiyo_win3: 0.74, chiyo_win4: 0.75, chiyo_win5: 0.74, gilbert_atk1: 0.74, gilbert_atk2: 0.74, gilbert_atk4: 0.74, gilbert_atk5: 0.74, gilbert_intro1: 0.76, gilbert_intro2: 0.63, gilbert_lose1: 0.73, gilbert_lose2: 0.78, gilbert_lose3: 0.79, gilbert_lose4: 0.70, gilbert_lose5: 0.66, gilbert_ougi: 0.69, gilbert_sp: 0.68, gilbert_win1: 0.74, gilbert_win2: 0.83, gilbert_win3: 0.80, gilbert_win4: 0.78, gilbert_win5: 0.74, ichigo_1: 0.95, ichigo_2: 1.10, ichigo_3: 1.15, ichigo_4: 0.73, ichigo_5: 1.15, ichigo_intro1: 1.15, ichigo_intro2: 0.85, ichigo_lose1: 0.94, ichigo_lose2: 0.77, ichigo_lose3: 0.74, ichigo_lose4: 0.74, ichigo_lose5: 0.82, ichigo_ougi: 0.75, ichigo_sp: 0.75, ichigo_win1: 1.12, ichigo_win2: 0.80, ichigo_win3: 1.05, ichigo_win4: 0.86, ichigo_win5: 0.88, mocha_atk1: 0.74, mocha_atk2: 0.74, mocha_atk3: 0.83, mocha_atk4: 0.77, mocha_atk5: 0.74, mocha_intro1: 0.74, mocha_intro2: 0.79, mocha_lose1: 0.74, mocha_lose3: 1.10, mocha_lose4: 0.87, mocha_lose5: 0.87, mocha_ougi: 0.74, mocha_sp: 0.74, mocha_win1: 1.15, mocha_win3: 1.15, mocha_win4: 1.15, mocha_win5: 1.15, rinpan_atk1: 0.74, rinpan_atk2: 0.60, rinpan_atk3: 0.74, rinpan_atk4: 0.71, rinpan_atk5: 0.74, rinpan_intro1: 0.74, rinpan_intro2: 0.74, rinpan_lose1: 0.85, rinpan_lose2: 0.76, rinpan_lose3: 0.74, rinpan_lose4: 0.87, rinpan_lose5: 0.72, rinpan_ougi: 0.56, rinpan_sp: 0.79, rinpan_win1: 0.74, rinpan_win2: 0.60, rinpan_win3: 0.74, rinpan_win4: 0.72, rinpan_win5: 0.74, titan_atk1: 0.85, titan_atk2: 0.89, titan_atk3: 0.74, titan_intro1: 0.77, titan_intro2: 0.89, titan_lose1: 0.74, titan_lose2: 0.73, titan_lose3: 0.64, titan_lose4: 0.81, titan_lose5: 1.12, titan_sp: 0.62, titan_sp2: 0.68, titan_win1: 1.15, titan_win4: 0.73, titan_win5: 0.74, v_attack: 0.47, v_lose: 0.40, windy_atk1: 0.74, windy_atk2: 0.74, windy_atk3: 0.79, windy_atk4: 0.74, windy_atk5: 0.75, windy_intro1: 0.68, windy_intro2: 0.63, windy_lose1: 0.72, windy_lose2: 0.68, windy_lose3: 0.73, windy_lose4: 0.74, windy_lose5: 0.69, windy_ougi: 0.71, windy_sp: 0.59, windy_win1: 0.74, windy_win2: 0.74, windy_win3: 0.76, windy_win4: 0.68, windy_win5: 0.76};
+  // 登場・勝ち・負けの声は、BGMにくらべて大きく聞こえるので下げる（技の声はそのまま）
+  const VOICE_KIND_VOL = {intro: 0.5, win: 0.5, lose: 0.45};
+  const voiceKindOf = id => /_intro\d/.test(id) ? 'intro' : /_win\d/.test(id) ? 'win' : /_lose\d|^v_lose/.test(id) ? 'lose' : 'attack';
+  const voiceVolOf = (id, kind) => VOICE_VOL * (VOICE_TRIM[id] || 1) * (VOICE_KIND_VOL[kind || voiceKindOf(id)] || 1);
   function playVoice(kind){
     if (isZako()) return 0;                          // 暴走ブロックはしゃべらない
     if (kind === 'attack' && typeof meTalking === 'function' && meTalking()) return 0;   // 自分の技の声を消さない
@@ -5952,9 +5959,26 @@
   // ===== ストーリー画面 =====
   let pickStage = +load('stage', '0') || 0;      // 前回選んでいたステージ（続きから）
   // キャラのアイコン（バストアップの1枚絵から切り出す）
+  // ===== タイトル画面：チームのメイン（①）を、左下に大きく出す（背景とボタンのあいだ）=====
+  function menuMainUrl(){
+    const t = (typeof teams !== 'undefined' && teams[teamNo]) || [], u = t[0] && unitOf(t[0]); if (!u) return null;
+    const ci = ALLC.findIndex(c => c.id === u.id); if (ci < 0) return null;
+    if (ci < CHARS.length) return winUrls(ci)[0] || null;              // ストーリーのキャラ：勝ちポーズの絵
+    const zk = ALLC[ci].zk; if (!zk) return null;
+    return /^g\d+$/.test(zk) ? 'img/zako/t/' + zk + '.webp' : zakoImgOf(zk);   // ガチャキャラは背景をぬいた絵
+  }
+  function refreshMenuMain(){
+    const el = $('menuMain'); if (!el) return;
+    const url = menuMainUrl();
+    if (!url) { el.classList.remove('on'); el.dataset.u = ''; return; }
+    if (el.dataset.u === url) return;
+    el.dataset.u = url; el.classList.remove('on');
+    el.onload = () => { if (el.dataset.u === url) el.classList.add('on'); }; el.src = url;
+  }
+  setInterval(() => { if (document.body.classList.contains('on-menu')) refreshMenuMain(); }, 800);
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.5';
+  const APP_VER = '0.9.7';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
