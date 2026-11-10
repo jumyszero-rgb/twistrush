@@ -33,3 +33,12 @@ Claude がこのリポジトリに push する。手で直したときは、ふ�
 ## サーバー
 
 ログイン・セーブ・ランキングのサーバーは別（`twistrush-server`、住所は https://api.twistrush.com）。
+
+## テスト環境（staging）
+
+- テスト用サイト：https://staging.twistrush.com （Worker：twistrush-staging）
+- テスト用サーバー：https://api-staging.twistrush.com （Worker：twistrush-server-staging、データベース：twistrush-db-staging）
+- `staging` ブランチに push すると、テスト環境だけに公開される。本番（twistrush.com）は `main` ブランチ
+- 流れ：staging に push → テストサイトで確認 → OKなら main に入れて本番へ
+- 公開コマンドはどちらも `npx wrangler deploy --env staging`（設定は wrangler.jsonc と server/wrangler.jsonc の `env.staging`）
+- テストサイトに合言葉をかけるときは、Cloudflare の twistrush-staging の変数に TESTER_PASS を入れる
