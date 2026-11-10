@@ -3175,6 +3175,9 @@
     return list.filter(x => voiceBuf[x]);           // 読み込めたものだけ
   }
   // kind は 'attack' か 'lose'。複数あればランダムで、直前と同じものは避ける
+  // 声の大きさをそろえる（大きく録れている声だけ下げる。平均の大きさに合わせた倍率）
+  const VOICE_TRIM = {busy_atk1: 0.85, busy_atk5: 0.93, busy_lose1: 0.81, busy_lose5: 0.89, busy_win1: 0.90, busy_win2: 0.85, busy_win3: 0.84, busy_win4: 0.89, camilla_atk1: 0.92, camilla_lose1: 0.90, camilla_lose2: 0.92, camilla_lose5: 0.89, chiyo_atk3: 0.90, chiyo_atk4: 0.92, chiyo_intro1: 0.91, chiyo_intro2: 0.92, chiyo_lose1: 0.81, chiyo_lose4: 0.81, chiyo_ougi: 0.90, chiyo_sp: 0.82, chiyo_win4: 0.90, gilbert_intro1: 0.92, gilbert_lose5: 0.88, ichigo_4: 0.72, ichigo_lose1: 0.85, ichigo_lose2: 0.61, ichigo_lose3: 0.68, ichigo_lose4: 0.65, ichigo_lose5: 0.76, mocha_intro1: 0.93, rinpan_lose2: 0.90, rinpan_lose3: 0.93, rinpan_ougi: 0.78, rinpan_win2: 0.81, rinpan_win3: 0.88, titan_atk3: 0.87, titan_lose2: 0.89, titan_lose3: 0.86, titan_win4: 0.87, titan_win5: 0.89, v_attack: 0.38, v_lose: 0.35, windy_atk5: 0.93, windy_intro1: 0.91, windy_intro2: 0.82, windy_lose2: 0.89, windy_sp: 0.85, windy_win2: 0.92};
+  const voiceVolOf = (id, kind) => VOICE_VOL * (VOICE_TRIM[id] || 1) * (kind === 'lose' ? 0.75 : 1);   // 負けの声は叫び声なので少し下げる
   function playVoice(kind){
     if (isZako()) return 0;                          // 暴走ブロックはしゃべらない
     if (kind === 'attack' && typeof meTalking === 'function' && meTalking()) return 0;   // 自分の技の声を消さない
@@ -3193,7 +3196,7 @@
     try {
       if (voiceNow) { try { voiceNow.stop(); } catch(_) {} }   // 前の声は止めて重ねない
       const src = a.createBufferSource(); src.buffer = voiceBuf[pick];
-      const g = a.createGain(); g.gain.value = VOICE_VOL;
+      const g = a.createGain(); g.gain.value = voiceVolOf(pick, kind);
       src.connect(g); g.connect(bus.voice || master); src.start();
       voiceNow = src; src.onended = () => { if (voiceNow === src) voiceNow = null; };
       return voiceBuf[pick].duration || 0;             // 鳴らした声の長さ（秒）を返す
@@ -5940,7 +5943,7 @@
   // キャラのアイコン（バストアップの1枚絵から切り出す）
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.3';
+  const APP_VER = '0.9.4';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -6094,7 +6097,7 @@
     const a = audio(), b = voiceBuf[id]; if (!a || !b) return;
     try {
       const src = a.createBufferSource(); src.buffer = b;
-      const g = a.createGain(); g.gain.value = VOICE_VOL;
+      const g = a.createGain(); g.gain.value = voiceVolOf(id);
       src.connect(g); g.connect(bus.voice || master); src.start(); introSrc.push(src);
       introVoiceUntil = Math.max(introVoiceUntil, performance.now() + b.duration * 1000);
     } catch(e) {}
@@ -8422,7 +8425,7 @@
     try {
       if (clipNow[ch]) { try { clipNow[ch].stop(); } catch(_) {} }
       const src = a.createBufferSource(); src.buffer = voiceBuf[id];
-      const g = a.createGain(); g.gain.value = VOICE_VOL; src.connect(g); g.connect(bus.voice || master); src.start();
+      const g = a.createGain(); g.gain.value = voiceVolOf(id); src.connect(g); g.connect(bus.voice || master); src.start();
       clipNow[ch] = src; src.onended = () => { if (clipNow[ch] === src) clipNow[ch] = null; };
       return true;
     } catch(e) { return false; }
