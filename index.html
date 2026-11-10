@@ -9237,6 +9237,7 @@
         if (!vis('story')) return show({target: () => $('storyBtn'), text: 'いよいよ<b>ストーリーモード</b>！<br>「ストーリー」を押そう！'});
         // はじめての人は 1-1 を選んでもらう。案内をもう一度見ている人（もう進んでいる人）は、選んでいるステージのままでOK
         if (pickStage !== 0 && !storyClr.some(v => v > 0) && stageOpen(0)) return show({target: firstNode, text: '<b>ふつうルート</b>の最初のステージを選ぼう！'});
+        if ($('storyStart').disabled) return show({target: () => document.querySelector('#story .map'), text: 'そのステージにはまだ入れないよ。<br><b>行けるステージ</b>（光っているマス）を選ぼう！'});   // 選んだ面がまだ開いていない
         return show({target: () => $('storyStart'), text: '「<b>このステージに挑戦</b>」を押して、バトル開始！<br><small>挑戦するとスタミナ⚡を使うよ。はじめての記念に<b>スタミナ10倍</b>をプレゼントしたよ！</small>'});
       }
       hide();
