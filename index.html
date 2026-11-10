@@ -1129,6 +1129,8 @@
   @keyframes tutRing{0%,100%{box-shadow:0 0 0 3px rgba(255,210,74,.35),0 0 18px rgba(255,210,74,.6)}50%{box-shadow:0 0 0 7px rgba(255,210,74,.2),0 0 34px rgba(255,210,74,1)}}
   #tut .tbub{position:fixed;left:10px;right:10px;max-width:440px;margin:0 auto;display:flex;gap:10px;align-items:flex-start;background:#fff;color:#3a2748;border:3px solid #ff8ad8;border-radius:18px;padding:10px 12px;pointer-events:auto;box-shadow:0 8px 24px rgba(0,0,0,.45);}
   #tut .tbub.pop{animation:tutPop .35s cubic-bezier(.2,1.6,.4,1) both;} @keyframes tutPop{from{transform:scale(.85);opacity:0}to{transform:none;opacity:1}}
+  #tut .tend{position:absolute;top:-13px;right:10px;border:2px solid #ff8ad8;background:#fff;color:#a0307a;font-size:11px;font-weight:900;border-radius:999px;padding:3px 10px;font-family:inherit;box-shadow:0 2px 6px rgba(0,0,0,.25);}
+  #tut .tbub{position:fixed;}
   #tut .tface{width:58px;height:58px;border-radius:50%;flex:none;border:3px solid #ff8ad8;object-fit:cover;}
   #tut .tcol{flex:1;min-width:0;} #tut .tname{display:block;font-size:11px;color:#d0459f;font-weight:900;}
   #tut .ttx{font-size:14px;line-height:1.6;font-weight:700;} #tut .ttx b{color:#d0459f;}
@@ -9097,7 +9099,7 @@
     function drawIntro(){
       if (!introEl) { introEl = document.createElement('div'); introEl.id = 'tutIntro'; document.body.appendChild(introEl); }
       const p = PAGES[page];
-      introEl.innerHTML = '<div class="ti-card"><button class="ti-skip">案内をとばす</button>' +
+      introEl.innerHTML = '<div class="ti-card"><button class="ti-skip">案内を終わる ✕</button>' +
         '<div class="ti-img' + (p.face ? ' face' : '') + '"><img src="' + IMG(p.img) + '" alt=""></div>' +
         '<h2>' + p.t + '</h2><p>' + p.b + '</p>' +
         '<div class="ti-dots">' + PAGES.map((_, i) => '<i class="' + (i === page ? 'on' : '') + '"></i>').join('') + '</div>' +
@@ -9106,14 +9108,14 @@
       introEl.querySelector('.ti-next') && (introEl.querySelector('.ti-next').onclick = () => { page++; drawIntro(); });
       introEl.querySelector('.ti-back') && (introEl.querySelector('.ti-back').onclick = () => { page--; drawIntro(); });
       introEl.querySelector('.ti-go') && (introEl.querySelector('.ti-go').onclick = () => { introEl.remove(); introEl = null; setStep('gacha'); });
-      introEl.querySelector('.ti-skip').onclick = () => askYesTop('はじめての案内をとばしますか？', () => { introEl.remove(); introEl = null; setStep('done'); });
+      introEl.querySelector('.ti-skip').onclick = () => askYesTop('はじめての案内を終わりますか？<br><small>設定の「はじめての案内をもう一度見る」から、また見られます。</small>', () => { introEl.remove(); introEl = null; setStep('done'); });
     }
     function askYesTop(msg, yes){ askYes(msg, yes); const a = $('askBox'); if (a) a.style.zIndex = 9600; }
 
     // ---- スポットライト（押せる場所だけ明るく。ほかは暗くして押せない）----
     const L = document.createElement('div'); L.id = 'tut';
     L.innerHTML = '<i class="tb"></i><i class="tb"></i><i class="tb"></i><i class="tb"></i><i class="tring"></i>' +
-      '<div class="tbub"><img class="tface" alt=""><div class="tcol"><b class="tname">レインボー</b><div class="ttx"></div><div class="tbtn"></div></div></div>';
+      '<div class="tbub"><button class="tend">案内を終わる ✕</button><img class="tface" alt=""><div class="tcol"><b class="tname">レインボー</b><div class="ttx"></div><div class="tbtn"></div></div></div>';
     document.body.appendChild(L);
     L.querySelector('.tface').src = IMG('guide');
     const blk = [...L.querySelectorAll('.tb')], ring = L.querySelector('.tring'), bub = L.querySelector('.tbub');
@@ -9130,6 +9132,12 @@
       L.classList.add('on');
     }
     function hide(){ cur = null; curKey = ''; L.classList.remove('on'); }
+    // どのタイミングでも案内を終われる（設定の「はじめての案内をもう一度見る」でまた見られる）
+    L.querySelector('.tend').onclick = e => { e.stopPropagation();
+      askYesTop('はじめての案内を終わりますか？<br><small>設定の「はじめての案内をもう一度見る」から、また見られます。</small>', () => {
+        const inTour = tour; setStep('done'); tour = false; hide();
+        if (inTour) { autoOn = false; try { if (running) resumeClock(); } catch(_) {} }   // 戦い方の説明の途中なら、止めていた時間を動かす
+      }); };
     function place(){
       requestAnimationFrame(place);
       if (!cur) return;
@@ -9194,7 +9202,7 @@
       if (tour) return;
       if (step === 'done') { hide(); return; }
       if (step === 'intro') { hide(); if (!introEl && !$('tapStart')) drawIntro(); return; }
-      if ($('tapStart') || vis('daily') || vis('settings') || askOpen()) { hide(); return; }
+      if ($('tapStart') || vis('daily') || vis('settings') || vis('intro') || askOpen()) { hide(); return; }   // intro＝ボスの登場動画
       if (running) {
         if (gameMode === 'story' && (step === 'story' || step === 'battle')) { setStep('battle'); hide(); battleTour(); return; }
         hide(); return;
@@ -9227,7 +9235,8 @@
         if (vis('box')) return show({target: () => $('boxBack'), text: '「‹ 戻る」で戻ろう。'});
         if (vis('gacha')) return show({target: () => $('gachaBack'), text: '「‹ 戻る」でトップに戻ろう。'});
         if (!vis('story')) return show({target: () => $('storyBtn'), text: 'いよいよ<b>ストーリーモード</b>！<br>「ストーリー」を押そう！'});
-        if (pickStage !== 0) return show({target: firstNode, text: '<b>ふつうルート</b>の最初のステージを選ぼう！'});
+        // はじめての人は 1-1 を選んでもらう。案内をもう一度見ている人（もう進んでいる人）は、選んでいるステージのままでOK
+        if (pickStage !== 0 && !storyClr.some(v => v > 0) && stageOpen(0)) return show({target: firstNode, text: '<b>ふつうルート</b>の最初のステージを選ぼう！'});
         return show({target: () => $('storyStart'), text: '「<b>このステージに挑戦</b>」を押して、バトル開始！<br><small>挑戦するとスタミナ⚡を使うよ。はじめての記念に<b>スタミナ10倍</b>をプレゼントしたよ！</small>'});
       }
       hide();
