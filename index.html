@@ -829,6 +829,8 @@
   #qStat .qs-sk{font-size:12px;margin-top:4px;display:flex;gap:6px;align-items:center;} #qStat .qs-sk b{font-size:10px;padding:1px 6px;border-radius:6px;background:#ff5f9e;flex:none;} #qStat .qs-sk.ougi b{background:#7a5cff;} #qStat .qs-sk small{margin-left:auto;color:#cbb8ff;flex:none;}
   #qStat p{margin:6px 0 0;font-size:10px;text-align:center;color:#9f8fc0;}
   .cgrid .ccell{-webkit-touch-callout:none;}
+  .skbtn.queued{outline:3px solid #62d8ff;outline-offset:1px;animation:skq .6s ease-in-out infinite alternate;} .skbtn .skqb{display:none;} .skbtn.queued .skqb{display:block;position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);z-index:5;font-style:normal;font-size:12px;font-weight:900;color:#fff;background:rgba(30,136,229,.9);text-align:center;line-height:18px;}
+  @keyframes skq{from{filter:brightness(1)}to{filter:brightness(1.35)}}
   .tneed{font-size:12px;font-weight:900;color:#ff8aa0;}
   .tacts{display:flex;gap:8px;margin:8px 0 2px;} .tacts button{flex:1;border:0;border-radius:10px;padding:9px 4px;font-weight:800;font-size:12px;white-space:nowrap;color:#fff;background:linear-gradient(#7a4dff,#5a2fd6);font-family:inherit;} .tacts button.gray{background:#4a3a66;} .tacts button.grow{background:linear-gradient(#3ec46d,#24914c);} .tacts button:disabled{opacity:.4;}
   .pp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;}
@@ -8253,6 +8255,8 @@
     camilla: '猫神連爪', titan: 'オメガ・イレイザー', windy: '天空神風・スカイテンペスト', chiyo: '朧月・紅蓮桜', gilbert: '聖銀剣・アストラル・クロス'};
   // 試合で使える技の一覧：メインは必殺技と奥義の2つ、サブはそれぞれ選んだ1つ
   let skList = [], skLast = 0, skShown = '';
+  // ブロックが動いている間に押した技は「予約」して、止まったら順番に自動で出す
+  let skQueue = [], skQueueAt = 0;
   let atkUntil = 0, defUntil = 0;
   // N・Rの必殺技で上がるステータス（[倍率, 終わる時刻]）
   let zbuf = {atk: [1, 0], def: [1, 0], spd: [1, 0]};
@@ -8265,7 +8269,7 @@
   const myId = () => (CHARS[myChar] ? CHARS[myChar].id : null);
   const skillOn = () => (gameMode === 'story' || (gameMode === 'online' && onl && onl.kind === 'chara')) && skList.length > 0;
   function buildSkills(){
-    skList = [];
+    skList = []; skQueue = [];
     if (gameMode !== 'story' && !(gameMode === 'online' && onl && onl.kind === 'chara')) return;
     const t = curTeam(), sk = teamSk[teamNo];
     t.forEach((uid, k) => {
@@ -8342,6 +8346,12 @@
         pops.push({text: msg, style: 'combo', r: 2.2, c: 2.5, row: 0, n: 1, t, long: true});
       }
     });
+    // 予約した技：ブロックが止まったら1つずつ（続けて出すときは少し間をあける）
+    if (skQueue.length && running && phase === 'idle' && !bombPick && t >= skQueueAt) {
+      const i = skQueue.shift(); skQueueAt = t + 700;
+      if (skList[i] && skList[i].ready) useSkill(i, true);
+      drawSkillBar(true);
+    }
     if (atkUntil && t >= atkUntil) { atkUntil = 0; toast('攻撃力アップおわり'); }
     if (defUntil && t >= defUntil) { defUntil = 0; toast('防御力アップおわり'); }
     Object.keys(zbuf).forEach(k => { if (zbuf[k][1] && t >= zbuf[k][1]) { zbuf[k] = [1, 0]; toast(ZST[k] + 'アップおわり'); } });
@@ -8365,13 +8375,14 @@
       if (force || bar.__shape !== shape || bar.children.length !== skList.length) {
         bar.__shape = shape;
         bar.innerHTML = skList.map((s2, i) => '<button class="skbtn ' + s2.kind + (s2.main ? ' main' : ' sub') + '" data-i="' + i + '" title="' + skName(s2) + '">' +
-          '<span class="skic" data-ci="' + s2.ci + '"></span><i class="skk">' + (s2.kind === 'sp' ? '必' : '奥') + '</i><b class="sks"></b></button>').join('');
+          '<span class="skic" data-ci="' + s2.ci + '"></span><i class="skk">' + (s2.kind === 'sp' ? '必' : '奥') + '</i><b class="sks"></b><em class="skqb">予約</em></button>').join('');
         const isz = Math.round((bar.querySelector('.skic') || {}).clientWidth || 46);
         bar.querySelectorAll('.skic').forEach(el => el.appendChild(charIcon(+el.dataset.ci, isz)));
       }
       skList.forEach((s2, i) => {
         const btn = bar.children[i]; if (!btn) return;
         btn.classList.toggle('ready', !!s2.ready);
+        btn.classList.toggle('queued', skQueue.includes(i));
         btn.style.setProperty('--p', Math.round(s2.charge / skMs(s2) * 100));
         const t = s2.ready ? '' : String(Math.ceil((skMs(s2) - s2.charge) / 1000)), sk = btn.querySelector('.sks');
         if (sk.textContent !== t) sk.textContent = t;
@@ -8846,13 +8857,18 @@
     CHAR_BIO[id] = z.bio;
   });
   const canMainId = id => !!(SKILLS[id] && SKILLS[id].ougi);
-  function useSkill(i){
+  function useSkill(i, fromQueue){
     const s2 = skList[i];
     if (!running || !s2) return;
     const lab = s2.kind === 'sp' ? '必殺技' : '奥義';
     if (!s2.ready) { toast(fullName(ALLC[s2.ci]) + 'の' + lab + 'はあと ' + Math.ceil((skMs(s2) - s2.charge) / 1000) + '秒でたまります'); return; }
     if (bombPick) { toast('カラーボムの色を選んでいる間は使えません'); return; }
-    if (phase !== 'idle') { toast('ブロックが消えている間は使えません'); return; }
+    if (phase !== 'idle' || skQueue.length && !fromQueue) {   // 動いている間（または先の予約があるとき）は予約。もう一度押すと取り消し
+      const at = skQueue.indexOf(i);
+      if (at >= 0) { skQueue.splice(at, 1); toast(lab + 'の予約を取り消しました'); }
+      else { skQueue.push(i); toast(lab + 'を予約しました（ブロックが止まったら自動で発動）'); }
+      drawSkillBar(true); return;
+    }
     const t = now();
     s2.ready = false; s2.charge = 0;
     if (gameMode === 'online') onlSend({t: 'fx', k: 'sk', nm: skName(s2)});
