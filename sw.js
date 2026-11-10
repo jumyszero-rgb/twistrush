@@ -18,9 +18,10 @@ self.addEventListener('fetch', e => {
   }
   if (!/^\/(img|bgm|voice|video)\//.test(url.pathname)) return;
   // 絵・曲・声：残してあればすぐ使い、裏で新しくしておく。残していないときは、ふつうに読む
+  // v3：残してあるものはそのまま使う（毎回裏で取り直すと、スマホの通信を食って他の絵が遅れていた）
   e.respondWith(caches.open(CACHE).then(ca => ca.match(req)).then(hit => {
+    if (hit) return hit;
     const net = fetch(req).then(r => { if (okRes(r)) caches.open(CACHE).then(ca => ca.put(req, r.clone())).catch(() => {}); return r; });
-    if (hit) { e.waitUntil(net.catch(() => {})); return hit; }
     return net;
   }).catch(() => fetch(req)));
 });
