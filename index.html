@@ -4007,6 +4007,7 @@ body.tight .itembar{gap:6px;}
       note = st.label + ' クリア！';
       // ボスに初めて勝つと、そのボス本人が仲間になる
       if (st.kind === 'boss' && firstClear && st.char != null && CHARS[st.char]) { storyUnits(); winGets.push(st.char); }
+      else bossDrop();                                   // 2回目からは確率で、もう1体（限界突破の材料に）
       showResStars(lastStars);
       note += coinNote;
     }
@@ -6037,7 +6038,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.17';
+  const APP_VER = '0.9.18';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -6393,7 +6394,7 @@ body.tight .itembar{gap:6px;}
       zakoNow = st.char == null ? pickZako(st) : null;
       storyWinCoins(i, st.area, false, 0);
       teamExp(st); exp += lastExpInfo ? lastExpInfo.gain : 0;
-      zakoDrop();
+      zakoDrop(); bossDrop();
     }
     curStage = keepSt; zakoNow = keepZ;
     const gets = winGets; winGets = [];
@@ -7225,6 +7226,15 @@ body.tight .itembar{gap:6px;}
     const ci = ALLC_IDX.get('z_' + zakoNow.k); if (ci == null) return '';
     newUnit(ci); saveUnits(); winGets.push(ci);
     return '';
+  }
+  // ボス（ストーリーのSR）：2回目以降の勝ちでも10%で仲間になる。10回続けて出なければ、次は確定（天井）
+  const BOSS_DROP = 0.10, BOSS_PITY = 10;
+  function bossDrop(){
+    const st = curStage; if (!st || st.kind !== 'boss' || st.char == null || !CHARS[st.char]) return;
+    const pity = loadJ('bosspity', null) || {}, k = CHARS[st.char].id, miss = (pity[k] | 0) + 1;
+    if (miss >= BOSS_PITY || Math.random() < BOSS_DROP) { newUnit(st.char); saveUnits(); winGets.push(st.char); pity[k] = 0; }
+    else pity[k] = miss;
+    save('bosspity', JSON.stringify(pity));
   }
   function showGets(){
     const box = $('resGet'), list = winGets; winGets = [];
