@@ -23,5 +23,26 @@
     // ゲスト登録（ログインなしでランキングに載る）。本番でログインだけにするときは "0" にする
     "GUEST_SIGNUP": "1",
     "DUMMY_RANK": "0"
+  },
+  // テスト用サーバー（staging ブランチ → api-staging.twistrush.com）。データベースも本番とは別
+  // 公開コマンド：npx wrangler deploy --env staging
+  "env": {
+    "staging": {
+      "name": "twistrush-server-staging",
+      "routes": [{ "pattern": "api-staging.twistrush.com", "custom_domain": true }],
+      "d1_databases": [{ "binding": "DB", "database_name": "twistrush-db-staging" }],
+      "durable_objects": { "bindings": [ { "name": "ROOM", "class_name": "Room" }, { "name": "LOBBY", "class_name": "Lobby" } ] },
+      "migrations": [ { "tag": "v1", "new_sqlite_classes": ["Room", "Lobby"] } ],
+      "vars": {
+        "RETURN_ORIGINS": "https://staging.twistrush.com,http://localhost:8788",
+        "ALLOW_ORIGINS": "https://staging.twistrush.com,http://localhost:8788",
+        "MAX_SCORE_PER_BLOCK": "200",
+        "MIN_SEC_PER_BLOCK": "0.12",
+        "RANK_TZ_HOURS": "9",
+        "DEV_LOGIN": "0",
+        "GUEST_SIGNUP": "1",
+        "DUMMY_RANK": "0"
+      }
+    }
   }
 }

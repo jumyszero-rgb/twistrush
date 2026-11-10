@@ -5085,7 +5085,8 @@ body.on-menu .battlemain{opacity:0;}
   let rankMode = 'sixty';                         // ランキング画面で見ているモード（60秒／エンドレス）
   // ===== サーバー（アカウント・クラウドセーブ・ゴールドコイン・ランキング）=====
   const GAME_VER = '0.9';
-  const DEFAULT_API = 'https://api.twistrush.com';
+  // テスト用サイト（staging.twistrush.com）では、テスト用のサーバーを使う
+  const DEFAULT_API = /^staging\./.test(location.hostname) ? 'https://api-staging.twistrush.com' : 'https://api.twistrush.com';
   let apiUrl = load('api', '') || DEFAULT_API, wPeriod = 'day';
   let acctToken = load('acct_token', ''), acct = null;
   // ランキング用のゲストの札（ログインしていない人。名前だけで登録）

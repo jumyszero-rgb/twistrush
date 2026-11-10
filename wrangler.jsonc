@@ -9,5 +9,14 @@
     "directory": ".",
     "binding": "ASSETS",
     "run_worker_first": true
+  },
+  // テスト用（staging ブランチ → staging.twistrush.com）。本番とは別の Worker として公開する
+  // 公開コマンド：npx wrangler deploy --env staging
+  "env": {
+    "staging": {
+      "name": "twistrush-staging",
+      "routes": [{ "pattern": "staging.twistrush.com", "custom_domain": true }],
+      "assets": { "directory": ".", "binding": "ASSETS", "run_worker_first": true }
+    }
   }
 }
