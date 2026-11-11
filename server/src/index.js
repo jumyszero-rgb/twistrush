@@ -198,7 +198,7 @@ async function finishLogin(env, req, p, sub, name, ret, link) {
   } else if (!accountId) {                                    // はじめて：アカウントを作る
     accountId = randId(12); isNew = true;
     await env.DB.batch([
-      env.DB.prepare('INSERT INTO accounts (id, name, created_at, last_login) VALUES (?, ?, ?, ?)').bind(accountId, cleanName(name), t, t),
+      env.DB.prepare('INSERT INTO accounts (id, name, created_at, last_login) VALUES (?, ?, ?, ?)').bind(accountId, cleanName(''), t, t),   // Googleなどの本名はランキングに出さない
       env.DB.prepare('INSERT INTO identities (provider, sub, account_id, created_at) VALUES (?, ?, ?, ?)').bind(p, sub, accountId, t),
     ]);
   }
