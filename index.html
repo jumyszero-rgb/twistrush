@@ -1029,6 +1029,18 @@ body.on-menu .battlemain{opacity:0;}
   .cutin.enemy .cband{background:linear-gradient(100deg,rgba(150,0,30,0),rgba(150,0,30,.95) 8%,rgba(210,20,60,.95) 50%,rgba(150,0,30,.95) 92%,rgba(150,0,30,0));flex-direction:row-reverse;}
   .cutin.enemy.ougi .cband{background:linear-gradient(100deg,rgba(80,0,90,0),rgba(80,0,90,.96) 8%,rgba(200,30,120,.96) 50%,rgba(80,0,90,.96) 92%,rgba(80,0,90,0));box-shadow:0 0 26px rgba(255,40,120,.6);}
   .d.tries{color:#ffd24a;font-weight:800;} .d.tries.none{color:#ff6b8a;}
+  .healfx{position:absolute;z-index:14;pointer-events:none;transform:translate(-50%,-50%);}
+  .healfx b{display:block;white-space:nowrap;font-size:28px;font-weight:900;color:#5dffa0;padding:4px 14px;border-radius:16px;background:rgba(6,40,24,.72);-webkit-text-stroke:1px #063;text-shadow:0 0 12px #1fff8a,0 2px 0 #043;box-shadow:0 0 18px rgba(60,255,150,.6);animation:healUp 1.4s ease-out forwards;}
+  .healfx.mid b{font-size:18px;} .healfx.tick b{font-size:15px;padding:2px 9px;opacity:.95;}
+  .healfx i{position:absolute;left:50%;top:50%;font-style:normal;font-size:24px;color:#fff6a0;text-shadow:0 0 6px #ffb700,0 0 12px #5dffa0,0 0 2px #000;animation:healSpark 1.1s ease-out forwards;opacity:0;}
+  @keyframes healUp{0%{transform:scale(.4);opacity:0}18%{transform:scale(1.25);opacity:1}35%{transform:scale(1)}80%{opacity:1}100%{transform:translateY(-40px);opacity:0}}
+  @keyframes healSpark{0%{transform:translate(-50%,-50%) scale(.3);opacity:0}25%{opacity:1}100%{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(1.2) rotate(90deg);opacity:0}}
+  #buffBar{position:absolute;z-index:12;display:flex;flex-wrap:wrap;gap:3px;justify-content:center;transform:translateY(4px);pointer-events:none;}
+  #buffBar .bf{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:10px;font-size:11px;font-weight:900;color:#fff;background:rgba(0,0,0,.6);border:1.5px solid currentColor;white-space:nowrap;}
+  #buffBar .bf em{font-style:normal;} #buffBar .bf b{font-size:11px;}
+  #buffBar .bf.atk{color:#ff8a7a;} #buffBar .bf.def{color:#7ac8ff;} #buffBar .bf.spd{color:#ffe27a;} #buffBar .bf.slow{color:#c9a2ff;} #buffBar .bf.stop{color:#9ff;} #buffBar .bf.heal{color:#7dffb0;}
+  #buffBar .bf.end{animation:bfBlink .5s steps(2) infinite;}
+  @keyframes bfBlink{50%{opacity:.35}}
   #heartTray{position:absolute;z-index:12;display:flex;gap:3px;transform:translateY(calc(-100% - 6px));}
   #heartTray button{width:30px;height:30px;border:2px solid #fff;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffd1e2,#ff4f8b);font-size:15px;line-height:1;padding:0;box-shadow:0 2px 6px rgba(0,0,0,.35),0 0 8px rgba(255,90,150,.7);animation:hpop .35s cubic-bezier(.2,1.6,.4,1) both;touch-action:manipulation;}
   #heartTray button{color:#fff;font-weight:900;text-shadow:0 1px 2px rgba(0,0,0,.45);}
@@ -1391,7 +1403,7 @@ body.tight .itembar{gap:6px;}
         <button class="mtile mini" id="howBtn" data-tip="ルールと操作のしかたを見る"><span class="mi"><img data-mimg="howto" alt=""></span><span class="ml">遊び方</span></button>
         <button class="mtile mini" id="setBtn" data-tip="背景・操作・音などを変える"><span class="mi"><img data-mimg="settings" alt=""></span><span class="ml">設定</span></button>
         <button class="mtile mini" id="newsBtn" data-tip="お知らせ・イベント・アップデートの情報"><span class="mi" style="font-size:26px;line-height:34px">📰</span><span class="ml">ニュース</span></button>
-        <button class="mtile mini" id="questBtn" data-tip="毎日・毎週・毎月のお題：達成するとチケットなどがもらえる"><span class="mi" style="font-size:26px;line-height:34px">📋</span><span class="ml">お題</span></button>
+        <button class="mtile mini" id="questBtn" data-tip="毎日・毎週・毎月のミッション：達成するとチケットなどがもらえる"><span class="mi" style="font-size:26px;line-height:34px">📋</span><span class="ml">ミッション</span></button>
         <button class="mtile mini" id="achvBtn" data-tip="実績：達成するとユーザー経験値がもらえる"><span class="mi" style="font-size:26px;line-height:34px">🏆</span><span class="ml">実績</span></button>
       </div>
       <div class="menu-bottom mgrid">
@@ -1420,10 +1432,10 @@ body.tight .itembar{gap:6px;}
       </div>
       <div class="how-body" id="newsBody"></div>
     </div>
-    <div class="overlay hidden" id="quest" role="dialog" aria-label="お題">
+    <div class="overlay hidden" id="quest" role="dialog" aria-label="ミッション">
       <div class="how-head">
         <button class="how-back" id="questBack" aria-label="タイトルに戻る">‹ 戻る</button>
-        <h2>お題</h2>
+        <h2>ミッション</h2>
       </div>
       <div class="qtabs" id="questTabs"><button data-q="d">毎日</button><button data-q="w">毎週</button><button data-q="m">毎月</button></div>
       <div class="how-body" id="questBody"></div>
@@ -5805,7 +5817,7 @@ body.tight .itembar{gap:6px;}
     const o = {dmg: 0, heal: 0, buf: 0, deb: 0, crit: 0};
     (fx || []).forEach(f => {
       const k = f[0];
-      if (k === 'heart') o.heal += 10 * f[1]; else if (k === 'sheart') o.heal += 30 * f[1]; else if (k === 'gheart') o.heal += 50 * f[1]; else if (k === 'heal') o.heal += f[1];
+      if (k === 'heart') o.heal += 10 * f[1]; else if (k === 'sheart') o.heal += 30 * f[1]; else if (k === 'gheart') o.heal += 50 * f[1]; else if (k === 'heal') o.heal += f[1]; else if (k === 'regen') o.heal += f[1] * 0.8;
       else if (k === 'buf' || k === 'atk2' || k === 'def2' || k === 'chg' || k === 'score') o.buf += fxPow([f]);
       else if (k === 'eslow' || k === 'mslow' || k === 'stop') o.deb += fxPow([f]);
       else if (k === 'crit') o.crit += f[1];
@@ -6156,7 +6168,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.31';
+  const APP_VER = '0.9.32';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -6654,7 +6666,7 @@ body.tight .itembar{gap:6px;}
     refresh50:  {name: 'リフレッシュ50',  price: 80,  desc: '押すと全色のカラーHPが50%回復する', pct: 0.5, img: 'refresh'},
     refresh80:  {name: 'リフレッシュ80',  price: 120, desc: '押すと全色のカラーHPが80%回復する', pct: 0.8, img: 'refresh'},
     refresh100: {name: 'リフレッシュ100', price: 150, desc: '押すと全色のカラーHPが全回復する', pct: 1.0, img: 'refresh'},
-    slow:    {name: 'スピードダウン',   price: 100, desc: '10秒間、外周の光とカラーHPの増え方が半分の速さになる'},
+    slow:    {name: 'スピードダウン',   price: 100, desc: '20秒間、外周の光とカラーHPの増え方が半分の速さになる'},
     bomb:    {name: 'カラーボム',       price: 100, desc: 'タップした色のブロックを盤面から全部消す（オクタブロックは消えない）。消した数だけカラーHPが減り、相手にもダメージ'},
     star3:   {name: 'オクタ変換 3個', price: 100, desc: 'ふつうのブロック3個をランダムにオクタブロックへ変える（もとからあるオクタはそのまま）', n: 3},
     star6:   {name: 'オクタ変換 6個', price: 200, desc: 'ふつうのブロック6個をランダムにオクタブロックへ変える', n: 6},
@@ -6681,7 +6693,7 @@ body.tight .itembar{gap:6px;}
   const LOAD_MAX = 2;          // 持っていけるアイテムの種類
   const CONT_MAX = 3;          // ストーリーのコンティニュー（1ステージ）
   const AUTO_SILVER = 50;      // （今は使っていない）前はスキップ1回にシルバー50枚。オート・スキップはスタミナだけ
-  const SLOW_MS = 10000;       // スピードダウンの長さ
+  const SLOW_MS = 20000;       // スピードダウンの長さ
   const LOSE_COIN = 3, STAR_COIN = 5;
   // 毎日のプレゼント（7日で1周。休んでも1日目には戻らない）。グレードで倍率が上がる
   const DAILY = [20, 20, 30, 30, 40, 40, 100];
@@ -6801,23 +6813,23 @@ body.tight .itembar{gap:6px;}
     return '<div class="begbox"><h3>🎁 はじめてミッション</h3><p>達成すると、その場でごほうびがもらえます。全部達成で ' + rwTxt(BEG_ALL) + '！</p>' +
       BEG.map(m => '<div class="begrow' + (d[m.k] ? ' done' : '') + '"><span>' + (d[m.k] ? '✓ ' : '・') + m.t + '</span><em>' + rwTxt(m.r) + '</em></div>').join('') + '</div>';
   }
-  // ===== 毎日・毎週・毎月のお題：1つずつ受け取れて、全部達成するともう1つ =====
+  // ===== 毎日・毎週・毎月のミッション：1つずつ受け取れて、全部達成するともう1つ =====
   const QUEST = {
-    d: {name: '毎日のお題', reset: '毎日0時にリセット', list: [
+    d: {name: '毎日のミッション', reset: '毎日0時にリセット', list: [
       {k: 'days',  n: 1, t: '毎日のプレゼントを受け取る', r: [['coin', 50]]},
       {k: 'stage', n: 3, t: 'ストーリーで3回勝つ', r: [['gticket', 1]]},
       {k: 'mini',  n: 1, t: '60秒アタックかエンドレスを1回遊ぶ', r: [['coin', 100]]},
       {k: 'gacha', n: 1, t: 'ガチャを1回引く', r: [['coin', 50]]},
       {k: 'vs',    n: 1, t: 'オンライン対戦かオートバトルで1回勝つ', r: [['coin', 100]]},
     ], all: [['gticket', 2]]},
-    w: {name: '毎週のお題', reset: '毎週月曜0時にリセット', list: [
+    w: {name: '毎週のミッション', reset: '毎週月曜0時にリセット', list: [
       {k: 'days',  n: 5,  t: '毎日のプレゼントを5日受け取る', r: [['gticket', 2]]},
       {k: 'stage', n: 20, t: 'ストーリーで20回勝つ', r: [['gticket', 3]]},
       {k: 'boss',  n: 3,  t: 'ボスに3回勝つ', r: [['stampot', 1]]},
       {k: 'mini',  n: 10, t: '60秒アタックかエンドレスを10回遊ぶ', r: [['coin', 500]]},
       {k: 'vs',    n: 5,  t: 'オンライン対戦かオートバトルで5回勝つ', r: [['coin', 500]]},
     ], all: [['gticket', 5]]},
-    m: {name: '毎月のお題', reset: '毎月1日0時にリセット', list: [
+    m: {name: '毎月のミッション', reset: '毎月1日0時にリセット', list: [
       {k: 'days',  n: 20,  t: '毎日のプレゼントを20日受け取る', r: [['gticket', 5]]},
       {k: 'stage', n: 100, t: 'ストーリーで100回勝つ', r: [['gticket_hi', 1]]},
       {k: 'boss',  n: 15,  t: 'ボスに15回勝つ', r: [['stampot', 3]]},
@@ -6851,10 +6863,10 @@ body.tight .itembar{gap:6px;}
       const q = qLoad(), hit = [];
       ['d', 'w', 'm'].forEach(t => {
         q[t].c[key] = (q[t].c[key] | 0) + (n || 1);
-        QUEST[t].list.forEach((m, j) => { if (m.k === key && (q[t].c[key] | 0) >= m.n && !q[t].ntf[j]) { q[t].ntf[j] = 1; hit.push(QUEST[t].name.replace('のお題', '') + '「' + m.t + '」'); } });
+        QUEST[t].list.forEach((m, j) => { if (m.k === key && (q[t].c[key] | 0) >= m.n && !q[t].ntf[j]) { q[t].ntf[j] = 1; hit.push(QUEST[t].name.replace('のミッション', '') + '「' + m.t + '」'); } });
       });
       save('quest', JSON.stringify(q));
-      if (hit.length) toast('📋 お題達成！ ' + hit.join('／') + '　「お題」で受け取れます');
+      if (hit.length) toast('📋 ミッション達成！ ' + hit.join('／') + '　「ミッション」で受け取れます');
       qBadge();
     } catch(_) {}
   }
@@ -6908,7 +6920,7 @@ body.tight .itembar{gap:6px;}
     const tk = (+load('gticket', '0') || 0), tkh = (+load('gticket_hi', '0') || 0);
     if (tk || tkh) it.push({b: '🎟 ガチャチケットを使う', t: 'ガチャチケットが' + tk + '枚' + (tkh ? '、SR以上確定チケットが' + tkh + '枚' : '') + 'あります。新しい仲間を呼んで、チームを強くしよう！', go: 'gacha'});
     it.push({b: '🧑‍🤝‍🧑 チームと持ち込みアイテムを見直す', t: 'ボックスで、レベルの高いキャラをチームに入れよう。相手に合わせてアイテムを持っていくのも効果があります。', go: 'box'});
-    it.push({b: '📋 お題でチケットをもらう', t: '毎日・毎週・毎月のお題を達成すると、ガチャチケットやスタミナポットがもらえます。', go: 'quest'});
+    it.push({b: '📋 ミッションでチケットをもらう', t: '毎日・毎週・毎月のミッションを達成すると、ガチャチケットやスタミナポットがもらえます。', go: 'quest'});
     $('lossTipMsg').innerHTML = '2回つづけて負けちゃったね。<br>こんなふうに強くなれるよ！';
     $('lossTipList').innerHTML = it.map((x, k) => '<button class="lt-item' + (k === 0 ? ' act' : '') + '" data-lt="' + x.go + '"><b>' + x.b + '</b>' + x.t + '</button>').join('');
     $('lossTip').classList.remove('hidden');
@@ -7339,6 +7351,22 @@ body.tight .itembar{gap:6px;}
     {k: "g66", name: "ヒマリ", grade: "R", type: "hp", base: [14, 9, 11, 7], bio: "ひまわりの盾を持つ明るい騎士。太陽の光をあびるほど元気になる。まわりのみんなも、つられて笑顔になる。", sp: {n: "おひさまの光", fx: [["heal", 12], ["buf", "def", 4, 150]]}},
     {k: "g67", name: "フェザ", grade: "R", type: "spd", base: [8, 12, 6, 15], bio: "嵐の空を飛びまわるハーピーの女の子。大きな翼のひとふりで、つむじ風を起こす。いたずら好きで、よく羽を落としていく。", sp: {n: "嵐の羽ばたき", fx: [["clr", 7], ["shuf", 20]]}}
   ];
+  // 技の効果の調整（2026-11-12）：強化・弱体の時間を長く（5秒以下→15秒、6〜8秒→20秒、それ以上→30秒）。
+  // ハートはタップできない速い戦いもあるので、技ではすぐ回復（奥義）／時間をかけて回復（必殺技）に。ゴールドハートはそのまま
+  function fxDur(sec){ return sec <= 5 ? 15 : sec <= 8 ? 20 : 30; }
+  function fxTune(fx, part){
+    return (fx || []).map(f => {
+      switch (f[0]) {
+        case 'buf': return [f[0], f[1], fxDur(f[2]), f[3]];
+        case 'atk2': case 'def2': return [f[0], fxDur(f[1])];
+        case 'eslow': case 'mslow': return [f[0], f[1], fxDur(f[2])];
+        case 'heart': return part === 'ougi' ? ['heal', 10 * f[1]] : ['regen', 10 * f[1], 10];
+        case 'sheart': return ['regen', 30 * f[1], 20];
+        default: return f;
+      }
+    });
+  }
+  GACHA_CREW.forEach(c => { if (c.sp && c.sp.fx) c.sp.fx = fxTune(c.sp.fx, 'sp'); if (c.ougi && c.ougi.fx) c.ougi.fx = fxTune(c.ougi.fx, 'ougi'); });
   Object.assign(ZAKO_IMG, {"g28": "dbb81445929b6bc497dcf000070c19d3", "g29": "cb3183f1ead242d07afbb052c178b30a", "g30": "3265ed4f0198485e799d5eb62100c6fe", "g31": "7c1af3d17acfdb3534f5949890e346c2", "g32": "6b1c8ae548cef2a6def9c38ac998b1de", "g33": "ce0af33a1d1ffe456d223d6b5ffd2727", "g34": "9d18853a492a9e31e04dcf309ee89da5", "g35": "bc9e9b9b082d7b3248cb1de9cb1ab218", "g36": "eb22d192386efa7634360318aef965c7", "g37": "743e2ac4b8ebe7debbfc8b576344ed8c", "g38": "99d3c5e33900afbd3776c11414fc213d", "g39": "77ee4ee2df3d92cdcb6ea6c76a00509b", "g40": "ebf7cc547576fefa70b33c5c896b3745", "g41": "eea79d8b4c281c0ce7778ddc34b6a2c0", "g42": "d7e4c7aac381f6ca027f086a884c5776", "g43": "619a68232c7de77a408535d167a32b9a", "g44": "4b811949e746717b9d740ed83ce255b5", "g45": "667014f90325273a8d320a9e933c1f2f", "g46": "df3f75210320d22b0a5474db566b3b47", "g47": "3bb8b236248d4b51ec51ce07a231840d", "g48": "510785cfd9fe8d4b2e7f4e016aa8145e", "g49": "2ff798c9ae00f302eb5f37e5bc201543", "g50": "07584818cf1c5061318cdbb5d0856692", "g51": "d4dbe94f8eb210a92ae31dbe51837eec", "g52": "41ff841c9ab49c327d3bac61747b65a2", "g53": "488e95dd4688f867629f43b3f885c8c3", "g54": "da1c7f7b9c36ca61666a0334a364eccc", "g55": "f8193955381b8bcfca7c5836b28f6588", "g56": "238babb990cb7763a05bb06ac4485fc1", "g57": "9f9d9bffa6bb6beee7169486188768c2", "g58": "110fb87cf486fa493101dd6d3a52cb29", "g59": "46bd00828152657180cee62842090fd4", "g60": "009209147d5832053959b014c72ccf0b", "g61": "c981124d369cc7e01cd5fca71b041e8d", "g62": "b0e9b680bd213ae493d62bc4095c331e", "g63": "a08b1b6746f81438c57772c1fc4841ad", "g64": "63a643d76dbd2f1cd8dba9c73468414b", "g65": "2b2eb9328d79b27147208d79f8c6f929", "g66": "8991df2c11cad470c14416867b420a17", "g67": "e63c7e31b7c1e036a06f1e0d3c4de120"});
   Object.assign(ZAKO_IMG, {"g01": "ef79faa19053ada47bc5ca9448469366", "g02": "9e72f3382128933c3c6b2c842e4b3b95", "g03": "40aafdd61fbc2558d8b3cae55f3da0e4", "g04": "2fe885da91ca86c483c8487f1a892e34", "g05": "f229b0619c71b999a33ad31c762228b8", "g06": "0311b84824cf7cf28e2fb7e53bb701ec", "g07": "68e15203eb775432589b056050ffe7b5", "g08": "edf31e42d52455c02d321ae5c1313708", "g09": "51e918470a61fc26f536bd7cd0c92c77", "g10": "f476b01615a1c1fb6defd52f23fc1853", "g11": "eaf0ef30e5cade96c92cdcde546addf9", "g12": "82a4243dd14588597348374089fbd1c0", "g13": "9d32a586bbb5d682c8e993b7afdf1d4a", "g14": "c3eae176ef9218a4b9612428dfd120af", "g15": "91b437318d851aa0ba03898f2f06bde5", "g16": "1e1163f422c4b345a96b40ff4fd5c783", "g17": "86b63a2c0599ddb71e01e78f145f1618", "g18": "de82f94603ba6081cc1cfe69c5eff94c", "g19": "c3362ecfa62d33a6bc43b0a36fbc9df0", "g20": "93516fa10fc6af064706f2e3d41048d9", "g21": "514652ffabdb50512afb735fc05d544f", "g22": "068fbf1407e92823c26ff07562d556ba", "g23": "c1d2ef32f2504e423e8a9c28c73ae88c", "g24": "30022a121f196be65cd14279724f66f9", "g25": "78a5091213035070491c82ab144d49a2", "g26": "dff9e5a8e72e29722a98ae1025889a4f", "g27": "c15044cdf2d00d42f9c154e8d17bbbd2"});
   Object.assign(ZAKO_FACE, {"g28": [90, 32, 308], "g29": [80, 78, 337], "g30": [87, 8, 313], "g31": [111, 14, 323], "g32": [100, 11, 307], "g33": [93, 34, 325], "g34": [98, 31, 294], "g35": [89, 65, 320], "g36": [90, 66, 292], "g37": [72, 36, 344], "g38": [105, 24, 328], "g39": [104, 13, 286], "g40": [120, 39, 264], "g41": [78, 15, 339], "g42": [96, 34, 308], "g43": [102, 32, 308], "g44": [47, 24, 331], "g45": [96, 14, 309], "g46": [78, 46, 288], "g47": [64, 39, 372], "g48": [183, 63, 232], "g49": [148, 86, 237], "g50": [55, 34, 321], "g51": [98, 30, 288], "g52": [97, 33, 313], "g53": [86, 34, 324], "g54": [123, 30, 249], "g55": [87, 33, 320], "g56": [70, 60, 300], "g57": [144, 43, 260], "g58": [132, 108, 248], "g59": [97, 32, 304], "g60": [92, 34, 324], "g61": [93, 33, 317], "g62": [49, 33, 320], "g63": [126, 59, 260], "g64": [142, 25, 216], "g65": [151, 21, 197], "g66": [116, 28, 269], "g67": [157, 34, 204]});
@@ -8628,10 +8656,11 @@ body.tight .itembar{gap:6px;}
       case 'sheart': p += 7 * f[1]; break;
       case 'gheart': p += 10 * f[1]; break;
       case 'heal': p += 0.6 * f[1]; break;
-      case 'atk2': p += 1.2 * f[1]; break;
-      case 'def2': p += f[1]; break;
-      case 'buf': p += Math.max(0, f[3] - 100) / 100 * f[2] * 1.5; break;
-      case 'eslow': case 'mslow': p += f[1] / 100 * f[2] * 2; break;
+      case 'regen': p += 0.5 * f[1]; break;
+      case 'atk2': p += 1.2 * f[1] / 2.8; break;          // 時間を長くした分（約2.8倍）、強さの見積もりは割り戻す
+      case 'def2': p += f[1] / 2.8; break;
+      case 'buf': p += Math.max(0, f[3] - 100) / 100 * f[2] * 1.5 / 2.8; break;
+      case 'eslow': case 'mslow': p += f[1] / 100 * f[2] * 2 / 2.8; break;
       case 'stop': p += 3 * f[1]; break;
       case 'chg': p += 0.8 * f[1]; break;
       case 'score': p += f[1] / 1000; break;
@@ -8677,6 +8706,7 @@ body.tight .itembar{gap:6px;}
   let zbuf = {atk: [1, 0], def: [1, 0], spd: [1, 0]};
   // 技の効果：敵のスピードダウン [倍率, 終わる時刻]／盤面の時計を遅くする [遅くする割合, 終わる時刻]／時を止める（終わる時刻）／次に落ちてくるオクタの数
   let ebuf = [1, 0], tslow = [0, 0], tstop = 0, octaPend = 0, fxExtra = [], skUsing = null;
+  let regens = [];                                       // 時間をかけて回復：{per: 1秒ごとの%, end: 終わる時刻, next: 次に回復する時刻, total}
   const ebm = () => (ebuf[1] && now() < ebuf[1]) ? ebuf[0] : 1;
   const bm = k => (zbuf[k][1] && now() < zbuf[k][1]) ? zbuf[k][0] : 1;
   const atkMul = () => ((atkUntil && now() < atkUntil) ? 2 : 1) * bm('atk');
@@ -8743,7 +8773,7 @@ body.tight .itembar{gap:6px;}
   function skillReset(){
     buildSkills(); skLast = now(); skShown = ''; enSkReset(); heartStock = []; drawHearts(true);
     atkUntil = 0; defUntil = 0; zbuf = {atk: [1, 0], def: [1, 0], spd: [1, 0]};
-    ebuf = [1, 0]; tslow = [0, 0]; tstop = 0; octaPend = 0;
+    ebuf = [1, 0]; tslow = [0, 0]; tstop = 0; octaPend = 0; regens = [];
     drawSkillBar(true);
   }
   function skillTick(t){
@@ -8773,6 +8803,11 @@ body.tight .itembar{gap:6px;}
     if (ebuf[1] && t >= ebuf[1]) { ebuf = [1, 0]; toast('敵のスピードダウンおわり'); }
     if (tslow[1] && t >= tslow[1]) { tslow = [0, 0]; toast('時間のスロウおわり'); }
     if (tstop && t >= tstop) { tstop = 0; document.body.classList.remove('tstop'); toast('時が動き出した'); }
+    if (regens.length && running && !pausedAt) {
+      regens.forEach(g => { while (g.next <= t && g.next <= g.end) { healPct(g.per / 100, 'tick'); g.next += 1000; } });
+      regens = regens.filter(g => g.next <= g.end);
+    }
+    drawBuffs(t);
     drawSkillBar();
   }
   const skName = s2 => s2.kind === 'sp' ? (SPECIAL_NAME[s2.id] || '').replace('！', '') : (OUGI_NAME[s2.id] || '');
@@ -8896,8 +8931,7 @@ body.tight .itembar{gap:6px;}
     const kind = heartStock[i]; if (!kind) return;
     heartStock.splice(i, 1);
     const hk = HEART_KIND[kind];
-    healPct(hk.p); sndSpeed();
-    pops.push({text: hk.name + '！ 全色 ' + Math.round(hk.p * 100) + '%回復', style: 'sync', r: 0, c: 0, row: 0, n: 1, t: now()});
+    healPct(hk.p, 'big'); sndSpeed();
     drawHearts(true);
   }
   function drawHearts(force){
@@ -8914,7 +8948,43 @@ body.tight .itembar{gap:6px;}
     el.innerHTML = heartStock.map((k, i) => '<button data-h="' + i + '" class="' + k + '" aria-label="' + HEART_KIND[k].name + '">♥</button>').join('');
   }
   // 全色のカラーHPを p の割合だけ回復（たまった分を減らす）
-  function healPct(p){
+  function startRegen(total, sec){
+    const t = now(); regens.push({per: total / sec, end: t + sec * 1000, next: t + 1000, total, sec});
+    healFx(sec + '秒間 じわじわ回復（合計' + total + '%）', 'mid');
+  }
+  // 回復の文字とキラキラ
+  function healFx(text, size){
+    const host = canvas.parentElement; if (!host) return;
+    const el = document.createElement('div'); el.className = 'healfx ' + (size || 'big');
+    el.style.left = (canvas.offsetLeft + canvas.offsetWidth / 2) + 'px'; el.style.top = (canvas.offsetTop + canvas.offsetHeight * (size === 'tick' ? 0.62 : 0.45)) + 'px';
+    const nS = size === 'tick' ? 6 : size === 'mid' ? 14 : 22;
+    let h = '<b>' + text + '</b>';
+    for (let k = 0; k < nS; k++) { const a = Math.random() * Math.PI * 2, L = 40 + Math.random() * (size === 'tick' ? 60 : 140);
+      h += '<i style="--dx:' + (Math.cos(a) * L).toFixed(0) + 'px;--dy:' + (Math.sin(a) * L - 30).toFixed(0) + 'px;animation-delay:' + (Math.random() * 0.25).toFixed(2) + 's">' + (k % 3 ? '✦' : '✧') + '</i>'; }
+    el.innerHTML = h; host.appendChild(el);
+    setTimeout(() => el.remove(), 1500);
+  }
+  // 強化・弱体の残り時間を、盤面の上にバーで出す
+  let buffKey = '';
+  function drawBuffs(t){
+    let el = $('buffBar');
+    if (!el) { el = document.createElement('div'); el.id = 'buffBar'; canvas.parentElement.appendChild(el); }
+    const L = [];
+    const add = (cls, ic, name, end, len) => { if (end && end > t) L.push({cls, ic, name, left: end - t, len}); };
+    add('atk', '⚔', '攻撃2倍', atkUntil, 0); add('def', '⛨', '防御2倍', defUntil, 0);
+    Object.keys(zbuf).forEach(k => { if (zbuf[k][1]) add(k, k === 'atk' ? '⚔' : k === 'def' ? '⛨' : '➶', ZST[k] + ' ' + Math.round(zbuf[k][0] * 100) + '%', zbuf[k][1], 0); });
+    if (ebuf[1]) add('slow', '🐢', '敵スピード −' + Math.round((1 - ebuf[0]) * 100) + '%', ebuf[1], 0);
+    if (tslow[1]) add('slow', '⏳', '時間 −' + Math.round(tslow[0] * 100) + '%', tslow[1], 0);
+    if (tstop) add('stop', '⏸', '時間停止', tstop, 0);
+    regens.forEach(g => add('heal', '♥', 'じわじわ回復', g.end, 0));
+    const on = running && L.length > 0;
+    el.style.display = on ? '' : 'none'; if (!on) { buffKey = ''; return; }
+    el.style.left = (canvas.offsetLeft + gm) + 'px'; el.style.width = (canvas.offsetWidth - gm * 2) + 'px'; el.style.top = (canvas.offsetTop + canvas.offsetHeight - gm) + 'px';
+    const key = L.map(x => x.cls + x.name + Math.ceil(x.left / 1000)).join('|'); if (key === buffKey) return; buffKey = key;
+    el.innerHTML = L.map(x => { const s = Math.ceil(x.left / 1000); return '<span class="bf ' + x.cls + (s <= 3 ? ' end' : '') + '"><em>' + x.ic + '</em>' + x.name + '<b>' + s + '秒</b></span>'; }).join('');
+  }
+  function healPct(p, fx){
+    if (fx && running) healFx((fx === 'tick' ? '+' + (Math.round(p * 1000) / 10) + '%' : '全色 ' + Math.round(p * 100) + '% ヒール'), fx === 'tick' ? 'tick' : 'big');
     const was = stacks.slice();
     stacks = stacks.map(v => Math.max(0, v - Math.ceil(v * p - 1e-9))); updateGauges();
     was.forEach((v, i) => { const d = v - stacks[i]; if (d) { popMinus(i, d); bump(i); } });
@@ -9059,6 +9129,7 @@ body.tight .itembar{gap:6px;}
     a9_09: {n: 'ランタン巡回', fx: [['heal', 9]]},
     a9_10: {n: 'お姫さまの微笑み', fx: [['heal', 12], ['cut', 20]]},
   };
+  Object.keys(ZAKO_SK).forEach(k => { ZAKO_SK[k].fx = fxTune(ZAKO_SK[k].fx, 'sp'); });
   const ZST = {atk: '攻撃力', def: '防御力', spd: 'スピード'};
   const fxText = f => f[0] === 'clr' ? 'ランダムで' + f[1] + '個消す' : f[0] === 'octa' ? 'ランダムで' + f[1] + '個をオクタブロックに変える'
     : f[0] === 'heart' ? 'ブロンズハート（全色10%回復）を' + f[1] + '個ためる' : f[0] === 'sheart' ? 'シルバーハート（全色30%回復）を' + f[1] + '個ためる' : f[0] === 'buf' ? f[2] + '秒間 ' + ZST[f[1]] + 'が' + f[3] + '%になる'
@@ -9070,7 +9141,8 @@ body.tight .itembar{gap:6px;}
     : f[0] === 'claws' ? 'ななめに7個（3個と4個）ひっかいて消す'
     : f[0] === 'rows' ? '横' + f[1] + '列（' + f[1] * 6 + '個）を消す'
     : f[0] === 'octaRect' ? f[1] + '×' + f[2] + 'の' + f[1] * f[2] + '個を、すべてオクタブロックに変える'
-    : f[0] === 'heal' ? '全色のカラーHPを' + f[1] + '%回復する'
+    : f[0] === 'heal' ? '全色のカラーHPを すぐ' + f[1] + '%回復する'
+    : f[0] === 'regen' ? f[2] + '秒間かけて 全色のカラーHPを合計' + f[1] + '%回復する'
     : f[0] === 'atk2' ? f[1] + '秒間 攻撃力が2倍になる'
     : f[0] === 'def2' ? f[1] + '秒間 防御力が2倍になる'
     : f[0] === 'tempest' ? '盤面をかき混ぜて、' + (f[1] || 30) + '%くらいをそろう並びにする'
@@ -9115,6 +9187,7 @@ body.tight .itembar{gap:6px;}
       case 'score': return [f[0], r(f[1] / 100) * 100];
       case 'buf': return [f[0], f[1], f[2], 100 + r(f[3] - 100, 10)];
       case 'eslow': case 'mslow': return [f[0], r(f[1], 5), f[2]];
+      case 'regen': return [f[0], r(f[1], 5), f[2]];
       case 'cross': return [f[0], r(f[1], 4)];
       case 'rows': return [f[0], r(f[1])];
       case 'rects': return [f[0], f[1], f[2], r(f[3])];
@@ -9212,7 +9285,8 @@ body.tight .itembar{gap:6px;}
       else if (f[0] === 'octa') addOcta(f[1], avoid);
       else if (f[0] === 'heart') addHeart(f[1]);
       else if (f[0] === 'octaRect') convert(randRect(f[1], f[2]), GOLD);
-      else if (f[0] === 'heal') healPct(f[1] / 100);
+      else if (f[0] === 'heal') healPct(f[1] / 100, 'big');
+      else if (f[0] === 'regen') startRegen(f[1], f[2]);
       else if (f[0] === 'atk2') atkUntil = now() + f[1] * 1000;
       else if (f[0] === 'def2') defUntil = now() + f[1] * 1000;
       else if (f[0] === 'tempest') tempest((f[1] || 30) / 100);
@@ -9253,6 +9327,7 @@ body.tight .itembar{gap:6px;}
     chiyo: {sp: [['clr', 8], ['heal', 5]], ougi: [['clr', 12], ['crit', 10], ['heart', 3]]},
     gilbert: {sp: [['heart', 3], ['buf', 'def', 6, 200]], ougi: [['octaRect', 3, 3], ['cut', 40], ['heart', 3], ['sheart', 1]]},
   };
+  Object.keys(BOSS_FX).forEach(id => { BOSS_FX[id].sp = fxTune(BOSS_FX[id].sp, 'sp'); BOSS_FX[id].ougi = fxTune(BOSS_FX[id].ougi, 'ougi'); });
   Object.keys(BOSS_FX).forEach(id => {
     const d = BOSS_FX[id]; FX_DEF[id] = d; SKILL_DESC[id] = {sp: fxDesc(d.sp), ougi: fxDesc(d.ougi)};
     SKILLS[id] = {sp: s2 => runZakoFx(s2 ? fxAt(id, 'sp', s2.star, s2.smax) : d.sp), ougi: s2 => runZakoFx(s2 ? fxAt(id, 'ougi', s2.star, s2.smax) : d.ougi)};
