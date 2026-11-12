@@ -19,6 +19,10 @@ export const MEDAL_SHOP = [
   { k: 'charm', price: 200 },
   { k: 'gticket', price: 150 },
   { k: 'gticket_hi', price: 2000 },
+  { k: 'stam50', price: 40 },    // スタミナ回復（ゲームの⚡の画面で買う。上限をこえてOK）
+  { k: 'stam100', price: 75 },
+  { k: 'stam200', price: 140 },
+  { k: 'stam300', price: 200 },
   { k: 'stampot', price: 200 },          // スタミナポット（スタミナ+50）
 ];
 // ポットはここには並べない（アイテムガチャとゴールドの秘密のショップだけ）

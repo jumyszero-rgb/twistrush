@@ -741,6 +741,18 @@ body.on-menu .battlemain{opacity:0;}
   #askBox .alv button{background:rgba(255,255,255,.08);color:#fff;box-shadow:none;min-width:0;}
   #askBox .alv button.on{border-color:#ffd24a;background:linear-gradient(#fff3c4,#ffc93d);color:#3a2000;} #askBox .alv button.on small{color:#7a4a00;}
   #askBox .alv button:disabled{opacity:.35;}
+  #stamShop{position:fixed;inset:0;z-index:9400;display:flex;align-items:center;justify-content:center;background:rgba(10,4,24,.72);padding:16px;}
+  #stamShop.hidden{display:none;}
+  #stamShop .ss-card{width:min(380px,100%);max-height:92vh;overflow:auto;background:#2a1650;border:3px solid #ffd24a;border-radius:18px;padding:14px;color:#fff;}
+  #stamShop h3{margin:0 0 4px;font-size:18px;color:#ffe27a;text-align:center;}
+  #stamShop .ss-now{text-align:center;margin:0 0 8px;font-size:13px;} #stamShop .ss-now b{font-size:20px;color:#7ee8ff;}
+  #stamShop .ss-pot{display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;margin-bottom:8px;border:0;border-radius:12px;background:linear-gradient(135deg,#3fd38a,#1e9c63);color:#fff;font-weight:900;font-size:14px;}
+  #stamShop .ss-pot img{width:30px;height:30px;object-fit:contain;} #stamShop .ss-pot small{margin-left:auto;font-size:11px;opacity:.9;}
+  #stamShop .ss-wal{display:flex;justify-content:space-between;font-size:11px;font-weight:800;margin-bottom:6px;opacity:.9;}
+  #stamShop .ss-row{display:flex;align-items:center;gap:5px;margin:5px 0;} #stamShop .ss-row b{width:58px;font-size:15px;color:#7ee8ff;}
+  #stamShop .ss-row button{flex:1;padding:8px 2px;border:0;border-radius:10px;font-weight:900;font-size:13px;color:#3a2000;background:linear-gradient(#fff3c4,#ffc93d);box-shadow:0 2px 0 #b8841a;}
+  #stamShop .ss-row button:disabled{background:rgba(255,255,255,.12);color:#888;box-shadow:none;}
+  #stamShop .ss-note{font-size:11px;opacity:.85;margin:8px 0;} #stamShop .ss-close{width:100%;padding:10px;border:0;border-radius:12px;font-weight:900;background:rgba(255,255,255,.15);color:#fff;}
   .autorep{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);transform:translateX(-50%);z-index:9600;display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:14px;background:rgba(20,8,40,.92);border:2px solid #ffd24a;color:#fff;font-size:14px;font-weight:800;white-space:nowrap;box-shadow:0 6px 24px rgba(0,0,0,.5);}
   .autorep b{color:#ffe27a;font-size:18px;} .autorep button{padding:6px 12px;border:0;border-radius:10px;font-weight:900;background:#ff5f9e;color:#fff;}
   .boxtabs button.dot::after{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:#ff3b5c;margin-left:5px;vertical-align:middle;}
@@ -5065,7 +5077,7 @@ body.tight .itembar{gap:6px;}
   $('pracBack').addEventListener('click', () => $('prac').classList.add('hidden'));
   $('pracStart').addEventListener('click', () => { $('prac').classList.add('hidden'); start('practice', {lv: pracLv}); });
   // ===== スタミナ（ストーリー）：上限はユーザーグレードで決まる。時間で回復。1日の挑戦回数の上限はなし =====
-  const STAM_MAX = [50, 60, 70, 85, 100, 110, 120, 130, 140, 150];   // ルーキー〜マスター、その上の5つ（仮の値）
+  const STAM_MAX = [100, 110, 120, 135, 150, 165, 180, 200, 220, 250];   // ルーキー〜マスター、その上の5つ（仮の値。2026-11-13 に最低100へ）
   const STAM_REGEN_MIN = 5;                     // 5分で1回復
   const STAM_GOLD = 100;                        // ゴールドで満タンにする値段（仮の値）
   const STAM_FIRST = 10;                        // はじめての人のスタミナ：上限のこの倍
@@ -5094,24 +5106,49 @@ body.tight .itembar{gap:6px;}
     el.innerHTML = '⚡' + v + ' / ' + mx + (w ? '<small>+1まで ' + mmss(w) + '</small>' : '<small>満タン</small>');
   }
   setInterval(() => { if (!$('story').classList.contains('hidden')) drawStam(); }, 1000);
+  // スタミナ回復（2026-11-13）：全回復はやめて、量を選んで買う。上限をこえてもOK。ゴールド・シルバー・対戦メダルで買える
+  const STAM_PACKS = [
+    {n: 50,  gold: 50,  silver: 500,  medal: 40},
+    {n: 100, gold: 90,  silver: 950,  medal: 75},
+    {n: 200, gold: 170, silver: 1800, medal: 140},
+    {n: 300, gold: 240, silver: 2600, medal: 200},
+  ];
+  const STAM_SILVER_DAY = 3;                    // シルバーで買えるのは1日3回まで
+  const stamSilverLeft = () => { const o = loadJ('stamsil', null) || {}, d = new Date().toDateString(); return STAM_SILVER_DAY - (o.d === d ? o.n | 0 : 0); };
+  const stamSilverUse = () => { const o = loadJ('stamsil', null) || {}, d = new Date().toDateString(); save('stamsil', JSON.stringify({d, n: (o.d === d ? o.n | 0 : 0) + 1})); };
+  function stamAdd(n, msg){ stamNow(); stam.v += n; stam.t = Date.now(); save('stam', JSON.stringify(stam)); try { sndSpeed(); } catch(_) {} toast(msg || ('スタミナ +' + n)); drawStam(); drawStory(); drawStamShop(); }
+  let stamMedal = null;
   function stamRefill(){
-    const mx = stamMax();
-    if (stamPots() > 0) {                         // スタミナポットがあれば、まずそれを使うか聞く
-      askYes('<b>スタミナポット</b>を1個使って、スタミナを <b>+' + STAM_POT + '</b> しますか？<br><small>いま ⚡' + stamNow() + '　→　⚡' + (stamNow() + STAM_POT) + '（上限をこえてもOK）／所持 ' + stamPots() + '個</small>', () => {
-        if (stamPots() <= 0) return;
-        save('stampot', String(stamPots() - 1)); stamNow(); stam.v += STAM_POT; stam.t = Date.now(); save('stam', JSON.stringify(stam));
-        try { sndSpeed(); } catch(_) {}
-        toast('スタミナ +' + STAM_POT + '（スタミナポット のこり ' + stamPots() + '個）'); drawStam(); drawStory();
+    let o = $('stamShop');
+    if (!o) { o = document.createElement('div'); o.id = 'stamShop'; o.className = 'hidden'; document.body.appendChild(o);
+      o.addEventListener('click', async e => {
+        if (e.target === o || e.target.closest('[data-sx]')) { o.classList.add('hidden'); return; }
+        const b = e.target.closest('[data-sb]'); if (!b || b.disabled) return;
+        const [cur, k] = b.dataset.sb.split(':'), pk = STAM_PACKS[+k];
+        if (cur === 'pot') { if (stamPots() <= 0) return; save('stampot', String(stamPots() - 1)); stamAdd(STAM_POT, 'スタミナ +' + STAM_POT + '（スタミナポット のこり ' + stamPots() + '個）'); return; }
+        b.disabled = true;
+        if (cur === 'gold') { if (await spendGold(pk.gold, 'stamina')) stamAdd(pk.n); else drawStamShop(); return; }
+        if (cur === 'silver') { if (stamSilverLeft() <= 0) { toast('シルバーで買えるのは1日' + STAM_SILVER_DAY + '回までです'); drawStamShop(); return; }
+          if (coins < pk.silver) { toast('シルバーが足りません'); drawStamShop(); return; } addCoins(-pk.silver); stamSilverUse(); stamAdd(pk.n); return; }
+        if (cur === 'medal') { try { const r = await api('/api/medal/buy', {method: 'POST', body: JSON.stringify({k: 'stam' + pk.n}), tok: rankTok()}); stamMedal = r.balance; if (olInfo) olInfo.balance = r.balance; stamAdd(pk.n); }
+          catch (er) { toast(er.message || 'サーバーにつながりませんでした'); drawStamShop(); } }
       });
-      return;
     }
-    if (stamNow() >= mx) { toast('スタミナは満タンです'); return; }
-    askYes('ゴールドコイン ' + STAM_GOLD + '枚でスタミナを満タン（' + mx + '）にしますか？', async () => {
-      if (!(await spendGold(STAM_GOLD, 'stamina'))) return;
-      stamNow(); stam.v = Math.max(stam.v, mx); stam.t = Date.now(); save('stam', JSON.stringify(stam));
-      try { sndSpeed(); } catch(_) {}
-      toast('スタミナが満タンになりました'); drawStam(); drawStory();
-    });
+    o.classList.remove('hidden'); drawStamShop();
+    if (rankTok()) api('/api/medal', {tok: rankTok()}).then(r => { stamMedal = r.balance; olInfo = olInfo || r; drawStamShop(); }).catch(() => {});
+  }
+  function drawStamShop(){
+    const o = $('stamShop'); if (!o || o.classList.contains('hidden')) return;
+    const sl = stamSilverLeft(), md = rankTok() ? stamMedal : null;
+    o.innerHTML = '<div class="ss-card"><h3>⚡ スタミナ回復</h3><p class="ss-now">いま ⚡<b>' + stamNow() + '</b> / ' + stamMax() + '（上限をこえて回復できます）</p>' +
+      (stamPots() > 0 ? '<button class="ss-pot" data-sb="pot:0"><img src="' + STAMPOT_IMG + '" alt="">スタミナポットを使う（+' + STAM_POT + '）<small>のこり ' + stamPots() + '個</small></button>' : '') +
+      '<div class="ss-wal"><span>🟡 ゴールド ' + gold.toLocaleString() + '</span><span>⚪ シルバー ' + coins.toLocaleString() + '</span><span>🏅 メダル ' + (md == null ? '—' : md.toLocaleString()) + '</span></div>' +
+      STAM_PACKS.map((pk, k) => '<div class="ss-row"><b>⚡+' + pk.n + '</b>' +
+        '<button data-sb="gold:' + k + '"' + (gold < pk.gold && !acctToken ? ' disabled' : '') + '>🟡 ' + pk.gold + '</button>' +
+        '<button data-sb="silver:' + k + '"' + (coins < pk.silver || sl <= 0 ? ' disabled' : '') + '>⚪ ' + pk.silver.toLocaleString() + '</button>' +
+        '<button data-sb="medal:' + k + '"' + (md == null || md < pk.medal ? ' disabled' : '') + '>🏅 ' + pk.medal + '</button></div>').join('') +
+      '<p class="ss-note">シルバーで買えるのは1日' + STAM_SILVER_DAY + '回まで（今日はあと' + Math.max(0, sl) + '回）。対戦メダルは名前を登録すると使えます。たくさん買うほどお得です。</p>' +
+      '<button class="ss-close" data-sx="1">閉じる</button></div>';
   }
   $('storyStam').addEventListener('click', stamRefill);
   function canPlayStage(i){
@@ -5619,7 +5656,7 @@ body.tight .itembar{gap:6px;}
     if (!olInfo) try { olInfo = await api('/api/medal', {tok: rankTok()}); } catch (_) {}
     const wal = olInfo, mark = '🏅';
     olMedalShow();
-    const shop = (olInfo || {}).shop || [];
+    const shop = ((olInfo || {}).shop || []).filter(x => !/^stam\d/.test(x.k));   // スタミナ回復は⚡の画面で買う
     const img = invImg;
     body.innerHTML = '<div class="olsec"><h3>🛒 対戦メダルで交換</h3><p>対戦メダルは、毎日のメダル・オンライン対戦・アリーナでもらえる交換専用のコインです（お金では買えません）。</p><div class="olshop">' +
       shop.map(x => '<div class="olitem"><img src="' + img(x.k) + '" alt=""><b>' + itemLabel(x.k) + '</b><small>持っている数 ' + ownAny(x.k) + '</small><button data-k="' + x.k + '"' + (wal && wal.balance < x.price ? ' disabled' : '') + '>' + mark + ' ' + x.price + '</button></div>').join('') +
@@ -6224,7 +6261,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.49';
+  const APP_VER = '0.9.50';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -7134,7 +7171,7 @@ body.tight .itembar{gap:6px;}
   const TICKET_SHOP = [
     {k: 'gticket',    name: 'ガチャチケット', desc: 'シルバーガチャを1回引ける', silver: 100, gold: 300},
     {k: 'gticket_hi', name: '確定チケット',   desc: 'SR以上が1体確定のガチャを1回引ける', silver: 3000, gold: 900},
-    {k: 'stampot',    name: 'スタミナポット', desc: 'ストーリーのスタミナが50回復する（上限をこえてもOK）。ストーリー画面の⚡を押して使う', silver: 500, gold: 60},   // 満タン（ゴールド100）より少し得。上のグレードは満タンのほうが得
+    {k: 'stampot',    name: 'スタミナポット', desc: 'ストーリーのスタミナが50回復する（上限をこえてもOK）。ストーリー画面の⚡を押して使う', silver: 500, gold: 50},   // 満タン（ゴールド100）より少し得。上のグレードは満タンのほうが得
   ];
   function drawTickets(){
     let el = $('shopTickets');
