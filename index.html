@@ -754,6 +754,10 @@ body.on-menu .battlemain{opacity:0;}
   #stamShop .ss-row button{flex:1;padding:8px 2px;border:0;border-radius:10px;font-weight:900;font-size:13px;color:#3a2000;background:linear-gradient(#fff3c4,#ffc93d);box-shadow:0 2px 0 #b8841a;}
   #stamShop .ss-row button:disabled{background:rgba(255,255,255,.12);color:#888;box-shadow:none;}
   #stamShop .ss-note{font-size:11px;opacity:.85;margin:8px 0;} #stamShop .ss-close{width:100%;padding:10px;border:0;border-radius:12px;font-weight:900;background:rgba(255,255,255,.15);color:#fff;}
+  #countdown{position:fixed;inset:0;z-index:9300;display:flex;align-items:center;justify-content:center;pointer-events:all;background:rgba(10,4,24,.25);}
+  #countdown b{font-size:min(34vw,170px);font-weight:900;color:#fff;-webkit-text-stroke:4px #3a1a6a;text-shadow:0 6px 0 #3a1a6a,0 0 30px rgba(255,210,74,.9);animation:cdPop .6s ease-out both;}
+  #countdown b.go{color:#ffe27a;font-size:min(26vw,130px);}
+  @keyframes cdPop{0%{transform:scale(2.2);opacity:0}30%{transform:scale(.9);opacity:1}55%{transform:scale(1.05)}100%{transform:scale(1);opacity:.95}}
   .autorep{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);transform:translateX(-50%);z-index:9600;display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:14px;background:rgba(20,8,40,.92);border:2px solid #ffd24a;color:#fff;font-size:14px;font-weight:800;white-space:nowrap;box-shadow:0 6px 24px rgba(0,0,0,.5);}
   .autorep b{color:#ffe27a;font-size:18px;} .autorep button{padding:6px 12px;border:0;border-radius:10px;font-weight:900;background:#ff5f9e;color:#fff;}
   .boxtabs button.dot::after{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:#ff3b5c;margin-left:5px;vertical-align:middle;}
@@ -3523,7 +3527,7 @@ body.tight .itembar{gap:6px;}
 
   // dir: +1=時計回り, -1=反時計回り
   function rotate(dir, ai){
-    if (!running) return;
+    if (!running || cdOn) return;
     if (autoOn && !ai) return;                     // オート中は指の操作を受け付けない
     const {r, c} = cur;
     const four = [[r, c], [r, c+1], [r+1, c+1], [r+1, c]];
@@ -3540,6 +3544,7 @@ body.tight .itembar{gap:6px;}
   }
 
   function moveCursor(r, c, ai){
+    if (cdOn) return;
     if (autoOn && !ai) return;
     if (r === cur.r && c === cur.c) return;
     curFrom = {r: cur.r, c: cur.c}; curAnimT = now();
@@ -4823,6 +4828,24 @@ body.tight .itembar{gap:6px;}
                  style: 'combo', r: 2.0, c: 2.5, row: 0, n: 1, t: t + 200, long: true});
       pops.push({text: 'HPを削りきれ！', style: 'special', r: 2.0, c: 2.5, row: 1, n: 1, t: t + 400, long: true});
     }
+    if (gameMode !== 'online') startCountdown();     // 3・2・1・GO!（オンライン対戦は対戦の前に自分のカウントがある）
+  }
+  // ===== 開始カウント（全モード共通。2026-11-13）：時計を止めて 3・2・1・GO! を出してから始める =====
+  let cdOn = false;
+  function startCountdown(){
+    const old = $('countdown'); if (old) old.remove();
+    const el = document.createElement('div'); el.id = 'countdown'; document.body.appendChild(el);
+    cdOn = true; pauseClock();
+    const t0 = now(), seq = ['3', '2', '1', 'GO!'];
+    let k = 0;
+    const step = () => {
+      if (!el.isConnected) { cdOn = false; return; }
+      if (k >= seq.length) { el.remove(); cdOn = false; const d = now() - t0; resumeClock(); pops.forEach(p => { p.t += d; }); return; }
+      el.innerHTML = '<b class="' + (seq[k] === 'GO!' ? 'go' : '') + '">' + seq[k] + '</b>';
+      try { const T0 = T(); seq[k] === 'GO!' ? (tone(1047, T0, 0.35, 'square', 0.07), tone(1568, T0 + 0.05, 0.4, 'square', 0.05)) : tone(784, T0, 0.15, 'square', 0.06); } catch(_) {}
+      k++; setTimeout(step, seq[k - 1] === 'GO!' ? 450 : 650);
+    };
+    step();
   }
   // ===== 60秒アタック =====
   let timeShown = -1;
@@ -6266,7 +6289,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.60';
+  const APP_VER = '0.9.61';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
