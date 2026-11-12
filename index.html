@@ -1293,6 +1293,37 @@ body.on-menu .battlemain{opacity:0;}
 .how-head .how-back{white-space:nowrap;flex:none;}
 #story .how-head{gap:6px;} #story .how-head h2{white-space:nowrap;flex:none;font-size:clamp(16px,5vw,20px);}
 #story .how-head .coinchip{flex:0 1 auto;min-width:0;font-size:13px;padding:4px 8px;white-space:nowrap;}
+#quest.overlay{position:fixed;inset:0;z-index:22;border-radius:0;padding:0;gap:0;justify-content:flex-start;text-align:left;color:#f6f0ff;background:rgba(22,10,44,.97);}
+.qtabs{display:flex;gap:6px;padding:10px 12px 0;width:100%;box-sizing:border-box;flex:none;}
+.qtabs button{flex:1;padding:9px 0;border:0;border-radius:12px 12px 0 0;font-weight:900;font-size:15px;color:#cbb8ff;background:rgba(255,255,255,.08);position:relative;}
+.qtabs button[aria-pressed="true"]{color:#3a2000;background:linear-gradient(#fff3c4,#ffc93d);}
+.qtabs button .nbadge{top:-6px;right:-4px;}
+.qhead{background:rgba(255,255,255,.07);border-radius:12px;padding:10px 12px;margin-bottom:8px;}
+.qhead b{font-size:17px;color:#ffe27a;} .qhead small{display:block;font-size:12px;opacity:.85;margin-top:2px;}
+.qrow{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.28);border-radius:12px;padding:9px 10px;margin:6px 0;}
+.qrow .qt{flex:1;min-width:0;font-size:14px;font-weight:800;}
+.qrow .qbar{height:7px;border-radius:4px;background:rgba(255,255,255,.12);margin-top:5px;overflow:hidden;} .qrow .qbar i{display:block;height:100%;background:linear-gradient(90deg,#7ee8ff,#ffd24a);}
+.qrow .qn{font-size:11px;opacity:.85;margin-top:3px;}
+.qrw{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:62px;font-size:11px;font-weight:900;color:#ffe27a;text-align:center;}
+.qrw img{width:34px;height:34px;object-fit:contain;}
+.qbtn{min-width:70px;padding:8px 6px;border:0;border-radius:10px;font-weight:900;font-size:13px;color:#3a2000;background:linear-gradient(#fff3c4,#ffc93d);box-shadow:0 3px 0 #b8841a;}
+.qbtn:disabled{background:rgba(255,255,255,.12);color:#aaa;box-shadow:none;}
+.qbtn.got{background:rgba(120,255,170,.18);color:#9fffc4;box-shadow:none;}
+.qbtn.go{animation:meGlow 1.4s ease-in-out infinite;}
+.qrow.done{opacity:.6;}
+.qall{margin-top:12px;border:2px solid #ffd24a;border-radius:14px;padding:10px 12px;background:linear-gradient(135deg,rgba(255,200,80,.2),rgba(255,95,158,.16));}
+.qall h3{margin:0;font-size:16px;color:#ffe27a;} .qall p{margin:2px 0 8px;font-size:12px;opacity:.9;}
+.qall .qrow{background:rgba(0,0,0,.2);margin:0;}
+#lossTip{position:fixed;inset:0;z-index:9500;display:flex;align-items:center;justify-content:center;background:rgba(10,4,24,.72);padding:16px;}
+#lossTip.hidden{display:none;}
+#lossTip .lt-card{width:min(360px,100%);max-height:90vh;overflow:auto;background:#2a1650;border:3px solid #ff8ad8;border-radius:18px;padding:14px;color:#fff;box-shadow:0 10px 40px rgba(0,0,0,.5);animation:nbPop .35s ease-out;}
+#lossTip .lt-head{display:flex;gap:10px;align-items:center;margin-bottom:10px;}
+#lossTip .lt-face{width:72px;height:72px;border-radius:50%;object-fit:cover;border:3px solid #ff8ad8;flex:none;}
+#lossTip .lt-head b{color:#ff9ee0;font-size:14px;} #lossTip .lt-head p{margin:2px 0 0;font-size:14px;line-height:1.5;}
+#lossTip .lt-item{display:block;width:100%;text-align:left;border:0;border-radius:12px;padding:10px 12px;margin:6px 0;background:rgba(255,255,255,.1);color:#fff;font-size:13px;line-height:1.45;}
+#lossTip .lt-item b{display:block;font-size:15px;color:#ffe27a;margin-bottom:2px;}
+#lossTip .lt-item.act{background:linear-gradient(135deg,rgba(255,210,74,.25),rgba(255,95,158,.2));border:1px solid rgba(255,210,74,.6);}
+#lossTip .lt-close{width:100%;margin-top:6px;padding:10px;border:0;border-radius:12px;font-weight:900;background:rgba(255,255,255,.15);color:#fff;}
 .begbox{background:linear-gradient(135deg,rgba(255,200,80,.18),rgba(255,95,158,.14));border:2px solid #ffd24a;border-radius:14px;padding:10px 12px;margin-bottom:12px;}
 .begbox h3{margin:0 0 2px;font-size:16px;color:#ffe27a;} .begbox p{margin:0 0 8px;font-size:11px;opacity:.85;}
 .begrow{display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:5px 0;border-top:1px dashed rgba(255,255,255,.15);}
@@ -1360,6 +1391,7 @@ body.tight .itembar{gap:6px;}
         <button class="mtile mini" id="howBtn" data-tip="ルールと操作のしかたを見る"><span class="mi"><img data-mimg="howto" alt=""></span><span class="ml">遊び方</span></button>
         <button class="mtile mini" id="setBtn" data-tip="背景・操作・音などを変える"><span class="mi"><img data-mimg="settings" alt=""></span><span class="ml">設定</span></button>
         <button class="mtile mini" id="newsBtn" data-tip="お知らせ・イベント・アップデートの情報"><span class="mi" style="font-size:26px;line-height:34px">📰</span><span class="ml">ニュース</span></button>
+        <button class="mtile mini" id="questBtn" data-tip="毎日・毎週・毎月のお題：達成するとチケットなどがもらえる"><span class="mi" style="font-size:26px;line-height:34px">📋</span><span class="ml">お題</span></button>
         <button class="mtile mini" id="achvBtn" data-tip="実績：達成するとユーザー経験値がもらえる"><span class="mi" style="font-size:26px;line-height:34px">🏆</span><span class="ml">実績</span></button>
       </div>
       <div class="menu-bottom mgrid">
@@ -1387,6 +1419,21 @@ body.tight .itembar{gap:6px;}
         <h2>ニュース</h2>
       </div>
       <div class="how-body" id="newsBody"></div>
+    </div>
+    <div class="overlay hidden" id="quest" role="dialog" aria-label="お題">
+      <div class="how-head">
+        <button class="how-back" id="questBack" aria-label="タイトルに戻る">‹ 戻る</button>
+        <h2>お題</h2>
+      </div>
+      <div class="qtabs" id="questTabs"><button data-q="d">毎日</button><button data-q="w">毎週</button><button data-q="m">毎月</button></div>
+      <div class="how-body" id="questBody"></div>
+    </div>
+    <div id="lossTip" class="hidden" role="dialog" aria-label="強くなるヒント">
+      <div class="lt-card">
+        <div class="lt-head"><img class="lt-face" src="img/intro/guide.webp" alt=""><div><b>レインボー</b><p id="lossTipMsg"></p></div></div>
+        <div id="lossTipList"></div>
+        <button class="lt-close" id="lossTipClose">閉じる</button>
+      </div>
     </div>
     <div class="overlay hidden" id="achv" role="dialog" aria-label="実績">
       <div class="how-head">
@@ -3992,6 +4039,8 @@ body.tight .itembar{gap:6px;}
       firstClear = !storyClr[i]; bossBefore = bossesBeaten();
       storyClr[i] = 1; if (!continued && !usedItems.size) storyNC[i] = 1;   // オート・スキップOK：広告のコンティニューもアイテムも使わずに勝った（お題は関係ない）
       storyMask[i] = oldMask | runMask; saveStars();
+      save('lstreak', '0');                                 // 負けの連続を数えなおす
+      try { qAdd('stage'); if (curStage.kind === 'boss') qAdd('boss'); } catch(_) {}
       userExpAdd(stamCost(i));                              // 勝つと、使ったスタミナ分の経験値をもう一度
       achvCheck();
       got = storyStars[i];
@@ -6107,7 +6156,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.30';
+  const APP_VER = '0.9.31';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -6461,6 +6510,7 @@ body.tight .itembar{gap:6px;}
     curStage = st;
     for (let k = 0; k < n; k++) {
       countPlay(i); userExpAdd(stamCost(i));          // 勝ち扱い：スタミナ分の経験値をもう一度
+      try { qAdd('stage'); if (st.kind === 'boss') qAdd('boss'); } catch(_) {}
       zakoNow = st.char == null ? pickZako(st) : null;
       storyWinCoins(i, st.area, false, 0);
       teamExp(st); exp += lastExpInfo ? lastExpInfo.gain : 0;
@@ -6697,7 +6747,7 @@ body.tight .itembar{gap:6px;}
   // ===== 実績：段階ごとにユーザー経験値。達成したらその場で自動でもらえる =====
   const ACHV_EXP = [30, 80, 200, 500];
   const ast = k => (loadJ('achst', {}) || {})[k] | 0;
-  function astAdd(k, n){ const o = loadJ('achst', {}) || {}; o[k] = (o[k] | 0) + (n || 1); save('achst', JSON.stringify(o)); achvCheck(); }
+  function astAdd(k, n){ const o = loadJ('achst', {}) || {}; o[k] = (o[k] | 0) + (n || 1); save('achst', JSON.stringify(o)); achvCheck(); try { qAdd(k, n); } catch(_) {} }
   const ACHV = [
     {k: 'clear',   name: 'ステージをクリア',          u: '面', tiers: () => [10, 30, 60, STORY.length], val: () => storyClr.filter(Boolean).length},
     {k: 'boss',    name: 'ボスを倒す',                u: '人', tiers: () => [1, 3, 6, AREAS.length], val: () => bossesBeaten()},
@@ -6751,6 +6801,125 @@ body.tight .itembar{gap:6px;}
     return '<div class="begbox"><h3>🎁 はじめてミッション</h3><p>達成すると、その場でごほうびがもらえます。全部達成で ' + rwTxt(BEG_ALL) + '！</p>' +
       BEG.map(m => '<div class="begrow' + (d[m.k] ? ' done' : '') + '"><span>' + (d[m.k] ? '✓ ' : '・') + m.t + '</span><em>' + rwTxt(m.r) + '</em></div>').join('') + '</div>';
   }
+  // ===== 毎日・毎週・毎月のお題：1つずつ受け取れて、全部達成するともう1つ =====
+  const QUEST = {
+    d: {name: '毎日のお題', reset: '毎日0時にリセット', list: [
+      {k: 'days',  n: 1, t: '毎日のプレゼントを受け取る', r: [['coin', 50]]},
+      {k: 'stage', n: 3, t: 'ストーリーで3回勝つ', r: [['gticket', 1]]},
+      {k: 'mini',  n: 1, t: '60秒アタックかエンドレスを1回遊ぶ', r: [['coin', 100]]},
+      {k: 'gacha', n: 1, t: 'ガチャを1回引く', r: [['coin', 50]]},
+      {k: 'vs',    n: 1, t: 'オンライン対戦かオートバトルで1回勝つ', r: [['coin', 100]]},
+    ], all: [['gticket', 2]]},
+    w: {name: '毎週のお題', reset: '毎週月曜0時にリセット', list: [
+      {k: 'days',  n: 5,  t: '毎日のプレゼントを5日受け取る', r: [['gticket', 2]]},
+      {k: 'stage', n: 20, t: 'ストーリーで20回勝つ', r: [['gticket', 3]]},
+      {k: 'boss',  n: 3,  t: 'ボスに3回勝つ', r: [['stampot', 1]]},
+      {k: 'mini',  n: 10, t: '60秒アタックかエンドレスを10回遊ぶ', r: [['coin', 500]]},
+      {k: 'vs',    n: 5,  t: 'オンライン対戦かオートバトルで5回勝つ', r: [['coin', 500]]},
+    ], all: [['gticket', 5]]},
+    m: {name: '毎月のお題', reset: '毎月1日0時にリセット', list: [
+      {k: 'days',  n: 20,  t: '毎日のプレゼントを20日受け取る', r: [['gticket', 5]]},
+      {k: 'stage', n: 100, t: 'ストーリーで100回勝つ', r: [['gticket_hi', 1]]},
+      {k: 'boss',  n: 15,  t: 'ボスに15回勝つ', r: [['stampot', 3]]},
+      {k: 'gacha', n: 50,  t: 'ガチャを50回引く', r: [['coin', 2000]]},
+      {k: 'vs',    n: 30,  t: 'オンライン対戦かオートバトルで30回勝つ', r: [['gticket', 5]]},
+    ], all: [['gticket_hi', 2]]},
+  };
+  const Q_KEY = {days: 'days', sixty: 'mini', endless: 'mini', gacha: 'gacha', olwin: 'vs', arwin: 'vs', stage: 'stage', boss: 'boss'};
+  const qPad = n => String(n).padStart(2, '0');
+  const qYmd = d => d.getFullYear() + '-' + qPad(d.getMonth() + 1) + '-' + qPad(d.getDate());
+  function qIds(){
+    const d = new Date(), mon = new Date(d.getFullYear(), d.getMonth(), d.getDate() - ((d.getDay() + 6) % 7));
+    return {d: qYmd(d), w: qYmd(mon), m: d.getFullYear() + '-' + qPad(d.getMonth() + 1)};
+  }
+  function qEnds(){   // 次のリセットの時刻
+    const d = new Date();
+    return {d: new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1), w: new Date(d.getFullYear(), d.getMonth(), d.getDate() - ((d.getDay() + 6) % 7) + 7), m: new Date(d.getFullYear(), d.getMonth() + 1, 1)};
+  }
+  function qLoad(){
+    const q = loadJ('quest', null) || {}, ids = qIds();
+    ['d', 'w', 'm'].forEach(t => { if (!q[t] || q[t].id !== ids[t]) q[t] = {id: ids[t], c: {}, got: {}, ntf: {}}; });
+    return q;
+  }
+  const Q_LABEL = k => k === 'coin' ? 'シルバー' : TICKET_LABEL[k];
+  const qImg = k => k === 'coin' ? gImg('coin_silver') : tkImg(k);
+  const qRwTxt = r => r.map(([k, n]) => Q_LABEL(k) + '×' + n.toLocaleString()).join('・');
+  function qGive(r){ r.forEach(([k, n]) => k === 'coin' ? addCoins(n) : giveItem(k, n)); }
+  function qAdd(k, n){
+    const key = Q_KEY[k]; if (!key) return;
+    try {
+      const q = qLoad(), hit = [];
+      ['d', 'w', 'm'].forEach(t => {
+        q[t].c[key] = (q[t].c[key] | 0) + (n || 1);
+        QUEST[t].list.forEach((m, j) => { if (m.k === key && (q[t].c[key] | 0) >= m.n && !q[t].ntf[j]) { q[t].ntf[j] = 1; hit.push(QUEST[t].name.replace('のお題', '') + '「' + m.t + '」'); } });
+      });
+      save('quest', JSON.stringify(q));
+      if (hit.length) toast('📋 お題達成！ ' + hit.join('／') + '　「お題」で受け取れます');
+      qBadge();
+    } catch(_) {}
+  }
+  function qReady(q, t){ q = q || qLoad(); const T = QUEST[t], s = q[t];
+    let n = T.list.filter((m, j) => !s.got[j] && (s.c[m.k] | 0) >= m.n).length;
+    if (!s.got.all && T.list.every((m, j) => s.got[j])) n++;
+    return n; }
+  function qBadge(){
+    const q = qLoad(), n = qReady(q, 'd') + qReady(q, 'w') + qReady(q, 'm');
+    const b = $('questBtn'); if (!b) return; let bd = b.querySelector('.nbadge');
+    if (n > 0) { if (!bd) { bd = document.createElement('span'); bd.className = 'nbadge'; b.appendChild(bd); } bd.textContent = n; } else if (bd) bd.remove();
+    document.querySelectorAll('#questTabs button').forEach(x => { let e = x.querySelector('.nbadge'); const k = qReady(q, x.dataset.q);
+      if (k > 0) { if (!e) { e = document.createElement('span'); e.className = 'nbadge'; x.appendChild(e); } e.textContent = k; } else if (e) e.remove(); });
+  }
+  let qTab = 'd';
+  function qLeft(t){ const ms = qEnds()[t] - new Date(), h = Math.floor(ms / 3600000), dd = Math.floor(h / 24);
+    return dd >= 1 ? 'あと' + dd + '日' + (h % 24) + '時間' : 'あと' + h + '時間' + Math.floor(ms % 3600000 / 60000) + '分'; }
+  function drawQuest(){
+    const q = qLoad(), T = QUEST[qTab], s = q[qTab];
+    document.querySelectorAll('#questTabs button').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.q === qTab)));
+    const rw = r => '<div class="qrw">' + r.map(([k, n]) => '<img src="' + qImg(k) + '" alt=""><span>' + Q_LABEL(k) + '<br>×' + n.toLocaleString() + '</span>').join('') + '</div>';
+    const doneN = T.list.filter((m, j) => s.got[j]).length;
+    $('questBody').innerHTML = '<div class="qhead"><b>' + T.name + '</b><small>' + T.reset + '（' + qLeft(qTab) + '）。達成したら「受け取る」を押してください。</small></div>' +
+      T.list.map((m, j) => { const v = Math.min(s.c[m.k] | 0, m.n), ok = v >= m.n, got = !!s.got[j];
+        return '<div class="qrow' + (got ? ' done' : '') + '"><div class="qt">' + m.t + '<div class="qbar"><i style="width:' + Math.round(v / m.n * 100) + '%"></i></div><div class="qn">' + v + ' / ' + m.n + '</div></div>' + rw(m.r) +
+          '<button class="qbtn' + (got ? ' got' : ok ? ' go' : '') + '" data-qj="' + j + '"' + (!ok || got ? ' disabled' : '') + '>' + (got ? '受け取り済み' : ok ? '受け取る' : 'まだ') + '</button></div>'; }).join('') +
+      '<div class="qall"><h3>🎁 ' + T.name + 'を全部達成</h3><p>上の' + T.list.length + 'つを全部受け取ると、さらにもらえます（いま ' + doneN + ' / ' + T.list.length + '）</p>' +
+        '<div class="qrow' + (s.got.all ? ' done' : '') + '"><div class="qt">全部達成ボーナス<div class="qbar"><i style="width:' + Math.round(doneN / T.list.length * 100) + '%"></i></div></div>' + rw(T.all) +
+        '<button class="qbtn' + (s.got.all ? ' got' : doneN === T.list.length ? ' go' : '') + '" data-qj="all"' + (s.got.all || doneN < T.list.length ? ' disabled' : '') + '>' + (s.got.all ? '受け取り済み' : doneN === T.list.length ? '受け取る' : 'まだ') + '</button></div></div>';
+    qBadge();
+  }
+  function qClaim(j){
+    const q = qLoad(), T = QUEST[qTab], s = q[qTab];
+    if (j === 'all') { if (s.got.all || !T.list.every((m, k) => s.got[k])) return; s.got.all = 1; qGive(T.all); toast('🎁 ' + T.name + ' 全部達成！ ' + qRwTxt(T.all)); }
+    else { const m = T.list[j]; if (!m || s.got[j] || (s.c[m.k] | 0) < m.n) return; s.got[j] = 1; qGive(m.r); toast('🎁 ' + qRwTxt(m.r) + ' を受け取りました'); }
+    save('quest', JSON.stringify(q)); try { sndGCard(true); } catch(_) {} drawQuest();
+  }
+  $('questBtn').addEventListener('click', () => { audio(); const q = qLoad(); qTab = ['d', 'w', 'm'].find(t => qReady(q, t) > 0) || 'd'; drawQuest(); $('quest').classList.remove('hidden'); $('questBody').scrollTop = 0; });
+  $('questBack').addEventListener('click', () => $('quest').classList.add('hidden'));
+  $('questTabs').addEventListener('click', e => { const b = e.target.closest('[data-q]'); if (!b) return; qTab = b.dataset.q; drawQuest(); });
+  $('questBody').addEventListener('click', e => { const b = e.target.closest('[data-qj]'); if (!b || b.disabled) return; qClaim(b.dataset.qj === 'all' ? 'all' : +b.dataset.qj); });
+  setTimeout(qBadge, 500); setInterval(() => { if (document.body.classList.contains('on-menu')) qBadge(); }, 5000);
+
+  // ===== 負けが2回つづいたら、強くなるヒントを出す（ストーリー） =====
+  function lossTip(){
+    const it = [];
+    const cleared = storyClr.map((v, i) => v ? i : -1).filter(i => i >= 0);
+    const bossDone = AREAS.map((a, k) => storyClr[k * PER + PER - 1] > 0 ? k : -1).filter(k => k >= 0);
+    if (cleared.length) it.push({b: '🔁 クリアしたステージでレベル上げ', t: '前にクリアしたステージをもう一度遊ぶと、チームに経験値が入ってレベルが上がります。勝てるステージで少し強くしてから再挑戦しよう！', go: 'map'});
+    if (bossDone.length) it.push({b: '👑 倒したボスに再挑戦して限界突破', t: 'クリアしたボスのステージでは、勝つと10%でボス本人がもう1体仲間になります（10回出なければ次は確定）。同じキャラが2体そろったら、ボックスで限界突破できます。', go: 'map'});
+    const tk = (+load('gticket', '0') || 0), tkh = (+load('gticket_hi', '0') || 0);
+    if (tk || tkh) it.push({b: '🎟 ガチャチケットを使う', t: 'ガチャチケットが' + tk + '枚' + (tkh ? '、SR以上確定チケットが' + tkh + '枚' : '') + 'あります。新しい仲間を呼んで、チームを強くしよう！', go: 'gacha'});
+    it.push({b: '🧑‍🤝‍🧑 チームと持ち込みアイテムを見直す', t: 'ボックスで、レベルの高いキャラをチームに入れよう。相手に合わせてアイテムを持っていくのも効果があります。', go: 'box'});
+    it.push({b: '📋 お題でチケットをもらう', t: '毎日・毎週・毎月のお題を達成すると、ガチャチケットやスタミナポットがもらえます。', go: 'quest'});
+    $('lossTipMsg').innerHTML = '2回つづけて負けちゃったね。<br>こんなふうに強くなれるよ！';
+    $('lossTipList').innerHTML = it.map((x, k) => '<button class="lt-item' + (k === 0 ? ' act' : '') + '" data-lt="' + x.go + '"><b>' + x.b + '</b>' + x.t + '</button>').join('');
+    $('lossTip').classList.remove('hidden');
+  }
+  $('lossTipClose').addEventListener('click', () => $('lossTip').classList.add('hidden'));
+  $('lossTipList').addEventListener('click', e => { const b = e.target.closest('[data-lt]'); if (!b) return; $('lossTip').classList.add('hidden');
+    const go = b.dataset.lt;
+    $('stageBtn').click();                               // まずタイトル／マップに戻す
+    if (go === 'map') return;
+    setTimeout(() => { const s = $('story'); if (s && !s.classList.contains('hidden')) { const bk = s.querySelector('.how-back'); if (bk) bk.click(); }
+      if (go === 'gacha') $('gachaBtn').click(); else if (go === 'box') $('boxBtn').click(); else if (go === 'quest') $('questBtn').click(); }, 150); });
   function drawAchv(){
     achvCheck(); try { begCheck(); } catch(_) {}
     const g = gradeNow(), gi = GRADES.indexOf(g), nx = GRADES[gi + 1], e = userExp(), L = userLv(), inLv = e - lvTotal(L);
@@ -9262,6 +9431,8 @@ body.tight .itembar{gap:6px;}
   function awardLoss(){
     if (gameMode !== 'story' || lossPaid) return;
     lossPaid = true; addCoins(LOSE_COIN);
+    const ls = (+load('lstreak', '0') || 0) + 1; save('lstreak', String(ls));
+    if (ls >= 2 && ls % 2 === 0) setTimeout(() => { try { if (!$('over').classList.contains('hidden')) lossTip(); } catch(_) {} }, 1200);   // 2回つづけて負けたら（そのあとも2回ごとに）ヒント
     $('finalNote').textContent += ' コイン +' + LOSE_COIN;
   }
 
