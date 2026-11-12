@@ -1095,7 +1095,7 @@ body.on-menu .battlemain{opacity:0;}
   .autobtns{display:flex;gap:6px;flex:1;} .autobtns .btn{flex:1;margin:0;font-size:13px;line-height:1.2;padding:6px 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
   .autobtns .btn small{font-size:10px;font-weight:800;white-space:nowrap;} .autobtns .btn img{width:13px;height:13px;vertical-align:-2px;margin-right:2px;}
   #autoNote{font-size:10px;text-align:center;color:#ffd24a;} #autoNote[hidden]{display:none;}
-  #autoInfo{font-size:10px;line-height:1.4;color:#e8dcff;opacity:.9;text-align:left;margin-top:2px;} #autoInfo b{color:#ffd24a;} #autoInfo[hidden]{display:none;}
+  #autoInfo{display:block;width:100%;box-sizing:border-box;padding:0 14px 8px;font-size:10px;line-height:1.45;color:#e8dcff;opacity:.9;text-align:left;} #autoInfo b{color:#ffd24a;} #autoInfo[hidden]{display:none;}
   #askBox .skipn{display:flex;justify-content:center;align-items:center;gap:10px;margin:10px 0 4px;} #askBox .skipn button{min-width:40px;height:36px;border-radius:10px;border:2px solid #ffd24a;background:transparent;color:#fff;font-weight:900;font-size:16px;} #askBox .skipn b{font-size:24px;min-width:36px;}
   #skipRes{position:fixed;inset:0;z-index:210;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;padding:16px;}
   #skipRes .srin{background:#24123f;border:2px solid #ffd24a;border-radius:16px;padding:16px;width:100%;max-width:360px;max-height:90vh;overflow:auto;color:#fff;text-align:center;}
@@ -1579,7 +1579,8 @@ body.tight .itembar{gap:6px;}
         <div class="loadout" id="loadout"></div>
         <p class="maptotal" id="mapTotal"></p>
       </div>
-      <div class="how-foot"><button class="btn" id="storyStart">このステージに挑戦</button><div class="autobox" id="autoBox" hidden><div class="autobtns"><button class="btn gold" id="storyAuto">オート</button><button class="btn gold" id="storySkip">スキップ</button></div><small id="autoNote">コンティニュー・アイテムなしでクリアすると使えます</small><small id="autoInfo"><b>オート</b>：自動で戦う。レインボーブロックも取れる・途中で手動にできる（負けることもある）<br><b>スキップ</b>：戦わずに一瞬で勝ち・最大10回まとめて（レインボーブロックは取れない）</small></div></div>
+      <div class="how-foot"><button class="btn" id="storyStart">このステージに挑戦</button><div class="autobox" id="autoBox" hidden><div class="autobtns"><button class="btn gold" id="storyAuto">オート</button><button class="btn gold" id="storySkip">スキップ</button></div><small id="autoNote">コンティニュー・アイテムなしでクリアすると使えます</small></div></div>
+      <small id="autoInfo" hidden><b>オート</b>：自動で戦う・レインボーブロックも取れる・途中で手動OK<br><b>スキップ</b>：一瞬で勝ち・10回まとめてOK・レインボーブロックは取れない</small>
     </div>
 
     <!-- 練習（5段階） -->
