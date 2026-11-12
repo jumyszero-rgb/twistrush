@@ -1548,6 +1548,7 @@ body.tight .itembar{gap:6px;}
           <p>コンティニューもアイテムも使わずにクリアしたステージは、オートとスキップが使えます。どちらも使うのはスタミナだけ（ふつうに挑戦するのと同じ量）です。</p>
           <p><b>オート</b>：チームが自動で戦うのを見ます。ふつうに戦うのと同じなので、まだ取っていない<b>レインボーブロック（お題）も取れます</b>。右上の「AUTO ▶」を押すと、途中から自分で操作できます。そのかわり時間がかかり、負けることもあります。</p>
           <p><b>スキップ</b>：戦わずに、一瞬で勝ちになります。<b>最大10回まとめて</b>できるので、レベル上げやボスの2体目集めに便利です。そのかわり、レインボーブロックは取れません。</p>
+          <p>キャラが仲間になる確率は、<b>自分で戦う ＞ オート ＞ スキップ</b>の順に高くなります（だいたい 10回に1回／15回に1回／20回に1回。運で上下します）。エリア1〜4と、つよいルートは出やすくなっています。</p>
         </section>
         <section>
           <h3>モード</h3>
@@ -6213,7 +6214,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.44';
+  const APP_VER = '0.9.45';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -6327,7 +6328,7 @@ body.tight .itembar{gap:6px;}
     if (inArea) {
       const zk = st.kind === 'boss' ? null : zakoAt(st);
       const rule = st.kind === 'boss' ? 'ボス：' + fullName(CHARS[st.char]) : (st.kind === 'mid' ? '中ボス：' + st.name : (zk ? zakoFull(zk) : RULE_NAME[st.kind] + '：' + st.name));
-      const rtx = st.route === 1 ? '<div class="rt hard">つよいルート：敵のHP・ステータス+15%／コイン×1.5・経験値×1.3・仲間になる確率25%</div>' :
+      const rtx = st.route === 1 ? '<div class="rt hard">つよいルート：敵のHP・ステータス+15%／コイン×1.5・経験値×1.3・仲間になりやすい（×1.5）</div>' :
         (st.route === 0 ? '<div class="rt">ふつうルート</div>' : '<div class="rt">どちらかのルートを抜けると戦える</div>');
       $('stageInfo').innerHTML = '<div class="t">' + st.label + '　' + rule + '</div>' + rtx +
         '<div class="g">' + goalText(st) + '</div>' +
@@ -6606,7 +6607,7 @@ body.tight .itembar{gap:6px;}
       zakoNow = st.char == null ? pickZako(st) : null;
       storyWinCoins(i, st.area, false, 0);
       teamExp(st); exp += lastExpInfo ? lastExpInfo.gain : 0;
-      zakoDrop(); bossDrop();
+      zakoDrop('skip'); bossDrop('skip');
     }
     curStage = keepSt; zakoNow = keepZ;
     const gets = winGets; winGets = [];
@@ -6996,7 +6997,7 @@ body.tight .itembar{gap:6px;}
     const cleared = storyClr.map((v, i) => v ? i : -1).filter(i => i >= 0);
     const bossDone = AREAS.map((a, k) => storyClr[k * PER + PER - 1] > 0 ? k : -1).filter(k => k >= 0);
     if (cleared.length) it.push({b: '🔁 クリアしたステージでレベル上げ', t: '前にクリアしたステージをもう一度遊ぶと、チームに経験値が入ってレベルが上がります。勝てるステージで少し強くしてから再挑戦しよう！', go: 'map'});
-    if (bossDone.length) it.push({b: '👑 倒したボスに再挑戦して限界突破', t: 'クリアしたボスのステージでは、勝つと10%でボス本人がもう1体仲間になります（10回出なければ次は確定）。同じキャラが2体そろったら、ボックスで限界突破できます。', go: 'map'});
+    if (bossDone.length) it.push({b: '👑 倒したボスに再挑戦して限界突破', t: 'クリアしたボスのステージでは、勝つとときどきボス本人がもう1体仲間になります。自分で戦うと一番出やすく、オート、スキップの順に出にくくなります。同じキャラが2体そろったら、ボックスで限界突破できます。', go: 'map'});
     const tk = (+load('gticket', '0') || 0), tkh = (+load('gticket_hi', '0') || 0);
     if (tk || tkh) it.push({b: '🎟 ガチャチケットを使う', t: 'ガチャチケットが' + tk + '枚' + (tkh ? '、SR以上確定チケットが' + tkh + '枚' : '') + 'あります。新しい仲間を呼んで、チームを強くしよう！', go: 'gacha'});
     it.push({b: '🧑‍🤝‍🧑 チームと持ち込みアイテムを見直す', t: 'ボックスで、レベルの高いキャラをチームに入れよう。相手に合わせてアイテムを持っていくのも効果があります。', go: 'box'});
@@ -7600,20 +7601,26 @@ body.tight .itembar{gap:6px;}
   // 勝ったときの経験値（チーム全員に入る）
   // ザコに勝つと15%で、そのザコが仲間になる
   let winGets = [];                                       // この勝ちで仲間になったキャラ（結果画面の真ん中に出す）
-  function zakoDrop(){
-    if (!zakoNow || Math.random() >= (curStage && curStage.route === 1 ? 0.25 : 0.15)) return '';
+  // 仲間になる確率（住人・ボス共通。2026-11-13）：基本＝手動10回に1・オート15回に1・スキップ20回に1。
+  // 1回ごとに 0.1〜3.0（0.1刻み）のランダムな倍率をかける。エリア1〜4は×1.5（ボスを集めて育てないとエリア5から勝てないため）。つよいルートは×1.5。天井なし
+  const DROP_BASE = {manual: 1 / 10, auto: 1 / 15, skip: 1 / 20};
+  function dropRate(mode){
+    const st = curStage; let p = (DROP_BASE[mode] || DROP_BASE.manual) * (1 + Math.floor(Math.random() * 30)) / 10;
+    if (st && st.area < 4) p *= 1.5;
+    if (st && st.route === 1) p *= 1.5;
+    return Math.min(0.9, p);
+  }
+  const dropMode = () => autoOn ? 'auto' : 'manual';
+  function zakoDrop(mode){
+    if (!zakoNow || Math.random() >= dropRate(mode || dropMode())) return '';
     const ci = ALLC_IDX.get('z_' + zakoNow.k); if (ci == null) return '';
     newUnit(ci); saveUnits(); winGets.push(ci);
     return '';
   }
   // ボス（ストーリーのSR）：2回目以降の勝ちでも10%で仲間になる。10回続けて出なければ、次は確定（天井）
-  const BOSS_DROP = 0.10, BOSS_PITY = 10;
-  function bossDrop(){
+  function bossDrop(mode){
     const st = curStage; if (!st || st.kind !== 'boss' || st.char == null || !CHARS[st.char]) return;
-    const pity = loadJ('bosspity', null) || {}, k = CHARS[st.char].id, miss = (pity[k] | 0) + 1;
-    if (miss >= BOSS_PITY || Math.random() < BOSS_DROP) { newUnit(st.char); saveUnits(); winGets.push(st.char); pity[k] = 0; }
-    else pity[k] = miss;
-    save('bosspity', JSON.stringify(pity));
+    if (Math.random() < dropRate(mode || dropMode())) { newUnit(st.char); saveUnits(); winGets.push(st.char); }
   }
   function showGets(){
     const box = $('resGet'), list = winGets; winGets = [];
