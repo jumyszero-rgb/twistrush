@@ -6200,6 +6200,7 @@ body.tight .itembar{gap:6px;}
   }
   addEventListener('resize', placeBattleMain);
   function refreshBattleMain(show){
+    show = false;                                        // 戦闘中のメインキャラ表示はやめた（2026-11-13）
     const el = $('battleMain'); if (!el) return;
     const m = show ? menuMainUrl() : null;
     if (!m) { el.classList.remove('on'); el.dataset.u = ''; return; }
@@ -6209,7 +6210,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.41';
+  const APP_VER = '0.9.42';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -8118,7 +8119,7 @@ body.tight .itembar{gap:6px;}
     $('boxBody').classList.toggle('slotmode', boxSlot >= 0 && !boxDetail && !boxPick && boxTab === 'char');
     document.querySelectorAll('.boxtabs button').forEach(b => b.classList.toggle('on', b.dataset.t === boxTab));
     const body = $('boxBody');
-    if (boxTab === 'char' && boxDetail && unitOf(boxDetail)) { drawDetail(unitOf(boxDetail)); return; }
+    if ((boxTab === 'char' || boxTab === 'dex') && boxDetail && unitOf(boxDetail)) { drawDetail(unitOf(boxDetail)); return; }
     if (boxTab === 'char') {
       fixTeam();
       const t = curTeam(), sum = teamStats();
@@ -8239,7 +8240,7 @@ body.tight .itembar{gap:6px;}
   function drawDetail(u){
     const body = $('boxBody'), ci = ciOf(u), c = ALLC[ci], cs = CHAR_STAT[c.id], tp = TYPE_INFO[cs.type], st = unitStats(u);
     const ti = curTeam().indexOf(u.u), atCap = u.lv >= capOf(u);
-    let h = '<div class="dhead" style="display:flex;align-items:center"><button data-act="back" class="dback">‹ 一覧へ</button><button data-act="dlock" class="dlock' + (u.lock ? ' on' : '') + '">' + (u.lock ? '🔒 ロック中' : '🔓 ロックする') + '</button></div>' +
+    let h = '<div class="dhead" style="display:flex;align-items:center"><button data-act="back" class="dback">‹ ' + (boxTab === 'dex' ? '図鑑へ' : '一覧へ') + '</button><button data-act="dlock" class="dlock' + (u.lock ? ' on' : '') + '">' + (u.lock ? '🔒 ロック中' : '🔓 ロックする') + '</button></div>' +
       '<div class="dtop g-' + cs.grade + '"><span class="dimg" data-ci="' + ci + '"></span><div class="dinfo">' +
       '<div class="dname">' + (c.title ? '<small class="dttl">' + c.title + '</small>' : '') + c.name + (ti >= 0 ? ' <span class="cno">' + '①②③④'[ti] + '</span>' : '') + '</div>' +
       '<div class="dsub"><i class="dgr">' + cs.grade + '</i> ' + typeBadge(c.id).replace('tbadge', 'tbadge inl') + ' ' + tp.name + '</div>' +
@@ -8580,6 +8581,7 @@ body.tight .itembar{gap:6px;}
   }
   $('boxBtn').addEventListener('click', () => openBox('char'));
   // ===== キャラ図鑑：一度でも仲間にしたキャラを記録。集めた数でごほうび（コンプリート報酬） =====
+  let dexBackTop = 0;
   function dexSet(){ return new Set(loadJ('dex', []) || []); }
   function dexSync(){
     const d = dexSet(); let ch = false;
@@ -8587,15 +8589,24 @@ body.tight .itembar{gap:6px;}
     if (ch) { save('dex', JSON.stringify([...d])); dexBadge(); }
   }
   const DEX_ZAKO = a => ZAKO_CREW[a].map(z => 'z_' + z.k);
+  // 図鑑の並び：同じグレードの中は強さの順（弱い→強い）。強さ＝ステータス＋技の強さ。LRは段（LR1〜）も足す
+  const dexPow = id => { const cs = CHAR_STAT[id]; let p0 = cs ? statPow(cs.base) : 0;
+    try { const f = FX_DEF[id]; if (f) p0 += 20 * (fxPow(f.sp || []) + fxPow(f.ougi || [])); } catch(_) {}
+    return p0 + 100000 * tierOf(id); };
   const DEX_GROUPS = () => {
-    const gc = GACHA_CREW.map(z => 'x_' + z.k), hi = gc.filter(id => GRADE_RANK[CHAR_STAT[id].grade] >= 3), lo = gc.filter(id => GRADE_RANK[CHAR_STAT[id].grade] < 3);
+    const gc = GACHA_CREW.map(z => 'x_' + z.k), byG = g => gc.filter(id => CHAR_STAT[id].grade === g).sort((a, b) => dexPow(a) - dexPow(b));
+    const N = byG('N'), R = byG('R'), SR = byG('SR'), MR = byG('MR'), LR = byG('LR');
+    const gacha = () => 'ガチャで出る';
     return [
       {k: 'boss', name: 'ストーリーのボス', how: id => 'エリア' + (AREAS.findIndex(a => CHARS[a.boss] && CHARS[a.boss].id === id) + 1) + 'のボスに初めて勝つ', ids: AREAS.map(a => CHARS[a.boss].id),
        ms: [[3, [['gticket', 3]]], [6, [['gticket', 5]]], [9, [['gticket_hi', 1]]]]},
       {k: 'zako', name: 'エリアの住人', how: id => { const a = Object.keys(ZAKO_CREW).find(x => DEX_ZAKO(x).includes(id)); return 'エリア' + (+a + 1) + '（' + AREAS[a].name + '）のステージで勝つと、ときどき仲間に'; },
        ids: Object.keys(ZAKO_CREW).flatMap(DEX_ZAKO), areas: true, ms: [[90, [['gticket_hi', 1]]]]},
-      {k: 'glo', name: 'ガチャ N・R', how: () => 'シルバーガチャ・ゴールドガチャで出る', ids: lo, ms: [[10, [['gticket', 3]]], [20, [['gticket', 5]]], [30, [['gticket', 5]]], [lo.length, [['gticket_hi', 1]]]]},
-      {k: 'ghi', name: 'ガチャ SR以上', how: () => 'ガチャで出る（SR以上確定チケットなら必ずSR以上）', ids: hi, ms: [[5, [['gticket', 5]]], [10, [['gticket_hi', 1]]], [20, [['gticket_hi', 1]]], [hi.length, [['gticket_hi', 2]]]]},
+      {k: 'gn', name: 'ガチャ N', how: gacha, ids: N, ms: [[10, [['gticket', 2]]], [N.length, [['gticket', 3]]]]},
+      {k: 'gr', name: 'ガチャ R', how: gacha, ids: R, ms: [[10, [['gticket', 3]]], [R.length, [['gticket', 5]]]]},
+      {k: 'gsr', name: 'ガチャ SR', how: () => 'ガチャで出る（SR以上確定チケットでも出る）', ids: SR, ms: [[5, [['gticket', 5]]], [10, [['gticket_hi', 1]]], [SR.length, [['gticket_hi', 1]]]]},
+      {k: 'gmr', name: 'ガチャ MR', how: () => 'ガチャで出る（SR以上確定チケットでも出る）', ids: MR, ms: [[3, [['gticket_hi', 1]]], [MR.length, [['gticket_hi', 1]]]]},
+      {k: 'glr', name: 'ガチャ LR', how: () => 'ガチャで出る（LRの天井でも選べる）', ids: LR, ms: [[1, [['gticket', 5]]], [3, [['gticket_hi', 1]]], [LR.length, [['gticket_hi', 2]]]]},
     ];
   };
   const DEX_AREA_RW = [['gticket', 3]];        // エリアの住人：エリアごとに10人そろえたら
@@ -8642,11 +8653,14 @@ body.tight .itembar{gap:6px;}
       const got = loadJ('dexgot', {}) || {}; got[key] = 1; save('dexgot', JSON.stringify(got)); qGive(it.rw); toast('📖 ' + it.label + '！ ' + qRwTxt(it.rw)); try { sndGCard(true); } catch(_) {} drawBox(); dexBadge(); return; }
     const t = e.target.closest('[data-dxi]');
     if (t) { const id = t.dataset.dxi, g = DEX_GROUPS().find(x => x.ids.includes(id)), own = dexSet().has(id), c = ALLC[ALLC_IDX.get(id)];
-      toast(own ? c.name + '（' + CHAR_STAT[id].grade + '）' : '？？？（' + CHAR_STAT[id].grade + '）　入手：' + (g ? g.how(id) : '')); }
+      if (!own) { toast('？？？（' + CHAR_STAT[id].grade + '）　入手：' + (g ? g.how(id) : '')); return; }
+      const us = units.filter(u => u.id === id).sort((a, b) => b.lv - a.lv || (b.star || 0) - (a.star || 0));   // いちばん育っている子のプロフィールへ
+      if (!us.length) { toast(c.name + '（' + CHAR_STAT[id].grade + '）は、いま持っていません（合成の材料に使いました）'); return; }
+      dexBackTop = $('boxBody').scrollTop; openDetail(us[0].u); }
   });
   try { dexSync(); } catch(_) {}
   setTimeout(() => { try { dexBadge(); } catch(_) {} }, 600);
-  $('boxBack').addEventListener('click', () => { if (boxDetail) { boxDetail = null; drawBox(); return; } boxClose(); });
+  $('boxBack').addEventListener('click', () => { if (boxDetail) { boxDetail = null; drawBox(); if (boxTab === 'dex') $('boxBody').scrollTop = dexBackTop; return; } boxClose(); });
   document.querySelector('.boxtabs').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
     const lo = $('loadout'); if (lo.classList.contains('inbox') && b.dataset.t !== 'item') { lo.classList.remove('inbox'); $('teamBox').after(lo); }
@@ -8675,7 +8689,7 @@ body.tight .itembar{gap:6px;}
     }
     if (e.target.closest('[data-clear]') && boxSlot >= 0) { curTeam()[boxSlot] = null; boxSlot = -1; fixTeam(); drawBox(); return; }
     if (boxDetail) {
-      if (e.target.closest('[data-act="back"]')) { boxDetail = null; lbSel.clear(); drawBox(); return; }
+      if (e.target.closest('[data-act="back"]')) { boxDetail = null; lbSel.clear(); drawBox(); if (boxTab === 'dex') $('boxBody').scrollTop = dexBackTop; return; }
       if (e.target.closest('[data-act="dlock"]')) { toggleLock(unitOf(boxDetail)); drawBox(); return; }
       const mb2 = e.target.closest('[data-mat]'); if (mb2) { limitBreak(boxDetail, mb2.dataset.mat); return; }
       const os = e.target.closest('[data-osel]'); if (os) { const id = os.dataset.osel, m = unitOf(id); if (m && m.lock) { toast('ロック中のキャラは材料にできません'); return; } if (m && !isUpMat(unitOf(boxDetail), m) && teams.some(t => t.includes(id))) { toast('チームに入っているキャラは材料にできません'); return; } lbSel.has(id) ? lbSel.delete(id) : lbSel.add(id); drawBox(); return; }
