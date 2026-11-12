@@ -730,6 +730,9 @@ body.on-menu .battlemain{opacity:0;}
   .ugrade{background:rgba(255,255,255,.08);border-radius:14px;padding:10px 12px;margin:6px 0 10px;font-weight:800;font-size:13px;}
   .ugrade b{color:#ffd24a;font-size:18px;} .ugbar{height:8px;border-radius:6px;background:rgba(255,255,255,.15);overflow:hidden;margin-top:6px;} .ugbar i{display:block;height:100%;background:linear-gradient(90deg,#9ff0b0,#ffd24a);}
   .ugrade small{display:block;margin-top:4px;font-size:11px;opacity:.85;font-weight:700;}
+  .pvrow{display:flex;flex-wrap:wrap;gap:6px;}
+  .pvbtn{padding:7px 10px;border:0;border-radius:10px;font-size:13px;font-weight:800;color:#fff;background:linear-gradient(#7a5cff,#5532d6);box-shadow:0 2px 0 #2c1780;}
+  .pvbtn:active{transform:translateY(1px);box-shadow:none;}
   .achrow{background:rgba(0,0,0,.28);border-radius:12px;padding:8px 10px;margin:5px 0;font-size:13px;font-weight:800;}
   .achrow .ah{display:flex;align-items:center;gap:6px;} .achrow .ah span{margin-left:auto;font-size:12px;color:#ffe27a;}
   .achrow .at{display:flex;gap:4px;margin-top:5px;flex-wrap:wrap;} .achrow .at i{font-style:normal;font-size:10px;border-radius:6px;padding:1px 6px;background:rgba(255,255,255,.1);color:#ccc;} .achrow .at i.ok{background:#ffd24a;color:#3a2210;}
@@ -6187,7 +6190,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.37';
+  const APP_VER = '0.9.38';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -8163,6 +8166,22 @@ body.tight .itembar{gap:6px;}
     return now0 + '<br><small class="lbnext">★' + nx + 'で：' + fxDesc(fxAt(id, kind, nx, sm)) + '</small>' +
       (nx < sm ? '<br><small class="lbnext">★' + sm + '（最大）で：' + fxDesc(fxAt(id, kind, sm, sm)) + '</small>' : '');
   }
+  // 詳細画面：そのキャラの声を聞く（あるものだけボタンを出す）
+  const PV_LABEL = [['special', '必殺技'], ['ougi', '奥義'], ['intro', '登場'], ['attack', '攻撃'], ['win', '勝ち'], ['lose', '負け']];
+  function voiceSecHTML(id){
+    const set = VOICE_SETS[id]; if (!set) return '';
+    const btns = [];
+    PV_LABEL.forEach(([k, n]) => (set[k] || []).forEach((v, j, a) => { if (VOICE_CLIPS[v]) btns.push('<button class="pvbtn" data-pv="' + v + '">🔊 ' + n + (a.length > 1 ? j + 1 : '') + '</button>'); }));
+    return btns.length ? '<div class="dsec"><h4>ボイス</h4><div class="pvrow">' + btns.join('') + '</div></div>' : '';
+  }
+  async function playPv(id){
+    const a = audio(); if (!a) return;
+    try { if (a.state === 'suspended') await a.resume(); } catch(_) {}
+    if (!voiceBuf[id]) { const url = voiceUrl(id); if (!url) return;
+      try { const buf = await fetch(url).then(r => r.arrayBuffer()); voiceBuf[id] = await a.decodeAudioData(buf); } catch(_) { toast('声を読み込めませんでした'); return; } }
+    playClip(id, 'me');
+  }
+  $('boxBody').addEventListener('click', e => { const b = e.target.closest('[data-pv]'); if (!b) return; e.stopPropagation(); playPv(b.dataset.pv); });
   function drawDetail(u){
     const body = $('boxBody'), ci = ciOf(u), c = ALLC[ci], cs = CHAR_STAT[c.id], tp = TYPE_INFO[cs.type], st = unitStats(u);
     const ti = curTeam().indexOf(u.u), atCap = u.lv >= capOf(u);
@@ -8181,6 +8200,7 @@ body.tight .itembar{gap:6px;}
         '<h4>奥義 <span>' + (OUGI_NAME[c.id] || '') + '</span><em>基準' + skBaseSec(c.id, 'ougi') + '秒（スピードで変わる）</em></h4><p>' + skDescU(c.id, 'ougi', u) + '</p>' +
         '<p class="dnote">チームのメインは必殺技と奥義の両方、サブはどちらか1つを使います。</p></div>'
         : '<div class="dsec"><h4>技</h4><p>このキャラは、まだ技を持っていません。サブ（②〜④）に入れて、ステータスでチームを強くします。メイン（①）にはなれません。</p></div>') +
+        voiceSecHTML(c.id) +
         '<div class="dsec"><h4>プロフィール</h4><p>' + (CHAR_BIO[c.id] || '') + '</p></div>';
     } else if (detTab === 'feed') {
       const mats0 = units.filter(x => x.u !== u.u && !x.lock && !teams.some(t => t.includes(x.u)));
