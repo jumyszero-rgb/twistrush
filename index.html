@@ -731,6 +731,8 @@ body.on-menu .battlemain{opacity:0;}
   .ugrade b{color:#ffd24a;font-size:18px;} .ugbar{height:8px;border-radius:6px;background:rgba(255,255,255,.15);overflow:hidden;margin-top:6px;} .ugbar i{display:block;height:100%;background:linear-gradient(90deg,#9ff0b0,#ffd24a);}
   .ugrade small{display:block;margin-top:4px;font-size:11px;opacity:.85;font-weight:700;}
   .pvrow{display:flex;flex-wrap:wrap;gap:6px;}
+  .autorep{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);transform:translateX(-50%);z-index:9600;display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:14px;background:rgba(20,8,40,.92);border:2px solid #ffd24a;color:#fff;font-size:14px;font-weight:800;white-space:nowrap;box-shadow:0 6px 24px rgba(0,0,0,.5);}
+  .autorep b{color:#ffe27a;font-size:18px;} .autorep button{padding:6px 12px;border:0;border-radius:10px;font-weight:900;background:#ff5f9e;color:#fff;}
   .boxtabs button.dot::after{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:#ff3b5c;margin-left:5px;vertical-align:middle;}
   .dxtop .dxall{font-size:15px;font-weight:800;margin:2px 0 4px;} .dxtop .dxall b{font-size:24px;color:#ffe27a;}
   .dxnote{font-size:11px;opacity:.85;margin:6px 0;}
@@ -4141,7 +4143,12 @@ body.tight .itembar{gap:6px;}
     nextStage = nx;
     $('nextBtn').classList.toggle('hidden', nx < 0);
     if (nx >= 0) $('nextBtn').querySelector('span').innerHTML = '次へ<small>' + STORY[nx].label + '</small>';
-    const seqData = (gameMode === 'story' && curStage) ? {label: curStage.label, score, stars: lastStars, coins: coins - seqC0, exp: lastExpInfo, gets: winGets.slice(), extra: seqExtra, tickets: areaTk} : null;
+    let autoNext = false;
+    if (autoRep && gameMode === 'story' && curStage && STORY[autoRep.stage] === curStage) {
+      if (autoOn) { autoRep.done++; autoNext = autoRep.done < autoRep.total; if (!autoNext) { toast('オート ' + autoRep.total + '回 おわりました'); autoRep = null; } }
+      else autoRep = null;                                    // 途中で手動にした
+    }
+    const seqData = (gameMode === 'story' && curStage) ? {label: curStage.label, score, stars: lastStars, coins: coins - seqC0, exp: lastExpInfo, gets: winGets.slice(), extra: seqExtra, tickets: areaTk, autoNext} : null;
     showGets();
     $('stageBtn').classList.toggle('hidden', gameMode !== 'story');   // ストーリーならマップへ戻る（次の面はマップで選ぶ）
     $('stageBtn').classList.toggle('next', gameMode === 'story');
@@ -6202,7 +6209,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.39';
+  const APP_VER = '0.9.40';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -6517,18 +6524,49 @@ body.tight .itembar{gap:6px;}
     if (curTeam()[0] && tn >= 4) return true;
     $('storyStart').click(); return false;           // チームの確認はふつうの挑戦と同じ
   }
+  // オート：回数を選んで続けて戦う（スタミナがある分だけ・最大10回）。負けたら・手動にしたら・スタミナが切れたら止まる
+  let autoRep = null, autoN = 1;
   $('storyAuto').addEventListener('click', () => {
-    if (!autoOk(pickStage)) { toast('コンティニュー・アイテムなしでクリアしたステージだけオートで戦えます'); return; }
-    if (!teamReady() || !canPlayStage(pickStage)) return;
-    $('story').classList.add('hidden'); startStory(pickStage, true);
+    const i = pickStage;
+    if (!autoOk(i)) { toast('コンティニュー・アイテムなしでクリアしたステージだけオートで戦えます'); return; }
+    if (!teamReady()) return;
+    const mx = skipCanN(i);
+    if (mx < 1) { canPlayStage(i); return; }            // スタミナが足りない（回復の案内が出る）
+    autoN = Math.min(autoN, mx) || 1;
+    const draw = () => { const b = $('skipNum'), c = $('skipCost'); if (b) b.textContent = autoN; if (c) c.textContent = skipCostText(i, autoN) + '（1回ずつ使います）'; };
+    askYes('<b>オート</b>（自動で戦う。レインボーブロックも取れる）<div class="skipn"><button data-sn="-1">−</button><b id="skipNum">1</b><button data-sn="1">＋</button><button data-sn="99">最大</button></div><small id="skipCost"></small><small style="display:block;opacity:.8">負けたとき・手動にしたとき・スタミナが切れたときは止まります</small>', () => {
+      if (!canPlayStage(i)) return;
+      autoRep = {stage: i, total: autoN, done: 0};
+      $('story').classList.add('hidden'); startStory(i, true);
+    });
+    const box = $('askBox');
+    box.querySelectorAll('[data-sn]').forEach(b => b.onclick = e => { e.stopPropagation(); const d = +b.dataset.sn; autoN = d === 99 ? mx : Math.max(1, Math.min(mx, autoN + d)); draw(); });
+    draw();
   });
+  function autoRepNextBar(close){
+    const r = autoRep; if (!r) return;
+    const bar = document.createElement('div'); bar.className = 'autorep';
+    let sec = 3;
+    const txt = () => 'オート ' + r.done + ' / ' + r.total + '回 おわり　次まで <b>' + sec + '</b>秒';
+    bar.innerHTML = '<span>' + txt() + '</span><button>やめる</button>';
+    document.body.appendChild(bar);
+    const stop = msg => { clearInterval(tm); bar.remove(); autoRep = null; if (msg) toast(msg); };
+    bar.querySelector('button').onclick = e => { e.stopPropagation(); stop('オートの続きをやめました'); };
+    const tm = setInterval(() => {
+      if (!autoRep || !bar.isConnected) { clearInterval(tm); bar.remove(); return; }
+      if (--sec > 0) { bar.querySelector('span').innerHTML = txt(); return; }
+      clearInterval(tm); bar.remove();
+      if (stamNow() < stamCost(r.stage)) { autoRep = null; toast('スタミナが足りないので、オートを止めました'); return; }
+      close(); startStory(r.stage, true);
+    }, 1000);
+  }
   function drawAutoBadge(){
     const b = $('autoBadge'); if (!b) return;
     b.hidden = !autoOn; b.classList.remove('off'); b.textContent = 'AUTO ▶';
   }
   $('autoBadge').addEventListener('click', () => {           // 押すと手動に切り替える
     if (!autoOn) return;
-    autoOn = false; autoPlan = null; toast('手動に切り替えました');
+    autoOn = false; autoPlan = null; toast('手動に切り替えました' + (autoRep ? '（オートの続きも止めました）' : '')); autoRep = null;
     const b = $('autoBadge'); b.classList.add('off'); b.textContent = '手動'; setTimeout(() => { if (!autoOn) b.hidden = true; }, 1500);
   });
   // スキップ：回数を選んで、まとめて結果を出す
@@ -7605,7 +7643,7 @@ body.tight .itembar{gap:6px;}
     const close = () => { timers.forEach(clearTimeout); timers = []; d.remove(); };
     d.addEventListener('click', e => {
       const b = e.target.closest('[data-rsq]');
-      if (b) { const id = {map: 'stageBtn', retry: 'retryBtn', title: 'titleBtn'}[b.dataset.rsq]; close(); if (id === 'stageBtn') mapEvtNext = true; if (id) $(id).click(); return; }
+      if (b) { const id = {map: 'stageBtn', retry: 'retryBtn', title: 'titleBtn'}[b.dataset.rsq]; close(); autoRep = null; document.querySelectorAll('.autorep').forEach(x => x.remove()); if (id === 'stageBtn') mapEvtNext = true; if (id) $(id).click(); return; }
       if (performance.now() < lockUntil || idx >= steps.length - 1) return;
       next();
     });
@@ -7717,8 +7755,9 @@ body.tight .itembar{gap:6px;}
         later(() => { bar.classList.add('go'); bar.style.width = (frac(m.lv1, m.e1) * 100) + '%'; }, t + 20);
       });
       const endAt = longest + 300 + ex.list.length * 120 + 6 * 440 * (ex.list.some(m => m.lv1 > m.lv0) ? 1 : 0) + 500;
-      later(() => p.querySelector('.rsq-btns').classList.add('on'), Math.min(endAt, longest + 3200));
+      later(() => { p.querySelector('.rsq-btns').classList.add('on'); if (r.autoNext) autoRepNextBar(close); }, Math.min(endAt, longest + 3200));
     });
+    if (r.autoNext) { const iv = setInterval(() => { if (!d.isConnected || idx >= steps.length - 1) { clearInterval(iv); return; } if (performance.now() >= lockUntil) next(); }, 1600); }   // 続けてオート：結果は自動で送る
     later(next, 600);
   }
   function teamExp(st){
@@ -9634,6 +9673,7 @@ body.tight .itembar{gap:6px;}
     astAdd(gameMode === 'sixty' ? 'sixty' : 'endless');
   }
   function awardLoss(){
+    if (autoRep) { autoRep = null; setTimeout(() => toast('負けたので、オートを止めました'), 600); }
     if (gameMode !== 'story' || lossPaid) return;
     lossPaid = true; addCoins(LOSE_COIN);
     const ls = (+load('lstreak', '0') || 0) + 1; save('lstreak', String(ls));
