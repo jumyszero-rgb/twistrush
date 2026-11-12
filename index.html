@@ -1352,6 +1352,11 @@ body.tight .sysrow{position:absolute;right:2px;bottom:0;margin:0;padding:0;heigh
 body.tight .botrow{justify-content:flex-start;padding-right:92px;}
 body.tight .itembar{gap:6px;}
 .menucoin{padding:4px 8px;} .menucoin .gr{font-size:11px;margin-left:0;padding:2px 8px;}
+.menucoin{top:calc(env(safe-area-inset-top,0px) + 66px)!important;}   /* 上のボタンが5つになったので、LVはその下へ */
+.mnode .pw{position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:17px;font-size:9px;font-weight:900;line-height:1;white-space:nowrap;padding:2px 5px;border-radius:8px;background:rgba(0,0,0,.62);color:#fff;pointer-events:none;}
+.mnode .pw.ok{color:#8dffb8;} .mnode .pw.near{color:#ffe27a;} .mnode .pw.hard{color:#ff8a8a;}
+.stageinfo .pwr{margin-top:4px;font-size:13px;font-weight:800;} .stageinfo .pwr b{font-size:15px;} .stageinfo .pwr .ok{color:#8dffb8;} .stageinfo .pwr .near{color:#ffe27a;} .stageinfo .pwr .hard{color:#ff8a8a;}
+.stageinfo .pwr small{display:block;font-size:11px;font-weight:600;opacity:.85;}
 #menu .mwallet{display:flex;justify-content:center;gap:8px;margin:2px auto 6px;}
 #menu .mwallet span{display:inline-flex;align-items:center;gap:4px;background:rgba(0,0,0,.4);color:#ffe27a;font-weight:800;font-size:14px;padding:3px 10px 3px 5px;border-radius:999px;border:1px solid rgba(255,255,255,.25);}
 #menu .mwallet img{width:20px;height:20px;}
@@ -6176,7 +6181,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.33';
+  const APP_VER = '0.9.34';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -6245,7 +6250,7 @@ body.tight .itembar{gap:6px;}
       '<div class="mstart" style="left:' + S[0] + '%;top:' + (S[1] / 124 * 100) + '%">START</div>' +
       '<div class="mroute" style="left:18%;top:' + (116 / 124 * 100) + '%">ふつう</div>' +
       '<div class="mroute hard" style="left:82%;top:' + (116 / 124 * 100) + '%">つよい</div>';
-    const nowIdx = nextStageIdx();
+    const nowIdx = nextStageIdx(), myPw = myStoryPow();
     STORY.slice(a * PER, a * PER + PER).forEach((st, k) => {
       const i = st.no - 1, op = stageOpen(i), got = storyStars[i], clr = storyClr[i];
       const b = document.createElement('button');
@@ -6273,6 +6278,7 @@ body.tight .itembar{gap:6px;}
         if (!st.ready) b.insertAdjacentHTML('beforeend', '<span class="tmp">仮</span>');
       }
       b.insertAdjacentHTML('beforeend', '<span class="ms">' + starsHTML(got) + '</span>');
+      if (op) { const need = stagePow(st); b.insertAdjacentHTML('beforeend', '<span class="pw ' + powCls(myPw, need) + '">⚔' + need.toLocaleString() + '</span>'); }
       if (op) b.addEventListener('click', () => { pickStage = i; save('stage', String(i)); drawStory(); });
       map.appendChild(b);
     });
@@ -6293,6 +6299,9 @@ body.tight .itembar{gap:6px;}
         (st.route === 0 ? '<div class="rt">ふつうルート</div>' : '<div class="rt">どちらかのルートを抜けると戦える</div>');
       $('stageInfo').innerHTML = '<div class="t">' + st.label + '　' + rule + '</div>' + rtx +
         '<div class="g">' + goalText(st) + '</div>' +
+        (() => { const need = stagePow(st), mine = myStoryPow(), c = powCls(mine, need);
+          return '<div class="pwr">必要戦闘力 <b class="' + c + '">' + need.toLocaleString() + '</b>　あなたのチーム <b class="' + c + '">' + mine.toLocaleString() + '</b>' +
+            '<small>' + (c === 'ok' ? '十分に戦えます' : c === 'near' ? 'ほぼ互角。技やアイテムを使えば勝てます' : '少し厳しいかも。クリアしたステージでレベルを上げるのがおすすめ') + '（技の強さは入っていません）</small></div>'; })() +
         '<ul class="ml">' + st.missions.map((m, j) => '<li class="' + (storyMask[pickStage] >> j & 1 ? 'on' : '') + '">' +
           rb(storyMask[pickStage] >> j & 1) + ' ' + misText(m) + '</li>').join('') + '</ul>' +
         '<div class="d tries' + (stamNow() >= stamCost(pickStage) ? '' : ' none') + '">スタミナ ⚡' + stamCost(pickStage) + '（いま ' + stamNow() + '）</div>' +
@@ -7487,6 +7496,11 @@ body.tight .itembar{gap:6px;}
   // 表にないエリア（10エリア目から）：最後の2行の伸び（ザコ+30・中ボス+35・ボス+40）を、1エリアごとに足していく
   const enRow = a => { const n = EN_TABLE.length; if (a < n) return EN_TABLE[Math.max(0, a)];
     const L = EN_TABLE[n - 1], P = EN_TABLE[n - 2]; return L.map((v, i) => v + (v - P[i]) * (a - n + 1)); };
+  // ストーリーの戦闘力：体力×3＋攻撃×4＋防御×3＋スピード×2（アリーナと同じ重み。技は入れない）
+  const statPow = a => Math.round(a[0] * 3 + a[1] * 4 + a[2] * 3 + a[3] * 2);
+  const stagePow = st => statPow(enemyStats(st));                 // 必要戦闘力＝敵のステータス
+  const myStoryPow = () => statPow(teamStats());                   // いまのチーム（4人の合計）
+  const powCls = (mine, need) => mine >= need ? 'ok' : mine >= need * 0.85 ? 'near' : 'hard';
   function enemyStats(st){
     if (!st) return [100, 100, 100, 100];
     const row = enRow(st.area);
