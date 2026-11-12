@@ -829,7 +829,7 @@ body.on-menu .battlemain{opacity:0;}
   .gwallet span{display:inline-flex;align-items:center;gap:3px;background:rgba(0,0,0,.5);border-radius:999px;padding:3px 10px 3px 4px;font-size:12px;font-weight:800;color:#fff;}
   .gwallet img{width:22px;height:22px;} .gwallet b{color:#ffe27a;font-size:14px;}
   .gacha-stage{position:relative;flex:1;width:100%;overflow:hidden;}
-  .g-cube{position:absolute;left:50%;top:50%;height:min(80%, 240px);width:auto;max-width:46%;object-fit:contain;transform:translate(-50%,-50%);filter:drop-shadow(0 0 18px rgba(255,255,255,.6));animation:gfloat 3s ease-in-out infinite;}
+  .g-cube{position:absolute;left:50%;top:56%;height:min(76%, 240px);width:auto;max-width:46%;object-fit:contain;transform:translate(-50%,-50%);filter:drop-shadow(0 0 18px rgba(255,255,255,.6));animation:gfloat 3s ease-in-out infinite;}
   .g-cube.spin{animation:gspin 1.1s cubic-bezier(.5,0,.3,1) forwards;}
   @keyframes gfloat{50%{transform:translate(-50%,-56%);}}
   @keyframes gspin{0%{transform:translate(-50%,-50%) rotate(0) scale(1);}60%{transform:translate(-50%,-50%) rotate(270deg) scale(1.15);}100%{transform:translate(-50%,-50%) rotate(360deg) scale(.2);opacity:0;}}
@@ -838,6 +838,9 @@ body.on-menu .battlemain{opacity:0;}
   @keyframes gburst{0%{opacity:0;transform:translate(-50%,-50%) scale(.2) rotate(0);}25%{opacity:1;}100%{opacity:.85;transform:translate(-50%,-50%) scale(1.1) rotate(25deg);}}
   .g-result{position:absolute;inset:8% 4% 4%;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:8px;pointer-events:none;}
   .g-result{gap:6px 4px;}
+  .g-result.one{inset:14% 4% 2%;}                                   /* 1体ずつ見せるとき：台座の上あたりに */
+  .g-result.list{inset:2% 2% 2%;overflow-y:auto;align-content:safe center;pointer-events:auto;-webkit-overflow-scrolling:touch;}
+  .g-result.list .g-card{width:66px;font-size:10px;} .g-result.list .g-card div{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.25;}
   .g-card{position:relative;width:76px;text-align:center;color:#fff;font-weight:800;font-size:11px;text-shadow:0 1px 4px #000;animation:gpop .4s ease-out both;}
   .g-card.big{width:170px;font-size:16px;}
   .g-card .cicon{border-radius:12px;border:3px solid var(--gc,#b77bff);box-shadow:0 0 14px var(--gc,#b77bff);margin:0 auto 4px;}
@@ -1841,7 +1844,7 @@ body.tight .itembar{gap:6px;}
           <h3>コインを買う</h3>
           <div id="shopPacks"></div>
           <p class="note">課金はアプリ版で使えるようになります（いまは準備中）。</p>
-          <button class="btn gray" id="testCoin">テスト用：コイン +500</button>
+          <button class="btn gray" id="testCoin">テスト用：コイン・チケットを増やす（公開前に消す）</button>
         </section>
       </div>
     </div>
@@ -6262,7 +6265,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.57';
+  const APP_VER = '0.9.58';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -7212,7 +7215,16 @@ body.tight .itembar{gap:6px;}
   function openShop(){ audio(); drawShop(); $('shop').classList.remove('hidden'); $('shop').querySelector('.how-body').scrollTop = 0; }
   $('shopBtn').addEventListener('click', openShop);
   $('shopBack').addEventListener('click', () => { $('shop').classList.add('hidden'); drawLoadout(); });
-  $('testCoin').addEventListener('click', () => { addCoins(500); drawShop(); });   // テスト用（公開前に消す）
+  // テスト用（公開前に消す）：ガチャ画面から移した。シルバー・ゴールド +10,000、チケット +10・確定チケット +5・キャラ確定チケット +1、無料10連をもう一度
+  function devGrant(){
+    addCoins(10000);
+    if (acctToken) api('/api/dev/grant', {method: 'POST', body: JSON.stringify({amount: 10000})}).then(r => { if (r.gold) { gold = r.gold.total; refreshCoins(); } }).catch(() => toast('サーバーのゴールドは増やせませんでした'));
+    else { gold += 10000; save('gold', String(gold)); }
+    save('gticket', String((+load('gticket', '0') || 0) + 10)); save('gticket_hi', String((+load('gticket_hi', '0') || 0) + 5));
+    const crew = ALLC.filter(c => c.id.startsWith('x_')); addCTicket(crew[Math.floor(Math.random() * crew.length)].id, 1);
+    save('freeten', '0'); refreshCoins(); try { drawShop(); } catch(_) {} toast('シルバー・ゴールド +10,000、チケット +10・確定チケット +5・キャラ確定チケット +1');
+  }
+  $('testCoin').addEventListener('click', devGrant);
 
   // ----- ステージ選択：持っていくアイテム（2種類まで）-----
   let loadTip = '';
@@ -8072,7 +8084,7 @@ body.tight .itembar{gap:6px;}
     }
     if (gTab !== 'item') { const ct = cTickets(); Object.keys(ct).filter(id => ct[id] > 0 && ALLC_IDX.has(id)).forEach(id => {
       h += '<button class="btn shop" data-g="char:' + id + '">' + coinImg('ticket_hi') + fullName(ALLC[ALLC_IDX.get(id)]) + ' 確定チケット（' + ct[id] + '枚）</button>'; }); }
-    if (!gRev) h += '<button class="btn gray" data-g="test">テスト用：コイン・チケットを増やす（公開前に消す）</button>' +
+    if (!gRev) h += 
       (gTab === 'item' ? '<div class="rate">アイテムガチャ：ショップでは買えないポットが出る（N＝経験値ポット小、R＝経験値ポット大、SR・MR・LR＝限界突破ポット）。' + 'シルバー版：' + igRateText('silver') + '。ゴールド版（課金）：' + igRateText('gold') + '。出るものは同じ。10連は1個SR以上が確定。</div>' : '<div class="rate">' + (gTab === 'silver' ? 'シルバーガチャ：無料のシルバーコインで引ける。' : 'ゴールドガチャ：有料のゴールドコインで引ける。高グレードが出やすい（予定）。') +
       (gTab === 'gold' ? '出る確率：' + rateText(G_RATE.gold) + '。LEGEND GAUGE：ゴールドガチャ1回で1ポイント（10連は10）。' + PITY_N + 'ポイントで好きなLRを1体と交換（LRが出てもポイントは減りません）。確定チケット（SR以上確定）：' + rateText(G_RATE.hi) + '。' : '出る確率：' + rateText(G_RATE.silver) + '（ガチャチケットも同じ）。') + '10連は1体SR以上が確定。キャラ確定チケットはそのキャラが100%。同じキャラも1体ずつボックスに入ります。</div>');
     $('gachaFoot').innerHTML = h;
@@ -8098,7 +8110,7 @@ body.tight .itembar{gap:6px;}
     const d = document.createElement('div'); d.className = 'g-card' + (big ? ' big' : '');
     d.appendChild(charIcon(r.ci, big ? 170 : 58));
     const gr = CHAR_STAT[ALLC[r.ci].id].grade; d.classList.add('g-' + gr);
-    d.insertAdjacentHTML('beforeend', '<div>' + gr + ' ' + fullName(ALLC[r.ci]) + '</div>' + (r.isNew ? '<em>NEW</em>' : '<em class="sh">2体目以上</em>'));
+    d.insertAdjacentHTML('beforeend', '<div>' + gr + ' ' + (big ? fullName(ALLC[r.ci]) : ALLC[r.ci].name) + '</div>' + (r.isNew ? '<em>NEW</em>' : '<em class="sh">2体目以上</em>'));
     return d;
   }
   // 1体ずつ見せる（タップかボタンで次へ）
@@ -8107,12 +8119,13 @@ body.tight .itembar{gap:6px;}
     box.innerHTML = ''; burst.src = gImg('burst_' + CHAR_STAT[ALLC[r.ci].id].grade.toLowerCase());
     burst.className = 'g-burst'; void burst.offsetWidth; burst.className = 'g-burst go';
     sndGBurst(GRADE_RANK[CHAR_STAT[ALLC[r.ci].id].grade] || 0);
+    box.className = 'g-result one';
     setTimeout(() => { if (!gRev) return; box.appendChild(card(r, true)); sndGCard(r.isNew); }, 350);
     drawGachaFoot();
   }
   function showList(){
     const box = $('gResult'), res = gRev ? gRev.res : [];
-    gRev = null; box.innerHTML = '';
+    gRev = null; box.innerHTML = ''; box.className = 'g-result' + (res.length > 1 ? ' list' : ' one');
     if (res.length > 1) { res.forEach((r, i) => { const d = card(r, false); d.style.animationDelay = (i * 0.05) + 's'; box.appendChild(d); }); sndGList(); }
     else if (res.length === 1) box.appendChild(card(res[0], true));
     gBusy = false; drawGachaFoot(); refreshCoins();
@@ -8121,14 +8134,7 @@ body.tight .itembar{gap:6px;}
     if (kind === 'next') { if (!gRev) return; if (gRev.i + 1 < gRev.res.length) { gRev.i++; revealOne(); } else showList(); return; }
     if (kind === 'skip') { showList(); return; }
     if (gBusy) return;
-    if (kind === 'test') {                                 // テスト用（公開前に消す）
-      addCoins(10000);
-      if (acctToken) api('/api/dev/grant', {method: 'POST', body: JSON.stringify({amount: 10000})}).then(r => { if (r.gold) { gold = r.gold.total; drawGachaFoot(); refreshCoins(); } }).catch(() => toast('サーバーのゴールドは増やせませんでした（テストログインのときだけ増やせます）'));
-      else { gold += 10000; save('gold', String(gold)); }
-      save('gticket', String((+load('gticket', '0') || 0) + 10)); save('gticket_hi', String((+load('gticket_hi', '0') || 0) + 5));
-      const crew = ALLC.filter(c => c.id.startsWith('x_')); addCTicket(crew[Math.floor(Math.random() * crew.length)].id, 1);
-      save('freeten', '0'); drawGachaFoot(); toast('シルバー・ゴールド +10,000、チケット +10・確定チケット +5・キャラ確定チケット +1'); return;
-    }
+    if (kind === 'test') { devGrant(); return; }
     let n = 1;
     const payS = c => { if (coins < c) { toast('シルバーコインが足りません'); return false; } addCoins(-c); return true; };
     const payG = c => { if (gold < c) { toast('ゴールドコインが足りません'); return false; } gold -= c; save('gold', String(gold)); return true; };
