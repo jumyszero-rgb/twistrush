@@ -803,7 +803,7 @@ body.on-menu .battlemain{opacity:0;}
   .achrow .at{display:flex;gap:4px;margin-top:5px;flex-wrap:wrap;} .achrow .at i{font-style:normal;font-size:10px;border-radius:6px;padding:1px 6px;background:rgba(255,255,255,.1);color:#ccc;} .achrow .at i.ok{background:#ffd24a;color:#3a2210;}
   .achrow.done{opacity:.6;}
   .mtop{position:absolute;top:calc(env(safe-area-inset-top,0px) + 8px);left:10px;display:flex;gap:6px;z-index:3;}
-  .mtile.mini{position:relative;} .nbadge{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#ff3b5c;color:#fff;font-size:11px;font-weight:900;line-height:18px;text-align:center;box-shadow:0 0 0 2px #1f1236;animation:nbPop .4s ease-out;}
+  .mtile.mini.off{opacity:.6;} .mtile.mini{position:relative;} .nbadge{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#ff3b5c;color:#fff;font-size:11px;font-weight:900;line-height:18px;text-align:center;box-shadow:0 0 0 2px #1f1236;animation:nbPop .4s ease-out;}
   @keyframes nbPop{0%{transform:scale(0)}70%{transform:scale(1.25)}100%{transform:scale(1)}}
   .news-item{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:14px;margin-top:10px;overflow:hidden;}
   .news-item>button{all:unset;box-sizing:border-box;display:flex;gap:8px;align-items:center;width:100%;padding:12px 14px;cursor:pointer;}
@@ -1482,6 +1482,7 @@ body.tight .itembar{gap:6px;}
         <button class="mtile mini" id="newsBtn" data-tip="お知らせ・イベント・アップデートの情報"><span class="mi" style="font-size:26px;line-height:34px">📰</span><span class="ml">ニュース</span></button>
         <button class="mtile mini" id="questBtn" data-tip="毎日・毎週・毎月のミッション：達成するとチケットなどがもらえる"><span class="mi" style="font-size:26px;line-height:34px">📋</span><span class="ml">ミッション</span></button>
         <button class="mtile mini" id="achvBtn" data-tip="実績：達成するとユーザー経験値がもらえる"><span class="mi" style="font-size:26px;line-height:34px">🏆</span><span class="ml">実績</span></button>
+        <button class="mtile mini" id="menuMute" data-tip="音のオン・オフ（BGM・効果音・ボイスすべて）"><span class="mi" style="font-size:26px;line-height:34px">🔊</span><span class="ml">サウンド</span></button>
       </div>
       <div class="menu-bottom mgrid">
         <button class="mtile wide story" id="storyBtn" data-tip="CPUと1対1で戦うメインのモード。ボスに勝つとキャラが仲間になる"><span class="mi"><img data-mimg="story" alt=""></span><span class="ml">ストーリー<small></small></span></button>
@@ -2668,7 +2669,7 @@ body.tight .itembar{gap:6px;}
   const loadBest = m => { try { return +localStorage.getItem(bestKey(m)) || 0; } catch(e) { return 0; } };
 
   // ===== 音（その場で合成）=====
-  let actx = null, master = null, muted = false;
+  let actx = null, master = null, muted = false; try { muted = localStorage.getItem('twistrush.mute') === '1'; } catch(_) {}
   // 音量（設定画面で変えられる。0〜100、初期値はどれも50）。50で今までと同じ大きさ、100でその2倍
   //   BGM・効果音・ボイスは別々の通り道で master へ
   const VOL_DEF = {bgm: 50, se: 50, voice: 50}, VOL_UNIT = 50;
@@ -5300,12 +5301,20 @@ body.tight .itembar{gap:6px;}
   });
   $('contAd').addEventListener('click', watchAd);
   $('contEnd').addEventListener('click', endGame);
-  $('muteBtn').addEventListener('click', () => {
-    muted = !muted; const a = audio();
+  // ミュート：遊んでいる画面の♪とタイトル画面の「サウンド」は同じもの。切りかえは次に開いたときも残る
+  function setMute(v){
+    muted = v; try { localStorage.setItem('twistrush.mute', v ? '1' : '0'); } catch(_) {}
+    const a = audio();
     if (master && a) master.gain.setTargetAtTime(muted ? 0 : 0.8, a.currentTime, 0.02);
+    bgmEls.forEach(el => { try { el.muted = muted; } catch(_) {} });
     $('muteBtn').textContent = muted ? '♪̸' : '♪';
     $('muteBtn').style.opacity = muted ? '.5' : '1';
-  });
+    const mm = $('menuMute'); mm.querySelector('.mi').textContent = muted ? '🔇' : '🔊'; mm.classList.toggle('off', muted);
+    mm.querySelector('.ml').textContent = muted ? 'ミュート中' : 'サウンド';
+  }
+  $('muteBtn').addEventListener('click', () => setMute(!muted));
+  $('menuMute').addEventListener('click', e => { e.stopPropagation(); setMute(!muted); });
+  if (muted) setTimeout(() => setMute(true), 0);
   // 画面を横にして戻したとき、スマホによっては回転の途中の大きさで計算してしまい、盤面が小さいまま残る
   // → 回転・大きさの変化のあと、少し時間をおいて何回か測り直す
   let rsT = [];
@@ -6339,7 +6348,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.69';
+  const APP_VER = '0.9.70';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
