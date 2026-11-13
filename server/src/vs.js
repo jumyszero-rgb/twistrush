@@ -1,10 +1,10 @@
 // ===== オンライン対戦（2人）・対戦メダル・対戦レート =====
 // 部屋は Durable Object（Room）。マッチングと部屋番号は Lobby（1つだけ）が持つ
-// 対戦メダル：お金では買えない、対戦専用のコイン。毎日もらえて、賭けに使い、ショップでアイテムと交換する
+// 対戦メダル：お金では買えない、対戦専用のコイン。アリーナや賭けの勝ちで手に入れ、ショップでアイテムと交換する（毎日の配布はなし）
 
 export const MEDAL = {
-  first: 300,                 // はじめての人
-  daily: 100,                 // 毎日（日本時間で日が変わったら）
+  first: 0,                   // はじめての人（2026-11-13 廃止：何もしなくても入るとショップで買えてしまうため）
+  daily: 0,                   // 毎日（2026-11-13 廃止。メダルはアリーナ・賭けの勝ちで手に入れる）
   bets: [0, 10, 50, 100],     // 賭けられる額（0＝賭けない）
 };
 // メダルで交換できるもの（ゲームの更新なしで変えられる）
@@ -90,6 +90,7 @@ export async function medalOf(env, id) {
 }
 // 毎日のメダル（はじめての人は多め）。もらった数を返す
 export async function medalDaily(env, id, t) {
+  if (!MEDAL.first && !MEDAL.daily) return 0;               // 配布なし
   const today = dayKey(t), cur = await medalOf(env, id);
   if (!cur) {
     await env.DB.prepare('INSERT OR IGNORE INTO medals (account_id, balance, daily) VALUES (?, ?, ?)').bind(id, MEDAL.first, today).run();
