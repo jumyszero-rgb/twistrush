@@ -133,7 +133,7 @@ body.on-menu .battlemain{opacity:0;}
 
   .btn.vs{background:#6f7cff;color:#fff;box-shadow:0 5px 0 #3b45b8;}
   .btn.vs:active{box-shadow:0 2px 0 #3b45b8;}
-  #settings.overlay,#rank.overlay,#howto.overlay,#news.overlay,#achv.overlay,#story.overlay,#prac.overlay,#online.overlay{position:fixed;inset:0;z-index:22;border-radius:0;padding:0;gap:0;justify-content:flex-start;text-align:left;color:#f6f0ff;
+  #settings.overlay,#rank.overlay,#howto.overlay,#news.overlay,#achv.overlay,#story.overlay,#prac.overlay,#online.overlay,#skprof.overlay{position:fixed;inset:0;z-index:22;border-radius:0;padding:0;gap:0;justify-content:flex-start;text-align:left;color:#f6f0ff;
     background:linear-gradient(180deg, rgba(22,10,44,.92), rgba(22,10,44,.96)),
       var(--title-img, url('img/title.jpg')) center / cover no-repeat, #1f1236;}
   #story .modesel,#prac .modesel{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.25);}
@@ -736,6 +736,20 @@ body.on-menu .battlemain{opacity:0;}
   .ugrade b{color:#ffd24a;font-size:18px;} .ugbar{height:8px;border-radius:6px;background:rgba(255,255,255,.15);overflow:hidden;margin-top:6px;} .ugbar i{display:block;height:100%;background:linear-gradient(90deg,#9ff0b0,#ffd24a);}
   .ugrade small{display:block;margin-top:4px;font-size:11px;opacity:.85;font-weight:700;}
   .pvrow{display:flex;flex-wrap:wrap;gap:6px;}
+  #menuCoin{cursor:pointer;} #menuCoin .skchip{display:block;margin-top:3px;font-size:10px;font-weight:900;text-align:center;color:#3a2000;background:linear-gradient(#fff3c4,#ffc93d);border-radius:999px;padding:1px 8px;}
+  .skhead{display:grid;grid-template-columns:auto 1fr;gap:8px 12px;align-items:center;}
+  .skrank{grid-row:span 2;width:96px;height:96px;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#3a2470,#5a2a90);border:3px solid #ffd24a;box-shadow:0 0 18px rgba(255,210,74,.5);}
+  .skrank b{font-size:40px;line-height:1;color:#ffe27a;text-shadow:0 2px 0 #7a4a00;} .skrank span{font-size:11px;font-weight:900;letter-spacing:.06em;} .skrank small{font-size:10px;opacity:.85;}
+  .skrank.r-S,.skrank.r-SS{background:linear-gradient(135deg,#ff5fd0,#7a2cff,#2ec5ff);} .skrank.r-A{background:linear-gradient(135deg,#ff9a3d,#d63a7a);}
+  .skval{font-size:12px;font-weight:800;} .skval b{display:block;font-size:26px;color:#7ee8ff;} .skval small{display:block;font-weight:600;opacity:.85;margin-top:2px;}
+  .sktype{grid-column:1/-1;background:rgba(255,255,255,.08);border-radius:12px;padding:8px 10px;} .sktype b{font-size:16px;color:#ffe27a;} .sktype small{display:block;font-size:12px;opacity:.9;}
+  .sknext{grid-column:1/-1;font-size:13px;} .sknext b{color:#ffe27a;font-size:16px;}
+  .skrow{display:grid;grid-template-columns:118px 1fr 70px;gap:8px;align-items:center;margin:8px 0;} .skl{font-size:13px;font-weight:800;} .skl small{display:block;font-size:9px;font-weight:600;opacity:.75;line-height:1.3;}
+  .skb{height:10px;border-radius:5px;background:rgba(255,255,255,.12);overflow:hidden;} .skb i{display:block;height:100%;background:linear-gradient(90deg,#7ee8ff,#b77bff,#ffd24a);}
+  .skrow > b{text-align:right;font-size:13px;color:#ffe27a;}
+  .sklist{display:grid;grid-template-columns:1fr 1fr;gap:6px;} .sklist div{background:rgba(255,255,255,.07);border-radius:10px;padding:6px 8px;font-size:12px;font-weight:800;} .sklist div b{color:#ffe27a;font-size:15px;} .sklist div small{display:block;font-size:10px;opacity:.8;font-weight:600;}
+  .sklist div.on{background:linear-gradient(#fff3c4,#ffc93d);color:#3a2000;} .sklist div.on b{color:#7a4a00;}
+  .sknote{font-size:11px;opacity:.8;}
   .alv{display:flex;gap:6px;justify-content:center;margin:8px 0 4px;}
   #askBox .alv button, .alv button{flex:1;padding:8px 4px;border:2px solid rgba(255,255,255,.25);border-radius:12px;background:rgba(255,255,255,.08);color:#fff;font-weight:900;font-size:14px;}
   .alv button small{display:block;font-size:11px;color:#ffe27a;}
@@ -1484,6 +1498,13 @@ body.tight .itembar{gap:6px;}
         <h2>ニュース</h2>
       </div>
       <div class="how-body" id="newsBody"></div>
+    </div>
+    <div class="overlay hidden" id="skprof" role="dialog" aria-label="スキルプロフィール">
+      <div class="how-head">
+        <button class="how-back" id="skprofBack" aria-label="タイトルに戻る">‹ 戻る</button>
+        <h2>SKILL PROFILE</h2>
+      </div>
+      <div class="how-body" id="skprofBody"></div>
     </div>
     <div class="overlay hidden" id="quest" role="dialog" aria-label="ミッション">
       <div class="how-head">
@@ -2615,6 +2636,7 @@ body.tight .itembar{gap:6px;}
   let lapStart = 0, lastStackTick = 0, penaltyFlash = 0;
   let rotAnim = null, fallDist = null, fallStart = 0;
   let clearGroups = [], clearSet = new Set(), flashes = [], pops = [], feed = [], pendingGain = 0;
+  let pst = null;                                    // SKILL PROFILE 用：この1回のくせ（60秒アタック・エンドレスだけ）
   let warnNext = 0;
   let runStart = 0;
   let broken = 0, relief = 0, speedFlash = 0, lastGoldTier = 0, overFx = null, overTimer = null;                  // 壊したブロックの合計（難易度の元）
@@ -2656,9 +2678,17 @@ body.tight .itembar{gap:6px;}
       master = actx.createGain(); master.gain.value = muted ? 0 : 0.8; master.connect(actx.destination);
       ['bgm', 'se', 'voice'].forEach(k => { bus[k] = actx.createGain(); bus[k].gain.value = vols[k] / VOL_UNIT; bus[k].connect(master); });
     }
-    if (actx.state === 'suspended') actx.resume();
+    if (actx.state !== 'running' && actx.state !== 'closed') { try { const p = actx.resume(); if (p && p.catch) p.catch(() => {}); } catch(_) {} }
     return actx;
   }
+  // 音の復活：iPhoneはアプリ切りかえ・電話・通知・ロックのあと音が止まったままになる（interrupted）。
+  //   BGMも同じ通り道なので作り直しはしない。画面に触れるたびに確かめ、止まっていたら無音を1つ鳴らして再開させる
+  function audioRevive(){
+    if (!actx || actx.state === 'running' || actx.state === 'closed') return;
+    try { const p = actx.resume(); if (p && p.catch) p.catch(() => {}); } catch(_) {}
+    try { const b = actx.createBuffer(1, 1, 22050), s = actx.createBufferSource(); s.buffer = b; s.connect(actx.destination); s.start(0); } catch(_) {}
+  }
+  ['touchend', 'click', 'keydown'].forEach(ev => document.addEventListener(ev, audioRevive, true));
   function tone(f, t, dur, type, vol, bend){
     const a = audio(); if (!a) return;
     try {
@@ -3410,7 +3440,8 @@ body.tight .itembar{gap:6px;}
     });
   }
   // 最初に画面に触れたときに準備（ボス戦は登場動画のあとに始まるので、開始の瞬間には触れていない）
-  ['touchend', 'click'].forEach(ev => document.addEventListener(ev, () => { if (!bgmUnlocked) { audio(); bgmUnlock(); setTimeout(titleBgm, 50); } }, true));
+  ['touchend', 'click'].forEach(ev => document.addEventListener(ev, () => { if (!bgmUnlocked) { audio(); bgmUnlock(); setTimeout(titleBgm, 50); }
+    else if (bgmOn && bgmEls[bgmIdx] && bgmEls[bgmIdx].paused && !document.hidden) bgmEls[bgmIdx].play().catch(() => {}); }, true));
   // 起動画面「TAP TO START」：ブラウザは触れるまで音を出せないので、最初のタップで曲を始める
   // 画面ぜんたいが横や縦にずれたまま戻らない（iPhoneはbodyのoverflow:hiddenを無視して動かせてしまう）のを防ぐ
   (function lockPage(){
@@ -3557,6 +3588,7 @@ body.tight .itembar{gap:6px;}
     const gs = findGroups();
     if (!gs.length) {
       phase = 'idle';
+      if (pst && chain > 0) pst.lastT = now();       // 次に消すまでの時間を、ここから数える
       if (chain > 0) comboShowUntil = now() + 1200;   // 結果のコンボ数を少し残して見せる
       return false;
     }
@@ -3581,6 +3613,13 @@ body.tight .itembar{gap:6px;}
     if (chain >= 2) misAdd('combo', 1);
     if (chain >= 3) misAdd('combo2', 1);
     pendingGain = base * mult;
+    if (pst) {                                       // SKILL PROFILE：60秒・エンドレスのくせを数える
+      const tn = now();
+      if (chain === 1) { pst.turns++; pst.wait += Math.max(0, tn - pst.lastT) / 1000; if (lines >= 2) pst.sync++; }
+      else if (chain === 2) pst.chainT++;
+      pst.pts += pendingGain; pst.clears++;
+      gs.forEach(g => { if (g.t !== GOLD) { pst.len[Math.min(6, g.cells.length)]++; pst.col[g.t] = (pst.col[g.t] || 0) + g.cells.length; } else pst.gold++; });
+    }
     const syncN = lines - 1, comboN = chain - 1;
     // 消えた場所の真ん中からラベルを湧かせる
     const t0 = now();
@@ -4812,6 +4851,7 @@ body.tight .itembar{gap:6px;}
     phase = 'idle'; rotAnim = null; fallDist = null; flashes = []; pops = []; feed = []; broken = 0; relief = 0; speedFlash = 0; warnNext = 0; lastGoldTier = 0; overFx = null; clearTimeout(overTimer);
     document.querySelectorAll('.stk.dead').forEach(d => d.classList.remove('dead')); canvas.style.transform = '';
     const t = now(); lapStart = t; lastStackTick = t; penaltyFlash = 0; runStart = t;
+    pst = (gameMode === 'sixty' || gameMode === 'rank') ? {len: {3: 0, 4: 0, 5: 0, 6: 0}, col: [], gold: 0, turns: 0, sync: 0, chainT: 0, pts: 0, clears: 0, wait: 0, lastT: t} : null;
     $('over').querySelector('h1').textContent = 'RESULT';
     running = true; refreshZone();
     bgmOn = true; bgmMode = null; bgmUnlock(); primeVoice(); bgmPlay(gameMode === 'sixty' ? 'panic' : 'calm');
@@ -5093,7 +5133,7 @@ body.tight .itembar{gap:6px;}
   }
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) { pauseClock(); bgmEls.forEach(el => { try { el.pause(); } catch(_) {} }); }
-    else resumeClock();
+    else { resumeClock(); audioRevive(); }
     if (!document.hidden && bgmOn) bgmEls[bgmIdx].play().catch(() => {});
   });
 
@@ -6289,7 +6329,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.64';
+  const APP_VER = '0.9.66';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -7028,6 +7068,76 @@ body.tight .itembar{gap:6px;}
     return '<div class="begbox"><h3>🎁 はじめてミッション</h3><p>達成すると、その場でごほうびがもらえます。全部達成で ' + rwTxt(BEG_ALL) + '！</p>' +
       BEG.map(m => '<div class="begrow' + (d[m.k] ? ' done' : '') + '"><span>' + (d[m.k] ? '✓ ' : '・') + m.t + '</span><em>' + rwTxt(m.r) + '</em></div>').join('') + '</div>';
   }
+  // ===== SKILL RANK と SKILL PROFILE（2026-11-13）：60秒アタック・エンドレスの点数とくせから、腕前とタイプを出す =====
+  const SKR = [   // 1分あたりの点数（60秒は平均点、エンドレスは平均の1分あたり）の境目
+    {min: 0,    k: 'D',  n: 'ROOKIE',  j: 'ビギナー'},
+    {min: 300,  k: 'C',  n: 'PLAYER',  j: '一般人'},
+    {min: 1000, k: 'B',  n: 'SKILLED', j: '玄人'},
+    {min: 2000, k: 'A',  n: 'EXPERT',  j: '上級者'},
+    {min: 3500, k: 'S',  n: 'MASTER',  j: '達人'},
+    {min: 6000, k: 'SS', n: 'GOD',     j: '神の領域'},
+  ];
+  const SKP_N = 20;
+  const skRuns = () => loadJ('skprof', null) || [];
+  function skProfAdd(sec){
+    if (!pst || sec < 10) return;
+    const r = {m: gameMode === 'sixty' ? 's' : 'e', sc: score | 0, sec: Math.round(sec), len: pst.len, col: pst.col, gold: pst.gold, turns: pst.turns, sync: pst.sync, chainT: pst.chainT, pts: pst.pts, clears: pst.clears, wait: Math.round(pst.wait * 10) / 10};
+    const a = skRuns(); a.push(r); save('skprof', JSON.stringify(a.slice(-SKP_N)));
+    const before = load('skrank', ''), now0 = skRank();
+    if (now0 && before && now0.k !== before) setTimeout(() => toast('SKILL RANK：' + before + ' → ' + now0.k + '（' + now0.n + '）'), 1500);
+    if (now0) save('skrank', now0.k);
+  }
+  function skStats(){
+    const a = skRuns(), s5 = loadJ('sk60', null) || [], es = a.filter(x => x.m === 'e').slice(-5);
+    const sixty = s5.length ? s5.reduce((x, y) => x + y, 0) / s5.length : 0;             // 60秒の平均点＝1分あたり
+    const endl = es.length ? es.reduce((x, y) => x + y.sc / Math.max(1, y.sec) * 60, 0) / es.length : 0;   // エンドレスの1分あたり
+    const val = sixty && endl ? sixty * 0.6 + endl * 0.4 : sixty;
+    const sum = k => a.reduce((x, y) => x + (y[k] || 0), 0);
+    const L = {3: 0, 4: 0, 5: 0, 6: 0}; a.forEach(y => Object.keys(L).forEach(k => L[k] += (y.len && y.len[k]) || 0));
+    const lines = L[3] + L[4] + L[5] + L[6], turns = sum('turns');
+    const col = []; a.forEach(y => (y.col || []).forEach((v, i) => col[i] = (col[i] || 0) + (v || 0)));
+    const cs = col.filter(v => v != null), cTot = cs.reduce((x, y) => x + y, 0), cAvg = cTot / Math.max(1, cs.length);
+    const bias = cTot && cs.length > 1 ? Math.round(Math.sqrt(cs.reduce((x, v) => x + (v - cAvg) ** 2, 0) / cs.length) / cAvg * 100) : 0;   // ばらつき（%）
+    return {n: a.length, sixty, endl, val, nS: s5.length, nE: es.length, lines, turns, L,
+      r4: lines ? L[4] / lines : 0, r5: lines ? L[5] / lines : 0, r6: lines ? L[6] / lines : 0,
+      sync: turns ? sum('sync') / turns : 0, chain: turns ? sum('chainT') / turns : 0,
+      ppt: turns ? sum('pts') / turns : 0, wait: turns ? sum('wait') / turns : 0, bias,
+      stamina: sixty && endl ? Math.round(endl / sixty * 100) : 0};
+  }
+  function skRank(){ const st = skStats(); if (!st.nS) return null; let r = SKR[0]; SKR.forEach(x => { if (st.val >= x.min) r = x; }); return r; }
+  function skType(st){
+    if (!st.nS || !st.nE) return {t: 'タイプはまだ不明', d: 'エンドレスも遊ぶと、瞬発型か持久型かが分かります'};
+    if (st.stamina >= 110) return {t: '持久型', d: 'じっくり長く戦うほど力を出すタイプ。エンドレス向き'};
+    if (st.stamina <= 70) return {t: '瞬発型', d: '短い時間で一気に稼ぐタイプ。60秒アタック向き。長く戦うと息切れぎみ'};
+    return {t: 'バランス型', d: '短い勝負でも長い勝負でも、同じように力を出せるタイプ'};
+  }
+  function drawSkProf(){
+    const st = skStats(), rk = skRank(), ty = skType(st);
+    const pc = v => Math.round(v * 100) + '%';
+    const bar = (label, val, txt, max, tip) => '<div class="skrow"><div class="skl">' + label + '<small>' + tip + '</small></div><div class="skb"><i style="width:' + Math.max(2, Math.min(100, val / max * 100)) + '%"></i></div><b>' + txt + '</b></div>';
+    $('skprofBody').innerHTML = '<section class="skhead">' +
+      (rk ? '<div class="skrank r-' + rk.k + '"><b>' + rk.k + '</b><span>' + rk.n + '</span><small>' + rk.j + '</small></div>' : '<div class="skrank"><b>?</b><span>NO RANK</span><small>60秒アタックを遊ぶと決まります</small></div>') +
+      '<div class="skval">SKILL SCORE <b>' + Math.round(st.val).toLocaleString() + '</b><small>60秒アタック 平均 ' + Math.round(st.sixty).toLocaleString() + '（直近' + st.nS + '回）<br>エンドレス 1分あたり ' + Math.round(st.endl).toLocaleString() + '（直近' + st.nE + '回）</small></div>' +
+      '<div class="sktype"><b>' + ty.t + '</b><small>' + ty.d + '</small></div>' +
+      '<div class="sknext">' + (() => { const i = rk ? SKR.indexOf(rk) : -1, nx = SKR[i + 1]; return nx ? '次の ' + nx.k + '（' + nx.n + '）まで あと <b>' + Math.max(0, Math.ceil(nx.min - st.val)).toLocaleString() + '</b>' : '最高ランクです！'; })() + '</div></section>' +
+      '<section><h3>PLAY STYLE <small>（60秒アタック・エンドレスの直近' + st.n + '回）</small></h3>' +
+      (st.turns ? bar('瞬発力', st.sixty, Math.round(st.sixty).toLocaleString(), 6000, '60秒アタックの平均点') +
+        bar('持続力', st.stamina, st.stamina ? st.stamina + '%' : '—', 150, 'エンドレスの1分あたり÷60秒アタック') +
+        bar('4つ消し率', st.r4, pc(st.r4), 0.5, '消した列のうち4個の列') +
+        bar('5つ消し率', st.r5, pc(st.r5), 0.3, '消した列のうち5個の列') +
+        bar('6つ消し率', st.r6, pc(st.r6), 0.15, '消した列のうち6個の列') +
+        bar('同時消し率', st.sync, pc(st.sync), 0.6, '1手で2列以上を消した割合') +
+        bar('連鎖率', st.chain, pc(st.chain), 0.5, '消したあと、落ちて続けて消えた割合（運もあり）') +
+        bar('1ターンの点数', st.ppt, Math.round(st.ppt).toLocaleString(), 120, '1手で消したときの平均の点数') +
+        bar('消すまでの速さ', Math.max(0, 10 - st.wait), st.wait.toFixed(1) + '秒', 10, '消してから次に消すまでの平均の時間（短いほど速い）') +
+        bar('色のバランス', Math.max(0, 100 - st.bias), st.bias ? (st.bias <= 10 ? '◎ 良い' : st.bias <= 25 ? '○ ふつう' : '△ 偏り') : '—', 100, '色ごとに消した数のばらつき（少ないほど偏りがない）')
+        : '<p>60秒アタックかエンドレスを遊ぶと、ここにあなたのくせが出ます。</p>') + '</section>' +
+      '<section><h3>SKILL RANK</h3><div class="sklist">' + SKR.map(x => '<div class="' + (rk && rk.k === x.k ? 'on' : '') + '"><b>' + x.k + '</b> ' + x.n + '<small>' + x.j + '・' + x.min.toLocaleString() + '〜</small></div>').join('') + '</div>' +
+      '<p class="sknote">SKILL SCORE＝60秒アタックの平均点×0.6＋エンドレスの1分あたりの点数×0.4（エンドレスを遊んでいないときは60秒アタックだけ）</p></section>';
+  }
+  function openSkProf(){ audio(); drawSkProf(); $('skprof').classList.remove('hidden'); $('skprofBody').scrollTop = 0; }
+  $('skprofBack').addEventListener('click', () => $('skprof').classList.add('hidden'));
+  $('menuCoin').addEventListener('click', openSkProf);
   // ===== 毎日・毎週・毎月のミッション：1つずつ受け取れて、全部達成するともう1つ =====
   const QUEST = {
     d: {name: '毎日のミッション', reset: '毎日0時にリセット', list: [
@@ -7169,7 +7279,8 @@ body.tight .itembar{gap:6px;}
   setInterval(() => { if (document.body.classList.contains('on-menu')) drawMenuWallet(); }, 1000);
   function addCoins(n){ coins = Math.max(0, coins + n); save('coins', String(coins)); refreshCoins(); }
   function refreshCoins(){
-    $('menuCoin').innerHTML = '<span class="gr">LV' + userLv() + ' ' + gradeNow().name + '</span>';   // 右上はLVだけ（コインはロゴの下に）
+    { let rk = null; try { rk = skRank(); } catch(_) {}
+      $('menuCoin').innerHTML = '<span class="gr">LV' + userLv() + ' ' + gradeNow().name + '</span>' + '<span class="skchip">SKILL ' + (rk ? rk.k : '?') + '</span>'; }   // 右上はLVと SKILL RANK（押すと SKILL PROFILE）
     drawMenuWallet();
     ['storyCoin', 'shopCoin'].forEach(id => { $(id).innerHTML = coinTag() + coins.toLocaleString(); });
   }
@@ -9856,6 +9967,7 @@ body.tight .itembar{gap:6px;}
     userExpAdd(ux); $('finalNote').textContent += '　経験値 +' + ux;
     astAdd(gameMode === 'sixty' ? 'sixty' : 'endless');
     if (gameMode === 'sixty') { const k = loadJ('sk60', null) || []; k.push(score | 0); save('sk60', JSON.stringify(k.slice(-SK_N))); save('sk60n', String((+load('sk60n', '0') || 0) + 1)); }   // SKILL CHECK：直近5回の60秒アタック
+    try { skProfAdd(sec); } catch(_) {}
   }
   function awardLoss(){
     if (autoRep) { autoRep = null; setTimeout(() => toast('負けたので、オートを止めました'), 600); }
