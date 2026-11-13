@@ -1491,11 +1491,11 @@ body.tight .itembar{gap:6px;}
         <button class="mtile" id="boxBtn" data-tip="持っているキャラとアイテムを見る。チームの4人と、持っていくアイテムをセットする"><span class="mi"><img data-mimg="box" alt=""></span><span class="ml">ボックス</span></button>
         <button class="mtile" id="shopBtn" data-tip="コインでアイテムを買う"><span class="mi"><img data-mimg="shop" alt=""></span><span class="ml">ショップ</span></button>
         <button class="mtile" id="sixtyBtn" data-tip="60秒で何点取れるか。記録はランキングに残る"><span class="mi"><img data-mimg="sixty" alt=""></span><span class="ml">60秒アタック</span></button>
-        <button class="mtile" id="startBtn" data-tip="カラーHPがどれか30になるまで続ける。記録あり・コンティニュー1回"><span class="mi"><img data-mimg="endless" alt=""></span><span class="ml">エンドレス</span></button>
+        <button class="mtile" id="startBtn" data-tip="カラーHPがどれか30になるまで、どれだけ長く生き残れるか。時間がたつほど厳しくなる。記録あり・コンティニュー1回"><span class="mi"><img data-mimg="endless" alt=""></span><span class="ml">タイムアタック</span></button>
         <button class="mtile" id="easyBtn" data-tip="5段階の難しさで練習できる。記録なし・コンティニュー何度でも"><span class="mi"><img data-mimg="practice" alt=""></span><span class="ml">練習</span></button>
         <div class="mrow2">
           <button class="mtile low" id="vsBtn" data-tip="ほかの人と対戦する（準備中）"><span class="mi"><img data-mimg="online" alt=""></span><span class="ml">オンライン対戦</span></button>
-          <button class="mtile low" id="rankBtn" data-tip="60秒アタックとエンドレスの順位を見る"><span class="mi"><img data-mimg="ranking" alt=""></span><span class="ml">ランキング</span></button>
+          <button class="mtile low" id="rankBtn" data-tip="60秒アタックとタイムアタックの順位を見る"><span class="mi"><img data-mimg="ranking" alt=""></span><span class="ml">ランキング</span></button>
         </div>
         <div class="mtip hidden" id="menuTip"></div>
         <p class="mhint">長押しで説明が出ます</p>
@@ -1601,7 +1601,7 @@ body.tight .itembar{gap:6px;}
         <section>
           <h3>コンティニュー</h3>
           <p>ゲームオーバーのあと、<b>広告を見るとカラーHPを全部0にして</b>続きから再開できます。スコアはそのままで、スピードも少し戻ります。</p>
-          <p>ストーリーは1ステージ3回まで、エンドレスは1回まで、練習は何度でも使えます。3回使い切ったあとは、アイテムの「お守り」で続けられます。</p>
+          <p>ストーリーは1ステージ3回まで、タイムアタックは1回まで、練習は何度でも使えます。3回使い切ったあとは、アイテムの「お守り」で続けられます。</p>
         </section>
         <section>
           <h3>オートとスキップ（ストーリー）</h3>
@@ -1719,7 +1719,7 @@ body.tight .itembar{gap:6px;}
       </div>
       <div class="how-body">
         <div class="modesel" data-key="rmode" style="margin-top:10px">
-          <button data-v="sixty">60秒アタック</button><button data-v="rank">エンドレス</button>
+          <button data-v="sixty">60秒アタック</button><button data-v="ta">タイムアタック</button>
         </div>
         <section>
           <h3>自己ベスト</h3>
@@ -2454,7 +2454,7 @@ body.tight .itembar{gap:6px;}
   // ステージの目標の文
   const goalText = st => '相手のHP ' + (st.hp * enemyStats(st)[0]).toLocaleString() + ' を削りきる（どれか1色を削りきれば勝ち）';
   const misText = m => MISSION[m.t].text(m);
-  const MODE_LABEL = {story: 'STORY', practice: 'PRACTICE', rank: 'ENDLESS', sixty: '60秒', online: '対戦'};
+  const MODE_LABEL = {story: 'STORY', practice: 'PRACTICE', rank: 'TIME ATTACK', sixty: '60秒', online: '対戦'};
   const SIXTY_SEC = 60;                                   // 60秒アタックの持ち時間
   const isRec = m => m === 'rank' || m === 'sixty';      // 記録が残るモード
   // キャラ（仮）。イラストが来たら col と sym を画像に差し替える
@@ -4981,13 +4981,23 @@ body.tight .itembar{gap:6px;}
     sndOver();
     const i = stacks.findIndex(v => v >= CFG.STACK_MAX);
     // 記録はランキングモードだけ。練習モードは残さない
-    if (isRec(gameMode)) addHist(gameMode, score);
+    const taSec = Math.round((now() - runStart) / 1000);
+    if (isRec(gameMode)) addHist(gameMode, score, gameMode === 'rank' ? taSec : null);
+    // タイムアタック：生き残った時間で自己ベスト（同じ時間なら点数）
+    let taBest = null, taNew = false;
+    if (gameMode === 'rank') {
+      taBest = loadJ('ta_best', null);
+      taNew = !taBest || taSec > taBest.d || (taSec === taBest.d && score > taBest.s);
+      if (taNew) { taBest = {d: taSec, s: score}; save('ta_best', JSON.stringify(taBest)); }
+    }
     const isBest = isRec(gameMode) && score > best;
     if (isBest) { best = score; try { localStorage.setItem(bestKey(gameMode), String(best)); } catch(e) {} }
     $('hiScore').textContent = best;
     $('finalScore').textContent = score;
     const why = i >= 0 ? CH[i].name + 'のゲージが30になりました。' : '';
-    $('finalNote').textContent = isRec(gameMode)
+    $('finalNote').textContent = gameMode === 'rank'
+      ? why + 'TIME ' + taFmt(taSec) + '・' + score.toLocaleString() + '点。' + (taNew ? '自己ベスト更新！' : '自己ベスト ' + taFmt(taBest.d) + '（' + taBest.s.toLocaleString() + '点）')
+      : isRec(gameMode)
       ? why + (isBest ? '自己ベスト更新！' : '自己ベスト ' + best)
       : why + (gameMode === 'story' ? '何度でも挑戦できます。' : '練習の記録は残りません。');
     sendScore();                                  // ランキングモードなら世界ランキングへ送る
@@ -5404,10 +5414,11 @@ body.tight .itembar{gap:6px;}
   // ブロックの見た目（イラスト／ノーマル）。選んだものは次回も使う
   // ===== 記録（この端末に保存）=====
   const HIST_KEY = 'twistrush.hist';
+  const taFmt = sec => Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');   // タイムアタックの時間 3:12
   function hist(){ try { return JSON.parse(localStorage.getItem(HIST_KEY) || '[]'); } catch(e) { return []; } }
-  function addHist(m, sc){
+  function addHist(m, sc, d){
     if (m === 'easy') return;                       // イージーは記録しない
-    const h = hist(); h.push({m, s: sc, t: Date.now()});
+    const h = hist(); h.push(d != null ? {m, s: sc, d, t: Date.now()} : {m, s: sc, t: Date.now()});
     if (h.length > 300) h.splice(0, h.length - 300);
     try { localStorage.setItem(HIST_KEY, JSON.stringify(h)); } catch(e) {}
   }
@@ -5589,7 +5600,7 @@ body.tight .itembar{gap:6px;}
     if (!overVisible()) { whenOverShown(sendScore); return; }   // 広告で続けたら、最後のスコアだけを送る
     awardPlay();
     if (score <= 0) return;
-    const b = {mode: gameMode, score, blocks: broken, dur: Math.round((now() - runStart) / 1000), ver: GAME_VER};
+    const b = {mode: gameMode === 'rank' ? 'ta' : gameMode, score, blocks: broken, dur: Math.round((now() - runStart) / 1000), ver: GAME_VER};   // エンドレスはタイムアタック（ta）として送る：時間→点数で順位
     if (rankTok()) { postScore(b); return; }
     rankPend = b;
     if (load('rank_skip', '') === today()) return;          // 「今はしない」を選んだ日は聞かない
@@ -5607,18 +5618,18 @@ body.tight .itembar{gap:6px;}
     const el = $('rankRes'), d = R.day, rank = d.rank, total = d.total;
     const tier = rank === 1 ? 't1' : rank === 2 ? 't2' : rank === 3 ? 't3' : rank <= 10 ? 't10' : '';
     const medal = rank === 1 ? '👑' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank <= 10 ? '🏅' : '';
-    const best = R.all && R.all.best != null && b.score >= R.all.best;
-    const bestNote = d.bestRank && d.bestRank < rank ? '<div class="rk-best">（自己ベスト ' + d.best.toLocaleString() + '点は今日 ' + d.bestRank + '位）</div>' : '';
+    const best = R.all && R.all.best != null && (b.mode === 'ta' ? (b.dur > (R.all.bestDur || 0) || (b.dur === R.all.bestDur && b.score >= R.all.best)) : b.score >= R.all.best);
+    const bestNote = d.bestRank && d.bestRank < rank ? '<div class="rk-best">（自己ベスト ' + (b.mode === 'ta' ? taFmt(d.bestDur || 0) : d.best.toLocaleString() + '点') + 'は今日 ' + d.bestRank + '位）</div>' : '';
     const msg = rank === 1 ? '今日の世界1位！' : rank <= 3 ? '表彰台！' : rank <= 10 ? 'トップ10入り！' : best ? '自己ベスト更新！' : (rank <= Math.ceil(total / 2) ? '上位' + Math.max(1, Math.round(rank / total * 100)) + '%！' : 'もっと上をめざそう！');
     const sub = [['今週', R.week], ['今月', R.month], ['全期間', R.all]].filter(x => x[1] && x[1].rank).map(x => '<span>' + x[0] + ' <b>' + x[1].rank + '</b>位</span>').join('');
     el.className = 'rkres ' + tier;
-    el.innerHTML = '<div class="rk-head">🌏 WORLD RANKING</div><div class="rk-mode">' + (b.mode === 'rank' ? '∞ エンドレス' : '⏱ 60秒アタック') + '</div>' +
+    el.innerHTML = '<div class="rk-head">🌏 WORLD RANKING</div><div class="rk-mode">' + (b.mode === 'ta' ? '⏳ タイムアタック ' + taFmt(b.dur) : '⏱ 60秒アタック') + '</div>' +
       (welcome ? '<div class="rk-wel">ようこそ、<b>' + String(welcome).replace(/[<>&]/g, '') + '</b> さん！ 登録しました</div>' : '') +
       '<div class="rk-medal">' + medal + '</div>' +
       '<div class="rk-main"><span class="rk-lbl">今日</span><span class="rk-num">' + Math.max(rank, total) + '</span><span class="rk-i">位</span><span class="rk-of">/ ' + total.toLocaleString() + '人</span></div>' +
       '<div class="rk-sub">' + sub + '</div><div class="rk-msg">' + msg + '</div>' + bestNote +
       '<button class="rk-see">ランキングを見る ›</button>';
-    el.querySelector('.rk-see').addEventListener('click', () => { rankMode = b.mode; wPeriod = 'day'; drawRank(); $('rank').classList.remove('hidden'); $('rank').querySelector('.how-body').scrollTop = 0; });
+    el.querySelector('.rk-see').addEventListener('click', () => { rankMode = b.mode === 'ta' ? 'ta' : 'sixty'; wPeriod = 'day'; drawRank(); $('rank').classList.remove('hidden'); $('rank').querySelector('.how-body').scrollTop = 0; });
     // 数字が大きい方から回って、自分の順位で止まる
     const num = el.querySelector('.rk-num'), from = Math.max(rank, Math.min(total, rank + 40)), t0 = performance.now(), dur = rank === from ? 300 : 1300;
     try { sndShine(T(), rank <= 3); } catch (_) {}
@@ -6156,7 +6167,7 @@ body.tight .itembar{gap:6px;}
     setTimeout(step, 700);
   }
   // 月間ランキングのごほうび：先月の順位でアイテムがもらえる（起動したとき・登録したときに確認）
-  const RW_MODE = {sixty: '60秒アタック', rank: 'エンドレス'};
+  const RW_MODE = {sixty: '60秒アタック', rank: 'エンドレス', ta: 'タイムアタック'};
   const TICKET_LABEL = {gticket: 'ガチャチケット', gticket_hi: 'SR以上確定チケット', aticket: 'スキップチケット', stampot: 'スタミナポット'};
   // スタミナポットの絵（まだ画像がないので図で描く：黄色い薬びんに⚡）
   const STAMPOT_IMG = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff59a"/><stop offset="1" stop-color="#ffb21e"/></linearGradient></defs>' +
@@ -6207,17 +6218,18 @@ body.tight .itembar{gap:6px;}
     try {
       const r = await api('/api/top?mode=' + rankMode + '&limit=20&period=' + wPeriod, {tok: rankTok()});
       const esc = v => String(v).replace(/[<>&]/g, ''), top = r.top || [];
-      const podOf = (x, k) => x ? '<div class="pod p' + x.rank + (x.me ? ' me' : '') + '" style="--i:' + k + '"><span class="pm">' + ['👑', '🥈', '🥉'][x.rank - 1] + '</span><div class="pr">' + x.rank + '</div><div class="pn">' + flagOf(x.cc) + esc(x.name) + '</div><div class="ps">' + x.score.toLocaleString() + '</div></div>'
+      const ta = rankMode === 'ta', val = x => ta ? taFmt(x.dur || 0) + '<small> ' + x.score.toLocaleString() + '点</small>' : x.score.toLocaleString();
+      const podOf = (x, k) => x ? '<div class="pod p' + x.rank + (x.me ? ' me' : '') + '" style="--i:' + k + '"><span class="pm">' + ['👑', '🥈', '🥉'][x.rank - 1] + '</span><div class="pr">' + x.rank + '</div><div class="pn">' + flagOf(x.cc) + esc(x.name) + '</div><div class="ps">' + val(x) + '</div></div>'
         : '<div class="pod empty p' + (k === 0 ? 2 : k === 1 ? 1 : 3) + '" style="--i:' + k + '"><div class="pr">—</div><div class="pn">まだいない</div></div>';
-      const meCard = r.me && r.me.rank ? '<div class="wme"><span class="wme-l">あなたは</span><span class="wme-n">' + r.me.rank + '位</span><span class="wme-s">/ ' + r.me.total + '人<br>' + r.me.best.toLocaleString() + '点</span></div>' : '';
+      const meCard = r.me && r.me.rank ? '<div class="wme"><span class="wme-l">あなたは</span><span class="wme-n">' + r.me.rank + '位</span><span class="wme-s">/ ' + r.me.total + '人<br>' + (ta ? taFmt(r.me.bestDur || 0) + '・' : '') + r.me.best.toLocaleString() + '点</span></div>' : '';
       box.innerHTML = top.length ? meCard + '<div class="podium">' + podOf(top[1], 0) + podOf(top[0], 1) + podOf(top[2], 2) + '</div>' +
-        top.slice(3).map((x, i) => '<div class="wrow' + (x.me ? ' me' : '') + '" style="--i:' + i + '"><span class="rk">' + x.rank + '</span><span class="nm2">' + flagOf(x.cc) + esc(x.name) + '</span><span class="sc">' + x.score.toLocaleString() + '</span></div>').join('')
+        top.slice(3).map((x, i) => '<div class="wrow' + (x.me ? ' me' : '') + '" style="--i:' + i + '"><span class="rk">' + x.rank + '</span><span class="nm2">' + flagOf(x.cc) + esc(x.name) + '</span><span class="sc">' + val(x) + '</span></div>').join('')
         : '<div class="wrow"><span class="nm2">まだ記録がありません。一番乗りをめざそう！</span></div>';
       drawPrizes(r);
       const meRow = box.querySelector('.wrow.me'); if (meRow) setTimeout(() => meRow.scrollIntoView({block: 'nearest', behavior: 'smooth'}), 600);
       $('rankMe').classList.toggle('hidden', !rankTok());
       if (rankTok() && document.activeElement !== $('rankNameIn')) $('rankNameIn').value = rankName();
-      note.textContent = !rankTok() ? '60秒アタックかエンドレスを遊び終わったら、名前を入れてランキングに登録できます。毎月の順位でアイテムがもらえます。'
+      note.textContent = !rankTok() ? '60秒アタックかタイムアタックを遊び終わったら、名前を入れてランキングに登録できます。毎月の順位でアイテムがもらえます。'
         : r.me && r.me.rank ? '' : 'この期間はまだ記録がありません。';
     } catch (e) {
       note.textContent = 'サーバーにつながりませんでした（まだ準備中です）。';
@@ -6235,16 +6247,16 @@ body.tight .itembar{gap:6px;}
         : rankTok() ? '今月はまだ記録がありません。遊ぶとプレゼントがもらえます' : '名前を登録してランキングに載ると、毎月もらえます') + '</div>' +
       pz.map((x, i) => '<div class="prz-r' + (i === cur ? ' on' : '') + '"><span class="prz-l">' + (ic[i] || '🎁') + ' ' + x.label + '</span><span class="prz-i">' +
         Object.entries(x.items).map(([k, n]) => '<i>' + itemLabel(k) + ' ×' + n + '</i>').join('') + '</span></div>').join('') +
-      '<div class="prz-f">翌月1日（日本時間）に、ゲームを開くと受け取れます。60秒アタックとエンドレスで別々にもらえます。</div></div>';
+      '<div class="prz-f">翌月1日（日本時間）に、ゲームを開くと受け取れます。60秒アタックとタイムアタックで別々にもらえます。</div></div>';
   }
   function drawRank(){
     const rows = [['今日', 'day'], ['今週', 'week'], ['今月', 'month'], ['全期間', 'all']];
     markSel('rmode', rankMode);
-    const h = hist().filter(r => r.m === rankMode);
+    const ta = rankMode === 'ta', h = hist().filter(r => r.m === (ta ? 'rank' : rankMode) && (!ta || r.d != null));
     const body = rows.map(([label, kind]) => {
       const from = periodStart(kind), list = h.filter(r => r.t >= from);
-      const top = list.length ? Math.max(...list.map(r => r.s)) : 0;
-      return '<tr><th>' + label + '</th><td>' + (list.length ? top.toLocaleString() : '—') + '</td><td>' + list.length + '</td></tr>';
+      const top = !list.length ? null : ta ? list.reduce((a, r) => (r.d > a.d || (r.d === a.d && r.s > a.s)) ? r : a) : Math.max(...list.map(r => r.s));
+      return '<tr><th>' + label + '</th><td>' + (!list.length ? '—' : ta ? taFmt(top.d) + '・' + top.s.toLocaleString() + '点' : top.toLocaleString()) + '</td><td>' + list.length + '</td></tr>';
     }).join('');
     $('rankTable').innerHTML = '<tr><th>期間</th><th>自己ベスト</th><th>プレイ回数</th></tr>' + body;
     drawWorld();
@@ -6339,7 +6351,7 @@ body.tight .itembar{gap:6px;}
   const SET_FN = {theme: setTheme, ctrl: setCtrl, side: setSwipeSide, lite: setLite,
                   prac: v => { pracLv = +v; markSel('prac', v); },
                   wperiod: v => { wPeriod = v; drawWorld(); },
-                  rmode: v => { rankMode = v === 'rank' ? 'rank' : 'sixty'; drawRank(); }};
+                  rmode: v => { rankMode = v === 'ta' ? 'ta' : 'sixty'; drawRank(); }};
   let pracLv = 5;
   document.querySelectorAll('.modesel[data-key] button').forEach(b => {
     b.addEventListener('click', () => SET_FN[b.parentElement.dataset.key](b.dataset.v));
@@ -6381,7 +6393,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.77';
+  const APP_VER = '0.9.78';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -7074,7 +7086,7 @@ body.tight .itembar{gap:6px;}
     {k: 'boss',    name: 'ボスを倒す',                u: '人', tiers: () => [1, 3, 6, AREAS.length], val: () => bossesBeaten()},
     {k: 'nc',      name: 'コンティニュー・アイテムなしでクリア', u: '面', tiers: () => [10, 30, 60, STORY.length], val: () => storyNC.filter(Boolean).length},
     {k: 'rainbow', name: 'レインボーブロックを集める', u: '個', tiers: () => [30, 100, 200, STORY.length * 3], val: () => starTotal()},
-    {k: 'endless', name: 'エンドレスで遊ぶ',          u: '回', tiers: () => [10, 50, 200, 500]},
+    {k: 'endless', name: 'タイムアタックで遊ぶ',          u: '回', tiers: () => [10, 50, 200, 500]},
     {k: 'sixty',   name: '60秒アタックで遊ぶ',        u: '回', tiers: () => [10, 50, 200, 500]},
     {k: 'olwin',   name: 'オンライン対戦で勝つ',      u: '勝', tiers: () => [1, 10, 50, 200]},
     {k: 'arwin',   name: 'オートバトルで勝つ',        u: '勝', tiers: () => [1, 10, 50, 200]},
@@ -7103,7 +7115,7 @@ body.tight .itembar{gap:6px;}
     {k: 'b3', t: 'どれかのキャラを LV5 にする', ok: () => units.some(u => u.lv >= 5), r: [['stampot', 1]]},
     {k: 'b4', t: 'ストーリー 1-5 をクリア', ok: () => storyClr[4] > 0, r: [['gticket', 5]]},
     {k: 'b5', t: '60秒アタックを遊ぶ', ok: () => load('bplay_sixty', '') === '1', r: [['gticket', 2]]},
-    {k: 'b6', t: 'エンドレスを遊ぶ', ok: () => load('bplay_endless', '') === '1', r: [['gticket', 2]]},
+    {k: 'b6', t: 'タイムアタックを遊ぶ', ok: () => load('bplay_endless', '') === '1', r: [['gticket', 2]]},
     {k: 'b7', t: 'ストーリーで仲間を3体ふやす', ok: () => units.filter(u => /^z_/.test(u.id) || STORY_IDS.has(u.id)).length >= 3, r: [['gticket', 3]]},
     {k: 'b8', t: '限界突破を1回する', ok: () => units.some(u => (u.star || 0) >= 1), r: [['stampot', 1]]},
   ];
@@ -7168,9 +7180,9 @@ body.tight .itembar{gap:6px;}
   }
   function skRank(){ const st = skStats(); if (!st.nS) return null; let r = SKR[0]; SKR.forEach(x => { if (st.val >= x.min) r = x; }); return r; }
   function skType(st){
-    if (!st.nS || !st.nE) return {t: 'タイプはまだ不明', d: 'エンドレスも遊ぶと、瞬発型か持久型かが分かります'};
+    if (!st.nS || !st.nE) return {t: 'タイプはまだ不明', d: 'タイムアタックも遊ぶと、瞬発型か持久型かが分かります'};
     const dash = cl01(st.sixty / 2000), sta = cl01((st.endl - 1) / 5);
-    if (sta - dash >= 0.15) return {t: '持久型', d: 'じっくり長く戦うほど力を出すタイプ。エンドレス向き'};
+    if (sta - dash >= 0.15) return {t: '持久型', d: 'じっくり長く戦うほど力を出すタイプ。タイムアタック向き'};
     if (dash - sta >= 0.15) return {t: '瞬発型', d: '短い時間で一気に稼ぐタイプ。60秒アタック向き。長く戦うと息切れぎみ'};
     return {t: 'バランス型', d: '短い勝負でも長い勝負でも、同じように力を出せるタイプ'};
   }
@@ -7184,10 +7196,10 @@ body.tight .itembar{gap:6px;}
     return [
       {k: 'SPD',  n: 'スピード', p: cl01((tpm - 3) / 15), raw: '1分に ' + tpm.toFixed(1) + 'ターン', d: '1分間に何回くずせるか'},
       {k: 'DASH', n: 'ダッシュ', p: cl01(st.sixty / 2000), raw: '60秒 安定値 ' + Math.round(st.sixty).toLocaleString() + '点', d: '短期決戦の爆発力（60秒アタック）'},
-      {k: 'STA',  n: 'スタミナ', p: st.nE ? cl01((st.endl - 1) / 5) : 0, raw: st.nE ? 'エンドレス 安定値 ' + skMS(st.endl) : 'エンドレス未プレイ', d: 'エンドレスで長く生き残る力（3分でC、5分でA）', na: !st.nE},
+      {k: 'STA',  n: 'スタミナ', p: st.nE ? cl01((st.endl - 1) / 5) : 0, raw: st.nE ? 'タイムアタック 安定値 ' + skMS(st.endl) : 'タイムアタック未プレイ', d: 'タイムアタックで長く生き残る力（3分でC、5分でA）', na: !st.nE},
       {k: 'POW',  n: '破壊力', p: cl01((cpt - 3) / 12), raw: '1ターン ' + cpt.toFixed(1) + '個', d: '1回でこわすブロックの数'},
       {k: 'ATK',  n: '攻撃力', p: cl01(st.ppt / 140), raw: '1ターン ' + Math.round(st.ppt).toLocaleString() + '点', d: '1回くずしたときの点数'},
-      {k: 'EVA',  n: '回避率', p: st.penMin != null ? cl01(1 - st.penMin / 1.5) : 0, raw: st.penMin != null ? 'エンドレス 1周逃し 1分に ' + st.penMin.toFixed(1) + '回' : 'エンドレスを遊ぶと計測', d: 'エンドレスで、光の1周以内に消してペナルティを避ける力', na: st.penMin == null},
+      {k: 'EVA',  n: '回避率', p: st.penMin != null ? cl01(1 - st.penMin / 1.5) : 0, raw: st.penMin != null ? 'タイムアタック 1周逃し 1分に ' + st.penMin.toFixed(1) + '回' : 'タイムアタックを遊ぶと計測', d: 'タイムアタックで、光の1周以内に消してペナルティを避ける力', na: st.penMin == null},
       {k: 'REA',  n: '反応', p: cl01((6 - st.wait) / 3.5), raw: '次まで ' + st.wait.toFixed(1) + '秒', d: '消えてから次をそろえるまでの速さ'},
       {k: 'SPA',  n: '空間認識', p: cl01(st.sync / 0.7), raw: '同時消し ' + pc(st.sync), d: '盤面を広く見て、何列も同時にそろえる力'},
       {k: 'DEX',  n: '器用さ', p: cl01(lr / 0.6), raw: '4つ ' + pc(st.r4) + '・5つ ' + pc(st.r5) + '・6つ ' + pc(st.r6), d: '長い列（4つ以上）をそろえる技術'},
@@ -7222,8 +7234,8 @@ body.tight .itembar{gap:6px;}
       '<div class="skval">SKILL SCORE <b>' + Math.round(st.val).toLocaleString() + '</b><small>60秒アタック 安定値 ' + Math.round(st.sixty).toLocaleString() + '（直近' + st.nS + '回）</small></div>' +
       '<div class="sktype"><b>' + ty.t + '</b><small>' + ty.d + '</small></div>' +
       '<div class="sknext">' + (() => { const i = rk ? SKR.indexOf(rk) : -1, nx = SKR[i + 1]; return nx ? '次の ' + nx.k + '（' + nx.n + '）まで あと <b>' + Math.max(0, Math.ceil(nx.min - st.val)).toLocaleString() + '</b>' : '最高ランクです！'; })() + '</div></section>' +
-      '<section><h3>STATUS <small>（60秒アタック・エンドレスの直近' + st.n + '回）</small></h3>' +
-      (st.turns ? skStatusHTML(st) : '<p>60秒アタックかエンドレスを遊ぶと、ここにあなたのステータスが出ます。</p>') + '</section>' +
+      '<section><h3>STATUS <small>（60秒アタック・タイムアタックの直近' + st.n + '回）</small></h3>' +
+      (st.turns ? skStatusHTML(st) : '<p>60秒アタックかタイムアタックを遊ぶと、ここにあなたのステータスが出ます。</p>') + '</section>' +
       '<section><h3>SKILL RANK</h3><div class="sklist">' + SKR.map(x => '<div class="' + (rk && rk.k === x.k ? 'on' : '') + '"><b>' + x.k + '</b> ' + x.n + '<small>' + x.min.toLocaleString() + '〜</small></div>').join('') + '</div>' +
       '</section>';
   }
@@ -7235,7 +7247,7 @@ body.tight .itembar{gap:6px;}
     d: {name: '毎日のミッション', reset: '毎日0時にリセット', list: [
       {k: 'days',  n: 1, t: '毎日のプレゼントを受け取る', r: [['coin', 50]]},
       {k: 'stage', n: 3, t: 'ストーリーで3回勝つ', r: [['gticket', 1]]},
-      {k: 'mini',  n: 1, t: '60秒アタックかエンドレスを1回遊ぶ', r: [['coin', 100]]},
+      {k: 'mini',  n: 1, t: '60秒アタックかタイムアタックを1回遊ぶ', r: [['coin', 100]]},
       {k: 'gacha', n: 1, t: 'ガチャを1回引く', r: [['coin', 50]]},
       {k: 'vs',    n: 1, t: 'オンライン対戦かオートバトルで1回勝つ', r: [['coin', 100]]},
     ], all: [['gticket', 2]]},
@@ -7243,7 +7255,7 @@ body.tight .itembar{gap:6px;}
       {k: 'days',  n: 5,  t: '毎日のプレゼントを5日受け取る', r: [['gticket', 2]]},
       {k: 'stage', n: 20, t: 'ストーリーで20回勝つ', r: [['gticket', 3]]},
       {k: 'boss',  n: 3,  t: 'ボスに3回勝つ', r: [['stampot', 1]]},
-      {k: 'mini',  n: 10, t: '60秒アタックかエンドレスを10回遊ぶ', r: [['coin', 500]]},
+      {k: 'mini',  n: 10, t: '60秒アタックかタイムアタックを10回遊ぶ', r: [['coin', 500]]},
       {k: 'vs',    n: 5,  t: 'オンライン対戦かオートバトルで5回勝つ', r: [['coin', 500]]},
     ], all: [['gticket', 5]]},
     m: {name: '毎月のミッション', reset: '毎月1日0時にリセット', list: [
@@ -10161,7 +10173,7 @@ body.tight .itembar{gap:6px;}
     const PAGES = [
       {img: 'guide', face: true, t: 'TWIST RUSHへようこそ！', b: 'このゲームは、ブロックを<b>回転</b>させて色をあわせて、<b>点数を競い合う</b>かんたんなゲームです。<br>モードは主に<b>4種類</b>あります。'},
       {img: 'story', t: '① ストーリーモード', b: '奪われた<b>虹色のブロック</b>を取り戻す旅！ 敵は強大です。<br><b>ガチャ</b>でキャラクターをゲットして<b>チーム</b>を組み、各ステージの敵キャラ・ボスを倒して<b>経験値とコイン</b>をゲット！<br>キャラの<b>合成・限界突破</b>で味方をどんどん強くしよう！'},
-      {img: 'simple', t: '② 60秒アタック・エンドレス', b: 'キャラやスキルなどは一切なし。シンプルに<b>的確な判断とスピード</b>が問われます。<br>時間内の点数を競う<b>60秒アタック</b>、だんだん速くなる<b>エンドレス</b>。どちらも<b>リアルタイム世界ランキング</b>に記録を残せます。<br><small>※上位に入ると、ストーリーで使えるアイテムがもらえます</small>'},
+      {img: 'simple', t: '② 60秒アタック・タイムアタック', b: 'キャラやスキルなどは一切なし。シンプルに<b>的確な判断とスピード</b>が問われます。<br>時間内の点数を競う<b>60秒アタック</b>、だんだん厳しくなる中でどれだけ生き残れるかの<b>タイムアタック</b>。どちらも<b>リアルタイム世界ランキング</b>に記録を残せます。<br><small>※上位に入ると、ストーリーで使えるアイテムがもらえます</small>'},
       {img: 'online', t: '③ オンライン対戦', b: '2人でオンライン対決！ キャラなしの<b>シンプル版</b>と、キャラを使う<b>キャラ版</b>があります。<br>キャラどうしを自動で戦わせる<b>オートバトル</b>も。遊ぶと<b>対戦メダル</b>が集まります。'},
       {img: 'guide', face: true, t: '最強を目指そう！', b: 'いろんなモードを使いこなして、<b>最強</b>を目指そう！<br>まずは<b>ストーリーモード</b>から。わたし、レインボーが案内するね！', last: true},
     ];
@@ -10261,7 +10273,7 @@ body.tight .itembar{gap:6px;}
           waitFor(() => !stillOn() || !(skList[k] && skList[k].ready)).then(() => { hide(); res(); }); });
         await waitFor(() => !stillOn(), 2200);
         if (stillOn()) pauseClock();
-        await say('すごい！ これが<b>技</b>だよ。時間でたまるから、ここぞというときに使おう！<br>あとは操作に慣れて、どんどんチャレンジしてみてね。<br><b>60秒アタック・エンドレス・オンライン対戦</b>でもアイテムがゲットできるから、遊んでみてね！', null, 'がんばる！');
+        await say('すごい！ これが<b>技</b>だよ。時間でたまるから、ここぞというときに使おう！<br>あとは操作に慣れて、どんどんチャレンジしてみてね。<br><b>60秒アタック・タイムアタック・オンライン対戦</b>でもアイテムがゲットできるから、遊んでみてね！', null, 'がんばる！');
         if (stillOn()) resumeClock();
         setStep('done');
       } finally { tour = false; autoOn = false; hide(); }

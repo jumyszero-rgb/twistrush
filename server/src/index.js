@@ -441,25 +441,32 @@ function sinceUtc(period, t) {
   if (period === 'month') return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1) / 1000;
   return 0;
 }
+// 順位をつける値。タイムアタック（ta）は「生き残った時間 → 同じなら点数」なので、時間×1000万＋点数を1つの数にして比べる
+const RK_MUL = 10000000;
+const KEY = mode => mode === 'ta' ? '(dur * ' + RK_MUL + ' + MIN(score, ' + (RK_MUL - 1) + '))' : 'score';
+const keyOf = (mode, score, dur) => mode === 'ta' ? Math.max(0, dur | 0) * RK_MUL + Math.min(score, RK_MUL - 1) : score;
+const unKey = (mode, k) => mode === 'ta' ? { score: k % RK_MUL, dur: Math.floor(k / RK_MUL) } : { score: k, dur: null };
 async function myRank(env, mode, period, player, t) {
-  const from = since(period, t);
-  const best = await env.DB.prepare('SELECT MAX(score) AS s FROM scores WHERE mode = ? AND player = ? AND created_at >= ?').bind(mode, player, from).first();
+  const from = since(period, t), K = KEY(mode);
+  const best = await env.DB.prepare('SELECT MAX(' + K + ') AS s FROM scores WHERE mode = ? AND player = ? AND created_at >= ?').bind(mode, player, from).first();
   const s = best && best.s != null ? best.s : null;
   if (s == null) return { best: null, rank: null, total: null };
-  const above = await env.DB.prepare('SELECT COUNT(*) AS c FROM (SELECT player, MAX(score) AS m FROM scores WHERE mode = ? AND created_at >= ? GROUP BY player) WHERE m > ?').bind(mode, from, s).first();
+  const above = await env.DB.prepare('SELECT COUNT(*) AS c FROM (SELECT player, MAX(' + K + ') AS m FROM scores WHERE mode = ? AND created_at >= ? GROUP BY player) WHERE m > ?').bind(mode, from, s).first();
   const total = await env.DB.prepare('SELECT COUNT(DISTINCT player) AS c FROM scores WHERE mode = ? AND created_at >= ?').bind(mode, from).first();
-  return { best: s, rank: (above.c || 0) + 1, total: total.c || 0 };
+  const u = unKey(mode, s);
+  return { best: u.score, bestDur: u.dur, rank: (above.c || 0) + 1, total: total.c || 0 };
 }
 async function rankTop(env, req, url) {
   const t = nowSec();
   const mode = (url.searchParams.get('mode') || 'sixty').slice(0, 16);
   const period = PERIODS.includes(url.searchParams.get('period')) ? url.searchParams.get('period') : 'day';
   const limit = Math.min(100, Math.max(1, Number(url.searchParams.get('limit') || 20)));
-  const { results } = await env.DB.prepare('SELECT s.player, s.name, MAX(s.score) AS score, MAX(s.created_at) AS at, (SELECT country FROM accounts a WHERE a.id = s.player) AS cc FROM scores s WHERE s.mode = ? AND s.created_at >= ? GROUP BY s.player ORDER BY score DESC, at ASC LIMIT ?').bind(mode, since(period, t), limit).all();
+  const K = KEY(mode).replace(/dur|score/g, x => 's.' + x);
+  const { results } = await env.DB.prepare('SELECT s.player, s.name, MAX(' + K + ') AS k, MAX(s.created_at) AS at, (SELECT country FROM accounts a WHERE a.id = s.player) AS cc FROM scores s WHERE s.mode = ? AND s.created_at >= ? GROUP BY s.player ORDER BY k DESC, at ASC LIMIT ?').bind(mode, since(period, t), limit).all();
   const me = await who(env, req);
   return json(env, req, {
     period, mode,
-    top: (results || []).map((r, i) => ({ rank: i + 1, name: r.name, cc: r.cc || '', score: r.score, me: !!(me && r.player === me.id) })),
+    top: (results || []).map((r, i) => { const u = unKey(mode, r.k); return { rank: i + 1, name: r.name, cc: r.cc || '', score: u.score, dur: u.dur, me: !!(me && r.player === me.id) }; }),
     me: me ? await myRank(env, mode, period, me.id, t) : null,
     // 月間のごほうび（順位ごとの中身）と、今月のいまの順位
     prizes: MONTH_REWARDS.map(x => ({ upTo: x.upTo, label: x.label, items: x.items })),
@@ -486,7 +493,7 @@ async function rankPost(env, req, me) {
   const ranks = {};
   for (const pd of PERIODS) {
     const from = since(pd, t), my = await myRank(env, row.mode, pd, me.id, t);
-    const above = await env.DB.prepare('SELECT COUNT(*) AS c FROM (SELECT player, MAX(score) AS m FROM scores WHERE mode = ? AND created_at >= ? AND player <> ? GROUP BY player) WHERE m > ?').bind(row.mode, from, me.id, row.score).first();
+    const above = await env.DB.prepare('SELECT COUNT(*) AS c FROM (SELECT player, MAX(' + KEY(row.mode) + ') AS m FROM scores WHERE mode = ? AND created_at >= ? AND player <> ? GROUP BY player) WHERE m > ?').bind(row.mode, from, me.id, keyOf(row.mode, row.score, row.dur)).first();
     ranks[pd] = { rank: (above.c || 0) + 1, total: my.total, best: my.best, bestRank: my.rank };
   }
   return json(env, req, { ok: true, ranks });
@@ -502,7 +509,7 @@ const MONTH_REWARDS = [
   { upTo: 100, label: '51〜100位', items: { gticket: 1, refresh30: 2, stampot: 1 } },
   { upTo: 0,   label: '参加賞',    items: { refresh30: 1, stampot: 1 } },          // 0 は「それ以下ぜんぶ」
 ];
-const REWARD_MODES = ['sixty', 'rank'];
+const REWARD_MODES = ['sixty', 'rank', 'ta'];
 function lastMonth(t) {
   const to = since('month', t), from = since('month', to - 1);
   const d = new Date((from + TZ) * 1000);
@@ -511,14 +518,15 @@ function lastMonth(t) {
 async function monthRewards(env, player) {
   const m = lastMonth(nowSec()), out = [];
   for (const mode of REWARD_MODES) {
-    const best = await env.DB.prepare('SELECT MAX(score) AS s FROM scores WHERE mode = ? AND player = ? AND created_at >= ? AND created_at < ?').bind(mode, player, m.from, m.to).first();
+    const K = KEY(mode);
+    const best = await env.DB.prepare('SELECT MAX(' + K + ') AS s FROM scores WHERE mode = ? AND player = ? AND created_at >= ? AND created_at < ?').bind(mode, player, m.from, m.to).first();
     if (!best || best.s == null) continue;
     const done = await env.DB.prepare('SELECT 1 FROM reward_claims WHERE account_id = ? AND month = ? AND mode = ?').bind(player, m.key, mode).first();
     if (done) continue;
-    const above = await env.DB.prepare('SELECT COUNT(*) AS c FROM (SELECT player, MAX(score) AS b FROM scores WHERE mode = ? AND created_at >= ? AND created_at < ? GROUP BY player) WHERE b > ?').bind(mode, m.from, m.to, best.s).first();
+    const above = await env.DB.prepare('SELECT COUNT(*) AS c FROM (SELECT player, MAX(' + K + ') AS b FROM scores WHERE mode = ? AND created_at >= ? AND created_at < ? GROUP BY player) WHERE b > ?').bind(mode, m.from, m.to, best.s).first();
     const total = await env.DB.prepare('SELECT COUNT(DISTINCT player) AS c FROM scores WHERE mode = ? AND created_at >= ? AND created_at < ?').bind(mode, m.from, m.to).first();
     const rank = (above.c || 0) + 1, tier = MONTH_REWARDS.find(x => !x.upTo || rank <= x.upTo);
-    out.push({ month: m.key, mode, rank, total: total.c || 0, best: best.s, label: tier.label, items: tier.items });
+    out.push({ month: m.key, mode, rank, total: total.c || 0, best: unKey(mode, best.s).score, label: tier.label, items: tier.items });
   }
   return out;
 }
@@ -544,7 +552,7 @@ async function dummyRank(env) {
   const t = nowSec(), day = new Date((t + TZ) * 1000).toISOString().slice(0, 10);
   const mk = await env.DB.prepare("SELECT v FROM meta WHERE k = 'dummy_day'").first();
   if (!on) { if (mk) { await env.DB.batch(del.concat("DELETE FROM meta WHERE k = 'dummy_day'").map(q => env.DB.prepare(q))); } return; }
-  if (mk && mk.v === day) return;
+  if (mk && mk.v === day + 'ta') return;
   const month = new Date((t + TZ) * 1000).toISOString().slice(0, 7), dayStart = t - ((t + TZ) % 86400);
   const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
   const q = del.map(x => env.DB.prepare(x));
@@ -553,13 +561,14 @@ async function dummyRank(env) {
     q.push(env.DB.prepare('INSERT INTO accounts (id, name, created_at, last_login, banned, country) VALUES (?, ?, ?, ?, 0, ?)').bind(id, name, t, t, cc));
     q.push(env.DB.prepare('INSERT INTO scores (player, name, mode, score, blocks, dur, ver, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').bind(id, name, 'sixty', rnd(15, 120) * 100, rnd(30, 200), 60, 'dummy', at));
     q.push(env.DB.prepare('INSERT INTO scores (player, name, mode, score, blocks, dur, ver, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').bind(id, name, 'rank', rnd(30, 400) * 100, rnd(60, 900), rnd(120, 900), 'dummy', at));
+    q.push(env.DB.prepare('INSERT INTO scores (player, name, mode, score, blocks, dur, ver, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').bind(id, name, 'ta', rnd(10, 60) * 100, rnd(60, 500), rnd(100, 330), 'dummy', at));
     for (const kind of ['simple', 'chara']) {
       const rate = rnd(880, 1420), w = rnd(3, 30), l = rnd(3, 25);
       q.push(env.DB.prepare('INSERT INTO ratings (account_id, kind, rate, win, lose, draw, updated_at) VALUES (?, ?, ?, ?, ?, 0, ?)').bind(id, kind, rate, w, l, t));
       q.push(env.DB.prepare('INSERT INTO ratings_month (account_id, kind, month, rate, games) VALUES (?, ?, ?, ?, ?)').bind(id, kind, month, rate, w + l));
     }
   });
-  q.push(env.DB.prepare("INSERT INTO meta (k, v) VALUES ('dummy_day', ?) ON CONFLICT(k) DO UPDATE SET v = excluded.v").bind(day));
+  q.push(env.DB.prepare("INSERT INTO meta (k, v) VALUES ('dummy_day', ?) ON CONFLICT(k) DO UPDATE SET v = excluded.v").bind(day + 'ta'));
   await env.DB.batch(q);
 }
 function prepared(env) {
