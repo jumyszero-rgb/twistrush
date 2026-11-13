@@ -998,6 +998,9 @@ body.on-menu .battlemain{opacity:0;}
   .dname{font-size:20px;font-weight:900;} .dname .cno{position:static;display:inline-block;width:22px;height:22px;border-radius:50%;background:#ffd24a;color:#3a2210;text-align:center;font-size:15px;line-height:22px;}
   .dsub{font-size:12px;margin-top:2px;} .dgr{font-style:normal;font-weight:900;border:2px solid var(--gc);border-radius:5px;padding:0 4px;}
   .tbadge.inl{position:static;display:inline-block;vertical-align:middle;}
+  .abadge{position:absolute;top:2px;right:22px;width:16px;height:16px;border-radius:4px;font-style:normal;font-size:10px;line-height:16px;text-align:center;color:#fff;font-weight:900;text-shadow:0 1px 1px rgba(0,0,0,.35);}
+  .ccell .abadge{top:22px;left:3px;right:auto;bottom:auto;width:18px;height:18px;line-height:18px;font-size:11px;} .abadge.inl{position:static;display:inline-block;vertical-align:middle;}
+  .attrln{font-size:12px;margin:4px 0 2px;} .attrln b.good{color:#1fa35c;} .attrln b.bad{color:#d8364f;}
   .dlv{font-size:13px;margin-top:4px;} .dlv b{font-size:24px;color:#ffd24a;} .ustar.big{display:block;font-size:16px;letter-spacing:1px;}
   .dexp{font-size:11px;opacity:.85;margin-top:2px;}
   .dtabs{display:flex;gap:4px;margin:10px 0 6px;} .dtabs button{flex:1;border-radius:10px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.3);color:#fff;font-weight:800;font-size:11px;padding:7px 2px;}
@@ -3750,7 +3753,7 @@ body.tight .itembar{gap:6px;}
     if (!st) return 1;
     try {
       const A = teamStats()[1], E = enemyStats(st);
-      const per = A * corr(A, E[2]) / Math.max(1, E[0]);          // ブロック1個で削る目もり
+      const per = A * corr(A, E[2]) * teamAttr(st).out / Math.max(1, E[0]);   // ブロック1個で削る目もり（属性の相性も入れる）
       return per > 1 ? 1 / per : 1;
     } catch(_) { return 1; }
   }
@@ -4090,7 +4093,7 @@ body.tight .itembar{gap:6px;}
     box.classList.toggle('hidden', !vsOn);
     // 色指定のときは、その色のバーだけを出す
     box.innerHTML = cpus.map((c, i) =>
-      '<div class="vsrow" id="vsrow' + i + '"><span class="nm">' + c.name + '</span><span class="bars">' +
+      '<div class="vsrow" id="vsrow' + i + '"><span class="nm">' + (gameMode === 'story' && curStage ? attrBadge(stageEnemyId(curStage), true) + ' ' : '') + c.name + '</span><span class="bars">' +
       CH.map((ch, k) => (goalColor >= 0 && k !== goalColor) ? '' :
         '<span class="cbar" data-k="' + k + '"><i><b style="background:' + ch.col + '"></b></i><em>' + enemyHP + '</em></span>').join('') +
       '</span><span class="st" id="vsst' + i + '">残HP</span></div>').join('') +
@@ -6393,7 +6396,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.78';
+  const APP_VER = '0.9.79';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -6518,7 +6521,9 @@ body.tight .itembar{gap:6px;}
       $('stageInfo').innerHTML = '<div class="t">' + st.label + '　' + rule + '</div>' + rtx +
         '<div class="g">' + goalText(st) + '</div>' +
         (() => { const need = stagePow(st), mine = myStoryPow(), c = powCls(mine, need);
-          return '<div class="pwr">必要戦闘力 <b class="' + c + '">' + need.toLocaleString() + '</b>　あなたのチーム <b class="' + c + '">' + mine.toLocaleString() + '</b>' +
+          const ta = teamAttr(st), av = ta.out >= 1.05 ? ['good', '有利'] : ta.out <= 0.95 ? ['bad', '不利'] : ['', 'ふつう'];
+          return '<div class="attrln">敵の属性 ' + attrBadge(stageEnemyId(st), true) + ' ' + ATTR[ta.ea].n + '　チームの相性 <b class="' + av[0] + '">' + av[1] + ' ×' + ta.out.toFixed(2) + '</b></div>' +
+            '<div class="pwr">必要戦闘力 <b class="' + c + '">' + need.toLocaleString() + '</b>　あなたのチーム <b class="' + c + '">' + mine.toLocaleString() + '</b>' +
             '<small>' + (c === 'ok' ? '十分に戦えます' : c === 'near' ? 'ほぼ互角。技やアイテムを使えば勝てます' : '少し厳しいかも。クリアしたステージでレベルを上げるのがおすすめ') + '（技の強さは入っていません）</small></div>'; })() +
         (() => { const sc = misScale(st);
           return '<ul class="ml">' + st.missions.map((m, j) => '<li class="' + (storyMask[pickStage] >> j & 1 ? 'on' : '') + '">' +
@@ -7958,8 +7963,53 @@ body.tight .itembar{gap:6px;}
   const corr = (a, d) => (a + d) > 0 ? 2 * a / (a + d) : 1;
   let runMy = [100, 100, 100, 100], runEn = [100, 100, 100, 100];
   const statOn = () => (gameMode === 'story' && !!curStage) || (gameMode === 'online' && !!onl && onl.kind === 'chara');   // キャラ対戦もステータスで戦う
+
+  // ===== 属性（2026-11-10 決定・2026-11-13 実装）：火・水・土・風・雷・無・闇・光 =====
+  //   相性：火→風→土→雷→水→火（矢印の先に強い）。光と闇はお互いに弱点を突き合う。無は有利・不利なし
+  //   倍率：有利×1.5、不利×0.75。ダメージはチーム4人の合計なので、4人それぞれの倍率の平均をかける
+  const ATTR = {fire: {n: '火', col: '#ff5a3c'}, water: {n: '水', col: '#3c8cff'}, earth: {n: '土', col: '#a0703c'}, wind: {n: '風', col: '#2fae6a'},
+    thunder: {n: '雷', col: '#e8a800'}, none: {n: '無', col: '#8a8a99'}, dark: {n: '闇', col: '#7a3cc8'}, light: {n: '光', col: '#f5c400'}};
+  const ATTR_BEATS = {fire: 'wind', wind: 'earth', earth: 'thunder', thunder: 'water', water: 'fire'};
+  const ATTR_GACHA = {'トリオン': 'fire', 'ヒノカ': 'fire', 'ミカン': 'fire', 'ヴォルカ': 'fire', 'ロウ': 'fire', 'マグ': 'fire', 'シシマル': 'fire', 'モモ': 'water', 'シェル': 'water', 'ナギ': 'water', 'ペンタ': 'water', 'アワコ': 'water', 'シズク': 'water', 'マリーナ': 'water', 'セツナ': 'water', 'アンコ': 'water', 'ガイアロ': 'earth', 'ガルナ': 'earth', 'ポルチ': 'earth', 'モグル': 'earth', 'カラコ': 'earth', 'クルミ': 'earth', 'サボ': 'earth', 'カブトン': 'earth', 'サーラ': 'earth', 'モスじい': 'earth', 'ローザ': 'earth', 'シルヴィ': 'wind', 'マスカ': 'wind', 'シャオ': 'wind', 'ソラタ': 'wind', 'フワリ': 'wind', 'ツルハ': 'wind', 'ヒュウ': 'wind', 'ギン': 'wind', 'グリフ': 'wind', 'フェザ': 'wind', 'ポッピー': 'thunder', 'ボルテクス': 'thunder', 'ボルティ': 'thunder', 'ギア': 'thunder', 'ネジ': 'thunder', 'ソウマ': 'none', 'ダスティ': 'none', 'オルドリン': 'none', 'ソフィア': 'none', 'ミルフィ': 'none', 'メリー': 'none', 'パレ': 'none', 'マジロ': 'none', 'モチ': 'none', 'シオリ': 'none', 'ヴェイル': 'dark', 'リリ': 'dark', 'ノワール': 'dark', 'ノクス': 'dark', 'セラ': 'light', 'リディア': 'light', 'ルカ': 'light', 'セレナ': 'light', 'アリシア': 'light', 'アルト': 'light', 'ルミエル': 'light', 'ヒカリ': 'light', 'ディーラ': 'light', 'ウサミ': 'light', 'ヒマリ': 'light'};
+  const ATTR_BOSS = {ichigo: 'fire', mocha: 'light', rinpan: 'water', busy: 'earth', camilla: 'none', titan: 'thunder', windy: 'wind', chiyo: 'dark', gilbert: 'light'};
+  const ATTR_AREA = ['earth', 'none', 'water', 'dark', 'none', 'thunder', 'wind', 'dark', 'light'];   // ザコ：エリアごとの基本
+  const ATTR_ZAKO_EX = [{'ハニー': 'wind', 'ドット': 'wind', 'フレーズ': 'fire'}, {'ルーミ': 'light', 'ハンス': 'fire', 'ロビン': 'wind'},
+    {'アオビ': 'fire', 'グリモア': 'dark', 'アワリン': 'dark', 'ホシクラゲ': 'light', 'ルナピョン': 'light'},
+    {'リーフ': 'wind', 'ムスカ': 'earth', 'ミュール': 'wind', 'キリカブ': 'earth', 'ポーラ': 'water'}, {'マネキ': 'light', 'ドロネコ': 'dark'},
+    {'ゼータ': 'none', 'プルト': 'none'}, {'ニジカ': 'light', 'モコ': 'water'}, {'コンコ': 'fire', 'ポン吉': 'earth', 'ガマ太': 'water'},
+    {'カラッポ': 'dark', 'シャルロ': 'dark', 'ガーゴ': 'earth'}];
+  let attrCache = null;
+  function attrOf(id){
+    if (!id) return 'none';
+    if (!attrCache) {
+      attrCache = {};
+      GACHA_CREW.forEach(z => attrCache['x_' + z.k] = ATTR_GACHA[z.name] || 'none');
+      Object.keys(ZAKO_CREW).forEach(a => ZAKO_CREW[a].forEach(z => attrCache['z_' + z.k] = (ATTR_ZAKO_EX[a] || {})[z.name] || ATTR_AREA[a] || 'none'));
+      Object.keys(ATTR_BOSS).forEach(k => attrCache[k] = ATTR_BOSS[k]);
+    }
+    return attrCache[id] || 'none';
+  }
+  function attrMul(a, d){
+    if (ATTR_BEATS[a] === d) return 1.5;
+    if (ATTR_BEATS[d] === a) return 0.75;
+    if ((a === 'light' && d === 'dark') || (a === 'dark' && d === 'light')) return 1.5;
+    return 1;
+  }
+  const attrBadge = (id, inl) => { const a = ATTR[attrOf(id)]; return '<i class="abadge' + (inl ? ' inl' : '') + '" style="background:' + a.col + '" title="' + a.n + '属性">' + a.n + '</i>'; };
+  // ステージの敵：ボスはボス本人、ほかはその面のザコ（決まった並び）
+  function stageEnemyId(st){ if (!st) return null; if (st.char != null && CHARS[st.char]) return CHARS[st.char].id; const z = st.kind === 'boss' ? null : zakoAt(st); return z ? 'z_' + z.k : null; }
+  // チームの相性（平均）：out＝こちらの攻撃にかける倍率／in＝敵の攻撃にかける倍率
+  function teamAttr(st){
+    const ea = attrOf(stageEnemyId(st)), m = teamMembers();
+    if (!st || !m.length) return {ea, out: 1, inn: 1};
+    const out = m.reduce((s, u) => s + attrMul(attrOf(u.id), ea), 0) / m.length;
+    const inn = m.reduce((s, u) => s + attrMul(ea, attrOf(u.id)), 0) / m.length;
+    return {ea, out, inn};
+  }
+  let runAttr = {out: 1, inn: 1};
   function statsBegin(){
     runMy = statOn() ? teamStats() : [100, 100, 100, 100];
+    runAttr = gameMode === 'story' && curStage ? teamAttr(curStage) : {out: 1, inn: 1};
     runEn = !statOn() ? [100, 100, 100, 100] : gameMode === 'online' ? ((onl.opp && onl.opp.team && onl.opp.team.st) || [100, 100, 100, 100]).map(v => Math.max(1, +v || 1)) : enemyStats(curStage);
   }
   const myAtk = () => runMy[1] * (atkUntil && now() < atkUntil ? 2 : 1) * bm('atk');
@@ -7967,9 +8017,9 @@ body.tight .itembar{gap:6px;}
   const unitPts = () => Math.max(1, runMy[0]);                          // カラーHPの1目もり＝体力合計（HP＝体力×30）
   const hpMaxPts = () => unitPts() * CFG.STACK_MAX;
   // 受けるダメージ：敵の攻撃1回あたりの目もり数
-  function incoming(n){ if (!statOn()) return n; const pts = n * runEn[1] * corr(runEn[1], myDef()); return pts / unitPts(); }
+  function incoming(n){ if (!statOn()) return n; const pts = n * runEn[1] * corr(runEn[1], myDef()) * runAttr.inn; return pts / unitPts(); }
   // 与えるダメージ：敵のHPの1目もり＝敵の体力（同じステータスならブロック1個で1目もり）
-  function outgoing(d){ if (!statOn()) return d * atkMul(); return d * myAtk() * corr(myAtk(), runEn[2]) / Math.max(1, runEn[0]); }
+  function outgoing(d){ if (!statOn()) return d * atkMul(); return d * myAtk() * corr(myAtk(), runEn[2]) * runAttr.out / Math.max(1, runEn[0]); }
   const enUnitPts = () => statOn() ? Math.max(1, runEn[0]) : 1;
   // スピード：自分が速いほど、外周の光とカラーHPの時計がゆっくりになる
   const spdMul = () => statOn() ? (runEn[3] * ebm() + runMy[3] * bm('spd')) / (2 * runEn[3] * ebm()) : bm('spd');
@@ -8171,7 +8221,7 @@ body.tight .itembar{gap:6px;}
     let h = '<div class="tcol"><div class="ccell tslot ' + (u ? 'g-' + CHAR_STAT[u.id].grade : 'empty') + (k === 0 ? ' main' : '') + (sel ? ' pick' : '') + (u && u.lock ? ' locked' : '') + '" data-k="' + k + '" role="button">';
     if (u) {
       const ci = ciOf(u);
-      h += '<span class="cface" data-ci="' + ci + '"></span><b class="clv">LV' + u.lv + '</b>' + typeBadge(u.id) +
+      h += '<span class="cface" data-ci="' + ci + '"></span><b class="clv">LV' + u.lv + '</b>' + typeBadge(u.id) + attrBadge(u.id) +
            '<span class="cno">' + '①②③④'[k] + '</span><span class="cbot">' + starsHTMLu(u) + '<small>' + (ALLC[ci].title ? '<i class="cttl">' + ALLC[ci].title + '</i>' : '') + ALLC[ci].name + '</small></span>';
     } else h += '<span class="tplus">＋</span>';
     h += '</div><div class="tskrow">';
@@ -8534,7 +8584,7 @@ body.tight .itembar{gap:6px;}
         const noMain = false;
         h += '<div class="ccell g-' + CHAR_STAT[u.id].grade + (boxSel === u.u ? ' sel' : '') + (u.lock ? ' locked' : '') + (noMain ? ' nomain' : '') + '" data-u="' + u.u + '">' + (noMain ? '<span class="nomk">①不可</span>' : '') +
              '<span class="cface" data-ci="' + ci + '"></span>' +
-             '<b class="clv">LV' + u.lv + '</b>' + typeBadge(u.id) +
+             '<b class="clv">LV' + u.lv + '</b>' + typeBadge(u.id) + attrBadge(u.id) +
              (ti >= 0 ? '<span class="cno">' + '①②③④'[ti] + '</span>' : '') +
              (lb ? '<span class="lbmark">突破</span>' : '') + (isMaxed(u) && GRADE_DOWN.MR !== undefined && CHAR_STAT[u.id].grade !== 'LR' ? '<span class="maxmk cmax">MAX</span>' : '') +
              '<span class="cbot">' + starsHTMLu(u) + '<small>' + (boxSort.startsWith('st') ? ST_NAME[+boxSort[2]] + ' ' + unitStats(u)[+boxSort[2]] : (ALLC[ci].title ? '<i class="cttl">' + ALLC[ci].title + '</i>' : '') + ALLC[ci].name) + '</small></span></div>';
@@ -8624,7 +8674,7 @@ body.tight .itembar{gap:6px;}
     let h = '<div class="dhead" style="display:flex;align-items:center"><button data-act="back" class="dback">‹ ' + (boxTab === 'dex' ? '図鑑へ' : '一覧へ') + '</button><button data-act="dlock" class="dlock' + (u.lock ? ' on' : '') + '">' + (u.lock ? '🔒 ロック中' : '🔓 ロックする') + '</button></div>' +
       '<div class="dtop g-' + cs.grade + '"><span class="dimg" data-ci="' + ci + '"></span><div class="dinfo">' +
       '<div class="dname">' + (c.title ? '<small class="dttl">' + c.title + '</small>' : '') + c.name + (ti >= 0 ? ' <span class="cno">' + '①②③④'[ti] + '</span>' : '') + '</div>' +
-      '<div class="dsub"><i class="dgr">' + cs.grade + '</i> ' + typeBadge(c.id).replace('tbadge', 'tbadge inl') + ' ' + tp.name + '</div>' +
+      '<div class="dsub"><i class="dgr">' + cs.grade + '</i> ' + typeBadge(c.id).replace('tbadge', 'tbadge inl') + ' ' + tp.name + '　' + attrBadge(c.id, true) + ' ' + ATTR[attrOf(c.id)].n + '属性</div>' +
       '<div class="dlv">LV <b>' + u.lv + '</b> / ' + capOf(u) + '</div>' + starsHTMLu(u).replace('ustar', 'ustar big') +
       '<div class="dexp">' + (atCap ? 'レベル上限です（限界突破で上限が上がります）' : '次のレベルまで ' + Math.max(0, expNeed(u.lv) - u.exp).toLocaleString()) + '</div></div></div>' +
       '<div class="dtabs">' + [['info', 'ステータス・技'], ['feed', 'LVアップ（合成）'], ['lb', '限界突破']].map(([k, n]) => '<button data-ftab="' + k + '" class="' + (detTab === k ? 'on' : '') + '">' + n + '</button>').join('') + '</div>';
