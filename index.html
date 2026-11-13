@@ -750,6 +750,16 @@ body.on-menu .battlemain{opacity:0;}
   .sklist{display:grid;grid-template-columns:1fr 1fr;gap:6px;} .sklist div{background:rgba(255,255,255,.07);border-radius:10px;padding:6px 8px;font-size:12px;font-weight:800;} .sklist div b{color:#ffe27a;font-size:15px;} .sklist div small{display:block;font-size:10px;opacity:.8;font-weight:600;}
   .sklist div.on{background:linear-gradient(#fff3c4,#ffc93d);color:#3a2000;} .sklist div.on b{color:#7a4a00;}
   .sknote{font-size:11px;opacity:.8;}
+  .skradar{display:block;width:min(100%,280px);margin:2px auto 6px;} .skradar .rg{fill:none;stroke:rgba(255,255,255,.16);stroke-width:1;}
+  .skradar .rv{fill:rgba(126,232,255,.28);stroke:#7ee8ff;stroke-width:2;stroke-linejoin:round;} .skradar .rl{fill:#f6f0ff;font-size:11px;font-weight:800;text-anchor:middle;}
+  .sstat{display:flex;flex-direction:column;gap:7px;} .ss{display:grid;grid-template-columns:1fr auto;gap:3px 8px;background:rgba(255,255,255,.06);border-radius:10px;padding:7px 9px;}
+  .ssn{font-size:14px;font-weight:900;} .ssn i{font-style:normal;display:inline-block;min-width:40px;font-size:10px;color:#7ee8ff;letter-spacing:.06em;margin-right:4px;}
+  .ssn small{display:block;font-size:9.5px;font-weight:600;opacity:.7;margin-left:44px;line-height:1.3;}
+  .ssv{display:flex;align-items:center;gap:6px;} .ssv em{font-style:normal;font-size:18px;font-weight:900;color:#fff;min-width:36px;text-align:right;font-variant-numeric:tabular-nums;}
+  .ssv b{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:6px;font-size:14px;font-weight:900;background:#555;color:#fff;}
+  .ssv b.g-S{background:linear-gradient(135deg,#ffe27a,#ff8a3d);color:#3a1a00;} .ssv b.g-A{background:#ff5d8f;} .ssv b.g-B{background:#b77bff;} .ssv b.g-C{background:#3fa7ff;} .ssv b.g-D{background:#3fbf8a;} .ssv b.g-E{background:#6b6b7a;}
+  .ssb{grid-column:1/-1;height:6px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden;} .ssb i{display:block;height:100%;background:linear-gradient(90deg,#7ee8ff,#b77bff,#ffd24a);}
+  .ssr{grid-column:1/-1;font-size:10px;opacity:.75;text-align:right;}
   .alv{display:flex;gap:6px;justify-content:center;margin:8px 0 4px;}
   #askBox .alv button, .alv button{flex:1;padding:8px 4px;border:2px solid rgba(255,255,255,.25);border-radius:12px;background:rgba(255,255,255,.08);color:#fff;font-weight:900;font-size:14px;}
   .alv button small{display:block;font-size:11px;color:#ffe27a;}
@@ -6329,7 +6339,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.66';
+  const APP_VER = '0.9.67';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -7073,9 +7083,9 @@ body.tight .itembar{gap:6px;}
     {min: 0,    k: 'D',  n: 'ROOKIE',  j: 'ビギナー'},
     {min: 300,  k: 'C',  n: 'PLAYER',  j: '一般人'},
     {min: 1000, k: 'B',  n: 'SKILLED', j: '玄人'},
-    {min: 2000, k: 'A',  n: 'EXPERT',  j: '上級者'},
-    {min: 3500, k: 'S',  n: 'MASTER',  j: '達人'},
-    {min: 6000, k: 'SS', n: 'GOD',     j: '神の領域'},
+    {min: 1400, k: 'A',  n: 'EXPERT',  j: '上級者'},
+    {min: 1800, k: 'S',  n: 'MASTER',  j: '達人'},
+    {min: 2400, k: 'SS', n: 'GOD',     j: '神の領域'},
   ];
   const SKP_N = 20;
   const skRuns = () => loadJ('skprof', null) || [];
@@ -7102,7 +7112,8 @@ body.tight .itembar{gap:6px;}
       r4: lines ? L[4] / lines : 0, r5: lines ? L[5] / lines : 0, r6: lines ? L[6] / lines : 0,
       sync: turns ? sum('sync') / turns : 0, chain: turns ? sum('chainT') / turns : 0,
       ppt: turns ? sum('pts') / turns : 0, wait: turns ? sum('wait') / turns : 0, bias,
-      stamina: sixty && endl ? Math.round(endl / sixty * 100) : 0};
+      stamina: sixty && endl ? Math.round(endl / sixty * 100) : 0,
+      cells: L[3] * 3 + L[4] * 4 + L[5] * 5 + L[6] * 6 + sum('gold') * 3, secs: sum('sec')};
   }
   function skRank(){ const st = skStats(); if (!st.nS) return null; let r = SKR[0]; SKR.forEach(x => { if (st.val >= x.min) r = x; }); return r; }
   function skType(st){
@@ -7110,6 +7121,44 @@ body.tight .itembar{gap:6px;}
     if (st.stamina >= 110) return {t: '持久型', d: 'じっくり長く戦うほど力を出すタイプ。エンドレス向き'};
     if (st.stamina <= 70) return {t: '瞬発型', d: '短い時間で一気に稼ぐタイプ。60秒アタック向き。長く戦うと息切れぎみ'};
     return {t: 'バランス型', d: '短い勝負でも長い勝負でも、同じように力を出せるタイプ'};
+  }
+  // ===== RPG風ステータス：遊び方のくせを10個の能力に置きかえる（0〜999・S〜E）=====
+  //   p は 0〜1。一般人で 0.3〜0.4 くらい、神の領域で 1 に届くように目もりを決めている
+  const cl01 = v => Math.max(0, Math.min(1, v));
+  function skStatList(st){
+    const tpm = st.secs ? st.turns / (st.secs / 60) : 0, cpt = st.turns ? st.cells / st.turns : 0;
+    const lr = st.lines ? (st.L[4] + st.L[5] + st.L[6]) / st.lines : 0, pc = v => Math.round(v * 100) + '%';
+    return [
+      {k: 'SPD',  n: 'スピード', p: cl01((tpm - 3) / 15), raw: '1分に ' + tpm.toFixed(1) + 'ターン', d: '1分間に何回くずせるか'},
+      {k: 'DASH', n: 'ダッシュ', p: cl01(st.sixty / 2000), raw: '60秒 平均 ' + Math.round(st.sixty).toLocaleString() + '点', d: '短期決戦の爆発力（60秒アタック）'},
+      {k: 'STA',  n: 'スタミナ', p: st.nE ? cl01(st.endl / 2000) : 0, raw: st.nE ? 'エンドレス 1分 ' + Math.round(st.endl).toLocaleString() + '点' : 'エンドレス未プレイ', d: '長期戦で稼ぎ続ける力（エンドレス）', na: !st.nE},
+      {k: 'POW',  n: '破壊力', p: cl01((cpt - 3) / 12), raw: '1ターン ' + cpt.toFixed(1) + '個', d: '1回でこわすブロックの数'},
+      {k: 'ATK',  n: '攻撃力', p: cl01(st.ppt / 140), raw: '1ターン ' + Math.round(st.ppt).toLocaleString() + '点', d: '1回くずしたときの点数'},
+      {k: 'EVA',  n: '回避率', p: st.bias ? cl01((60 - st.bias) / 55) : 0, raw: st.bias ? '色の偏り ' + st.bias + '%' : '—', d: '色をまんべんなく消して、ゲージのあふれを避ける力'},
+      {k: 'REA',  n: '反応', p: cl01((7 - st.wait) / 6), raw: '次まで ' + st.wait.toFixed(1) + '秒', d: '消えてから次をそろえるまでの速さ'},
+      {k: 'SPA',  n: '空間認識', p: cl01(st.sync / 0.7), raw: '同時消し ' + pc(st.sync), d: '盤面を広く見て、何列も同時にそろえる力'},
+      {k: 'DEX',  n: '器用さ', p: cl01(lr / 0.6), raw: '4つ ' + pc(st.r4) + '・5つ ' + pc(st.r5) + '・6つ ' + pc(st.r6), d: '長い列（4つ以上）をそろえる技術'},
+      {k: 'LUK',  n: '運', p: cl01(st.chain / 0.5), raw: '連鎖 ' + pc(st.chain), d: '落ちてきたブロックで続けて消える運'},
+    ];
+  }
+  const skGr = p => p >= 0.9 ? 'S' : p >= 0.75 ? 'A' : p >= 0.55 ? 'B' : p >= 0.35 ? 'C' : p >= 0.15 ? 'D' : 'E';
+  function skRadar(list){
+    const W = 260, C = W / 2, R = 92, n = list.length, pt = (i, r) => { const a = -Math.PI / 2 + i / n * Math.PI * 2; return [C + Math.cos(a) * r, C + Math.sin(a) * r]; };
+    let g = '';
+    [0.25, 0.5, 0.75, 1].forEach(f => { g += '<polygon points="' + list.map((_, i) => pt(i, R * f).join(',')).join(' ') + '" class="rg"/>'; });
+    list.forEach((_, i) => { const [x, y] = pt(i, R); g += '<line x1="' + C + '" y1="' + C + '" x2="' + x + '" y2="' + y + '" class="rg"/>'; });
+    g += '<polygon points="' + list.map((s, i) => pt(i, R * Math.max(0.04, s.p)).join(',')).join(' ') + '" class="rv"/>';
+    list.forEach((s, i) => { const [x, y] = pt(i, R + 20); g += '<text x="' + x + '" y="' + (y + 4) + '" class="rl">' + s.n + '</text>'; });
+    return '<svg class="skradar" viewBox="0 0 ' + W + ' ' + W + '">' + g + '</svg>';
+  }
+  function skStatusHTML(st){
+    const list = skStatList(st);
+    return skRadar(list) + '<div class="sstat">' + list.map(s => {
+      const v = Math.round(s.p * 999), gr = s.na ? '?' : skGr(s.p);
+      return '<div class="ss"><div class="ssn"><i>' + s.k + '</i>' + s.n + '<small>' + s.d + '</small></div>' +
+        '<div class="ssv"><b class="g-' + gr + '">' + gr + '</b><em>' + (s.na ? '???' : v) + '</em></div>' +
+        '<div class="ssb"><i style="width:' + Math.max(2, s.p * 100) + '%"></i></div><div class="ssr">' + s.raw + '</div></div>';
+    }).join('') + '</div><p class="sknote">数値は 0〜999、ランクは S＞A＞B＞C＞D＞E。直近20回の60秒アタック・エンドレスから計算します。</p>';
   }
   function drawSkProf(){
     const st = skStats(), rk = skRank(), ty = skType(st);
@@ -7120,18 +7169,8 @@ body.tight .itembar{gap:6px;}
       '<div class="skval">SKILL SCORE <b>' + Math.round(st.val).toLocaleString() + '</b><small>60秒アタック 平均 ' + Math.round(st.sixty).toLocaleString() + '（直近' + st.nS + '回）<br>エンドレス 1分あたり ' + Math.round(st.endl).toLocaleString() + '（直近' + st.nE + '回）</small></div>' +
       '<div class="sktype"><b>' + ty.t + '</b><small>' + ty.d + '</small></div>' +
       '<div class="sknext">' + (() => { const i = rk ? SKR.indexOf(rk) : -1, nx = SKR[i + 1]; return nx ? '次の ' + nx.k + '（' + nx.n + '）まで あと <b>' + Math.max(0, Math.ceil(nx.min - st.val)).toLocaleString() + '</b>' : '最高ランクです！'; })() + '</div></section>' +
-      '<section><h3>PLAY STYLE <small>（60秒アタック・エンドレスの直近' + st.n + '回）</small></h3>' +
-      (st.turns ? bar('瞬発力', st.sixty, Math.round(st.sixty).toLocaleString(), 6000, '60秒アタックの平均点') +
-        bar('持続力', st.stamina, st.stamina ? st.stamina + '%' : '—', 150, 'エンドレスの1分あたり÷60秒アタック') +
-        bar('4つ消し率', st.r4, pc(st.r4), 0.5, '消した列のうち4個の列') +
-        bar('5つ消し率', st.r5, pc(st.r5), 0.3, '消した列のうち5個の列') +
-        bar('6つ消し率', st.r6, pc(st.r6), 0.15, '消した列のうち6個の列') +
-        bar('同時消し率', st.sync, pc(st.sync), 0.6, '1手で2列以上を消した割合') +
-        bar('連鎖率', st.chain, pc(st.chain), 0.5, '消したあと、落ちて続けて消えた割合（運もあり）') +
-        bar('1ターンの点数', st.ppt, Math.round(st.ppt).toLocaleString(), 120, '1手で消したときの平均の点数') +
-        bar('消すまでの速さ', Math.max(0, 10 - st.wait), st.wait.toFixed(1) + '秒', 10, '消してから次に消すまでの平均の時間（短いほど速い）') +
-        bar('色のバランス', Math.max(0, 100 - st.bias), st.bias ? (st.bias <= 10 ? '◎ 良い' : st.bias <= 25 ? '○ ふつう' : '△ 偏り') : '—', 100, '色ごとに消した数のばらつき（少ないほど偏りがない）')
-        : '<p>60秒アタックかエンドレスを遊ぶと、ここにあなたのくせが出ます。</p>') + '</section>' +
+      '<section><h3>STATUS <small>（60秒アタック・エンドレスの直近' + st.n + '回）</small></h3>' +
+      (st.turns ? skStatusHTML(st) : '<p>60秒アタックかエンドレスを遊ぶと、ここにあなたのステータスが出ます。</p>') + '</section>' +
       '<section><h3>SKILL RANK</h3><div class="sklist">' + SKR.map(x => '<div class="' + (rk && rk.k === x.k ? 'on' : '') + '"><b>' + x.k + '</b> ' + x.n + '<small>' + x.j + '・' + x.min.toLocaleString() + '〜</small></div>').join('') + '</div>' +
       '<p class="sknote">SKILL SCORE＝60秒アタックの平均点×0.6＋エンドレスの1分あたりの点数×0.4（エンドレスを遊んでいないときは60秒アタックだけ）</p></section>';
   }
