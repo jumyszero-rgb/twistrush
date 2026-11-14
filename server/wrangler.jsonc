@@ -43,7 +43,8 @@
         "GUEST_SIGNUP": "1",
         "DUMMY_RANK": "0",
         // テスト環境だけ：端末のゴールド（テスト用）での人気投票を受け付ける
-        "VOTE_TEST": "1"
+        "VOTE_TEST": "1",
+        "PAY_TEST": "1"
       }
     }
   }

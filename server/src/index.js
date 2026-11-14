@@ -693,7 +693,7 @@ async function entsSet(env, id, kv) {
 async function payStatus(env, id) {
   const e = await entsOf(env, id);
   const claims = (await env.DB.prepare('SELECT id, sku FROM purchases WHERE account_id = ? AND claimed = 0 ORDER BY created_at').bind(id).all()).results || [];
-  return { enabled: !!env.STRIPE_SECRET_KEY, passUntil: e.pass_until, passAuto: !!e.pass_auto, noads: !!e.noads, first: !!e.first, portal: !!e.customer, claims: claims.map(c => ({ id: c.id, sku: c.sku, items: (PAY_SKU[c.sku] || {}).items || {} })) };
+  return { enabled: !!env.STRIPE_SECRET_KEY, passUntil: e.pass_until, passAuto: !!e.pass_auto, noads: !!e.noads, first: !!e.first && env.PAY_TEST !== '1', portal: !!e.customer, claims: claims.map(c => ({ id: c.id, sku: c.sku, items: (PAY_SKU[c.sku] || {}).items || {} })) };
 }
 async function payCheckout(env, req, me) {
   if (!env.STRIPE_SECRET_KEY) return fail(env, req, '準備中です', 503);
@@ -702,7 +702,7 @@ async function payCheckout(env, req, me) {
   const real = await env.DB.prepare("SELECT 1 FROM identities WHERE account_id = ? AND provider <> 'guest' LIMIT 1").bind(me.id).first();
   if (!real) return fail(env, req, '購入にはログイン（Googleなど）が必要です', 401);
   const e = await entsOf(env, me.id);
-  if (it.once && e[it.once]) return fail(env, req, 'もう購入済みです', 409);
+  if (it.once && e[it.once] && env.PAY_TEST !== '1') return fail(env, req, 'もう購入済みです', 409);   // PAY_TEST="1"（テスト環境）だけ、初回パックを何度でも買える
   if (it.sub && e.pass_auto && e.pass_until > nowSec()) return fail(env, req, '月パスはもう契約中です', 409);
   const o = payOrigin(env, req), md = { account: me.id, sku };
   const price = { currency: 'jpy', unit_amount: it.yen, product_data: { name: it.name } };
