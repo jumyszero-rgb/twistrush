@@ -434,7 +434,11 @@ body.on-menu .battlemain{opacity:0;}
   .maptools{grid-template-columns:repeat(5,minmax(0,1fr));}
   .exrush{display:block;margin-top:4px;padding:4px 8px;border-radius:8px;border:0;background:linear-gradient(135deg,#ffe27a,#ffb400);color:#3a1a00;font-weight:900;font-size:11px;font-family:inherit;} .exrush small{display:block;font-size:9px;}
   .exslot{display:block;width:100%;margin:6px 0;padding:8px;border-radius:10px;border:1px dashed rgba(255,210,74,.7);background:rgba(255,210,74,.1);color:#ffd24a;font-weight:900;font-family:inherit;} .exslot small{display:block;font-size:10px;color:#f6f0ff;opacity:.8;}
-  .shoprow.firstpack{outline:2px solid #ffd24a;border-radius:12px;} .maptools button.exready{animation:autoBlink 1.2s ease-in-out infinite;background:#ffd24a;color:#3a2210;}
+  .shoprow.firstpack{outline:2px solid #ffd24a;border-radius:12px;}
+  .pickup{width:100%;background:linear-gradient(135deg,rgba(255,90,140,.25),rgba(255,210,74,.25));border:2px solid #ffd24a;border-radius:12px;padding:8px;margin-bottom:6px;color:#fff;text-align:center;}
+  .pickup b{font-size:16px;letter-spacing:2px;color:#ffd24a;} .pickup small{margin-left:6px;font-size:11px;} .pickup p{font-size:11px;margin:4px 0;}
+  .pucard{display:inline-block;margin:3px;padding:3px 8px;border-radius:8px;background:rgba(0,0,0,.35);font-size:12px;font-weight:900;} .pucard i{font-style:normal;color:#ffd24a;margin-right:4px;}
+  .fgbuy{display:block;width:100%;margin:4px 0;padding:6px;border-radius:8px;border:1px dashed #ffd24a;background:rgba(255,210,74,.12);color:#ffd24a;font-size:12px;font-weight:900;font-family:inherit;} .maptools button.exready{animation:autoBlink 1.2s ease-in-out infinite;background:#ffd24a;color:#3a2210;}
   .maptools{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:8px;}
   .maptools button{border:2px solid rgba(255,210,74,.7);border-radius:12px;background:linear-gradient(#3b2566,#26174a);color:#fff;font-weight:900;font-size:17px;padding:5px 2px 4px;line-height:1.1;font-family:inherit;}
   .maptools button span{display:block;font-size:10px;margin-top:2px;white-space:nowrap;}
@@ -6439,7 +6443,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.94';
+  const APP_VER = '0.9.95';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -7095,6 +7099,7 @@ body.tight .itembar{gap:6px;}
     {price: '¥3,000', name: 'ゴールドコイン 3,200枚', coin: 3200},
     {price: '¥5,000', name: 'ゴールドコイン 5,500枚', coin: 5500},
     {price: '¥10,000', name: 'ゴールドコイン 11,500枚', coin: 11500},
+    {price: '¥980', name: '月パス（30日）', desc: '毎日：ガチャチケット×2・スタミナポット×1／30日ずっと：遠征の経験値+20%・遠征で素材が出る率+20%', pass: true},
     {price: '¥480', name: '初回限定パック', desc: '最初の1回だけ：SR以上確定チケット×2・ガチャチケット×10・スタミナポット×3', first: true},
     {price: '¥600', name: '広告削除', desc: 'コンティニューと毎日プレゼントの2倍を、広告なしで使える'},
   ];
@@ -7510,6 +7515,22 @@ body.tight .itembar{gap:6px;}
     toast(t.name + ' を買いました（所持 ' + load(t.k, '0') + '）'); drawShop();
   }
   // ----- ショップ -----
+  // 月パス（テスト：決済なしで有効にできる）。30日間、毎日はじめて開いたときにチケットとポットを受け取る
+  const passEnd = () => +load('pass_end', '0') || 0;
+  const passLeft = () => Math.max(0, Math.ceil((passEnd() - Date.now()) / 86400000));
+  const passOn = () => passEnd() > Date.now();
+  function passDaily(){
+    if (!passOn() || load('pass_day', '') === today()) return;
+    save('pass_day', today()); giveItem('gticket', 2); giveItem('stampot', 1);
+    setTimeout(() => toast('月パス：今日のガチャチケット×2・スタミナポット×1を受け取りました'), 1500);
+  }
+  document.addEventListener('click', e => {
+    if (!e.target.closest('[data-pass]')) return;
+    payAsk('【テスト】月パス（¥980・30日）を' + (passOn() ? '延長' : '開始') + 'しますか？ 本番では決済のあとに有効になります。', () => {
+      save('pass_end', String(Math.max(Date.now(), passEnd()) + 30 * 86400000)); passDaily(); toast('月パスが有効になりました（のこり' + passLeft() + '日）'); try { drawShop(); } catch(_) {}
+    });
+  }, true);
+  setTimeout(passDaily, 3000);
   const payAsk = (m, y) => { askYes(m, y); const a = $('askBox'); if (a) a.style.zIndex = 9600; };
   // 初回限定パック（テスト：決済なしで受け取れる。決済を入れたら購入完了後に呼ぶ）
   document.addEventListener('click', e => {
@@ -7525,7 +7546,7 @@ body.tight .itembar{gap:6px;}
       return '<div class="shoprow"><img src="' + itemImg(k) + '" alt=""><div class="tx"><div class="nm">' + it.name + '<small>所持 ' + own(k) + '</small></div>' +
         '<div class="ds">' + it.desc + '</div></div><button class="buybtn" data-k="' + k + '"' + (coins < it.price ? ' disabled' : '') + '>' + coinTag() + it.price + '</button></div>'; }).join('');
     $('shopPacks').innerHTML = PACKS.filter(p => !(p.first && load('firstpack', '0') === '1')).map(p => '<div class="shoprow' + (p.first ? ' firstpack' : '') + '"><img src="' + itemImg(p.coin ? 'coin' : 'charm') + '" alt=""><div class="tx"><div class="nm">' + (p.first ? '🎁 ' : '') + p.name + '</div>' +
-      (p.desc ? '<div class="ds">' + p.desc + '</div>' : '') + '</div><button class="buybtn"' + (p.first ? ' data-firstpack="1"' : ' disabled') + '>' + p.price + (p.first ? '<small style="display:block;font-size:9px">テスト</small>' : '') + '</button></div>').join('');
+      (p.desc ? '<div class="ds">' + p.desc + '</div>' : '') + '</div><button class="buybtn"' + (p.first ? ' data-firstpack="1"' : p.pass ? ' data-pass="1"' : ' disabled') + '>' + (p.pass && passLeft() > 0 ? 'のこり' + passLeft() + '日<small style="display:block;font-size:9px">延長（テスト）</small>' : p.price + (p.first || p.pass ? '<small style="display:block;font-size:9px">テスト</small>' : '')) + '</button></div>').join('');
     refreshCoins();
   }
   $('shop').addEventListener('click', e => { const b = e.target.closest('[data-pbuy]'); if (b && !b.disabled) buyPot(b.dataset.pbuy); const tk = e.target.closest('[data-tk]'); if (tk && !tk.disabled) buyTicket(tk.dataset.tk); });
@@ -8419,7 +8440,7 @@ body.tight .itembar{gap:6px;}
   }
   function exGet(i){
     const a = exData.active[i]; if (!a || exLeft(a) > 0) return;
-    const mul = a.rate != null ? a.rate : 1, gain = Math.round(EX_EXP[a.s] * mul), ups = [], got = [];
+    const mul = a.rate != null ? a.rate : 1, gain = Math.round(EX_EXP[a.s] * mul * (passOn() ? 1.2 : 1)), ups = [], got = [];
     a.uids.forEach(uid => { const u = unitOf(uid); if (!u) return; let lv = u.lv, exp = u.exp + gain; const cap = capOf(u), was = lv;
       while (lv < cap && exp >= expNeed(lv)) { exp -= expNeed(lv); lv++; } if (lv >= cap) exp = Math.min(exp, expNeed(lv) - 1);
       u.lv = lv; u.exp = exp; if (lv > was) ups.push(fullName(ALLC[ciOf(u)]) + ' LV' + lv); });
@@ -8427,7 +8448,7 @@ body.tight .itembar{gap:6px;}
     if (mul > 0) {
       const sv = Math.round((EX_SILVER[a.s] + ((a.bonus.find(x => x[0] === 'silver') || [0, 0])[1])) * mul); addCoins(sv); got.push('シルバー ' + sv);
       EX_ITEMS[a.s].concat(a.bonus.filter(x => x[0] !== 'silver')).forEach(([k, n, p]) => { if (Math.random() < Math.min(1, p * mul)) { giveItem(k, n); got.push(EX_ITEM_NAME(k) + ' ×' + n); } });
-      (EX_MATS[a.id] || []).forEach(c => { if (Math.random() >= EX_MAT_P * mul) return; const [k, q] = exRollMat(c, a.s, EX_STAGE_ATTR[a.id]); giveItem(k, q); got.push(EX_MAT[k][1] + EX_MAT[k][0] + ' ×' + q); });
+      (EX_MATS[a.id] || []).forEach(c => { if (Math.random() >= EX_MAT_P * mul * (passOn() ? 1.2 : 1)) return; const [k, q] = exRollMat(c, a.s, EX_STAGE_ATTR[a.id]); giveItem(k, q); got.push(EX_MAT[k][1] + EX_MAT[k][0] + ' ×' + q); });
       if (Math.random() < EX_LEGEND_P[a.s] * mul) { const ks = Object.keys(LEGEND), k = 'lg_' + ks[Math.floor(Math.random() * ks.length)]; giveItem(k, 1); got.push('🌟 伝説素材「' + EX_MAT[k][0] + '」×1！'); }
       if (Math.random() < EX_GEAR_P[a.s] * mul) { const t = exTier(a.s), ws = WPN.filter(w => GT[w.g] === t), w = ws[Math.floor(Math.random() * ws.length)]; if (w) { gearAdd(w.id); got.push('⚔ 武器「' + w.n + '」（' + w.g + '）を見つけた！'); } }
     }
@@ -8541,23 +8562,47 @@ body.tight .itembar{gap:6px;}
   let forgeG = 'N', forgeMsg = '';
   function drawForge(){
     const list = WPN.filter(w => w.g === forgeG), own = k => gear.filter(x => x.k === k).length;
-    let h = (forgeMsg ? '<div class="exmsg">' + forgeMsg + '</div>' : '') + '<div class="fgtabs">' + ['N', 'R', 'SR', 'MR', 'LR'].map(g => '<button data-fg="' + g + '" class="' + (g === forgeG ? 'on' : '') + '">' + g + '</button>').join('') + '</div>';
+    let h = (forgeMsg ? '<div class="exmsg">' + forgeMsg + '</div>' : '') + '<div class="fgtabs">' + ['N', 'R', 'SR', 'MR', 'LR', 'GACHA'].map(g => '<button data-fg="' + g + '" class="' + (g === forgeG ? 'on' : '') + '">' + (g === 'GACHA' ? '🎰' : g) + '</button>').join('') + '</div>';
+    if (forgeG === 'GACHA') {
+      h += '<div class="excard"><div class="exhd"><b>装備ガチャ</b><span class="exh">ゴールド</span></div><p class="fgsub">武器がそのまま出るガチャ。出る確率：' + Object.keys(GEAR_RATE).map(g => g + ' ' + GEAR_RATE[g] + '%').join('・') + '</p>' +
+        '<div class="exgo"><button data-ggacha="1">1回 ゴールド' + GEAR_COST[0] + '</button><button data-ggacha="11">10連（11個） ゴールド' + GEAR_COST[1].toLocaleString() + '</button></div></div>';
+      $('forgeBody').innerHTML = h; return;
+    }
     list.forEach(w => {
       const rc = wpnRecipe(w), cost = WPN_COST[GT[w.g]], ok = rc.every(([k, n]) => (inv[k] || 0) >= n) && coins >= cost;
       h += '<div class="excard fgcard"><div class="exhd"><b>' + w.n + '</b><span class="exh">' + w.g + '</span></div>' +
         '<div class="fgsub">' + w.t + '　' + attrBadge0(w.a) + ' ' + ATTR[w.a].n + '属性　<b>' + wpnLine(w) + '</b>' + (w.fx ? '<br><small>効果：' + w.fx + '（今後対応）</small>' : '') + '</div>' +
         '<ul class="fgrc">' + rc.map(([k, n]) => { const hv = inv[k] || 0; return '<li class="' + (hv >= n ? 'ok' : 'ng') + '">' + EX_MAT[k][1] + ' ' + EX_MAT[k][0] + ' <b>' + hv + '/' + n + '</b></li>'; }).join('') +
         '<li class="' + (coins >= cost ? 'ok' : 'ng') + '">🪙 シルバー <b>' + cost.toLocaleString() + '</b></li></ul>' +
+        (matShort(rc).cost > 0 && matShort(rc).ok ? '<button class="fgbuy" data-buymat="' + w.id + '">足りない素材をゴールド ' + matShort(rc).cost + ' で買う</button>' : '') +
         '<div class="exgo"><span>所持 ' + own(w.id) + '</span><button data-craft="' + w.id + '"' + (ok ? '' : ' disabled') + '>作る</button></div></div>';
     });
     h += '<p class="sknote">素材は遠征で手に入ります。キャラと同じ属性の武器を持つと、武器のステータスが1.2倍になります。作った武器は、キャラの詳細 →「装備」で付けます。</p>';
     const b = $('forgeBody'); b.innerHTML = h;
   }
+  // 足りない素材をゴールドで買う（伝説素材とLRの素材は売らない）。1個の値段：N 5／R 15／SR 40／MR 150、属性石 かけら10・石30・宝珠100
+  const MAT_GOLD = [5, 15, 40, 150], STONE_GOLD = [10, 30, 100];
+  function matShort(rc){
+    const list = [], ok = true; let cost = 0, can = true;
+    rc.forEach(([k, n]) => { const lack = n - (inv[k] || 0); if (lack <= 0) return; const m = EX_MAT[k];
+      if (m[2] === 'l' || (m[2] !== 's' && m[3] >= 4)) { can = false; return; }
+      const p = m[2] === 's' ? STONE_GOLD[+k.split('_')[2]] : MAT_GOLD[m[3]]; cost += p * lack; list.push([k, lack]); });
+    return {list, cost, ok: can && ok};
+  }
+  const GEAR_RATE = {LR: 1, MR: 4, SR: 15, R: 35, N: 45}, GEAR_COST = [300, 3000];
   const attrBadge0 = a => '<i class="abadge inl" style="background:' + ATTR[a].col + '">' + ATTR[a].n + '</i>';
   function openForge(){ audio(); forgeMsg = ''; $('forge').classList.remove('hidden'); drawForge(); $('forgeBody').scrollTop = 0; }
   $('forgeBack').addEventListener('click', () => { $('forge').classList.add('hidden'); try { drawBox(); } catch(_) {} });
   $('forgeBody').addEventListener('click', e => {
     const t = e.target.closest('[data-fg]'); if (t) { forgeG = t.dataset.fg; forgeMsg = ''; drawForge(); return; }
+    const bm = e.target.closest('[data-buymat]'); if (bm) { const w = WPN_BY[bm.dataset.buymat], sh = matShort(wpnRecipe(w)); if (!sh.ok || !sh.cost) return;
+      payAsk('足りない素材（' + sh.list.map(([k, n]) => EX_MAT[k][0] + '×' + n).join('・') + '）をゴールド ' + sh.cost + ' で買いますか？', async () => { if (!(await spendGold(sh.cost, 'mat'))) return; sh.list.forEach(([k, n]) => giveItem(k, n)); refreshCoins(); forgeMsg = '素材を買いました。'; drawForge(); }); return; }
+    const gg = e.target.closest('[data-ggacha]'); if (gg) { const n = +gg.dataset.ggacha, cost = GEAR_COST[n > 1 ? 1 : 0];
+      payAsk('ゴールド ' + cost.toLocaleString() + ' で装備ガチャを' + (n > 1 ? '10連' : '1回') + '引きますか？', async () => { if (!(await spendGold(cost, 'geargacha'))) return; refreshCoins();
+        const got = []; for (let i = 0; i < n; i++) { const r = Math.random() * 100; let acc = 0, g = 'N'; for (const k of ['LR', 'MR', 'SR', 'R', 'N']) { acc += GEAR_RATE[k]; if (r < acc) { g = k; break; } }
+          if (n > 1 && i === n - 1 && !got.some(w => GT[w.g] >= 2) && GT[g] < 2) g = 'SR';
+          const ws = WPN.filter(w => w.g === g), w = ws[Math.floor(Math.random() * ws.length)]; gearAdd(w.id); got.push(w); }
+        forgeMsg = '🎰 装備ガチャ：' + got.map(w => '<b>' + w.g + '</b> ' + w.n).join('・'); drawForge(); }); return; }
     const c = e.target.closest('[data-craft]'); if (!c) return;
     const w = WPN_BY[c.dataset.craft], rc = wpnRecipe(w), cost = WPN_COST[GT[w.g]];
     if (!rc.every(([k, n]) => (inv[k] || 0) >= n) || coins < cost) return;
@@ -8643,11 +8688,14 @@ body.tight .itembar{gap:6px;}
       const ci = ALLC_IDX.get(kind.slice(5)); if (ci == null) return [];
       const isNew = !units.some(u => u.id === ALLC[ci].id); newUnit(ci); saveUnits(); return [{ci, isNew}];
     }
-    const rate = kind === 'ticket_hi' ? G_RATE.hi : (kind === 'gone' || kind === 'goldten') ? G_RATE.gold : G_RATE.silver;
+    const pick = kind === 'pone' || kind === 'pten', pu = pick ? pickupNow() : null;
+    const rate = kind === 'ticket_hi' ? G_RATE.hi : (kind === 'gone' || kind === 'goldten' || pick) ? G_RATE.gold : G_RATE.silver;
     const out = [];
     for (let k = 0; k < n; k++) {
       const guarantee = (n >= 11 && k === n - 1 && !out.some(o => GRADE_RANK[CHAR_STAT[ALLC[o.ci].id].grade] >= 3)) ? 'SR' : null;   // 10連は1体SR以上
-      const ci = gachaGrade(rate, guarantee), id = ALLC[ci].id;
+      let ci = gachaGrade(rate, guarantee);
+      if (pu) { const g = CHAR_STAT[ALLC[ci].id].grade; if (g === 'LR' && pu.lr != null && Math.random() < 0.5) ci = pu.lr; else if (g === 'MR' && pu.mr != null && Math.random() < 0.5) ci = pu.mr; }
+      const id = ALLC[ci].id;
       const isNew = !units.some(u => u.id === id);
       newUnit(ci);
       out.push({ci, isNew});
@@ -8660,7 +8708,15 @@ body.tight .itembar{gap:6px;}
   // ===== 天井：ゴールドガチャを引くとポイントがたまり、PITY_N ポイントで好きなLRと交換 =====
   const PITY_N = 100;
   const pityNow = () => Math.max(0, +load('pity', '0') || 0);
-  function pityAdd(kind){ const n = kind === 'goldten' ? 10 : kind === 'gone' ? 1 : 0; if (n) save('pity', String(pityNow() + n)); }
+  // PICK UP（2026-11-14）：週ごとに入れかわるLR1体・MR1体。ゴールドガチャと同じ確率で、LR（MR）が出たら50%でそのキャラ
+  function pickupNow(){
+    const wk = Math.floor((Date.now() / 86400000 + 3) / 7);           // 月曜はじまりの週番号
+    const pool = g => ALLC.map((c, i) => [c, i]).filter(([c]) => !STORY_IDS.has(c.id) && CHAR_STAT[c.id] && CHAR_STAT[c.id].grade === g).map(([, i]) => i);
+    const L = pool('LR'), M = pool('MR');
+    const end = new Date((wk * 7 - 3 + 7) * 86400000);
+    return {lr: L.length ? L[wk % L.length] : null, mr: M.length ? M[wk % M.length] : null, end: (end.getMonth() + 1) + '/' + end.getDate()};
+  }
+  function pityAdd(kind){ const n = (kind === 'goldten' || kind === 'pten') ? 10 : (kind === 'gone' || kind === 'pone') ? 1 : 0; if (n) save('pity', String(pityNow() + n)); }
   function pityHTML(){
     const p = pityNow(), pct = Math.min(100, p / PITY_N * 100);
     return '<div class="pity"><div class="pity-t"><b>LEGEND GAUGE</b><span>' + Math.min(p, PITY_N) + ' / ' + PITY_N + (p > PITY_N ? '（+' + (p - PITY_N) + '）' : '') + '</span></div><div class="pbar"><i style="width:' + pct + '%"></i></div>' +
@@ -8748,6 +8804,9 @@ body.tight .itembar{gap:6px;}
       if (t.ticket > 0) h += '<button class="btn" data-g="ticket">' + coinImg('ticket') + 'チケットで1回（' + t.ticket + '枚）</button>';
       if (t.ticket > 1) h += '<button class="btn gacha" data-g="ticket_m">' + coinImg('ticket') + 'チケットでまとめて' + Math.min(t.ticket, TK_MULTI) + '回</button>';
     } else {
+      const pu = pickupNow();
+      h += '<div class="pickup"><b>PICK UP</b><small>〜' + pu.end + ' まで</small><div>' + [pu.lr, pu.mr].filter(x => x != null).map(ci => '<span class="pucard"><i>' + CHAR_STAT[ALLC[ci].id].grade + '</i>' + fullName(ALLC[ci]) + '</span>').join('') + '</div><p>LR・MRが出たら、50%でこのキャラになります</p>' +
+        '<button class="btn shop" data-g="pone">PICK UP 1回 ' + coinImg('coin_gold') + G_COST.gold.one + '</button><button class="btn shop" data-g="pten">PICK UP 10連 ' + coinImg('coin_gold') + G_COST.gold.ten.toLocaleString() + '</button></div>';
       h += '<button class="btn shop" data-g="gone">1回 ' + coinImg('coin_gold') + G_COST.gold.one + '</button><button class="btn shop" data-g="goldten">10連（11体） ' + coinImg('coin_gold') + G_COST.gold.ten.toLocaleString() + '</button>';
       if (t.ticket_hi > 0) h += '<button class="btn shop" data-g="ticket_hi">' + coinImg('ticket_hi') + '確定チケット（' + t.ticket_hi + '枚）</button>';
       h += pityHTML();
@@ -8817,8 +8876,8 @@ body.tight .itembar{gap:6px;}
       const c = kind === 'igone' ? G_COST.itemGold.one : G_COST.itemGold.ten, n2 = kind === 'igone' ? 1 : 11;
       gBusy = true; spendGold(c, 'itemgacha').then(ok => { gBusy = false; if (ok) itemGachaGo(n2, 'gold'); else drawGachaFoot(); }); return;
     }
-    else if (kind === 'gone' || kind === 'goldten') {      // ゴールドコイン：ログイン中はサーバーで減らしてから引く
-      const c = kind === 'gone' ? G_COST.gold.one : G_COST.gold.ten; if (kind === 'goldten') n = 11;
+    else if (kind === 'gone' || kind === 'goldten' || kind === 'pone' || kind === 'pten') {      // ゴールドコイン：ログイン中はサーバーで減らしてから引く（PICK UPも同じ値段）
+      const c = (kind === 'gone' || kind === 'pone') ? G_COST.gold.one : G_COST.gold.ten; if (kind === 'goldten' || kind === 'pten') n = 11;
       if (acctToken) { gBusy = true; spendGold(c, 'gacha').then(ok => { gBusy = false; if (ok) { pityAdd(kind); gachaGo(n, kind); } }); return; }
       if (!payG(c)) return;
       pityAdd(kind);
