@@ -3737,7 +3737,7 @@ body.tight .itembar{gap:6px;}
   const dmgMulOf = (lines, ch) => (1 + 0.25 * (lines - 1)) * (1 + 0.20 * (ch - 1)) * Math.min(1.5, 1 + 0.05 * rush);
   let pendingDmgMul = 1;
   // ストーリーの敵の体力（見えない倍率）：消し方でダメージが増えたぶん。戦闘力 敵2,800・チーム2,500でギリギリになるように（2026-11-15。遊んで調整）
-  const EN_HP_MUL = 1.3;   // 1.35→1.1（2026-11-15：カミラで「HP多すぎ」）
+  const EN_HP_MUL = 1.3;   // 1.35→1.1→1.3（2026-11-15：本人「1.3でもいい。こちらの攻撃と技の補正が大事」）
   let rush = 0, rushFrom = 0, rushUndo = null, rushMax = 0;
   const rushMul = () => Math.min(RUSH_CAP, 1 + RUSH_STEP * rush);
   function rushHit(){                                     // 列がそろった瞬間（確定待ちのはじまり）
