@@ -2445,6 +2445,8 @@ body.tight .itembar{gap:6px;}
   // 1エリア＝ふつうルート5面＋つよいルート5面＋ボス1面（全99面）。どちらかのルートを抜ければボスへ
   // 番号：0〜4＝ふつう、5〜9＝つよい、10＝ボス
   const PER = 11, ZAKO_N = 5, BOSS_I = 10;
+  // 1戦の長さ（2026-11-15：「1ステージ長すぎ」）：敵の体力を×FIGHT_T、受けるダメージを÷FIGHT_T。強さのつり合いはそのままで、戦う時間だけ短くなる
+  const FIGHT_T = 0.6;
   const ROUTE_UP = 1.15;                                // つよいルート：敵のHP・ステータスの倍率
   const AREA_GIMMICK = [
     [0, 0, 0, 0, 0],
@@ -2502,7 +2504,7 @@ body.tight .itembar{gap:6px;}
       combo2:() => 1 + Math.floor(k * 1.5),
       gold:  () => 1 + Math.floor(k * 1.5),
       safe:  () => k < 0.5 ? 20 : 15,
-      time:  () => Math.round((hp * 4 + 20) / 5) * 5,
+      time:  () => Math.round((hp * 4 * FIGHT_T + 20) / 5) * 5,
     };
     const out = [], used = new Set();
     let ends = 0, guard = 0;
@@ -6608,7 +6610,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.111';
+  const APP_VER = '0.9.112';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -8270,14 +8272,14 @@ body.tight .itembar{gap:6px;}
     runMy = statOn() ? teamStats() : [100, 100, 100, 100];
     runAttr = gameMode === 'story' && curStage ? teamAttr(curStage) : {out: 1, inn: 1};
     runEn = !statOn() ? [100, 100, 100, 100] : gameMode === 'online' ? ((onl.opp && onl.opp.team && onl.opp.team.st) || [100, 100, 100, 100]).map(v => Math.max(1, +v || 1)) : enemyStats(curStage);
-    if (statOn() && gameMode === 'story') runEn = [Math.round(runEn[0] * EN_HP_MUL)].concat(runEn.slice(1));
+    if (statOn() && gameMode === 'story') runEn = [Math.round(runEn[0] * EN_HP_MUL * FIGHT_T)].concat(runEn.slice(1));
   }
   const myAtk = () => runMy[1] * (atkUntil && now() < atkUntil ? 2 : 1) * bm('atk');
   const myDef = () => runMy[2] * (defUntil && now() < defUntil ? 2 : 1) * bm('def');
   const unitPts = () => Math.max(1, runMy[0]);                          // カラーHPの1目もり＝体力合計（HP＝体力×30）
   const hpMaxPts = () => unitPts() * CFG.STACK_MAX;
   // 受けるダメージ：敵の攻撃1回あたりの目もり数
-  function incoming(n){ if (!statOn()) return n; const pts = n * runEn[1] * corr(runEn[1], myDef()) * runAttr.inn; return pts / unitPts(); }
+  function incoming(n){ if (!statOn()) return n; const pts = n * runEn[1] * corr(runEn[1], myDef()) * runAttr.inn; return pts / unitPts() / (gameMode === 'story' ? FIGHT_T : 1); }
   // 与えるダメージ：敵のHPの1目もり＝敵の体力（同じステータスならブロック1個で1目もり）
   function outgoing(d){ if (!statOn()) return d * atkMul(); return d * myAtk() * corr(myAtk(), runEn[2]) * runAttr.out / Math.max(1, runEn[0]); }
   const enUnitPts = () => statOn() ? Math.max(1, runEn[0]) : 1;
