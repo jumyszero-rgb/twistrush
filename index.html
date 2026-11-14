@@ -545,7 +545,8 @@ body.on-menu .battlemain{opacity:0;}
   .paylink{margin-left:6px;border:0;border-radius:8px;padding:2px 8px;background:rgba(255,255,255,.18);color:inherit;font-weight:800;font-size:11px;}
   .updbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 14px);z-index:9000;border:0;border-radius:999px;padding:8px 8px 8px 14px;background:#2a1740;color:#fff;font-weight:800;font-size:12px;box-shadow:0 4px 14px rgba(0,0,0,.45);display:flex;align-items:center;gap:8px;white-space:nowrap;max-width:94vw;}
   .updbar b{background:#ffcc33;color:#3a2600;border-radius:999px;padding:4px 10px;} .updbar.hidden{display:none;}
-  .msgtabs{padding-top:6px;} .msgtabs button{font-size:12px;padding:7px 2px;}
+  .boxtabs.msgtabs{padding-top:6px;display:grid;grid-template-columns:repeat(3,1fr);} .msgtabs button{font-size:12px;padding:7px 2px;}
+  .ngift{width:100%;margin-top:10px;white-space:normal;font-size:13px;} .ngot{margin:10px 0 0;font-size:12px;opacity:.7;}
   .mlog div{padding:9px 4px;border-bottom:1px solid rgba(255,255,255,.1);font-size:13px;line-height:1.5;} .mlog span{display:block;font-size:10px;opacity:.6;}
   .mver{font-size:12px;opacity:.8;margin:6px 0 12px;}
   .chlist{margin-top:8px;} .chrew{font-size:12px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.06);} .chrew b{display:block;margin-bottom:6px;color:#ffd36b;} .chrew div{display:flex;gap:8px;padding:2px 0;} .chrew span{min-width:70px;font-weight:800;}
@@ -1615,7 +1616,7 @@ body.tight .itembar{gap:6px;}
         <button class="how-back" id="newsBack" aria-label="タイトルに戻る">‹ 戻る</button>
         <h2>メッセージ</h2>
       </div>
-      <div class="boxtabs msgtabs"><button class="on" data-mtab="news">お知らせ</button><button data-mtab="upd">アップデート</button><button data-mtab="get">受け取り</button><button data-mtab="buy">購入</button></div>
+      <div class="boxtabs msgtabs"><button class="on" data-mtab="news">お知らせ</button><button data-mtab="ev">イベント</button><button data-mtab="upd">アップデート</button><button data-mtab="sorry">お詫び・補償</button><button data-mtab="get">受け取り</button><button data-mtab="buy">購入</button></div>
       <div class="how-body" id="newsBody"></div>
     </div>
     <div class="overlay hidden" id="skprof" role="dialog" aria-label="スキルプロフィール">
@@ -5693,7 +5694,7 @@ body.tight .itembar{gap:6px;}
   let news = NEWS_BUILTIN;
   const newsEsc = t => String(t).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'})[c]);
   const newsRead = () => new Set(loadJ('news_read', []));
-  const newsUnread = () => { const r = newsRead(); return news.filter(n => !r.has(n.id)).length; };
+  const newsUnread = () => { const r = newsRead(); return news.filter(n => !r.has(n.id) || (typeof giftOpen === 'function' && giftOpen(n))).length; };
   function newsBadge(){
     const b = $('newsBtn'); let el = b.querySelector('.nbadge'); const c = newsUnread() + (newVer ? 1 : 0);   // 新しいバージョンも1件に数える
     if (!c) { if (el) el.remove(); return; }
@@ -5728,7 +5729,19 @@ body.tight .itembar{gap:6px;}
   setInterval(drawUpd, 2000);                              // 遊んでいる間は隠して、終わったら出す
   // ===== メッセージ（2026-11-15：ニュースから変更）：お知らせ／アップデート／受け取り（もらったものの記録）／購入（買ったものの記録）=====
   let mTab = 'news';
-  const UPD_TAGS = ['アップデート', '新機能'];
+  const UPD_TAGS = ['アップデート', '新機能'], EV_TAGS = ['イベント'], SORRY_TAGS = ['お詫び', '補償', 'メンテナンス', '不具合'];
+  const newsCat = n => UPD_TAGS.includes(n.tag) ? 'upd' : EV_TAGS.includes(n.tag) ? 'ev' : SORRY_TAGS.includes(n.tag) ? 'sorry' : 'news';
+  // 補償・プレゼント：news.json の項目に gift:{silver, gold, items:{キー:数}, until:'YYYY-MM-DD'} をつけると「受け取る」ボタンが出る（1回だけ）
+  const giftGot = () => new Set(loadJ('giftgot', null) || []);
+  const giftOpen = n => n.gift && !giftGot().has(n.id) && !(n.gift.until && Date.now() > new Date(n.gift.until + 'T23:59:59+09:00').getTime());
+  const giftTxt = g => [g.silver ? 'シルバー ' + g.silver.toLocaleString() : '', g.gold ? 'ゴールド ' + g.gold.toLocaleString() : ''].concat(Object.entries(g.items || {}).map(([k, n]) => (ITEMS[k] ? ITEMS[k].name : TICKET_LABEL[k] || (EX_MAT[k] ? EX_MAT[k][0] : k)) + ' ×' + n)).filter(x => x).join('・');
+  function giftClaim(n){
+    if (!giftOpen(n)) return; const g = n.gift, got = giftGot(); got.add(n.id); save('giftgot', JSON.stringify([...got]));
+    if (g.silver) addCoins(g.silver);
+    if (g.gold) { gold += g.gold; save('gold', String(gold)); refreshCoins(); }
+    Object.entries(g.items || {}).forEach(([k, c]) => giveItem(k, c)); saveInv();
+    msgLog('get', '💌 ' + n.title + '：' + giftTxt(g)); toast('受け取りました'); markNews([n.id]); drawNews(); newsBadge();
+  }
   const msgLogs = () => loadJ('msglog', null) || [];
   function msgLog(k, x){ try { const a = msgLogs(); a.unshift({t: Date.now(), k, x: String(x).slice(0, 300)}); save('msglog', JSON.stringify(a.slice(0, 150))); } catch (_) {} }
   const msgTime = t => { const d = new Date(t); return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + d.getHours() + ':' + String(d.getMinutes()).padStart(2, '0'); };
@@ -5741,14 +5754,16 @@ body.tight .itembar{gap:6px;}
     document.querySelectorAll('.msgtabs button').forEach(b => b.classList.toggle('on', b.dataset.mtab === mTab));
     const r = newsRead(), body = $('newsBody');
     if (mTab === 'get' || mTab === 'buy') { body.innerHTML = drawLogs(mTab); return; }
-    const isUpd = n => UPD_TAGS.includes(n.tag), list = news.filter(n => mTab === 'upd' ? isUpd(n) : !isUpd(n));
+    const list = news.filter(n => newsCat(n) === mTab);
+    document.querySelectorAll('.msgtabs button').forEach(b => b.classList.toggle('dot', b.dataset.mtab !== mTab && news.some(n => newsCat(n) === b.dataset.mtab && (!r.has(n.id) || giftOpen(n))) || (b.dataset.mtab === 'upd' && b.dataset.mtab !== mTab && !!newVer)));
     body.innerHTML = (mTab === 'upd' ? (newVer ? '<button class="btn" id="newsUpd" style="margin:6px 0 12px;width:100%">🆕 新しいバージョン（v' + newVer + '）があります。更新する</button>' : '<p class="mver">いまのバージョン v' + APP_VER + '（最新です）</p>') : '') + (list.length ? list.map(n => '<div class="news-item" data-id="' + newsEsc(n.id) + '"><button>' + (r.has(n.id) ? '' : '<span class="nnew">NEW</span>') +
-      (n.tag ? '<span class="news-tag">' + newsEsc(n.tag) + '</span>' : '') + '<span class="nt">' + newsEsc(n.title) + '</span><span class="nd">' + newsEsc(n.date || '') + '</span></button><div class="nb">' + newsEsc(n.body || '') + '</div></div>').join('')
-      : '<section><p>お知らせはまだありません。</p></section>') +
-      (newsUnread() ? '<button class="btn gray" id="newsAll" style="margin:14px 0">すべて読んだことにする</button>' : '');
+      (n.tag ? '<span class="news-tag">' + newsEsc(n.tag) + '</span>' : '') + '<span class="nt">' + newsEsc(n.title) + '</span><span class="nd">' + newsEsc(n.date || '') + '</span></button><div class="nb">' + newsEsc(n.body || '') + (n.gift ? (giftOpen(n) ? '<button class="btn ngift" data-gift="' + newsEsc(n.id) + '">🎁 受け取る（' + newsEsc(giftTxt(n.gift)) + '）</button>' : '<p class="ngot">' + (giftGot().has(n.id) ? '✔ 受け取りずみ' : '受け取り期間は終わりました') + '</p>') : '') + '</div></div>').join('')
+      : '<section><p>' + ({ev: 'いま開催中のイベントはありません。', sorry: 'お詫び・補償のお知らせはありません。'}[mTab] || 'お知らせはまだありません。') + '</p></section>') +
+      (list.some(n => !r.has(n.id)) ? '<button class="btn gray" id="newsAll" style="margin:14px 0">すべて読んだことにする</button>' : '');
     body.querySelectorAll('.news-item>button').forEach(b => b.onclick = () => { const it = b.parentNode; it.classList.toggle('open'); if (it.classList.contains('open')) { markNews([it.dataset.id]); const nw = b.querySelector('.nnew'); if (nw) nw.remove(); } });
     const all = $('newsAll'); if (all) all.onclick = () => { markNews(list.map(n => n.id)); drawNews(); };
     const up = $('newsUpd'); if (up) up.onclick = () => location.reload();
+    body.querySelectorAll('[data-gift]').forEach(b => b.onclick = e => { e.stopPropagation(); const n = news.find(x => x.id === b.dataset.gift); if (n) giftClaim(n); });
   }
   $('newsBtn').addEventListener('click', () => { audio(); drawNews(); $('news').classList.remove('hidden'); $('newsBody').scrollTop = 0; newsFetch().then(() => { if (!$('news').classList.contains('hidden')) drawNews(); }); });
   $('newsBack').addEventListener('click', () => { $('news').classList.add('hidden'); newsBadge(); });
@@ -6779,7 +6794,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.130';
+  const APP_VER = '0.9.131';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
