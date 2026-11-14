@@ -524,7 +524,7 @@ async function rankPost(env, req, me) {
     blocks: Math.floor(Number(b.blocks || 0)), dur: Math.floor(Number(b.dur || 0)),
     ver: String(b.ver || '').slice(0, 16), log: b.log ? String(b.log).slice(0, 20000) : null,
   };
-  const maxPer = Number(env.MAX_SCORE_PER_BLOCK || 200), minSec = Number(env.MIN_SEC_PER_BLOCK || 0.12);
+  const maxPer = Number(env.MAX_SCORE_PER_BLOCK || 1000), minSec = Number(env.MIN_SEC_PER_BLOCK || 0.12);
   if (!Number.isFinite(row.score) || row.score < 0 || row.score > 50000000) return fail(env, req, 'スコアの値が不正です');
   if (row.score > 0 && row.blocks === 0) return fail(env, req, 'ブロックを消さずに得点しています');
   if (row.blocks > 0 && row.score > row.blocks * maxPer) return fail(env, req, 'スコアがブロック数に対して多すぎます');

@@ -16,7 +16,7 @@
   "vars": {
     "RETURN_ORIGINS": "https://twistrush.com,https://www.twistrush.com,http://localhost:8788",
     "ALLOW_ORIGINS": "https://twistrush.com,https://www.twistrush.com,http://localhost:8788",
-    "MAX_SCORE_PER_BLOCK": "200",
+    "MAX_SCORE_PER_BLOCK": "1000",
     "MIN_SEC_PER_BLOCK": "0.12",
     "RANK_TZ_HOURS": "9",
     "DEV_LOGIN": "0",
@@ -36,7 +36,7 @@
       "vars": {
         "RETURN_ORIGINS": "https://staging.twistrush.com,http://localhost:8788",
         "ALLOW_ORIGINS": "https://staging.twistrush.com,http://localhost:8788",
-        "MAX_SCORE_PER_BLOCK": "200",
+        "MAX_SCORE_PER_BLOCK": "1000",
         "MIN_SEC_PER_BLOCK": "0.12",
         "RANK_TZ_HOURS": "9",
         "DEV_LOGIN": "0",

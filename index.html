@@ -644,6 +644,11 @@ body.on-menu .battlemain{opacity:0;}
   /* 60秒アタックの残り時間 */
   .timebar{display:flex;align-items:center;gap:8px;flex:none;padding:2px 2px 0;}
   .timebar.hidden{display:none;}
+  .rushbox{display:flex;align-items:center;gap:8px;flex:none;padding:2px 2px 0;height:20px;} .rushbox.hidden{display:none;}
+  .rushbox b{font-size:13px;font-weight:900;min-width:120px;letter-spacing:.5px;color:var(--ink);opacity:.45;white-space:pre;font-variant-numeric:tabular-nums;}
+  .rushbox.on b{opacity:1;color:#ff4fa0;} .rushbox.hot b{color:#ff7a00;text-shadow:0 0 6px rgba(255,160,0,.6);}
+  .rushbox i{flex:1;height:6px;border-radius:4px;background:var(--well);overflow:hidden;position:relative;}
+  .rushbox i span{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:4px;background:linear-gradient(90deg,#ff4fa0,#ffb84f);}
   .timebar b{font-size:20px;font-weight:900;min-width:34px;text-align:right;font-variant-numeric:tabular-nums;color:var(--ink);}
   .timebar i{flex:1;height:10px;border-radius:6px;background:var(--well);overflow:hidden;position:relative;}
   .timebar i span{position:absolute;left:0;top:0;bottom:0;width:100%;border-radius:6px;background:#3fc6e8;}
@@ -1534,6 +1539,7 @@ body.tight .itembar{gap:6px;}
   <div class="stacks" id="stacks"></div>
   <div class="vspanel hidden" id="vsPanel"></div>
   <div class="timebar hidden" id="timeBar" aria-label="残り時間"><b id="timeLeft">60</b><i><span id="timeFill"></span></i></div>
+  <div class="rushbox hidden" id="rushBox" aria-label="RUSH"><b id="rushN">RUSH</b><i><span id="rushFill"></span></i></div>
 
 
 
@@ -3692,7 +3698,7 @@ body.tight .itembar{gap:6px;}
     if (phase === 'fall' && fallDist) four.forEach(([a, b]) => { fallDist[a][b] = 0; });  // 落下中に回したマスは着地済み扱い
     sndRot(dir);
     // 最初の列がそろった瞬間に確定2秒がスタート（点滅・落下中にそろえた分は、落下後の連鎖として消える）
-    if (phase === 'idle' && !confirmUntil && findGroups().length) { confirmUntil = now() + CFG.CONFIRM_MS; sndReady(); }
+    if (phase === 'idle' && !confirmUntil && findGroups().length) { rushHit(); confirmUntil = now() + CFG.CONFIRM_MS; sndReady(); }
   }
 
   function moveCursor(r, c, ai){
@@ -3704,11 +3710,42 @@ body.tight .itembar{gap:6px;}
     sndMove();
   }
 
+  // ===== 点数の新ルール（2026-11-15。まず60秒アタック・タイムアタック・チャレンジ）=====
+  //   1個10点×並べた数の倍率 ＋ 十字・L字のボーナス ＋ オクタのボーナス
+  //   × 同時消し（2列で×1.5、3列で×2.0…）× COMBO（連鎖。1つごとに＋25%）× RUSH
+  //   RUSH：消し終わって回せるようになってから、次の列をそろえるまでが RUSH_MS 以内なら+1（1つ＋0.1倍、×3.0まで）。こえたら0
+  //   確定待ち（2秒）と消える・落ちる時間は計らない（だれでも同じなので）。連鎖のあいだも止まっている
+  const RUSH_MS = 3000, RUSH_STEP = 0.1, RUSH_CAP = 3.0;
+  const newScoring = () => gameMode === 'sixty' || gameMode === 'rank' || gameMode === 'chal';
+  let rush = 0, rushFrom = 0, rushUndo = null, rushMax = 0;
+  const rushMul = () => Math.min(RUSH_CAP, 1 + RUSH_STEP * rush);
+  function rushHit(){                                     // 列がそろった瞬間（確定待ちのはじまり）
+    if (!newScoring()) return;
+    const t = now(); rushUndo = {rush, rushFrom};
+    if (rushFrom && t - rushFrom <= RUSH_MS) { rush++; rushMax = Math.max(rushMax, rush); if (rush >= 2) sndRush(rush); }
+    else rush = 0;
+    rushFrom = 0;                                          // 消し終わるまで止める
+  }
+  function rushCancel(){ if (rushUndo) { rush = rushUndo.rush; rushFrom = rushUndo.rushFrom; rushUndo = null; } }   // そろえた列を自分で崩したら、元に戻す
+  function sndRush(n){ try { const T0 = T(); tone(660 + Math.min(12, n) * 40, T0, 0.08, 'square', 0.035); } catch(_) {} }
+  let rushShown = '';
+  function drawRush(t){
+    const el = $('rushBox'); if (!el) return;
+    if (!newScoring() || !running) { if (rushShown !== 'off') { el.classList.add('hidden'); rushShown = 'off'; } return; }
+    if (rushFrom && rush > 0 && t - rushFrom > RUSH_MS) { rush = 0; }   // 時間切れ
+    const f = rushFrom ? Math.max(0, 1 - (t - rushFrom) / RUSH_MS) : (rush > 0 || confirmUntil || phase !== 'idle' ? 1 : 0);
+    const key = rush + '|' + Math.round(f * 60);
+    if (key === rushShown) return; rushShown = key;
+    el.classList.remove('hidden'); el.classList.toggle('on', rush > 0); el.classList.toggle('hot', rush >= 10);
+    $('rushN').textContent = rush > 0 ? 'RUSH ' + rush + '  ×' + rushMul().toFixed(1) : 'RUSH';
+    $('rushFill').style.width = (f * 100).toFixed(1) + '%';
+  }
   // ===== 確定 → 消去 → 落下 → 連鎖 =====
   function tryResolve(){
     const gs = findGroups();
     if (!gs.length) {
       phase = 'idle';
+      if (newScoring() && chain > 0) { rushFrom = now(); rushUndo = null; }   // 消し終わって回せるようになった：ここから計る
       if (pst && chain > 0) pst.lastT = now();       // 次に消すまでの時間を、ここから数える
       if (chain > 0) comboShowUntil = now() + 1200;   // 結果のコンボ数を少し残して見せる
       return false;
@@ -3735,6 +3772,15 @@ body.tight .itembar{gap:6px;}
     if (chain >= 2) misAdd('combo', 1);
     if (chain >= 3) misAdd('combo2', 1);
     pendingGain = base * mult * (gameMode === 'chal' && chCur && chCur.r.combo && chain >= 2 ? chCur.r.combo : 1);   // CHALLENGE「COMBO FEVER」
+    let calcTxt = base + '×' + mult;
+    if (newScoring()) {                                   // 新しい点数
+      const cnt = new Map(); gs.forEach(g => g.cells.forEach(([r, c]) => { const k = r * N + c; cnt.set(k, (cnt.get(k) || 0) + 1); }));
+      const cross = [...cnt.values()].filter(v => v >= 2).length, octa = gs.filter(g => g.t === GOLD).length;
+      const pts = base * 10 + cross * 100 + octa * 300;
+      const m = (1 + 0.5 * (lines - 1)) * (1 + 0.25 * (chain - 1)) * rushMul() * (gameMode === 'chal' && chCur && chCur.r.combo && chain >= 2 ? chCur.r.combo : 1);
+      pendingGain = Math.round(pts * m); calcTxt = pts + '×' + (Math.round(m * 100) / 100);
+      if (cross) pops.push({text: cross >= 2 ? 'CROSS×' + cross : 'CROSS', style: 'sync', r: 2.5, c: 2.5, row: 2, n: 1, t: now() + 200});
+    }
     if (pst) {                                       // SKILL PROFILE：60秒・エンドレスのくせを数える
       const tn = now();
       if (chain === 1) { pst.turns++; pst.wait += Math.max(0, tn - pst.lastT) / 1000; if (lines >= 2) pst.sync++; }
@@ -3753,7 +3799,7 @@ body.tight .itembar{gap:6px;}
     if (syncN > 0)  labels.push({text: syncN + 'sync', style: 'sync'});
     labels.forEach((L, i) => pops.push({text: L.text, style: L.style, r: cr, c: cc, row: i, n: labels.length, t: t0 + i * CFG.POP_GAP_MS}));
     // 盤面の右側を、下から上へ点数が湧き上がる
-    feed.push({calc: base + '×' + mult, pts: String(pendingGain), t: t0});
+    feed.push({calc: calcTxt, pts: String(pendingGain), t: t0});
     phase = 'clear'; phaseStart = now();
     sndClear(chain);
     return true;
@@ -4415,7 +4461,8 @@ body.tight .itembar{gap:6px;}
     }
     lastGoldTier = gt;
     if (running && (gameMode === 'sixty' || gameMode === 'chal')) tickSixty(t);
-    if (gameMode === 'chal' && chCur && chCur.r.turns) { lapStart = t; lastStackTick = t; }   // 「30 TURNS」は手数だけの勝負：外周もカラーHPも進まない（じっくり考えてOK）
+    if (gameMode === 'chal' && chCur && chCur.r.turns) { lapStart = t; lastStackTick = t; }
+    drawRush(t);   // 「30 TURNS」は手数だけの勝負：外周もカラーHPも進まない（じっくり考えてOK）
     while (running && t - lastStackTick >= CFG.STACK_TICK_MS * spdMul()) { lastStackTick += CFG.STACK_TICK_MS * spdMul();
       const inc = stackInc();
       if (gameMode === 'rank' && inc > endlessIncShown) { endlessIncShown = inc;
@@ -4442,7 +4489,7 @@ body.tight .itembar{gap:6px;}
     }
     if (!running) return;
     if (phase === 'idle' && confirmUntil && !findGroups().length) {
-      confirmUntil = 0;                            // そろった列を全部崩したら確定は取り消し
+      confirmUntil = 0; rushCancel();              // そろった列を全部崩したら確定は取り消し
     } else if (phase === 'idle' && confirmUntil && t >= confirmUntil && !(rotAnim && t - rotAnim.t < CFG.ROT_MS)) {
       confirmUntil = 0; chain = 0; tryResolve();   // 3秒たったら、そろっている列を全部まとめて消す
     } else if (phase === 'clear' && t - phaseStart >= CFG.CLEAR_MS) {
@@ -4979,7 +5026,7 @@ body.tight .itembar{gap:6px;}
     const tag = $('modeTag');
     tag.textContent = MODE_LABEL[gameMode] + (gameMode === 'practice' ? ' Lv' + diffLv : (stage ? ' ' + stage.label : ''));
     if (gameMode === 'chal' && chCur) tag.textContent = '🎯 ' + chCur.r.n;
-    chTurn = 0;
+    chTurn = 0; rush = 0; rushFrom = 0; rushUndo = null; rushMax = 0; rushShown = '';
     runMaxBar = 0; $('resStars').classList.add('hidden');
     setStageBg(stage ? stage.area : (gameMode === 'rank' || gameMode === 'sixty' || gameMode === 'chal' || gameMode === 'practice' || gameMode === 'online' ? 'free' : null));   // ストーリーはエリアの背景、60秒・エンドレス・練習は20枚からランダム
     timeShown = -1; $('timeBar').classList.toggle('hidden', gameMode !== 'sixty' && gameMode !== 'chal'); $('timeBar').classList.remove('low');
@@ -5066,7 +5113,7 @@ body.tight .itembar{gap:6px;}
     if (isBest) { best = score; if (!isCh) try { localStorage.setItem(bestKey('sixty'), String(best)); } catch(e) {} }
     $('hiScore').textContent = best;
     $('finalScore').textContent = score;
-    $('finalNote').textContent = isCh ? chRecord() : '60秒で ' + score.toLocaleString() + '点。' + (isBest ? '自己ベスト更新！' : '自己ベスト ' + best.toLocaleString());
+    $('finalNote').textContent = (isCh ? chRecord() : '60秒で ' + score.toLocaleString() + '点。' + (isBest ? '自己ベスト更新！' : '自己ベスト ' + best.toLocaleString())) + (rushMax ? '　最大RUSH ' + rushMax : '');
     $('over').querySelector('h1').textContent = isCh && chCur.r.turns ? 'FINISH!' : 'TIME UP!';
     $('nextBtn').classList.add('hidden'); $('stageBtn').classList.add('hidden');
     pops.push({text: 'TIME UP!', style: 'speed', r: 2.5, c: 2.5, row: 0, n: 1, t: now(), big: true, long: true});
@@ -5295,7 +5342,7 @@ body.tight .itembar{gap:6px;}
     if (atkUntil) atkUntil += d; if (defUntil) defUntil += d; skLast += d;
     Object.values(zbuf).forEach(b => { if (b[1]) b[1] += d; });
     if (ebuf[1]) ebuf[1] += d; if (tslow[1]) tslow[1] += d; if (tstop) tstop += d;
-    lapStart += d; lastStackTick += d; runStart += d; if (confirmUntil) confirmUntil += d;
+    lapStart += d; lastStackTick += d; runStart += d; if (confirmUntil) confirmUntil += d; if (rushFrom) rushFrom += d;
     if (warnNext) warnNext += d;
     phaseStart += d; fallStart += d;
   }
@@ -6530,7 +6577,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.101';
+  const APP_VER = '0.9.102';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -7289,12 +7336,19 @@ body.tight .itembar{gap:6px;}
   // ===== SKILL RANK と SKILL PROFILE（2026-11-13）：60秒アタック・エンドレスの点数とくせから、腕前とタイプを出す =====
   const SKR = [   // SKILL SCORE（直近5回のうち、いちばん良い回と悪い回を除いた真ん中3回の平均）の境目。表示は英語とランクだけ
     {min: 0,    k: 'D',  n: 'ROOKIE'},
-    {min: 500,  k: 'C',  n: 'PLAYER'},
-    {min: 1000, k: 'B',  n: 'ADVANCED'},
-    {min: 1400, k: 'A',  n: 'VETERAN'},
-    {min: 1800, k: 'S',  n: 'MASTER'},
-    {min: 2000, k: 'SS', n: 'GOD'},
+    {min: 5000,  k: 'C',  n: 'PLAYER'},
+    {min: 10000, k: 'B',  n: 'ADVANCED'},
+    {min: 14000, k: 'A',  n: 'VETERAN'},
+    {min: 18000, k: 'S',  n: 'MASTER'},
+    {min: 20000, k: 'SS', n: 'GOD'},
   ];
+  // 点数の新ルール（2026-11-15）：前の記録は点数の大きさがちがうので、SKILLの記録は×10に直し、60秒・タイムアタックの自己ベストと履歴はリセット
+  if (load('score_v', '') !== '2') {
+    try { const k = loadJ('sk60', null); if (Array.isArray(k)) save('sk60', JSON.stringify(k.map(v => v * 10))); } catch(_) {}
+    try { const a = loadJ('skprof', null); if (Array.isArray(a)) save('skprof', JSON.stringify(a.map(x => Object.assign(x, {sc: (x.sc || 0) * 10, pts: (x.pts || 0) * 10})))); } catch(_) {}
+    try { ['sixty', 'rank'].forEach(m => localStorage.removeItem(bestKey(m))); localStorage.setItem(HIST_KEY, JSON.stringify(hist().filter(h => h.m !== 'sixty' && h.m !== 'rank'))); } catch(_) {}
+    save('ta_best', ''); save('score_v', '2');
+  }
   // 安定値：5回あれば最高と最低（まぐれと失敗）を除いた3回の平均。3〜4回なら最高と最低を除く。2回以下はそのまま平均
   function skTrim(arr){
     const a = arr.slice().sort((x, y) => x - y);
@@ -7333,7 +7387,7 @@ body.tight .itembar{gap:6px;}
   function skRank(){ const st = skStats(); if (!st.nS) return null; let r = SKR[0]; SKR.forEach(x => { if (st.val >= x.min) r = x; }); return r; }
   function skType(st){
     if (!st.nS || !st.nE) return {t: 'タイプはまだ不明', d: 'タイムアタックも遊ぶと、瞬発型か持久型かが分かります'};
-    const dash = cl01(st.sixty / 2000), sta = cl01((st.endl - 1) / 5);
+    const dash = cl01(st.sixty / 20000), sta = cl01((st.endl - 1) / 5);
     if (sta - dash >= 0.15) return {t: '持久型', d: 'じっくり長く戦うほど力を出すタイプ。タイムアタック向き'};
     if (dash - sta >= 0.15) return {t: '瞬発型', d: '短い時間で一気に稼ぐタイプ。60秒アタック向き。長く戦うと息切れぎみ'};
     return {t: 'バランス型', d: '短い勝負でも長い勝負でも、同じように力を出せるタイプ'};
@@ -7347,10 +7401,10 @@ body.tight .itembar{gap:6px;}
     const lr = st.lines ? (st.L[4] + st.L[5] + st.L[6]) / st.lines : 0, pc = v => Math.round(v * 100) + '%';
     return [
       {k: 'SPD',  n: 'スピード', p: cl01((tpm - 3) / 15), raw: '1分に ' + tpm.toFixed(1) + 'ターン', d: '1分間に何回くずせるか'},
-      {k: 'DASH', n: 'ダッシュ', p: cl01(st.sixty / 2000), raw: '60秒 安定値 ' + Math.round(st.sixty).toLocaleString() + '点', d: '短期決戦の爆発力（60秒アタック）'},
+      {k: 'DASH', n: 'ダッシュ', p: cl01(st.sixty / 20000), raw: '60秒 安定値 ' + Math.round(st.sixty).toLocaleString() + '点', d: '短期決戦の爆発力（60秒アタック）'},
       {k: 'STA',  n: 'スタミナ', p: st.nE ? cl01((st.endl - 1) / 5) : 0, raw: st.nE ? 'タイムアタック 安定値 ' + skMS(st.endl) : 'タイムアタック未プレイ', d: 'タイムアタックで長く生き残る力（3分でC、5分でA）', na: !st.nE},
       {k: 'POW',  n: '破壊力', p: cl01((cpt - 3) / 12), raw: '1ターン ' + cpt.toFixed(1) + '個', d: '1回でこわすブロックの数'},
-      {k: 'ATK',  n: '攻撃力', p: cl01(st.ppt / 140), raw: '1ターン ' + Math.round(st.ppt).toLocaleString() + '点', d: '1回くずしたときの点数'},
+      {k: 'ATK',  n: '攻撃力', p: cl01(st.ppt / 1400), raw: '1ターン ' + Math.round(st.ppt).toLocaleString() + '点', d: '1回くずしたときの点数'},
       {k: 'EVA',  n: '回避率', p: st.penMin != null ? cl01(1 - st.penMin / 1.5) : 0, raw: st.penMin != null ? 'タイムアタック 1周逃し 1分に ' + st.penMin.toFixed(1) + '回' : 'タイムアタックを遊ぶと計測', d: 'タイムアタックで、光の1周以内に消してペナルティを避ける力', na: st.penMin == null},
       {k: 'REA',  n: '反応', p: cl01((6 - st.wait) / 3.5), raw: '次まで ' + st.wait.toFixed(1) + '秒', d: '消えてから次をそろえるまでの速さ'},
       {k: 'SPA',  n: '空間認識', p: cl01(st.sync / 0.7), raw: '同時消し ' + pc(st.sync), d: '盤面を広く見て、何列も同時にそろえる力'},
@@ -7760,7 +7814,7 @@ body.tight .itembar{gap:6px;}
       pops.push({text: 'オクタ×' + pick.length, style: 'special', r: 2.4, c: 2.5, row: 0, n: 1, t, big: true});
       sndSpeed(); spend(k);
       // ★がたまたま3つ並んだら、ふつうにそろえたときと同じく確定2秒を始める
-      if (phase === 'idle' && !confirmUntil && findGroups().length) { confirmUntil = t + CFG.CONFIRM_MS; sndReady(); }
+      if (phase === 'idle' && !confirmUntil && findGroups().length) { rushHit(); confirmUntil = t + CFG.CONFIRM_MS; sndReady(); }
       return;
     }
   }
@@ -10733,7 +10787,7 @@ body.tight .itembar{gap:6px;}
     SKILLS[s2.id][s2.kind](s2);
     cutIn(s2, name, skDiff(snap), hi);                // 技名と、何が起きたかを一緒に、画面の上の方に出す
     // 変えたオクタやかき混ぜた盤面で並びができたら、ふつうにそろえたときと同じく確定へ
-    if (phase === 'idle' && !confirmUntil && findGroups().length) { confirmUntil = t + CFG.CONFIRM_MS; sndReady(); }
+    if (phase === 'idle' && !confirmUntil && findGroups().length) { rushHit(); confirmUntil = t + CFG.CONFIRM_MS; sndReady(); }
     drawSkillBar(true);
   }
   // ---- 技で何が起きたかを見せる ----
@@ -10800,7 +10854,7 @@ body.tight .itembar{gap:6px;}
     grid[r][c] = randType(false);
     healPct(gh ? 0.50 : 0.10); sndSpeed();
     pops.push({text: gh ? 'ゴールドハート！ 全色 50%回復' : 'ハート！ 全色 10%回復', style: 'sync', r: r, c: c, row: 0, n: 1, t: now()});
-    if (!confirmUntil && findGroups().length) { confirmUntil = now() + CFG.CONFIRM_MS; sndReady(); }
+    if (!confirmUntil && findGroups().length) { rushHit(); confirmUntil = now() + CFG.CONFIRM_MS; sndReady(); }
     return true;
   }
   // そろって点滅している間（確定待ち〜消えて落ちるまで）は、外周のタイムゲージを止める
