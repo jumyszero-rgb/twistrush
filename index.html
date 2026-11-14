@@ -2460,7 +2460,8 @@ body.tight .itembar{gap:6px;}
   // 2026-11-15：ルートを3本に。0〜4＝ふつう、5〜9＝氷、10〜14＝石、15＝ボス（前は1エリア11面。記録は16面の形に移す）
   //   氷のルートはふつうのルートをクリアで、石のルートは氷のルートをクリアで出てくる。ボスはクリアしたルートの盤面（ふつう・氷・石）を選べる
   const PER = 16, ZAKO_N = 5, BOSS_I = 15;
-  const VAR_MUL = [1, 1.15, 1.3];                       // ルート（ボスは選んだ盤面）ごとの敵の強さ：ふつう・氷・石
+  // 氷・石は「裏面」（2026-11-15 本人）：敵の強さは「エリアの数をずらした」強さ。氷＝3エリア先、石＝6エリア先（エリア1の氷 ≒ エリア4のふつう）
+  const VAR_SHIFT = [0, 3, 6];
   const VAR_NAME = ['ふつう', '氷', '石'];
   // 1戦の長さ（2026-11-15：「1ステージ長すぎ」）：敵の体力を×FIGHT_T、受けるダメージを÷FIGHT_T。強さのつり合いはそのままで、戦う時間だけ短くなる
   const FIGHT_T = 0.6;
@@ -2548,22 +2549,24 @@ body.tight .itembar{gap:6px;}
     for (let i = 0; i < PER; i++) {
       const route = i === BOSS_I ? -1 : Math.floor(i / 5), step = i === BOSS_I ? 5 : i % 5;
       const g = a * PER + i + 1, k = (a * 6 + step) / (AREA_REF * 6 - 1);   // 通し番号と、その進み具合（ルートの何面目か）
+      const kOf = sh => ((a + sh) * 6 + step) / (AREA_REF * 6 - 1);        // 氷・石：エリアをずらした進み具合
       const gOld = a * 11 + (i === BOSS_I ? 10 : i) + 1;                     // 前の番号（お題の種を変えないため）
       const kind = i === BOSS_I ? 'boss' : 'normal';
       const big = kind === 'boss' || kind === 'mid';
       // HP：ザコは少なめでテンポよく。中ボスはザコの1.5倍、ボスは強め
       // HP：ザコは少し多め、ボスは進むほど倍率が上がる（エリア1は1.3倍→エリア9は2倍）。長く戦うほど速くなるので、その分苦戦する
-      const zhp = Math.round((12 + 14 * k) * 1.2);
-      let hp = kind === 'boss' ? Math.round((32 + 28 * k) * bossMul(k)) : (kind === 'mid' ? Math.round(zhp * 1.5) : zhp);
-      if (a === 0 && kind === 'boss') hp = Math.round(hp * 0.8);
-      hp *= 4;                                          // 自分は4人チームなので、敵のHPも4人分（ステータスはチーム合計と比べる数字なのでそのまま）
-      if (route >= 1) hp = Math.round(hp * VAR_MUL[route]);
-      // 難しさ：ザコはLv4〜16、ボスはそのエリアのザコ＋3（上限18）。ボスは苦戦するくらいに
-      // 後半のエリアほどグッと難しくなる曲線（ザコ上限18、ボスは＋3で上限20）
-      const baseLv = Math.round(4 + 9 * k + 7 * k * k);
-      let lv = big ? Math.min(20, baseLv + 3) : Math.min(18, baseLv);
-      if (a === 0 && kind === 'boss') lv -= 2;          // 最初のボス（いちご）はやさしく
-      if (route >= 1) lv = Math.min(19 + route - 1, lv + route);
+      const hpLv = sh => { const kk = kOf(sh);
+        const zhp = Math.round((12 + 14 * kk) * 1.2);
+        let hp = kind === 'boss' ? Math.round((32 + 28 * kk) * bossMul(kk)) : (kind === 'mid' ? Math.round(zhp * 1.5) : zhp);
+        if (a === 0 && kind === 'boss' && !sh) hp = Math.round(hp * 0.8);
+        hp *= 4;                                        // 自分は4人チームなので、敵のHPも4人分（ステータスはチーム合計と比べる数字なのでそのまま）
+        // 難しさ：ザコはLv4〜16、ボスはそのエリアのザコ＋3（上限18）。後半のエリアほどグッと難しくなる曲線（ザコ上限18、ボスは＋3で上限20）
+        const baseLv = Math.round(4 + 9 * kk + 7 * kk * kk);
+        let lv = big ? Math.min(20, baseLv + 3) : Math.min(18, baseLv);
+        if (a === 0 && kind === 'boss' && !sh) lv -= 2;   // 最初のボス（いちご）はやさしく
+        return [hp, lv]; };
+      const V = VAR_SHIFT.map(hpLv);                    // [ふつう, 氷, 石] の [体力, 難しさ]
+      const [hp, lv] = V[Math.max(0, route)];
       const boss = CHARS[ar.boss];
       STORY.push({
         no: g, area: a, idx: i, kind, route, step,
@@ -2573,14 +2576,14 @@ body.tight .itembar{gap:6px;}
         bgmChar: ar.boss,                              // 曲はそのエリアのボスの曲
         zako: kind === 'boss' ? null : ar.zako,        // ザコと中ボスの顔
         diff: lv, every: boss.every, burst: boss.burst, face: ar.col,
-        hp, goal: -1, count: hp,
+        hp, goal: -1, count: hp, hpV: V.map(x => x[0]), lvV: V.map(x => x[1]),
         ready: true, gim: route === 1 ? 'ice' : route === 2 ? 'stone' : null,
         missions: makeMissions(route === 1 ? 1000 + gOld : route === 2 ? 2000 + g : a * 6 + step + 1, a, hp, kind, k),
       });
     }
   });
   // ステージの目標の文
-  const goalText = st => '相手のHP ' + (st.hp * enemyStats(st)[0]).toLocaleString() + ' を削りきる（どれか1色を削りきれば勝ち）';
+  const goalText = st => '相手のHP ' + ((st.kind === 'boss' && st.hpV ? st.hpV[varOf(st)] : st.hp) * enemyStats(st)[0]).toLocaleString() + ' を削りきる（どれか1色を削りきれば勝ち）';
   const misText = m => MISSION[m.t].text(m);
   const MODE_LABEL = {story: 'STORY', practice: 'PRACTICE', rank: 'TIME ATTACK', sixty: '60秒', online: '対戦', chal: 'CHALLENGE'};
   const SIXTY_SEC = 60;                                   // 60秒アタックの持ち時間
@@ -4036,7 +4039,7 @@ body.tight .itembar{gap:6px;}
     goalColor = stage && stage.goal >= 0 ? stage.goal : -1;
     enemyHP = stage ? (goalColor >= 0 ? stage.count : stage.hp) : CFG.STACK_MAX;
     curVar = gameMode === 'story' ? varOf(stage) : 0;
-    if (stage && stage.kind === 'boss' && curVar > 0) enemyHP = Math.round(enemyHP * VAR_MUL[curVar]);   // ボスの氷・石の盤面は体力も上がる
+    if (stage && stage.kind === 'boss' && curVar > 0 && stage.hpV) enemyHP = stage.hpV[curVar];   // ボスの氷・石の盤面は、ずらしたエリアの体力
     obsWant = gameMode === 'story' && curVar > 0 ? {k: curVar === 1 ? 'ice' : 'stone', n: Math.min(8, 3 + Math.floor((stage.area || 0) / 2))} : null;
     cpuSpec = stage ? {every: stage.every, burst: stage.burst} : {every: 4600, burst: [3, 5]};
     cpus = [];
@@ -4417,7 +4420,7 @@ body.tight .itembar{gap:6px;}
       userExpAdd(stamCost(i));                              // 勝つと、使ったスタミナ分の経験値をもう一度
       achvCheck();
       got = storyStars[i];
-      coinNote = storyWinCoins(i, curStage.area, firstClear, got - bits(oldMask)) + teamExp(curStage) + zakoDrop();
+      coinNote = storyWinCoins(i, curStage.area + VAR_SHIFT[curVar], firstClear, got - bits(oldMask)) + teamExp(curStage) + zakoDrop();
       const vr = varRewards(curVar, curStage.area); coinNote += vr.txt;
       if (curVar >= 1) { const g0 = coins - seqC0; setTimeout(() => adDouble(g0, vr.list), 3800); }
       seqExtra = [];
@@ -5107,7 +5110,7 @@ body.tight .itembar{gap:6px;}
     if (stage) countPlay(opt.stage || 0, opt.autoGo ? AUTO_LV[autoLv].mult : 1);   // オートはレベルでスタミナが変わる
     autoOn = !!(stage && opt.autoGo); if (opt) delete opt.autoGo;   // オートはその1回だけ（「もう一度」は手動）
     autoNext = 0; autoPlan = null; autoT0 = 0; autoS0 = 0; autoPace = 1; autoSkAt = 0; drawAutoBadge();
-    diffLv = gameMode === 'practice' ? (opt.lv || 5) : (stage ? stage.diff : (gameMode === 'chal' && chCur && chCur.r.lv) || 5);   // ランキング（60秒・エンドレス）はLv5固定
+    diffLv = gameMode === 'practice' ? (opt.lv || 5) : (stage ? (stage.kind === 'boss' && stage.lvV ? stage.lvV[varOf(stage)] : stage.diff) : (gameMode === 'chal' && chCur && chCur.r.lv) || 5);   // ランキング（60秒・エンドレス）はLv5固定
     vsInit(stage ? 2 : 1, null, stage);
     Object.assign(CFG, diffOf(diffLv));                  // 難易度の数値を当てる
     endlessIncShown = 1;
@@ -5389,7 +5392,7 @@ body.tight .itembar{gap:6px;}
   function varRewards(v, area){
     const list = [];
     if (v === 1) for (let k = 0; k < 2; k++) list.push([VAR_ITEMS[Math.floor(Math.random() * VAR_ITEMS.length)], 1]);
-    if (v === 2) for (let k = 0; k < 2; k++) { const [mk, q] = exRollMat(['w', 'a', 'x'][Math.floor(Math.random() * 3)], 3, ATTR_AREA[area] || 'none'); list.push([mk, q]); }
+    if (v === 2) for (let k = 0; k < 2; k++) { const [mk, q] = exRollMat(['w', 'a', 'x'][Math.floor(Math.random() * 3)], Math.min(5, 3 + Math.floor(area / 3)), ATTR_AREA[area] || 'none'); list.push([mk, q]); }
     list.forEach(([k, n]) => giveItem(k, n)); if (list.length) saveInv();
     const nm = k => ITEMS[k] ? ITEMS[k].name : EX_MAT[k] ? EX_MAT[k][0] : k;
     return {list, txt: list.length ? ' ' + list.map(([k, n]) => nm(k) + '×' + n).join('・') + '。' : ''};
@@ -6718,7 +6721,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.121';
+  const APP_VER = '0.9.122';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -8322,11 +8325,11 @@ body.tight .itembar{gap:6px;}
   const powCls = (mine, need) => mine >= need ? 'ok' : mine >= need * 0.85 ? 'near' : 'hard';
   function enemyStats(st){
     if (!st) return [100, 100, 100, 100];
-    const row = enRow(st.area).map(v => Math.round(v * eqUp(st.area)));
+    const aE = st.area + VAR_SHIFT[varOf(st)];             // 氷・石はエリアをずらした強さ
+    const row = enRow(aE).map(v => Math.round(v * eqUp(aE)));
     // 面ごとの固定値：ザコはエリアの1面目が表の数字、そこから1面ごとに+3.5%（5面目で+14%。次のエリアの1面目を超えない）。中ボスは表の中ボスの数字以上、ボスは表のボスの数字
     const zk = Math.round(row[0] * (1 + 0.035 * Math.min(4, st.step || 0)));
     let base = st.kind === 'boss' ? row[2] : (st.kind === 'mid' ? Math.max(row[1], zk) : zk);
-    if (varOf(st) > 0) base = Math.round(base * VAR_MUL[varOf(st)]);   // 氷・石（ルートと、ボスの盤面）
     const out = [base, base, base, base];
     if (st.kind === 'boss') {
       const cs = CHARS[st.char] && CHAR_STAT[CHARS[st.char].id];
@@ -8573,7 +8576,7 @@ body.tight .itembar{gap:6px;}
     later(next, 600);
   }
   function teamExp(st){
-    const gain = Math.round((50 + 30 * (st.area + 1)) * (st.kind === 'boss' ? 3 : (st.kind === 'mid' ? 2 : 1)) * [1, 1.3, 1.6][varOf(st)]);   // 経験値：氷×1.3・石×1.6
+    const gain = Math.round((50 + 30 * (st.area + VAR_SHIFT[varOf(st)] + 1)) * (st.kind === 'boss' ? 3 : (st.kind === 'mid' ? 2 : 1)) * [1, 1.3, 1.6][varOf(st)]);   // 経験値：ずらしたエリアの分×氷1.3・石1.6
     const ups = [], info = {gain, list: []};
     teamMembers().forEach(u => {
       const cs = CHAR_STAT[u.id]; let lv = u.lv, exp = u.exp + gain;
