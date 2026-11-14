@@ -29,7 +29,7 @@
   html.iospwa .stagebg,html.iospwa .intro,html.iospwa #askBox,html.iospwa #tapStart,
   html.iospwa #menu.overlay,html.iospwa #settings.overlay,html.iospwa #rank.overlay,html.iospwa #howto.overlay,html.iospwa #news.overlay,html.iospwa #achv.overlay,html.iospwa #story.overlay,
   html.iospwa #prac.overlay,html.iospwa #online.overlay,html.iospwa #vs.overlay,html.iospwa #gacha.overlay,html.iospwa #box.overlay,
-  html.iospwa #shop.overlay,html.iospwa #daily.overlay{bottom:auto!important;height:var(--fullh)!important;}
+  html.iospwa #shop.overlay,html.iospwa #chal.overlay,html.iospwa #daily.overlay{bottom:auto!important;height:var(--fullh)!important;}
 .appver{position:absolute;right:10px;bottom:6px;font-size:10px;opacity:.45;color:#fff;pointer-events:none;z-index:1}
 .appver2{font-size:12px;opacity:.7;margin:0 0 10px;text-align:right}
 .battlemain{position:fixed;left:0;top:100%;max-width:none;z-index:0;pointer-events:none;
@@ -133,7 +133,7 @@ body.on-menu .battlemain{opacity:0;}
 
   .btn.vs{background:#6f7cff;color:#fff;box-shadow:0 5px 0 #3b45b8;}
   .btn.vs:active{box-shadow:0 2px 0 #3b45b8;}
-  #settings.overlay,#rank.overlay,#howto.overlay,#news.overlay,#achv.overlay,#story.overlay,#prac.overlay,#online.overlay,#skprof.overlay{position:fixed;inset:0;z-index:22;border-radius:0;padding:0;gap:0;justify-content:flex-start;text-align:left;color:#f6f0ff;
+  #settings.overlay,#rank.overlay,#howto.overlay,#news.overlay,#achv.overlay,#story.overlay,#prac.overlay,#online.overlay,#skprof.overlay,#chal.overlay{position:fixed;inset:0;z-index:22;border-radius:0;padding:0;gap:0;justify-content:flex-start;text-align:left;color:#f6f0ff;
     background:linear-gradient(180deg, rgba(22,10,44,.92), rgba(22,10,44,.96)),
       var(--title-img, url('img/title.jpg')) center / cover no-repeat, #1f1236;}
   #story .modesel,#prac .modesel{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.25);}
@@ -510,6 +510,18 @@ body.on-menu .battlemain{opacity:0;}
   .mstart{background:#ffd24a;color:#3a2748;font-size:11px;padding:2px 9px;border-radius:9px;box-shadow:0 2px 0 rgba(0,0,0,.35);}
   .mroute{color:#fff;font-size:11px;text-shadow:0 1px 3px rgba(0,0,0,.8);}
   .mroute.hard{color:#ff9a9a;}
+  #chal .how-body{padding:12px 14px 30px;}
+  .chhead{font-size:14px;margin-bottom:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;} .chhead span{margin-left:auto;font-size:12px;color:#ffd36b;font-weight:800;}
+  .chnote{font-size:12px;opacity:.85;margin:0 0 10px;}
+  .chcard{background:rgba(255,255,255,.07);border:2px solid rgba(255,122,200,.45);border-radius:16px;padding:12px;margin-bottom:12px;}
+  .chtop{display:flex;align-items:baseline;gap:8px;} .chn{font-size:20px;font-weight:900;color:#ff9ad6;letter-spacing:.5px;} .chbest{margin-left:auto;font-size:12px;} .chbest b{font-size:16px;}
+  .chd{font-size:12px;margin:4px 0 8px;line-height:1.5;} .chcol{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:4px;}
+  .chgoals{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;} .chgoals span{background:rgba(0,0,0,.25);border-radius:10px;padding:6px 4px;font-size:11px;font-weight:800;text-align:center;line-height:1.3;}
+  .chgoals span small{display:block;font-size:9px;font-weight:600;opacity:.8;} .chgoals span.ok{background:rgba(255,211,107,.25);color:#ffd36b;}
+  .chbtns{display:flex;gap:8px;margin-top:10px;} .chbtns button{flex:1;padding:10px;border-radius:12px;border:0;font-weight:900;font-size:14px;}
+  .chplay{background:linear-gradient(#ff8ad0,#e0479e);color:#fff;} .chrk{background:rgba(255,255,255,.14);color:#fff;}
+  .chlist{margin-top:8px;} .chall{text-align:center;font-weight:900;font-size:13px;padding:10px;border-radius:12px;background:rgba(255,255,255,.06);} .chall.ok{background:rgba(255,211,107,.2);color:#ffd36b;}
+  .mroute.hide{color:rgba(255,255,255,.55);font-size:20px;text-align:center;line-height:1.2;} .mroute.hide small{display:block;font-size:10px;margin-top:4px;}
   #stageInfo .rt{font-size:12px;font-weight:700;color:#9fe3ff;margin:2px 0 4px;}
   #stageInfo .rt.hard{color:#ff9a9a;}
   .mnode .tmp{position:absolute;top:-6px;right:-8px;background:#62d8ff;color:#123;font-size:9px;padding:0 4px;border-radius:6px;}
@@ -616,6 +628,7 @@ body.on-menu .battlemain{opacity:0;}
   .btn.sixty{background:#3fc6e8;color:#0d2a36;box-shadow:0 5px 0 #1d8aa6;}
   .btn.sixty:active{box-shadow:0 2px 0 #1d8aa6;}
   .mode-tag.sixty{background:#3fc6e8;color:#0d2a36;}
+  .mode-tag.chal{background:#ff7ac8;color:#3a0626;}
   /* 60秒アタックの残り時間 */
   .timebar{display:flex;align-items:center;gap:8px;flex:none;padding:2px 2px 0;}
   .timebar.hidden{display:none;}
@@ -767,7 +780,7 @@ body.on-menu .battlemain{opacity:0;}
   .mtile .mi{height:auto;} .mtile .mi img{width:64px;height:64px;filter:drop-shadow(0 3px 4px rgba(0,0,0,.5));}
   .mtile{min-height:104px;padding:6px 2px;}
   .mtile.wide{min-height:84px;} .mtile.wide .mi img{width:72px;height:72px;}
-  .mrow2{grid-column:1 / -1;display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .mrow2{grid-column:1 / -1;display:grid;grid-template-columns:1fr 1fr;gap:10px;} .mrow2.three{grid-template-columns:repeat(3,minmax(0,1fr));} .mrow2.three .mtile.low{flex-direction:column;gap:2px;padding:4px 2px;} .mrow2.three .mtile.low .mi img{width:32px;height:32px;}
   .mtile.low{flex-direction:row;min-height:58px;gap:8px;} .mtile.low .mi img{width:42px;height:42px;} .mtile.low .ml{font-size:12px;}
   #menu h1.logo{margin-top:58px;}
   .ugrade{background:rgba(255,255,255,.08);border-radius:14px;padding:10px 12px;margin:6px 0 10px;font-weight:800;font-size:13px;}
@@ -1535,7 +1548,8 @@ body.tight .itembar{gap:6px;}
         <button class="mtile" id="sixtyBtn" data-tip="60秒で何点取れるか。記録はランキングに残る"><span class="mi"><img data-mimg="sixty" alt=""></span><span class="ml">60秒アタック</span></button>
         <button class="mtile" id="startBtn" data-tip="カラーHPがどれか30になるまで、どれだけ長く生き残れるか。時間がたつほど厳しくなる。記録あり・コンティニュー1回"><span class="mi"><img data-mimg="endless" alt=""></span><span class="ml">タイムアタック</span></button>
         <button class="mtile" id="easyBtn" data-tip="5段階の難しさで練習できる。記録なし・コンティニュー何度でも"><span class="mi"><img data-mimg="practice" alt=""></span><span class="ml">練習</span></button>
-        <div class="mrow2">
+        <div class="mrow2 three">
+          <button class="mtile low" id="chalBtn" data-tip="毎週3つのお題：みんな同じ盤面・同じ条件で点数を競う。目標達成でチケット"><span class="mi" style="font-size:26px">🎯</span><span class="ml">チャレンジ</span></button>
           <button class="mtile low" id="vsBtn" data-tip="ほかの人と対戦する（準備中）"><span class="mi"><img data-mimg="online" alt=""></span><span class="ml">オンライン対戦</span></button>
           <button class="mtile low" id="rankBtn" data-tip="60秒アタックとタイムアタックの順位を見る"><span class="mi"><img data-mimg="ranking" alt=""></span><span class="ml">ランキング</span></button>
         </div>
@@ -1546,6 +1560,13 @@ body.tight .itembar{gap:6px;}
     </div>
 
     <!-- 遊び方ページ -->
+    <div class="overlay hidden" id="chal" role="dialog" aria-label="チャレンジ">
+      <div class="how-head">
+        <button class="how-back" id="chalBack" aria-label="タイトルに戻る">‹ 戻る</button>
+        <h2>CHALLENGE</h2>
+      </div>
+      <div class="how-body" id="chalBody"></div>
+    </div>
     <div class="overlay hidden" id="news" role="dialog" aria-label="ニュース">
       <div class="how-head">
         <button class="how-back" id="newsBack" aria-label="タイトルに戻る">‹ 戻る</button>
@@ -2510,7 +2531,7 @@ body.tight .itembar{gap:6px;}
   // ステージの目標の文
   const goalText = st => '相手のHP ' + (st.hp * enemyStats(st)[0]).toLocaleString() + ' を削りきる（どれか1色を削りきれば勝ち）';
   const misText = m => MISSION[m.t].text(m);
-  const MODE_LABEL = {story: 'STORY', practice: 'PRACTICE', rank: 'TIME ATTACK', sixty: '60秒', online: '対戦'};
+  const MODE_LABEL = {story: 'STORY', practice: 'PRACTICE', rank: 'TIME ATTACK', sixty: '60秒', online: '対戦', chal: 'CHALLENGE'};
   const SIXTY_SEC = 60;                                   // 60秒アタックの持ち時間
   const isRec = m => m === 'rank' || m === 'sixty';      // 記録が残るモード
   // キャラ（仮）。イラストが来たら col と sym を画像に差し替える
@@ -2719,7 +2740,7 @@ body.tight .itembar{gap:6px;}
   const goldTier = () => { const m = Math.max(...stacks); return m >= CFG.WARN_AT ? 2 : (m >= CFG.WARN_AT / 2 ? 1 : 0); };
   // タイムアタックは時間で圧力が上がるので、オクタ（★）を多めに出す（約1.5倍：5%／11%／18%）
   const GOLD_TA = [0.05, 0.11, 0.18];
-  const goldRate = () => gameMode === 'rank' ? GOLD_TA[goldTier()] : [CFG.GOLD_RATE, CFG.GOLD_RATE_MID, CFG.GOLD_RATE_HIGH][goldTier()];
+  const goldRate = () => (gameMode === 'chal' && chCur && chCur.r.gold ? chCur.r.gold : 1) * (gameMode === 'rank' ? GOLD_TA[goldTier()] : [CFG.GOLD_RATE, CFG.GOLD_RATE_MID, CFG.GOLD_RATE_HIGH][goldTier()]);
   // エンドレスだけ：時間でも圧力を上げる（2026-11-13）。ふつうの人で3分前後、上手い人で5分前後に終わるように
   //   たまる量（1回あたり）：〜1分 1／〜2分 2／〜2分半 3／〜3分 4／〜3分半 5／〜4分 6／〜4分半 7／〜5分 8／そのあと20秒ごとに+2
   const ENDLESS_STEPS = [[60, 1], [120, 2], [150, 3], [180, 4], [210, 5], [240, 6], [270, 7], [300, 8]];
@@ -3578,7 +3599,7 @@ body.tight .itembar{gap:6px;}
     const maxS = Math.max(...stacks);
     // 曲は2段階：ふだん（ゆっくり）→ カラーHPが15を超えたら（はやい）。60秒アタックは最初から「はやい」
     let want;
-    if (gameMode === 'sixty') want = 'panic';
+    if (gameMode === 'sixty' || gameMode === 'chal') want = 'panic';
     else {
       want = maxS > BGM_FAST_AT ? 'panic' : 'calm';
       if (bgmMode === 'panic' && want !== 'panic' && maxS > BGM_FAST_AT - BGM_HYST) want = 'panic';
@@ -3641,6 +3662,7 @@ body.tight .itembar{gap:6px;}
   // dir: +1=時計回り, -1=反時計回り
   function rotate(dir, ai){
     if (!running || cdOn) return;
+    if (gameMode === 'chal' && chCur && chCur.r.turns && chTurn >= chCur.r.turns) return;   // CHALLENGE：手数を使い切ったら回せない
     if (autoOn && !ai) return;                     // オート中は指の操作を受け付けない
     const {r, c} = cur;
     const four = [[r, c], [r, c+1], [r+1, c+1], [r+1, c]];
@@ -3650,6 +3672,7 @@ body.tight .itembar{gap:6px;}
     if (dir > 0) { grid[r][c+1] = tl; grid[r+1][c+1] = tr; grid[r+1][c] = br; grid[r][c] = bl; }
     else         { grid[r][c] = tr; grid[r][c+1] = br; grid[r+1][c+1] = bl; grid[r+1][c] = tl; }
     rotAnim = {r, c, dir, t: now()};
+    if (gameMode === 'chal') chTurn++;
     if (phase === 'fall' && fallDist) four.forEach(([a, b]) => { fallDist[a][b] = 0; });  // 落下中に回したマスは着地済み扱い
     sndRot(dir);
     // 最初の列がそろった瞬間に確定2秒がスタート（点滅・落下中にそろえた分は、落下後の連鎖として消える）
@@ -3687,14 +3710,15 @@ body.tight .itembar{gap:6px;}
     let base = 0;
     gs.slice().sort((a, b) => b.cells.length - a.cells.length).forEach(g => {
       const m = LEN_MUL[Math.min(6, g.cells.length)] || 1;
-      g.cells.forEach(([r, c]) => { const k = r * N + c; if (!seenB.has(k)) { seenB.add(k); base += m; } });
+      const cm = gameMode === 'chal' && chCur && chCur.r.col && g.t === chCur.col ? 3 : 1;   // CHALLENGE「COLOR HUNT」：指定の色は×3
+      g.cells.forEach(([r, c]) => { const k = r * N + c; if (!seenB.has(k)) { seenB.add(k); base += m * cm; } });
     });
     // お題：何連・★・sync・連鎖を数える
     gs.forEach(g => { if (g.t === GOLD) misAdd('gold', 1); else misAdd('len' + Math.min(6, g.cells.length), 1); });
     if (lines >= 2) misAdd('sync', 1);
     if (chain >= 2) misAdd('combo', 1);
     if (chain >= 3) misAdd('combo2', 1);
-    pendingGain = base * mult;
+    pendingGain = base * mult * (gameMode === 'chal' && chCur && chCur.r.combo && chain >= 2 ? chCur.r.combo : 1);   // CHALLENGE「COMBO FEVER」
     if (pst) {                                       // SKILL PROFILE：60秒・エンドレスのくせを数える
       const tn = now();
       if (chain === 1) { pst.turns++; pst.wait += Math.max(0, tn - pst.lastT) / 1000; if (lines >= 2) pst.sync++; }
@@ -4374,7 +4398,8 @@ body.tight .itembar{gap:6px;}
       toast('オクタブロックの出る確率 ' + Math.round(goldRate() * 100) + '%');
     }
     lastGoldTier = gt;
-    if (running && gameMode === 'sixty') tickSixty(t);
+    if (running && (gameMode === 'sixty' || gameMode === 'chal')) tickSixty(t);
+    if (gameMode === 'chal' && chCur && chCur.r.turns) { lapStart = t; lastStackTick = t; }   // 「30 TURNS」は手数だけの勝負：外周もカラーHPも進まない（じっくり考えてOK）
     while (running && t - lastStackTick >= CFG.STACK_TICK_MS * spdMul()) { lastStackTick += CFG.STACK_TICK_MS * spdMul();
       const inc = stackInc();
       if (gameMode === 'rank' && inc > endlessIncShown) { endlessIncShown = inc;
@@ -4928,22 +4953,24 @@ body.tight .itembar{gap:6px;}
     if (stage) countPlay(opt.stage || 0, opt.autoGo ? AUTO_LV[autoLv].mult : 1);   // オートはレベルでスタミナが変わる
     autoOn = !!(stage && opt.autoGo); if (opt) delete opt.autoGo;   // オートはその1回だけ（「もう一度」は手動）
     autoNext = 0; autoPlan = null; autoT0 = 0; autoS0 = 0; autoPace = 1; autoSkAt = 0; drawAutoBadge();
-    diffLv = gameMode === 'practice' ? (opt.lv || 5) : (stage ? stage.diff : 5);   // ランキング（60秒・エンドレス）はLv5固定
+    diffLv = gameMode === 'practice' ? (opt.lv || 5) : (stage ? stage.diff : (gameMode === 'chal' && chCur && chCur.r.lv) || 5);   // ランキング（60秒・エンドレス）はLv5固定
     vsInit(stage ? 2 : 1, null, stage);
     Object.assign(CFG, diffOf(diffLv));                  // 難易度の数値を当てる
     endlessIncShown = 1;
     if (gameMode === 'story') { CFG.LAP_SEC = 10; CFG.LAP_MIN = 4; }   // ストーリーだけ：外周は10秒から4秒まで（難しさに関係なく）
-    best = loadBest(isRec(gameMode) ? gameMode : 'rank');
+    best = gameMode === 'chal' ? chBest() : loadBest(isRec(gameMode) ? gameMode : 'rank');
     $('hiScore').textContent = best;
     const tag = $('modeTag');
     tag.textContent = MODE_LABEL[gameMode] + (gameMode === 'practice' ? ' Lv' + diffLv : (stage ? ' ' + stage.label : ''));
+    if (gameMode === 'chal' && chCur) tag.textContent = '🎯 ' + chCur.r.n;
+    chTurn = 0;
     runMaxBar = 0; $('resStars').classList.add('hidden');
-    setStageBg(stage ? stage.area : (gameMode === 'rank' || gameMode === 'sixty' || gameMode === 'practice' || gameMode === 'online' ? 'free' : null));   // ストーリーはエリアの背景、60秒・エンドレス・練習は20枚からランダム
-    timeShown = -1; $('timeBar').classList.toggle('hidden', gameMode !== 'sixty'); $('timeBar').classList.remove('low');
+    setStageBg(stage ? stage.area : (gameMode === 'rank' || gameMode === 'sixty' || gameMode === 'chal' || gameMode === 'practice' || gameMode === 'online' ? 'free' : null));   // ストーリーはエリアの背景、60秒・エンドレス・練習は20枚からランダム
+    timeShown = -1; $('timeBar').classList.toggle('hidden', gameMode !== 'sixty' && gameMode !== 'chal'); $('timeBar').classList.remove('low');
     tag.className = 'mode-tag ' + gameMode;
     const rt = $('resultMode'); rt.textContent = tag.textContent; rt.className = tag.className;
     audio();
-    seed = gameMode === 'online' && onl && onl.seed ? onl.seed : Math.floor(Math.random() * 2 ** 31);   // 対戦は2人とも同じ盤面から
+    seed = gameMode === 'chal' && chCur ? chCur.seed : gameMode === 'online' && onl && onl.seed ? onl.seed : Math.floor(Math.random() * 2 ** 31);   // チャレンジはみんな同じ盤面   // 対戦は2人とも同じ盤面から
     document.body.classList.toggle('onl', gameMode === 'online');
     if (gameMode !== 'online') { $('onlOpp').classList.add('hidden'); $('onlRes').classList.add('hidden'); }
     rng = mulberry32(seed); srng = mulberry32(seed ^ 0x9e3779b9);
@@ -4956,7 +4983,7 @@ body.tight .itembar{gap:6px;}
     pst = (gameMode === 'sixty' || gameMode === 'rank') ? {len: {3: 0, 4: 0, 5: 0, 6: 0}, col: [], gold: 0, turns: 0, sync: 0, chainT: 0, pts: 0, clears: 0, wait: 0, pen: 0, lastT: t} : null;
     $('over').querySelector('h1').textContent = 'RESULT';
     running = true; refreshZone();
-    bgmOn = true; bgmMode = null; bgmUnlock(); primeVoice(); bgmPlay(gameMode === 'sixty' ? 'panic' : 'calm');
+    bgmOn = true; bgmMode = null; bgmUnlock(); primeVoice(); bgmPlay(gameMode === 'sixty' || gameMode === 'chal' ? 'panic' : 'calm');
     updateHUD(); updateGauges();
     $('menu').classList.add('hidden'); $('over').classList.add('hidden'); $('cont').classList.add('hidden'); $('ad').classList.add('hidden');
     $('nextBtn').classList.add('hidden'); nextStage = -1;
@@ -4969,6 +4996,11 @@ body.tight .itembar{gap:6px;}
       pops.push({text: stage.label + ' ' + (stage.kind === 'boss' ? 'BOSS' : (stage.kind === 'mid' ? '中ボス' : (zakoNow ? zakoFull(zakoNow) : '暴走ブロック'))),
                  style: 'combo', r: 2.0, c: 2.5, row: 0, n: 1, t: t + 200, long: true});
       pops.push({text: 'HPを削りきれ！', style: 'special', r: 2.0, c: 2.5, row: 1, n: 1, t: t + 400, long: true});
+    }
+    if (gameMode === 'chal' && chCur) {                 // チャレンジ：はじめにお題を出す
+      pops.push({text: chCur.r.n, style: 'combo', r: 2.0, c: 2.5, row: 0, n: 1, t: t + 200, long: true});
+      pops.push({text: chCur.r.col ? CH[chCur.col].name + 'が×3！' : chCur.r.turns ? chCur.r.turns + '手で勝負！' : chCur.r.combo ? 'COMBOが×3！' : chCur.r.gold ? 'オクタ2倍！' : chCur.r.sec + '秒で勝負！', style: 'special', r: 2.0, c: 2.5, row: 1, n: 1, t: t + 400, long: true});
+      if (chCur.r.turns) chTick();
     }
     if (gameMode !== 'online') startCountdown();     // 3・2・1・GO!（オンライン対戦は対戦の前に自分のカウントがある）
   }
@@ -4992,8 +5024,10 @@ body.tight .itembar{gap:6px;}
   // ===== 60秒アタック =====
   let timeShown = -1;
   function tickSixty(t){
-    const left = Math.max(0, SIXTY_SEC - (t - runStart) / 1000);
-    $('timeFill').style.width = (left / SIXTY_SEC * 100).toFixed(2) + '%';
+    if (gameMode === 'chal' && chCur && chCur.r.turns) { chTick(); return; }
+    const LIM = gameMode === 'chal' && chCur ? chCur.r.sec : SIXTY_SEC;
+    const left = Math.max(0, LIM - (t - runStart) / 1000);
+    $('timeFill').style.width = (left / LIM * 100).toFixed(2) + '%';
     const sec = Math.ceil(left);
     if (sec !== timeShown) {
       timeShown = sec; $('timeLeft').textContent = sec;
@@ -5009,13 +5043,14 @@ body.tight .itembar{gap:6px;}
     document.body.classList.remove('danger');
     bgmStop(1.2); sndSpeed();
     if (tapTimer) { clearTimeout(tapTimer); tapTimer = null; }
-    addHist('sixty', score);
+    const isCh = gameMode === 'chal';
+    if (!isCh) addHist('sixty', score);
     const isBest = score > best;
-    if (isBest) { best = score; try { localStorage.setItem(bestKey('sixty'), String(best)); } catch(e) {} }
+    if (isBest) { best = score; if (!isCh) try { localStorage.setItem(bestKey('sixty'), String(best)); } catch(e) {} }
     $('hiScore').textContent = best;
     $('finalScore').textContent = score;
-    $('finalNote').textContent = '60秒で ' + score.toLocaleString() + '点。' + (isBest ? '自己ベスト更新！' : '自己ベスト ' + best.toLocaleString());
-    $('over').querySelector('h1').textContent = 'TIME UP!';
+    $('finalNote').textContent = isCh ? chRecord() : '60秒で ' + score.toLocaleString() + '点。' + (isBest ? '自己ベスト更新！' : '自己ベスト ' + best.toLocaleString());
+    $('over').querySelector('h1').textContent = isCh && chCur.r.turns ? 'FINISH!' : 'TIME UP!';
     $('nextBtn').classList.add('hidden'); $('stageBtn').classList.add('hidden');
     pops.push({text: 'TIME UP!', style: 'speed', r: 2.5, c: 2.5, row: 0, n: 1, t: now(), big: true, long: true});
     afterShown = true;
@@ -5055,6 +5090,7 @@ body.tight .itembar{gap:6px;}
     const why = i >= 0 ? CH[i].name + 'のゲージが30になりました。' : '';
     $('finalNote').textContent = gameMode === 'rank'
       ? why + 'TIME ' + taFmt(taSec) + '・' + score.toLocaleString() + '点。' + (taNew ? '自己ベスト更新！' : '自己ベスト ' + taFmt(taBest.d) + '（' + taBest.s.toLocaleString() + '点）')
+      : gameMode === 'chal' ? why + chRecord()
       : isRec(gameMode)
       ? why + (isBest ? '自己ベスト更新！' : '自己ベスト ' + best)
       : why + (gameMode === 'story' ? '何度でも挑戦できます。' : '練習の記録は残りません。');
@@ -5113,10 +5149,13 @@ body.tight .itembar{gap:6px;}
   const storyCleared = () => openAll() ? CHARS.length : bossesBeaten();
   // エリアは「前のエリアのボスに勝つ」だけで開く（★の数は条件にしない）
   const areaOpen = a => openAll() || a === 0 || storyClr[a * PER - 1] > 0;
+  // ルートは下のルートをクリアすると出てくる（2026-11-15）：つよいルートは、ふつうルートの5面目に勝つと出現。第3のルートを入れるときも同じ決まり
+  //   すでにつよいルートを遊んでいた人は、そのまま見える
+  const hardShown = a => { const b = a * PER; if (openAll() || storyClr[b + 4] > 0) return true; for (let k = 5; k < BOSS_I; k++) if (storyClr[b + k] > 0) return true; return false; };
   // ステージはエリアが開いていて、ルートのひとつ前に勝っていれば開く。ボスはどちらかのルートの5面目に勝てば開く
   const stageOpen = i => { if (!(i >= 0 && i < STORY.length)) return false;
     const a = Math.floor(i / PER), j = i % PER, b = a * PER;
-    if (!areaOpen(a)) return false; if (openAll() || j === 0 || j === 5) return true;
+    if (!areaOpen(a)) return false; if (j >= 5 && j < BOSS_I && !hardShown(a)) return false; if (openAll() || j === 0 || j === 5) return true;
     if (j === BOSS_I) return storyClr[b + 4] > 0 || storyClr[b + 9] > 0;
     return storyClr[i - 1] > 0; };
   // 続きのステージ：先へ進む道（ふつうルート・ボス）でまだ勝っていない面。全部勝っていたら、つよいルートの残り
@@ -5149,7 +5188,7 @@ body.tight .itembar{gap:6px;}
     $('stageBtn').classList.toggle('hidden', gameMode !== 'story');   // 負けてもステージ選択には戻れる
     if (afterShown) return; afterShown = true;
     if (gameMode === 'online') { onlShowResult(); return; }   // オンライン対戦：コンティニューなし
-    if (gameMode === 'sixty') { $('over').classList.remove('hidden'); return; }   // 60秒アタックはコンティニューなし
+    if (gameMode === 'sixty' || gameMode === 'chal') { $('over').classList.remove('hidden'); return; }   // 60秒アタック・チャレンジはコンティニューなし
     if (gameMode === 'story') {                          // ストーリー：広告は1ステージ3回まで。使い切ったらお守りだけ
       const ch = own('charm');
       $('contRule').textContent = contLeft > 0 ? 'このステージはあと' + contLeft + '回' : 'このステージの広告コンティニューは使い切りました';
@@ -5654,11 +5693,11 @@ body.tight .itembar{gap:6px;}
   function sendScore(){
     clearInterval(overWait);
     $('rankJoin').classList.add('hidden'); $('rankRes').classList.add('hidden'); $('rankJoin').classList.remove('bye');
-    if (!isRec(gameMode)) return;
+    if (!isRec(gameMode) && gameMode !== 'chal') return;
     if (!overVisible()) { whenOverShown(sendScore); return; }   // 広告で続けたら、最後のスコアだけを送る
     awardPlay();
     if (score <= 0) return;
-    const b = {mode: gameMode === 'rank' ? 'ta' : gameMode, score, blocks: broken, dur: Math.round((now() - runStart) / 1000), ver: GAME_VER};   // エンドレスはタイムアタック（ta）として送る：時間→点数で順位
+    const b = {mode: gameMode === 'rank' ? 'ta' : gameMode === 'chal' ? chCur.id : gameMode, score, blocks: broken, dur: Math.round((now() - runStart) / 1000), ver: GAME_VER};   // エンドレスはタイムアタック（ta）として送る：時間→点数で順位
     if (rankTok()) { postScore(b); return; }
     rankPend = b;
     if (load('rank_skip', '') === today()) return;          // 「今はしない」を選んだ日は聞かない
@@ -5673,15 +5712,15 @@ body.tight .itembar{gap:6px;}
   }
   // 結果画面：世界ランキングの順位カード。数字が回って止まり、上位ほど派手に光る
   function showRankRes(R, b, welcome){
-    const el = $('rankRes'), d = R.day, rank = d.rank, total = d.total;
+    const isCh = /^ch/.test(b.mode), el = $('rankRes'), d = isCh ? R.all : R.day, rank = d.rank, total = d.total;
     const tier = rank === 1 ? 't1' : rank === 2 ? 't2' : rank === 3 ? 't3' : rank <= 10 ? 't10' : '';
     const medal = rank === 1 ? '👑' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank <= 10 ? '🏅' : '';
     const best = R.all && R.all.best != null && (b.mode === 'ta' ? (b.dur > (R.all.bestDur || 0) || (b.dur === R.all.bestDur && b.score >= R.all.best)) : b.score >= R.all.best);
     const bestNote = d.bestRank && d.bestRank < rank ? '<div class="rk-best">（自己ベスト ' + (b.mode === 'ta' ? taFmt(d.bestDur || 0) : d.best.toLocaleString() + '点') + 'は今日 ' + d.bestRank + '位）</div>' : '';
-    const msg = rank === 1 ? '今日の世界1位！' : rank <= 3 ? '表彰台！' : rank <= 10 ? 'トップ10入り！' : best ? '自己ベスト更新！' : (rank <= Math.ceil(total / 2) ? '上位' + Math.max(1, Math.round(rank / total * 100)) + '%！' : 'もっと上をめざそう！');
+    const msg = rank === 1 ? (isCh ? 'このお題で世界1位！' : '今日の世界1位！') : rank <= 3 ? '表彰台！' : rank <= 10 ? 'トップ10入り！' : best ? '自己ベスト更新！' : (rank <= Math.ceil(total / 2) ? '上位' + Math.max(1, Math.round(rank / total * 100)) + '%！' : 'もっと上をめざそう！');
     const sub = [['今週', R.week], ['今月', R.month], ['全期間', R.all]].filter(x => x[1] && x[1].rank).map(x => '<span>' + x[0] + ' <b>' + x[1].rank + '</b>位</span>').join('');
     el.className = 'rkres ' + tier;
-    el.innerHTML = '<div class="rk-head">🌏 WORLD RANKING</div><div class="rk-mode">' + (b.mode === 'ta' ? '⏳ タイムアタック ' + taFmt(b.dur) : '⏱ 60秒アタック') + '</div>' +
+    el.innerHTML = '<div class="rk-head">🌏 WORLD RANKING</div><div class="rk-mode">' + (b.mode === 'ta' ? '⏳ タイムアタック ' + taFmt(b.dur) : isCh ? '🎯 CHALLENGE ' + (chCur ? chCur.r.n : '') : '⏱ 60秒アタック') + '</div>' +
       (welcome ? '<div class="rk-wel">ようこそ、<b>' + String(welcome).replace(/[<>&]/g, '') + '</b> さん！ 登録しました</div>' : '') +
       '<div class="rk-medal">' + medal + '</div>' +
       '<div class="rk-main"><span class="rk-lbl">今日</span><span class="rk-num">' + Math.max(rank, total) + '</span><span class="rk-i">位</span><span class="rk-of">/ ' + total.toLocaleString() + '人</span></div>' +
@@ -6451,7 +6490,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.97';
+  const APP_VER = '0.9.98';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -6489,7 +6528,15 @@ body.tight .itembar{gap:6px;}
   const rb = on => '<img class="rb' + (on ? ' on' : '') + '" src="' + RB_SRC + '" alt="' + (on ? 'レインボーブロック' : '') + '">';
   const starsHTML = n => [0, 1, 2].map(k => rb(k < n)).join('');
   const areaStars = a => storyStars.slice(a * PER, a * PER + PER).reduce((s, v) => s + v, 0);
+  // つよいルートが出てきたら1回だけ知らせる（はじめて入れたときは、いま見えているぶんを黙って「見た」にする）
+  function hardNotice(){
+    let seen = loadJ('hard_seen', null); const first = !seen; seen = seen || [];
+    const nw = AREAS.map((_, a) => a).filter(a => hardShown(a) && !seen.includes(a)); if (!nw.length) return;
+    save('hard_seen', JSON.stringify(seen.concat(nw)));
+    if (!first && !openAll()) setTimeout(() => toast('🔥 エリア' + (nw[0] + 1) + 'に「つよいルート」が出現！ 敵は強いけど、ごほうびも多い'), 400);
+  }
   function drawStory(){
+    try { hardNotice(); } catch(_) {}
     if (!stageOpen(pickStage)) pickStage = nextStageIdx();
     mapArea = Math.max(0, Math.min(AREAS.length - 1, mapArea));
     const a = mapArea, ar = AREAS[a], open = areaOpen(a);
@@ -6502,32 +6549,35 @@ body.tight .itembar{gap:6px;}
     $('areaStars').innerHTML = rb(1) + ' ' + areaStars(a) + ' / ' + PER * 3 + '<span class="tpow">⚔ チーム戦闘力 <b>' + myStoryPow().toLocaleString() + '</b></span>';
     // このエリアのボス確定ボーナス（4体）の進み具合：あと何をすればもらえるかを見せる
     { const rc = r => { let n = 0, m = 0; for (let k = 0; k < PER; k++) { const st = STORY[a * PER + k]; if (st && st.route === r) { m++; if (storyClr[a * PER + k] > 0) n++; } } return [n, m]; };
-      const boss = CHARS[ar.boss], r0 = rc(0), r1 = rc(1), rbN = areaStars(a), done = [storyClr[a * PER + PER - 1] > 0, r0[0] >= r0[1], r1[0] >= r1[1], rbN >= PER * 3];
+      const hs = hardShown(a), boss = CHARS[ar.boss], r0 = rc(0), r1 = rc(1), rbN = areaStars(a), done = [storyClr[a * PER + PER - 1] > 0, r0[0] >= r0[1], r1[0] >= r1[1], rbN >= PER * 3];
       const it = (ok, t) => '<i class="' + (ok ? 'ok' : '') + '">' + (ok ? '✔' : '□') + t + '</i>';
       $('areaBonus').innerHTML = '👑' + (boss ? boss.name : 'ボス') + ' 確定 ' + done.filter(Boolean).length + '/4：' +
-        it(done[0], 'ボス') + it(done[1], 'ふつう' + (done[1] ? '' : r0[0] + '/' + r0[1])) + it(done[2], 'つよい' + (done[2] ? '' : r1[0] + '/' + r1[1])) + it(done[3], 'ニジ' + (done[3] ? '' : rbN + '/' + PER * 3)); }
+        it(done[0], 'ボス') + it(done[1], 'ふつう' + (done[1] ? '' : r0[0] + '/' + r0[1])) + it(done[2], hs ? 'つよい' + (done[2] ? '' : r1[0] + '/' + r1[1]) : '？？？') + it(done[3], 'ニジ' + (done[3] ? '' : rbN + '/' + PER * 3)); }
     $('areaPrev').disabled = a === 0;
     $('areaNext').disabled = a === AREAS.length - 1;
     // 道（マスとマスをつなぐ線）。クリアした区間は金色
     MAP_POS = mapPosOf(a);
     // マスを選んだだけ（エリアもクリア状況も同じ）なら、マップを作り直さずに「選択中」の印だけ動かす
     // （作り直すと敵の顔の絵が一瞬ぜんぶ消えることがあった）
-    const nowIdx0 = nextStageIdx(), mapKey = [a, open, nowIdx0, myStoryPow(), storyClr.slice(a * PER, a * PER + PER).join(''), storyStars.slice(a * PER, a * PER + PER).join('')].join('|');
+    const nowIdx0 = nextStageIdx(), mapKey = [a, open, hardShown(a), nowIdx0, myStoryPow(), storyClr.slice(a * PER, a * PER + PER).join(''), storyStars.slice(a * PER, a * PER + PER).join('')].join('|');
     if (map.dataset.key === mapKey && map.querySelector('.mnode')) {
       map.querySelectorAll('.mnode').forEach(n => n.classList.toggle('sel', +n.dataset.i === pickStage));
     } else { map.dataset.key = mapKey;
     const P = MAP_POS, b0 = a * PER, S = MAP_START;
     const seg = (p, q, done) => '<path class="' + (done ? 'done' : '') + '" d="M' + p[0] + ' ' + p[1] + ' L' + q[0] + ' ' + q[1] + '"/>';
     let svg = '<svg viewBox="0 0 100 124" preserveAspectRatio="none" aria-hidden="true">';
-    svg += seg(S, P[0], storyClr[b0] > 0) + seg(S, P[5], storyClr[b0 + 5] > 0);
-    for (let j = 0; j < 4; j++) { svg += seg(P[j], P[j + 1], storyClr[b0 + j + 1] > 0); svg += seg(P[j + 5], P[j + 6], storyClr[b0 + j + 6] > 0); }
-    svg += seg(P[4], P[BOSS_I], storyClr[b0 + 4] > 0 && storyClr[b0 + BOSS_I] > 0) + seg(P[9], P[BOSS_I], storyClr[b0 + 9] > 0 && storyClr[b0 + BOSS_I] > 0);
+    const hs = hardShown(a);
+    svg += seg(S, P[0], storyClr[b0] > 0) + (hs ? seg(S, P[5], storyClr[b0 + 5] > 0) : '');
+    for (let j = 0; j < 4; j++) { svg += seg(P[j], P[j + 1], storyClr[b0 + j + 1] > 0); if (hs) svg += seg(P[j + 5], P[j + 6], storyClr[b0 + j + 6] > 0); }
+    svg += seg(P[4], P[BOSS_I], storyClr[b0 + 4] > 0 && storyClr[b0 + BOSS_I] > 0) + (hs ? seg(P[9], P[BOSS_I], storyClr[b0 + 9] > 0 && storyClr[b0 + BOSS_I] > 0) : '');
     map.innerHTML = svg + '</svg>' +
       '<div class="mstart" style="left:' + S[0] + '%;top:' + (S[1] / 124 * 100) + '%">START</div>' +
       '<div class="mroute" style="left:37%;top:' + (121 / 124 * 100) + '%">ふつう</div>' +
-      '<div class="mroute hard" style="left:63%;top:' + (121 / 124 * 100) + '%">つよい</div>';
+      (hs ? '<div class="mroute hard" style="left:63%;top:' + (121 / 124 * 100) + '%">つよい</div>'
+          : '<div class="mroute hide" style="left:72%;top:50%">？？？<small>ふつうルートを<br>クリアで出現</small></div>');
     const nowIdx = nextStageIdx(), myPw = myStoryPow();
     STORY.slice(a * PER, a * PER + PER).forEach((st, k) => {
+      if (st.route === 1 && !hs) return;               // つよいルートは、出現するまでマスごと隠す
       const i = st.no - 1, op = stageOpen(i), got = storyStars[i], clr = storyClr[i];
       const b = document.createElement('button');
       b.className = 'mnode' + (st.kind === 'boss' ? ' boss' : (st.kind === 'mid' ? ' mid' : '')) + (st.route === 1 ? ' hard' : '') +
@@ -8622,8 +8672,91 @@ body.tight .itembar{gap:6px;}
 
   // ===== 解放（2026-11-14）：最初から全部入れておき、進み具合に合わせて少しずつ開く =====
   //   開いていないボタンには🔒と条件を出す。開いたときは「NEW！」とレインボーの一言で案内する
+  // ===== CHALLENGE（2026-11-15）：毎週3つのお題。みんな同じ盤面（同じシード）・同じ条件でハイスコアを競う =====
+  //   週は月曜はじまり。お題は8種類から週ごとに3つ（全員同じ）。何回でも挑戦できる
+  //   目標（BRONZE・SILVER・GOLD）は1つのお題で1回ずつ。3つともGOLDでSR以上確定チケット
+  //   ランキングはお題ごと（サーバーの mode にお題のIDを入れる。サーバーの変更なし）
+  const CH_RULES = [
+    {k: 'sprint', n: 'SPRINT 30',   d: '30秒で何点取れるか', sec: 30, goal: [200, 400, 700]},
+    {k: 'blitz',  n: 'BLITZ 20',    d: '20秒の超短期決戦', sec: 20, goal: [120, 260, 450]},
+    {k: 'long',   n: 'LONG 90',     d: '90秒の長期戦', sec: 90, goal: [650, 1200, 2000]},
+    {k: 'turns',  n: '30 TURNS',    d: '30回まわすまでに何点取れるか。時間は止まっているので、じっくり考えてOK', turns: 30, goal: [200, 400, 700]},
+    {k: 'color',  n: 'COLOR HUNT',  d: '60秒。指定の色を消すと点数×3', sec: 60, col: true, goal: [500, 950, 1600]},
+    {k: 'combo',  n: 'COMBO FEVER', d: '60秒。COMBO（連続消去の2回目から）の点数×3', sec: 60, combo: 3, goal: [500, 950, 1600]},
+    {k: 'hard',   n: 'HARD 60',     d: '60秒。外周もカラーHPも速い（難しさLv8）', sec: 60, lv: 8, goal: [300, 600, 1000]},
+    {k: 'octa',   n: 'OCTA RAIN',   d: '60秒。オクタブロックが2倍出る', sec: 60, gold: 2, goal: [500, 950, 1600]},
+  ];
+  const CH_REW = [{n: 'BRONZE', ic: '🥉', it: [['silver', 100]]}, {n: 'SILVER', ic: '🥈', it: [['gticket', 1]]}, {n: 'GOLD', ic: '🥇', it: [['gticket', 2], ['silver', 300]]}];
+  const CH_ALL = ['gticket_hi', 1];
+  let chCur = null, chTurn = 0;
+  const chWeekKey = () => { const d = new Date(periodStart('week')); return d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0'); };
+  const chHash = s => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+  function chWeek(){
+    const wk = chWeekKey(), g = mulberry32(chHash('tw' + wk)), o = CH_RULES.map((_, i) => i);
+    for (let i = o.length - 1; i > 0; i--) { const j = Math.floor(g() * (i + 1)); [o[i], o[j]] = [o[j], o[i]]; }
+    return o.slice(0, 3).map((ri, k) => { const seed = chHash('ch' + wk + k) % 2 ** 31; return {id: 'ch' + wk + k, wk, r: CH_RULES[ri], seed, col: seed % TYPES}; });
+  }
+  function chState(){ const wk = chWeekKey(); let s = loadJ('chal', null); if (!s || s.wk !== wk) s = {wk, best: {}, got: {}, all: false}; return s; }
+  const chSave = s => save('chal', JSON.stringify(s));
+  const chBest = () => (chCur && chState().best[chCur.id]) || 0;
+  const chItName = k => k === 'silver' ? 'シルバー' : (TICKET_LABEL[k] || k);
+  const chItTxt = it => it.map(([k, n]) => chItName(k) + '×' + n).join('・');
+  function chTick(){
+    const L = chCur.r.turns, left = Math.max(0, L - chTurn);
+    if (left !== timeShown) { timeShown = left; $('timeLeft').textContent = left; $('timeFill').style.width = (left / L * 100).toFixed(2) + '%'; $('timeBar').classList.toggle('low', left <= 5); }
+    if (running && left <= 0 && phase === 'idle' && !confirmUntil && !rotAnim) timeUp();   // 最後の1手の消去・連鎖が終わってから結果へ
+  }
+  function chRecord(){
+    if (!chCur) return '';
+    const s = chState(), id = chCur.id, old = s.best[id] || 0, nb = score > old;
+    if (nb) s.best[id] = score;
+    const got = s.got[id] || 0; let tier = 0; chCur.r.goal.forEach((g, k) => { if (score >= g) tier = k + 1; });
+    const msgs = [];
+    for (let k = got; k < tier; k++) { CH_REW[k].it.forEach(([key, n]) => key === 'silver' ? addCoins(n) : giveItem(key, n)); msgs.push(CH_REW[k].ic + CH_REW[k].n + '（' + chItTxt(CH_REW[k].it) + '）'); }
+    if (tier > got) s.got[id] = tier;
+    if (!s.all && chWeek().every(c => (s.got[c.id] || 0) >= 3)) { s.all = true; giveItem(CH_ALL[0], CH_ALL[1]); msgs.push('👑ALL GOLD（' + chItTxt([CH_ALL]) + '）'); }
+    chSave(s);
+    try { userExpAdd(UEXP.sixty); } catch(_) {}
+    const nx = chCur.r.goal[tier];
+    return chCur.r.n + '：' + score.toLocaleString() + '点。' + (nb ? '自己ベスト更新！' : '自己ベスト ' + old.toLocaleString()) +
+      (msgs.length ? '　🎁 ' + msgs.join('、') : nx ? '　次の' + CH_REW[tier].n + 'まで あと' + (nx - score).toLocaleString() + '点' : '');
+  }
+  function chLeftTxt(){ const end = periodStart('week') + 7 * 864e5, ms = end - Date.now(), d = Math.floor(ms / 864e5), h = Math.floor(ms % 864e5 / 36e5); return d > 0 ? 'あと' + d + '日' + h + '時間' : 'あと' + h + '時間'; }
+  function drawChal(){
+    const s = chState(), W = chWeek(), allG = W.every(c => (s.got[c.id] || 0) >= 3);
+    const ws = new Date(periodStart('week')), we = new Date(periodStart('week') + 6 * 864e5), md = d => (d.getMonth() + 1) + '/' + d.getDate();
+    $('chalBody').innerHTML = '<div class="chhead"><b>今週のお題</b>　' + md(ws) + '〜' + md(we) + '<span>' + chLeftTxt() + '</span></div>' +
+      '<p class="chnote">みんな同じ盤面・同じ条件。何回でも挑戦OK！ 目標を達成するとごほうび（1つのお題で1回ずつ）。</p>' +
+      W.map((c, i) => { const g = s.got[c.id] || 0, b = s.best[c.id] || 0, cl = c.r.col ? CH[c.col] : null;
+        return '<div class="chcard">' +
+          '<div class="chtop"><span class="chn">' + c.r.n + '</span><span class="chbest">BEST <b>' + b.toLocaleString() + '</b></span></div>' +
+          '<div class="chd">' + c.r.d + (cl ? '<br>今週の色：<i class="chcol" style="background:' + cl.col + '"></i><b>' + cl.name + '</b>' : '') + '</div>' +
+          '<div class="chgoals">' + CH_REW.map((w, k) => '<span class="' + (g > k ? 'ok' : '') + '">' + (g > k ? '✔' : w.ic) + w.n + ' ' + c.r.goal[k].toLocaleString() + '<small>' + chItTxt(w.it) + '</small></span>').join('') + '</div>' +
+          '<div class="chbtns"><button class="chplay" data-chplay="' + i + '">▶ 挑戦する</button><button class="chrk" data-chrk="' + i + '">🌏 ランキング</button></div>' +
+          '<div class="chlist hidden" id="chl' + i + '"></div></div>'; }).join('') +
+      '<div class="chall' + (allG ? ' ok' : '') + '">👑 3つともGOLDで ' + chItTxt([CH_ALL]) + (s.all ? '（受け取り済み）' : '') + '</div>';
+  }
+  function openChal(){ drawChal(); $('chal').classList.remove('hidden'); $('chalBody').scrollTop = 0; }
+  $('chalBtn').addEventListener('click', openChal);
+  $('chalBack').addEventListener('click', () => $('chal').classList.add('hidden'));
+  $('titleBtn').addEventListener('click', () => { if (gameMode === 'chal') openChal(); });   // チャレンジのあとは、お題の画面へ戻る
+  $('chalBody').addEventListener('click', async e => {
+    const p = e.target.closest('[data-chplay]');
+    if (p) { chCur = chWeek()[+p.dataset.chplay]; $('chal').classList.add('hidden'); start('chal', {}); return; }
+    const k = e.target.closest('[data-chrk]'); if (!k) return;
+    const i = +k.dataset.chrk, box = $('chl' + i), c = chWeek()[i];
+    if (!box.classList.contains('hidden')) { box.classList.add('hidden'); return; }
+    box.classList.remove('hidden'); box.innerHTML = '<div class="wrow"><span class="nm2">読み込み中…</span></div>';
+    try {
+      const r = await api('/api/top?mode=' + c.id + '&limit=10&period=all', {tok: rankTok()}), top = r.top || [], esc = v => String(v).replace(/[<>&]/g, '');
+      box.innerHTML = (top.length ? top.map(x => '<div class="wrow' + (x.me ? ' me' : '') + '"><span class="rk">' + x.rank + '</span><span class="nm2">' + flagOf(x.cc) + esc(x.name) + '</span><span class="sc">' + x.score.toLocaleString() + '</span></div>').join('')
+        : '<div class="wrow"><span class="nm2">まだ記録がありません。一番乗りをめざそう！</span></div>') +
+        (r.me && r.me.rank && !top.some(x => x.me) ? '<div class="wrow me"><span class="rk">' + r.me.rank + '</span><span class="nm2">あなた</span><span class="sc">' + r.me.best.toLocaleString() + '</span></div>' : '');
+    } catch (_) { box.innerHTML = '<div class="wrow"><span class="nm2">サーバーにつながりませんでした</span></div>'; }
+  });
   const FEAT = [
     {k: 'ta', n: 'タイムアタック', ok: () => bossesBeaten() >= 1, need: 'エリア1のボスを倒す', how: '時間がたつほど厳しくなる中で、どれだけ長く生き残れるかを競うモードだよ。ランキングにも残るから挑戦してね！'},
+    {k: 'chal', n: 'チャレンジ', ok: () => bossesBeaten() >= 1, need: 'エリア1のボスを倒す', how: '毎週3つのお題が出るよ。みんな同じ盤面・同じ条件で点数を競うの。目標を達成するとチケットがもらえるよ！'},
     {k: 'rank', n: 'ランキング', ok: () => bossesBeaten() >= 1, need: 'エリア1のボスを倒す', how: '60秒アタックとタイムアタックの世界ランキングが見られるよ。月の順位でプレゼントももらえるの！'},
     {k: 'online', n: 'オンライン対戦', ok: () => userLv() >= 5, need: 'ユーザーLV5', how: 'ほかの人とリアルタイムで対戦できるよ。まずは「シンプル」から遊んでみてね。'},
     {k: 'arena', n: 'アリーナ（オート対戦）', ok: () => userLv() >= 8, need: 'ユーザーLV8', how: 'オンライン対戦の「オート」タブで、チームどうしを自動で戦わせられるよ。1日3回まで！'},
@@ -8634,7 +8767,7 @@ body.tight .itembar{gap:6px;}
   const featOk = k => { if (openAll()) return true; const f = FEAT.find(x => x.k === k); try { return !f || f.ok(); } catch(_) { return true; } };
   const featNeed = k => (FEAT.find(x => x.k === k) || {}).need || '';
   const featLockMsg = k => { const f = FEAT.find(x => x.k === k); toast('🔒 ' + (f ? f.n : '') + 'は「' + featNeed(k) + '」で解放されます'); };
-  const FEAT_BTN = {ta: 'startBtn', rank: 'rankBtn', online: 'vsBtn'};
+  const FEAT_BTN = {ta: 'startBtn', chal: 'chalBtn', rank: 'rankBtn', online: 'vsBtn'};
   Object.keys(FEAT_BTN).forEach(k => { const b = $(FEAT_BTN[k]); if (!b) return;
     b.addEventListener('click', e => { if (featOk(k)) return; e.preventDefault(); e.stopImmediatePropagation(); featLockMsg(k); }, true); });
   document.addEventListener('click', e => {
