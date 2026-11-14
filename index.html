@@ -422,6 +422,15 @@ body.on-menu .battlemain{opacity:0;}
   .exgo{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12.5px;} .exgo button,.exget{padding:7px 18px;border-radius:10px;border:0;background:linear-gradient(135deg,#ffd24a,#ff8a3d);color:#3a1a00;font-weight:900;font-size:14px;}
   .exgo button[disabled]{opacity:.4;} .exact{display:flex;align-items:center;justify-content:space-between;gap:8px;} .exleft{font-size:11px;text-align:right;} .exleft b{font-size:15px;}
   .exget small{display:block;font-size:10px;font-weight:900;} .exmsg{background:rgba(255,210,74,.14);border:1px solid rgba(255,210,74,.5);border-radius:12px;padding:10px;margin:8px 0;font-size:13px;line-height:1.5;}
+
+  #forge.overlay{position:fixed;inset:0;z-index:26;border-radius:0;padding:0;gap:0;justify-content:flex-start;text-align:left;color:#f6f0ff;background:linear-gradient(180deg, rgba(22,10,44,.94), rgba(22,10,44,.97)), var(--title-img, url('img/title.jpg')) center / cover no-repeat, #1f1236;}
+  .fgtabs{display:flex;gap:6px;margin:6px 0;} .fgtabs button{flex:1;padding:7px 0;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#f6f0ff;font-weight:900;}
+  .fgtabs button.on{background:#ffd24a;color:#3a1a00;} .fgsub{font-size:12px;margin:4px 0;} .fgsub small{opacity:.75;}
+  .fgrc{list-style:none;margin:4px 0;padding:0;font-size:12px;display:grid;grid-template-columns:1fr 1fr;gap:2px 8px;} .fgrc li.ok{color:#7ff0a8;} .fgrc li.ng{color:#ff9db0;}
+  .eqslot{background:rgba(0,0,0,.06);border-radius:10px;padding:8px;font-size:13px;} .eqslot.on{background:rgba(255,210,74,.18);} .eqslot button{margin-top:6px;padding:4px 14px;border-radius:8px;border:1px solid #c9a;background:#fff;}
+  .eqitem{display:block;width:100%;text-align:left;margin:4px 0;padding:7px 9px;border-radius:10px;border:1px solid rgba(0,0,0,.15);background:#fff;font-family:inherit;}
+  .eqitem small{display:block;font-size:11px;opacity:.75;} .eqitem em{font-style:normal;font-size:10.5px;color:#d0506a;} .eqitem.on{outline:2px solid #ffb400;}
+  .eqforge{margin-top:8px;width:100%;padding:9px;border-radius:10px;border:0;background:linear-gradient(135deg,#ffd24a,#ff8a3d);color:#3a1a00;font-weight:900;font-family:inherit;}
   .maptools{grid-template-columns:repeat(5,minmax(0,1fr));} .maptools button.exready{animation:autoBlink 1.2s ease-in-out infinite;background:#ffd24a;color:#3a2210;}
   .maptools{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:8px;}
   .maptools button{border:2px solid rgba(255,210,74,.7);border-radius:12px;background:linear-gradient(#3b2566,#26174a);color:#fff;font-weight:900;font-size:17px;padding:5px 2px 4px;line-height:1.1;font-family:inherit;}
@@ -1535,6 +1544,13 @@ body.tight .itembar{gap:6px;}
         <h2>SKILL PROFILE</h2>
       </div>
       <div class="how-body" id="skprofBody"></div>
+    </div>
+    <div class="overlay hidden" id="forge" role="dialog" aria-label="鍛冶屋">
+      <div class="how-head">
+        <button class="how-back" id="forgeBack" aria-label="戻る">‹ 戻る</button>
+        <h2>FORGE <small style="font-size:12px;opacity:.75">鍛冶屋</small></h2>
+      </div>
+      <div class="how-body" id="forgeBody"></div>
     </div>
     <div class="overlay hidden" id="expd" role="dialog" aria-label="遠征">
       <div class="how-head">
@@ -6420,7 +6436,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.92';
+  const APP_VER = '0.9.93';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -7928,7 +7944,7 @@ body.tight .itembar{gap:6px;}
       return b + add;
     });
   }
-  const unitStats = u => statsOf(ciOf(u), u.lv);
+  const unitStats = u => { const b = statsOf(ciOf(u), u.lv); try { const w = wpnBonus(u); return b.map((v, k) => v + w[k]); } catch(_) { return b; } };
   // ---- チーム（1人目がメイン）。4つまで保存して切りかえられる ----
   let teams = loadJ('teams', null), teamNo = +load('teamno', '0') || 0;
   if (!Array.isArray(teams) || teams.length !== 4) teams = [0, 1, 2, 3].map(() => [null, null, null, null]);   // 最初は空。自分で選んで入れる
@@ -8276,24 +8292,48 @@ body.tight .itembar{gap:6px;}
   const EX_ITEMS = [[], [['stampot', 1, 0.5], ['pot_N', 1, 0.5]], [['stampot', 1, 0.8], ['pot_N', 1, 1], ['gticket', 1, 0.2]],
     [['stampot', 1, 1], ['pot_R', 1, 0.6], ['gticket', 1, 0.4]], [['pot_R', 1, 1], ['gticket_hi', 1, 0.1], ['pot_SR', 1, 0.05]],
     [['pot_R', 2, 1], ['pot_SR', 1, 0.15], ['gticket_hi', 1, 0.25]]];
-  // 素材：武器素材・防具素材・アクセ素材の3種類。それぞれ N〜LR の5段階（遠征先の★が高いほど上の段が出やすい）
-  //   遠征先のカードには「武器素材」などの種類だけ出す。何が何個出るかはランダム（必ずもらえるわけではない）
-  const EX_MAT = {
-    mat_iron: ['鉄鉱石', '🪨', 'w', 0], mat_silver: ['銀鉱石', '🥈', 'w', 1], mat_mithril: ['ミスリル', '✨', 'w', 2], mat_orichal: ['オリハルコン', '🟠', 'w', 3], mat_adaman: ['アダマンタイト', '⬛', 'w', 4],
-    mat_hide: ['魔獣の革', '🧣', 'a', 0], mat_cloth: ['聖なる布', '🧵', 'a', 1], mat_scale: ['竜のうろこ', '🐉', 'a', 2], mat_robe: ['天使の羽衣', '🪽', 'a', 3], mat_phoenix: ['不死鳥の羽', '🔥', 'a', 4],
-    mat_stone: ['きれいな石', '🔹', 'x', 0], mat_pearl: ['深海の真珠', '🫧', 'x', 1], mat_crystal: ['雷晶石', '💎', 'x', 2], mat_orb: ['精霊の宝玉', '🔮', 'x', 3], mat_rainbow: ['虹の結晶', '🌈', 'x', 4],
-    // 前の版で配った素材（表示だけ残す）
-    mat_feather: ['怪鳥の羽', '🪶', '', 0], mat_fire: ['火炎石', '🔥', '', 0], mat_herb: ['霊草', '🌿', '', 0], mat_wood: ['古木の枝', '🪵', '', 0], mat_bone: ['悪霊の骨', '💀', '', 0]};
-  const EX_MAT_CAT = {w: '武器素材', a: '防具素材', x: 'アクセ素材'};
+  // ===== 素材（2026-11-14 決定）：系統9×5グレード＋属性石8×3段階＋伝説素材20 =====
+  //   遠征先のカードには「武器素材・防具素材・アクセ素材」とだけ書く。何が何個出るかはランダム（出ないこともある）
+  const MAT_FAM = {
+    metal: {n: '金属', c: 'w', i: '⛏', l: ['鉄鉱石', '銀鉱石', 'ミスリル', 'オリハルコン', 'アダマンタイト']},
+    wood: {n: '木材', c: 'w', i: '🪵', l: ['かしの木', 'エルフの霊木', '月光樹の枝', '世界樹の若枝', '世界樹の芯']},
+    beast: {n: '魔物素材', c: 'w', i: '🦴', l: ['獣の牙', '魔獣の爪', 'グリフォンの羽', '竜の牙', '古竜の心臓']},
+    mech: {n: '機構', c: 'w', i: '⚙️', l: ['火薬', '歯車', '魔導回路', '魔力炉', '創世の核']},
+    polish: {n: '仕上げ', c: 'w', i: '🔨', l: ['砥石', '鍛冶の油', '星の砂', '精霊の炎', '神鉄の槌']},
+    hide: {n: '皮革', c: 'a', i: '🧣', l: ['獣の皮', '魔獣の革', '飛竜の革', '竜のうろこ', '神獣の毛皮']},
+    cloth: {n: '布', c: 'a', i: '🧵', l: ['麻布', '絹の布', '聖なる布', '天女の糸', '女神の糸']},
+    gem: {n: '宝石', c: 'x', i: '💎', l: ['きれいな石', '深海の真珠', '星のサファイア', '精霊の宝玉', '虹の結晶']},
+    craft: {n: '細工', c: 'x', i: '🔗', l: ['銅線', '銀細工', '金細工', '白金細工', '神匠の金具']},
+  };
+  const STONE_N = {fire: '紅蓮', water: '蒼海', earth: '大地', wind: '翠風', thunder: '雷晶', none: '無垢', dark: '冥闇', light: '聖光'};
+  const stoneName = (a, lv) => STONE_N[a] + ['のかけら', '石', 'の宝珠'][lv];
+  const LEGEND = {W37: '竜殺しの証', W38: '月の雫', W39: '禁書の一頁', W40: '主神のルーン', W41: '嵐の核', W42: '海神の鱗', W43: '巨人の骨', W44: '魔王の火種',
+    W45: '八岐の鱗', W46: '火神の弦', W47: '終焉の砂時計', W48: '雷神の欠片', W49: '龍王の宝玉', W50: 'はじまりの光',
+    A28: '不死鳥の尾羽', A29: '神鉄の欠片', A30: '星屑の糸', X28: '虹の涙', X29: '時の砂', X30: '魔王の契約書'};
+  // EX_MAT[キー] = [名前, 絵, 種類（w/a/x/s=属性石/l=伝説/''=前の版）, グレード 0〜4]
+  const EX_MAT = {};
+  Object.keys(MAT_FAM).forEach(f => MAT_FAM[f].l.forEach((n, t) => EX_MAT['m_' + f + '_' + t] = [n, MAT_FAM[f].i, MAT_FAM[f].c, t]));
+  Object.keys(STONE_N).forEach(a => [0, 1, 2].forEach(lv => EX_MAT['st_' + a + '_' + lv] = [stoneName(a, lv), '🔶', 's', [1, 2, 4][lv]]));
+  Object.keys(LEGEND).forEach(k => EX_MAT['lg_' + k] = [LEGEND[k], '🌟', 'l', 4]);
+  // 前の版で配った素材（表示だけ残す）
+  [['mat_iron', '鉄鉱石（旧）'], ['mat_silver', '銀鉱石（旧）'], ['mat_mithril', 'ミスリル（旧）'], ['mat_orichal', 'オリハルコン（旧）'], ['mat_adaman', 'アダマンタイト（旧）'],
+   ['mat_hide', '魔獣の革（旧）'], ['mat_cloth', '聖なる布（旧）'], ['mat_scale', '竜のうろこ（旧）'], ['mat_robe', '天使の羽衣（旧）'], ['mat_phoenix', '不死鳥の羽（旧）'],
+   ['mat_stone', 'きれいな石（旧）'], ['mat_pearl', '深海の真珠（旧）'], ['mat_crystal', '雷晶石（旧）'], ['mat_orb', '精霊の宝玉（旧）'], ['mat_rainbow', '虹の結晶（旧）'],
+   ['mat_feather', '怪鳥の羽（旧）'], ['mat_fire', '火炎石（旧）'], ['mat_herb', '霊草（旧）'], ['mat_wood', '古木の枝（旧）'], ['mat_bone', '悪霊の骨（旧）']].forEach(([k, n]) => EX_MAT[k] = [n, '📦', '', 0]);
+  const EX_MAT_CAT = {w: '武器素材', a: '防具素材', x: 'アクセ素材', s: '属性石', l: '伝説素材'};
   const EX_MATS = {1: ['w', 'a'], 2: ['w'], 3: ['a', 'x'], 4: ['x'], 5: ['w', 'x'], 6: ['a'], 7: ['w', 'x'], 8: ['w', 'a'], 9: ['a', 'x'], 10: ['w', 'a', 'x']};
+  const EX_STAGE_ATTR = {1: 'wind', 2: 'fire', 3: 'water', 4: 'earth', 5: 'dark', 6: 'water', 7: 'thunder', 8: 'none', 9: 'dark', 10: 'light'};   // 出やすい属性石
   const EX_TIER_W = [[], [70, 25, 5, 0, 0], [50, 35, 13, 2, 0], [30, 40, 25, 5, 0], [15, 35, 35, 12, 3], [5, 25, 40, 22, 8]];   // ★ごとの N/R/SR/MR/LR の出やすさ
-  const EX_TIER_MAX = [4, 3, 2, 1, 1];                  // 1回に出る個数の上限（N は1〜4個、LR は1個）
+  const EX_TIER_MAX = [4, 3, 2, 1, 1];                  // 1回に出る個数の上限
   const EX_MAT_P = 0.6;                                 // 種類ごとに出る確率（達成率100%のとき）
-  function exRollMat(cat, star){
-    const w = EX_TIER_W[star], tot = w.reduce((x, y) => x + y, 0); let r = Math.random() * tot, t = 0;
-    while (t < 4 && r >= w[t]) { r -= w[t]; t++; }
-    const k = Object.keys(EX_MAT).find(k => EX_MAT[k][2] === cat && EX_MAT[k][3] === t);
-    return [k, 1 + Math.floor(Math.random() * EX_TIER_MAX[t])];
+  const EX_LEGEND_P = [0, 0, 0, 0, 0.005, 0.015];       // 伝説素材（★4・★5だけ・とても低い）
+  const EX_GEAR_P = [0, 0.002, 0.002, 0.003, 0.006, 0.01];   // 武器の現物（超まれ）
+  const exTier = star => { const w = EX_TIER_W[star], tot = w.reduce((x, y) => x + y, 0); let r = Math.random() * tot, t = 0; while (t < 4 && r >= w[t]) { r -= w[t]; t++; } return t; };
+  function exRollMat(cat, star, attr){
+    const t = exTier(star);
+    if (Math.random() < 0.25) { const lv = t <= 1 ? 0 : t === 2 ? 1 : 2; return ['st_' + (attr || 'none') + '_' + lv, 1 + Math.floor(Math.random() * [3, 2, 1][lv])]; }
+    const fams = Object.keys(MAT_FAM).filter(f => MAT_FAM[f].c === cat), f = fams[Math.floor(Math.random() * fams.length)];
+    return ['m_' + f + '_' + t, 1 + Math.floor(Math.random() * EX_TIER_MAX[t])];
   }
   const EX_ITEM_NAME = k => k === 'silver' ? 'シルバー' : EX_MAT[k] ? EX_MAT[k][0] : (TICKET_LABEL[k] || (k.startsWith('pot_') ? potName(k.slice(4)) : k));
   const exSeed = s => { let h = 2166136261; for (const ch of s) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return () => { h ^= h << 13; h ^= h >>> 17; h ^= h << 5; return ((h >>> 0) % 100000) / 100000; }; };
@@ -8346,7 +8386,7 @@ body.tight .itembar{gap:6px;}
             '<div class="exgo"><span>達成率 <b style="color:' + exCol(j.rate) + ';font-size:16px">' + exPct(j.rate) + '</b>（条件 ' + j.ok + ' / ' + j.all + '）<br><small>報酬 ×' + j.rate.toFixed(2).replace(/0$/, '') + '</small></span><button data-go="' + st.id + '"' + (exData.active.length >= exSlots() ? ' disabled' : '') + '>出発</button></div>')) +
         '</div>';
     });
-    h += '<p class="sknote">遠征中のキャラは、帰ってくるまでストーリー・キャラ対戦・アリーナで使えません。達成率＝満たした条件の割合。100%で報酬がそのまま、50%なら報酬も半分になります。遠征枠はユーザーLV20・30・40で1つずつ増えます。素材（武器・防具・アクセ）は出るかどうか、何が何個出るかがランダムです。★が高いほど良い素材が出やすくなります。</p></section>';
+    h += '<p class="sknote">遠征中のキャラは、帰ってくるまでストーリー・キャラ対戦・アリーナで使えません。達成率＝満たした条件の割合。100%で報酬がそのまま、50%なら報酬も半分になります。遠征枠はユーザーLV20・30・40で1つずつ増えます。素材（武器・防具・アクセ）は出るかどうか、何が何個出るかがランダムです。★が高いほど良い素材が出やすく、★4・★5ではとてもまれに伝説素材や武器そのものが見つかります。</p></section>';
     const body = $('expdBody'); body.innerHTML = h;
     fillFaces(body);
   }
@@ -8370,7 +8410,9 @@ body.tight .itembar{gap:6px;}
     if (mul > 0) {
       const sv = Math.round((EX_SILVER[a.s] + ((a.bonus.find(x => x[0] === 'silver') || [0, 0])[1])) * mul); addCoins(sv); got.push('シルバー ' + sv);
       EX_ITEMS[a.s].concat(a.bonus.filter(x => x[0] !== 'silver')).forEach(([k, n, p]) => { if (Math.random() < Math.min(1, p * mul)) { giveItem(k, n); got.push(EX_ITEM_NAME(k) + ' ×' + n); } });
-      (EX_MATS[a.id] || []).forEach(c => { if (Math.random() >= EX_MAT_P * mul) return; const [k, q] = exRollMat(c, a.s); giveItem(k, q); got.push(EX_MAT[k][1] + EX_MAT[k][0] + '（' + EX_MAT_CAT[c] + '・' + POT_G[EX_MAT[k][3]] + '）×' + q); });
+      (EX_MATS[a.id] || []).forEach(c => { if (Math.random() >= EX_MAT_P * mul) return; const [k, q] = exRollMat(c, a.s, EX_STAGE_ATTR[a.id]); giveItem(k, q); got.push(EX_MAT[k][1] + EX_MAT[k][0] + ' ×' + q); });
+      if (Math.random() < EX_LEGEND_P[a.s] * mul) { const ks = Object.keys(LEGEND), k = 'lg_' + ks[Math.floor(Math.random() * ks.length)]; giveItem(k, 1); got.push('🌟 伝説素材「' + EX_MAT[k][0] + '」×1！'); }
+      if (Math.random() < EX_GEAR_P[a.s] * mul) { const t = exTier(a.s), ws = WPN.filter(w => GT[w.g] === t), w = ws[Math.floor(Math.random() * ws.length)]; if (w) { gearAdd(w.id); got.push('⚔ 武器「' + w.n + '」（' + w.g + '）を見つけた！'); } }
     }
     exData.active.splice(i, 1); exSave();
     exLastMsg = '<b style="color:' + exCol(mul) + '">遠征「' + a.name + '」から帰ってきました！ 達成率 ' + exPct(mul) + '</b><br>経験値 ひとり +' + gain.toLocaleString() + (got.length ? '<br>' + got.join('・') : '') + (ups.length ? '<br>レベルアップ：' + ups.join('・') : '');
@@ -8385,6 +8427,109 @@ body.tight .itembar{gap:6px;}
     const r = e.target.closest('[data-get]'); if (r) exGet(+r.dataset.get);
   });
   setInterval(() => { drawExpdBadge(); if (!$('expd').classList.contains('hidden') && exData.active.length) drawExpd(); }, 30000);
+
+  // ===== 武器（2026-11-14）：鍛冶屋で素材から作り、キャラに1つ装備する =====
+  //   キャラと同じ属性の武器はステータス1.2倍。特殊効果はあとで対応（いまは表示だけ）
+  const WPN = [
+    ['W01', "木の剣", 'N', '剣', 'none', [1, 4, 1, 1], ""],
+    ['W02', "銅の剣", 'N', '剣', 'none', [1, 4, 1, 2], ""],
+    ['W03', "練習用の槍", 'N', '槍', 'none', [1, 5, 1, 2], ""],
+    ['W04', "狩人の短弓", 'N', '弓', 'wind', [0, 3, 0, 4], ""],
+    ['W05', "果物ナイフ", 'N', '短剣', 'none', [0, 3, 0, 5], ""],
+    ['W06', "見習いの杖", 'N', '杖', 'light', [3, 4, 1, 1], ""],
+    ['W07', "木こりの斧", 'N', '斧', 'earth', [1, 5, 1, 0], ""],
+    ['W08', "おもちゃの銃", 'N', '銃', 'thunder', [0, 5, 0, 3], ""],
+    ['W09', "石のハンマー", 'N', 'ハンマー', 'earth', [1, 6, 2, 0], ""],
+    ['W10', "皮のグローブ", 'N', '拳', 'fire', [1, 3, 1, 2], ""],
+    ['W11', "火打ち石の短剣", 'N', '短剣', 'fire', [0, 3, 0, 5], ""],
+    ['W12', "貝がらの杖", 'N', '杖', 'water', [3, 4, 1, 1], ""],
+    ['W13', "鉄の剣", 'R', '剣', 'none', [1, 8, 2, 3], ""],
+    ['W14', "騎士の槍", 'R', '槍', 'light', [2, 8, 2, 4], ""],
+    ['W15', "エルフの長弓", 'R', '弓', 'wind', [0, 9, 0, 9], ""],
+    ['W16', "盗賊のダガー", 'R', '短剣', 'dark', [0, 6, 0, 8], ""],
+    ['W17', "魔法使いの杖", 'R', '杖', 'water', [6, 6, 2, 2], ""],
+    ['W18', "バトルアックス", 'R', '斧', 'earth', [4, 12, 2, 0], ""],
+    ['W19', "マスケット銃", 'R', '銃', 'fire', [0, 8, 0, 6], ""],
+    ['W20', "鍛冶屋の大槌", 'R', 'ハンマー', 'fire', [2, 10, 4, 0], ""],
+    ['W21', "鉄の拳", 'R', '拳', 'none', [3, 8, 2, 5], ""],
+    ['W22', "雷鳴の槍", 'R', '槍', 'thunder', [1, 7, 2, 4], ""],
+    ['W23', "氷柱のレイピア", 'R', '剣', 'water', [2, 9, 2, 3], ""],
+    ['W24', "影ぬいの小太刀", 'R', '短剣', 'dark', [0, 7, 0, 11], ""],
+    ['W25', "炎の魔剣フランベルジュ", 'SR', '剣', 'fire', [2, 14, 4, 5], "通常攻撃にやけどダメージ（3秒）"],
+    ['W26', "氷結の槍グラキエス", 'SR', '槍', 'water', [3, 14, 4, 7], "敵のスピード−10%（5秒）"],
+    ['W27', "疾風弓シルフィード", 'SR', '弓', 'wind', [0, 15, 0, 16], "必殺技のチャージ−5%"],
+    ['W28', "夜叉の双短剣", 'SR', '短剣', 'dark', [0, 10, 0, 15], "クリティカル率+5%"],
+    ['W29', "星詠みの杖", 'SR', '杖', 'light', [10, 11, 4, 3], "ハートの回復量+10%"],
+    ['W30', "大地の戦斧ガイアブレイカー", 'SR', '斧', 'earth', [6, 22, 3, 0], "防御を無視して+5%ダメージ"],
+    ['W31', "雷撃銃ボルトライフル", 'SR', '銃', 'thunder', [0, 15, 0, 10], "4連以上で追加ダメージ+10%"],
+    ['W32', "岩砕きの大槌", 'SR', 'ハンマー', 'earth', [4, 17, 7, 0], "オクタの出る率+1%"],
+    ['W33', "獅子王の爪", 'SR', '拳', 'fire', [5, 14, 3, 9], "連鎖ダメージ+10%"],
+    ['W34', "聖騎士のランス", 'SR', '槍', 'light', [2, 13, 4, 6], "受けるダメージ−5%"],
+    ['W35', "潮騒の弓", 'SR', '弓', 'water', [0, 14, 0, 14], "同時消しダメージ+10%"],
+    ['W36', "妖刀むらくも", 'SR', '剣', 'dark', [3, 17, 5, 6], "HPが半分以下で攻撃+15%"],
+    ['W37', "竜殺しの大剣バルムンク", 'MR', '剣', 'fire', [4, 21, 6, 8], "竜の敵へのダメージ+30%・クリティカル率+5%"],
+    ['W38', "月光の弓アルテミス", 'MR', '弓', 'light', [0, 22, 0, 22], "必殺技のチャージ−10%・ハート+1（奥義時）"],
+    ['W39', "大魔導の杖アルカナ", 'MR', '杖', 'dark', [17, 20, 7, 5], "奥義のチャージ−10%・オクタ+2（奥義時）"],
+    ['W40', "神槍グングニル", 'MR', '槍', 'thunder', [4, 19, 6, 10], "必殺技が必ずクリティカル"],
+    ['W41', "嵐の双剣ストームファング", 'MR', '短剣', 'wind', [0, 18, 0, 26], "スピード型のとき攻撃+15%"],
+    ['W42', "海神の三叉槍トリアイナ", 'MR', '槍', 'water', [5, 25, 7, 12], "カラーHPの増え方−10%"],
+    ['W43', "巨人の鉄槌ギガントハンマー", 'MR', 'ハンマー', 'earth', [6, 23, 10, 0], "5連以上でブロックを1列追加で消す"],
+    ['W44', "魔導砲カタストロフ", 'MR', '銃', 'fire', [0, 26, 0, 18], "奥義ダメージ+25%"],
+    ['W45', "天羽々斬（あめのはばきり）", 'LR', '剣', 'light', [7, 40, 11, 14], "攻撃+20%・奥義のチャージ−15%"],
+    ['W46', "神弓ガーンデーヴァ", 'LR', '弓', 'wind', [0, 28, 0, 28], "同時消しダメージ+25%・必殺技のチャージ−15%"],
+    ['W47', "終焉の魔杖ラグナロク", 'LR', '杖', 'dark', [22, 26, 10, 6], "奥義でカラーHPを全色−5・闇属性の味方の攻撃+10%"],
+    ['W48', "雷神の槌ミョルニル", 'LR', 'ハンマー', 'thunder', [11, 43, 18, 0], "10秒ごとにランダムで1列消す"],
+    ['W49', "龍王の籠手", 'LR', '拳', 'earth', [8, 25, 6, 17], "受けるダメージ−15%・連鎖ダメージ+20%"],
+    ['W50', "創世銃ジェネシス", 'LR', '銃', 'light', [0, 38, 0, 26], "オクタを消すと全色カラーHP−2・クリティカル率+10%"]
+  ].map(([id, n, g, t, a, st, fx]) => ({id, n, g, t, a, st, fx}));
+  const WPN_BY = Object.fromEntries(WPN.map(w => [w.id, w]));
+  const WPN_MAIN = {'剣': 'metal', '槍': 'metal', '短剣': 'metal', '斧': 'metal', 'ハンマー': 'metal', '銃': 'metal', '拳': 'metal', '弓': 'wood', '杖': 'wood'};
+  const WPN_SUB = {'剣': 'polish', '槍': 'polish', '杖': 'polish', '短剣': 'beast', '斧': 'wood', 'ハンマー': 'wood', '弓': 'beast', '銃': 'mech', '拳': 'beast'};
+  const GT = {N: 0, R: 1, SR: 2, MR: 3, LR: 4};
+  const WPN_Q = [[3, 0, 0], [5, 2, 0], [8, 4, 3], [10, 6, 2], [15, 10, 4]];
+  const WPN_COST = [100, 300, 1000, 3000, 8000];      // シルバー
+  function wpnRecipe(w){
+    const t = GT[w.g], q = WPN_Q[t], r = [['m_' + WPN_MAIN[w.t] + '_' + t, q[0]]];
+    if (q[1]) r.push(['m_' + WPN_SUB[w.t] + '_' + t, q[1]]);
+    if (q[2]) r.push(['st_' + w.a + '_' + (t >= 3 ? 2 : 1), q[2]]);
+    if (t >= 3) r.push(['lg_' + w.id, 1]);
+    return r;
+  }
+  let gear = loadJ('gear', null); if (!Array.isArray(gear)) gear = [];
+  const saveGear = () => save('gear', JSON.stringify(gear));
+  function gearAdd(k){ const g = {g: 'g' + Date.now().toString(36) + Math.floor(Math.random() * 1e6).toString(36), k}; gear.push(g); saveGear(); return g; }
+  const gearOf = gid => gear.find(x => x.g === gid) || null;
+  const wpnOfUnit = u => { const g = u && u.wp ? gearOf(u.wp) : null; return g ? WPN_BY[g.k] : null; };
+  const gearUser = gid => units.find(u => u.wp === gid) || null;
+  function wpnBonus(u){ const w = wpnOfUnit(u); if (!w) return [0, 0, 0, 0]; const m = attrOf(u.id) === w.a ? 1.2 : 1; return w.st.map(v => Math.round(v * m)); }
+  const wpnLine = w => [['HP', 0], ['攻', 1], ['防', 2], ['速', 3]].filter(([, k]) => w.st[k]).map(([n, k]) => n + '+' + w.st[k]).join(' ');
+  // ----- 鍛冶屋 -----
+  let forgeG = 'N', forgeMsg = '';
+  function drawForge(){
+    const list = WPN.filter(w => w.g === forgeG), own = k => gear.filter(x => x.k === k).length;
+    let h = (forgeMsg ? '<div class="exmsg">' + forgeMsg + '</div>' : '') + '<div class="fgtabs">' + ['N', 'R', 'SR', 'MR', 'LR'].map(g => '<button data-fg="' + g + '" class="' + (g === forgeG ? 'on' : '') + '">' + g + '</button>').join('') + '</div>';
+    list.forEach(w => {
+      const rc = wpnRecipe(w), cost = WPN_COST[GT[w.g]], ok = rc.every(([k, n]) => (inv[k] || 0) >= n) && coins >= cost;
+      h += '<div class="excard fgcard"><div class="exhd"><b>' + w.n + '</b><span class="exh">' + w.g + '</span></div>' +
+        '<div class="fgsub">' + w.t + '　' + attrBadge0(w.a) + ' ' + ATTR[w.a].n + '属性　<b>' + wpnLine(w) + '</b>' + (w.fx ? '<br><small>効果：' + w.fx + '（今後対応）</small>' : '') + '</div>' +
+        '<ul class="fgrc">' + rc.map(([k, n]) => { const hv = inv[k] || 0; return '<li class="' + (hv >= n ? 'ok' : 'ng') + '">' + EX_MAT[k][1] + ' ' + EX_MAT[k][0] + ' <b>' + hv + '/' + n + '</b></li>'; }).join('') +
+        '<li class="' + (coins >= cost ? 'ok' : 'ng') + '">🪙 シルバー <b>' + cost.toLocaleString() + '</b></li></ul>' +
+        '<div class="exgo"><span>所持 ' + own(w.id) + '</span><button data-craft="' + w.id + '"' + (ok ? '' : ' disabled') + '>作る</button></div></div>';
+    });
+    h += '<p class="sknote">素材は遠征で手に入ります。キャラと同じ属性の武器を持つと、武器のステータスが1.2倍になります。作った武器は、キャラの詳細 →「装備」で付けます。</p>';
+    const b = $('forgeBody'); b.innerHTML = h;
+  }
+  const attrBadge0 = a => '<i class="abadge inl" style="background:' + ATTR[a].col + '">' + ATTR[a].n + '</i>';
+  function openForge(){ audio(); forgeMsg = ''; $('forge').classList.remove('hidden'); drawForge(); $('forgeBody').scrollTop = 0; }
+  $('forgeBack').addEventListener('click', () => { $('forge').classList.add('hidden'); try { drawBox(); } catch(_) {} });
+  $('forgeBody').addEventListener('click', e => {
+    const t = e.target.closest('[data-fg]'); if (t) { forgeG = t.dataset.fg; forgeMsg = ''; drawForge(); return; }
+    const c = e.target.closest('[data-craft]'); if (!c) return;
+    const w = WPN_BY[c.dataset.craft], rc = wpnRecipe(w), cost = WPN_COST[GT[w.g]];
+    if (!rc.every(([k, n]) => (inv[k] || 0) >= n) || coins < cost) return;
+    rc.forEach(([k, n]) => inv[k] -= n); saveInv(); addCoins(-cost); gearAdd(w.id);
+    forgeMsg = '⚒ <b>' + w.n + '</b> ができました！ キャラの詳細 →「装備」で付けられます。'; drawForge();
+  });
   // ----- チーム画面（ストーリーのマップの下） -----
   function typeBadge(id){ const cs = CHAR_STAT[id]; if (!cs) return ''; const t = TYPE_INFO[cs.type]; return '<i class="tbadge" style="background:' + t.col + '" title="' + t.name + '">' + t.mark + '</i>'; }
   function teamTabs(){ return '<div class="ttabs">' + [0, 1, 2, 3].map(k => '<button data-team="' + k + '" class="' + (k === teamNo ? 'on' : '') + '">チーム' + (k + 1) + (k === teamNo ? '<small>使用中</small>' : '') + '</button>').join('') + '</div>'; }
@@ -8783,8 +8928,9 @@ body.tight .itembar{gap:6px;}
         '<section><h3>ポット（アイテムガチャ・秘密のショップで手に入る）</h3><div class="potlist">' +
         LB_POT_G.concat(['N', 'R']).map(g => '<div class="potrow"><img src="' + potImg(g) + '" alt=""><b>' + potName(g) + '</b><span>所持 ' + own(potKey(g)) + '</span></div>').join('') +
         '</div><p class="thint">限界突破ポット：キャラの詳細 →「限界突破」で、同じグレードのキャラに使います。<br>経験値ポット：キャラの詳細 →「LVアップ」で、どのキャラにも使えます（小 +' + XP_POT.N.toLocaleString() + '・大 +' + XP_POT.R.toLocaleString() + '）。</p></section>';
-      const mats = Object.keys(EX_MAT).filter(k => own(k) > 0).sort((x, y) => (EX_MAT[x][2] + EX_MAT[x][3]).localeCompare(EX_MAT[y][2] + EX_MAT[y][3]));
-      body.insertAdjacentHTML('beforeend', '<section><h3>素材（遠征で手に入る。武器・防具・アクセづくりで使う予定）</h3>' + (mats.length ? '<div class="potlist">' + mats.map(k => '<div class="potrow"><span style="font-size:24px;width:34px;text-align:center">' + EX_MAT[k][1] + '</span><b>' + EX_MAT[k][0] + '<small style="display:block;font-size:10px;opacity:.7">' + (EX_MAT_CAT[EX_MAT[k][2]] ? EX_MAT_CAT[EX_MAT[k][2]] + '・' + POT_G[EX_MAT[k][3]] : '') + '</small></b><span>所持 ' + own(k) + '</span></div>').join('') + '</div>' : '<p class="thint">まだありません。遠征に行くと手に入ります。</p>') + '</section>');
+      const catO = {w: 0, a: 1, x: 2, s: 3, l: 4, '': 5};
+      const mats = Object.keys(EX_MAT).filter(k => own(k) > 0).sort((x, y) => (catO[EX_MAT[x][2]] - catO[EX_MAT[y][2]]) || (EX_MAT[x][3] - EX_MAT[y][3]) || x.localeCompare(y));
+      body.insertAdjacentHTML('beforeend', '<section><h3>素材（遠征で手に入る。鍛冶屋で武器を作る）</h3>' + (mats.length ? '<div class="potlist">' + mats.map(k => '<div class="potrow"><span style="font-size:24px;width:34px;text-align:center">' + EX_MAT[k][1] + '</span><b>' + EX_MAT[k][0] + '<small style="display:block;font-size:10px;opacity:.7">' + (EX_MAT_CAT[EX_MAT[k][2]] ? EX_MAT_CAT[EX_MAT[k][2]] + (EX_MAT[k][2] === 'w' || EX_MAT[k][2] === 'a' || EX_MAT[k][2] === 'x' ? '・' + POT_G[EX_MAT[k][3]] : '') : '') + '</small></b><span>所持 ' + own(k) + '</span></div>').join('') + '</div>' : '<p class="thint">まだありません。遠征に行くと手に入ります。</p>') + '<button class="eqforge" data-forge="1">⚒ 鍛冶屋で武器を作る</button></section>');
       const lo = $('loadout'); body.querySelector('#boxLoad').replaceWith(lo); lo.classList.add('inbox'); drawLoadout();
     }
   }
@@ -8844,6 +8990,14 @@ body.tight .itembar{gap:6px;}
     playClip(id, 'me');
   }
   $('boxBody').addEventListener('click', e => { const b = e.target.closest('[data-pv]'); if (!b) return; e.stopPropagation(); playPv(b.dataset.pv); });
+  $('boxBody').addEventListener('click', e => {
+    const f = e.target.closest('[data-forge]'); if (f) { e.stopPropagation(); openForge(); return; }
+    const q = e.target.closest('[data-eq]'); if (!q) return; e.stopPropagation();
+    const u = unitOf(boxDetail); if (!u) return;
+    if (q.dataset.eq === 'off') { delete u.wp; }
+    else { const prev = gearUser(q.dataset.eq); if (prev && prev.u !== u.u) delete prev.wp; u.wp = q.dataset.eq; }
+    saveUnits(); drawBox();
+  });
   function drawDetail(u){
     const body = $('boxBody'), ci = ciOf(u), c = ALLC[ci], cs = CHAR_STAT[c.id], tp = TYPE_INFO[cs.type], st = unitStats(u);
     const ti = curTeam().indexOf(u.u), atCap = u.lv >= capOf(u);
@@ -8853,7 +9007,7 @@ body.tight .itembar{gap:6px;}
       '<div class="dsub"><i class="dgr">' + cs.grade + '</i> ' + typeBadge(c.id).replace('tbadge', 'tbadge inl') + ' ' + tp.name + '　' + attrBadge(c.id, true) + ' ' + ATTR[attrOf(c.id)].n + '属性</div>' +
       '<div class="dlv">LV <b>' + u.lv + '</b> / ' + capOf(u) + '</div>' + starsHTMLu(u).replace('ustar', 'ustar big') +
       '<div class="dexp">' + (atCap ? 'レベル上限です（限界突破で上限が上がります）' : '次のレベルまで ' + Math.max(0, expNeed(u.lv) - u.exp).toLocaleString()) + '</div></div></div>' +
-      '<div class="dtabs">' + [['info', 'ステータス・技'], ['feed', 'LVアップ（合成）'], ['lb', '限界突破']].map(([k, n]) => '<button data-ftab="' + k + '" class="' + (detTab === k ? 'on' : '') + '">' + n + '</button>').join('') + '</div>';
+      '<div class="dtabs">' + [['info', 'ステータス・技'], ['equip', '装備'], ['feed', 'LVアップ'], ['lb', '限界突破']].map(([k, n]) => '<button data-ftab="' + k + '" class="' + (detTab === k ? 'on' : '') + '">' + n + '</button>').join('') + '</div>';
     if (detTab === 'info') {
       h += '<div class="dsec"><div class="stt">' + ST_NAME.map((n, k) => '<div>' + n + '<b>' + st[k] + '</b></div>').join('') + '</div></div>' +
         (isZakoId(c.id) ? '<div class="dsec"><h4>必殺技 <span>' + (SPECIAL_NAME[c.id] || '').replace('！', '') + '</span><em>基準' + skBaseSec(c.id, 'sp') + '秒（スピードで変わる）</em></h4><p>' + skDescU(c.id, 'sp', u) + '</p>' +
@@ -8864,6 +9018,15 @@ body.tight .itembar{gap:6px;}
         : '<div class="dsec"><h4>技</h4><p>このキャラは、まだ技を持っていません。サブ（②〜④）に入れて、ステータスでチームを強くします。メイン（①）にはなれません。</p></div>') +
         voiceSecHTML(c.id) +
         '<div class="dsec"><h4>プロフィール</h4><p>' + (CHAR_BIO[c.id] || '') + '</p></div>';
+    } else if (detTab === 'equip') {
+      const w = wpnOfUnit(u), wb = wpnBonus(u), acc = u.lv >= 30 ? 2 : u.lv >= 10 ? 1 : 0;
+      h += '<div class="dsec"><h4>武器</h4>' + (w ? '<div class="eqslot on"><b>' + w.n + '</b> <small>' + w.g + '・' + w.t + '・' + ATTR[w.a].n + '属性' + (attrOf(c.id) === w.a ? '（同じ属性 ×1.2）' : '') + '</small><div>' + ST_NAME.map((n, k) => wb[k] ? n + '+' + wb[k] : '').filter(Boolean).join('　') + '</div><button data-eq="off">外す</button></div>' : '<div class="eqslot">なし</div>') + '</div>' +
+        '<div class="dsec"><h4>防具</h4><div class="eqslot">準備中（今後追加）</div></div>' +
+        '<div class="dsec"><h4>アクセ（' + acc + ' / 2枠）</h4><div class="eqslot">' + (acc ? '準備中（今後追加）' : 'LV10で1つ目、LV30で2つ目の枠がひらきます') + '</div></div>';
+      const mine = gear.filter(g => WPN_BY[g.k]).sort((a, b) => GT[WPN_BY[b.k].g] - GT[WPN_BY[a.k].g]);
+      h += '<div class="dsec"><h4>持っている武器</h4>' + (mine.length ? mine.map(g => { const ww = WPN_BY[g.k], us = gearUser(g.g);
+        return '<button class="eqitem' + (u.wp === g.g ? ' on' : '') + '" data-eq="' + g.g + '"><b>' + ww.n + '</b><small>' + ww.g + '・' + ww.t + '・' + ATTR[ww.a].n + (ww.a === attrOf(c.id) ? '★' : '') + '　' + wpnLine(ww) + '</small>' + (us ? '<em>' + (us.u === u.u ? '装備中' : fullName(ALLC[ciOf(us)]) + 'が装備中') + '</em>' : '') + '</button>'; }).join('') : '<p>まだ武器がありません。</p>') +
+        '<button class="eqforge" data-forge="1">⚒ 鍛冶屋で武器を作る</button></div>';
     } else if (detTab === 'feed') {
       const mats0 = units.filter(x => x.u !== u.u && !x.lock && !teams.some(t => t.includes(x.u)) && !exBusyUids().has(x.u));
       const nLock = units.filter(x => x.u !== u.u && x.lock).length;
