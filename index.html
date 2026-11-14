@@ -431,7 +431,10 @@ body.on-menu .battlemain{opacity:0;}
   .eqitem{display:block;width:100%;text-align:left;margin:4px 0;padding:7px 9px;border-radius:10px;border:1px solid rgba(0,0,0,.15);background:#fff;font-family:inherit;}
   .eqitem small{display:block;font-size:11px;opacity:.75;} .eqitem em{font-style:normal;font-size:10.5px;color:#d0506a;} .eqitem.on{outline:2px solid #ffb400;}
   .eqforge{margin-top:8px;width:100%;padding:9px;border-radius:10px;border:0;background:linear-gradient(135deg,#ffd24a,#ff8a3d);color:#3a1a00;font-weight:900;font-family:inherit;}
-  .maptools{grid-template-columns:repeat(5,minmax(0,1fr));} .maptools button.exready{animation:autoBlink 1.2s ease-in-out infinite;background:#ffd24a;color:#3a2210;}
+  .maptools{grid-template-columns:repeat(5,minmax(0,1fr));}
+  .exrush{display:block;margin-top:4px;padding:4px 8px;border-radius:8px;border:0;background:linear-gradient(135deg,#ffe27a,#ffb400);color:#3a1a00;font-weight:900;font-size:11px;font-family:inherit;} .exrush small{display:block;font-size:9px;}
+  .exslot{display:block;width:100%;margin:6px 0;padding:8px;border-radius:10px;border:1px dashed rgba(255,210,74,.7);background:rgba(255,210,74,.1);color:#ffd24a;font-weight:900;font-family:inherit;} .exslot small{display:block;font-size:10px;color:#f6f0ff;opacity:.8;}
+  .shoprow.firstpack{outline:2px solid #ffd24a;border-radius:12px;} .maptools button.exready{animation:autoBlink 1.2s ease-in-out infinite;background:#ffd24a;color:#3a2210;}
   .maptools{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:8px;}
   .maptools button{border:2px solid rgba(255,210,74,.7);border-radius:12px;background:linear-gradient(#3b2566,#26174a);color:#fff;font-weight:900;font-size:17px;padding:5px 2px 4px;line-height:1.1;font-family:inherit;}
   .maptools button span{display:block;font-size:10px;margin-top:2px;white-space:nowrap;}
@@ -6436,7 +6439,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.93';
+  const APP_VER = '0.9.94';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -7092,7 +7095,7 @@ body.tight .itembar{gap:6px;}
     {price: '¥3,000', name: 'ゴールドコイン 3,200枚', coin: 3200},
     {price: '¥5,000', name: 'ゴールドコイン 5,500枚', coin: 5500},
     {price: '¥10,000', name: 'ゴールドコイン 11,500枚', coin: 11500},
-    {price: '¥160', name: '初心者パック', desc: '最初の1回だけ買えるお得なセット'},
+    {price: '¥480', name: '初回限定パック', desc: '最初の1回だけ：SR以上確定チケット×2・ガチャチケット×10・スタミナポット×3', first: true},
     {price: '¥600', name: '広告削除', desc: 'コンティニューと毎日プレゼントの2倍を、広告なしで使える'},
   ];
   const today = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
@@ -7507,13 +7510,22 @@ body.tight .itembar{gap:6px;}
     toast(t.name + ' を買いました（所持 ' + load(t.k, '0') + '）'); drawShop();
   }
   // ----- ショップ -----
+  const payAsk = (m, y) => { askYes(m, y); const a = $('askBox'); if (a) a.style.zIndex = 9600; };
+  // 初回限定パック（テスト：決済なしで受け取れる。決済を入れたら購入完了後に呼ぶ）
+  document.addEventListener('click', e => {
+    if (!e.target.closest('[data-firstpack]') || load('firstpack', '0') === '1') return;
+    payAsk('【テスト】初回限定パック（¥480）を受け取りますか？ 本番では決済のあとに受け取ります。', () => {
+      save('firstpack', '1'); giveItem('gticket_hi', 2); giveItem('gticket', 10); giveItem('stampot', 3);
+      toast('初回限定パックを受け取りました'); try { drawShop(); } catch(_) {}
+    });
+  }, true);
   function drawShop(){
     drawSpecial(); drawTickets();
     $('shopItems').innerHTML = ITEM_KEYS.map(k => { const it = ITEMS[k];
       return '<div class="shoprow"><img src="' + itemImg(k) + '" alt=""><div class="tx"><div class="nm">' + it.name + '<small>所持 ' + own(k) + '</small></div>' +
         '<div class="ds">' + it.desc + '</div></div><button class="buybtn" data-k="' + k + '"' + (coins < it.price ? ' disabled' : '') + '>' + coinTag() + it.price + '</button></div>'; }).join('');
-    $('shopPacks').innerHTML = PACKS.map(p => '<div class="shoprow"><img src="' + itemImg(p.coin ? 'coin' : 'charm') + '" alt=""><div class="tx"><div class="nm">' + p.name + '</div>' +
-      (p.desc ? '<div class="ds">' + p.desc + '</div>' : '') + '</div><button class="buybtn" disabled>' + p.price + '</button></div>').join('');
+    $('shopPacks').innerHTML = PACKS.filter(p => !(p.first && load('firstpack', '0') === '1')).map(p => '<div class="shoprow' + (p.first ? ' firstpack' : '') + '"><img src="' + itemImg(p.coin ? 'coin' : 'charm') + '" alt=""><div class="tx"><div class="nm">' + (p.first ? '🎁 ' : '') + p.name + '</div>' +
+      (p.desc ? '<div class="ds">' + p.desc + '</div>' : '') + '</div><button class="buybtn"' + (p.first ? ' data-firstpack="1"' : ' disabled') + '>' + p.price + (p.first ? '<small style="display:block;font-size:9px">テスト</small>' : '') + '</button></div>').join('');
     refreshCoins();
   }
   $('shop').addEventListener('click', e => { const b = e.target.closest('[data-pbuy]'); if (b && !b.disabled) buyPot(b.dataset.pbuy); const tk = e.target.closest('[data-tk]'); if (tk && !tk.disabled) buyTicket(tk.dataset.tk); });
@@ -8352,7 +8364,11 @@ body.tight .itembar{gap:6px;}
   if (!exData || !Array.isArray(exData.active)) exData = {active: [], done: {}};
   const exSave = () => save('expd', JSON.stringify(exData));
   const EX_OPEN_LV = 10;
-  const exSlots = () => { const L = userLv(); return L < EX_OPEN_LV ? 0 : L < 20 ? 1 : L < 30 ? 2 : L < 40 ? 3 : 4; };
+  // 課金（2026-11-14・テスト用の値段）：遠征枠+1（ゴールドで一度だけ）／遠征の即帰還（のこり1時間ごとに30ゴールド・最低30）
+  const EX_SLOT_GOLD = 1500, EX_RUSH_GOLD_H = 30;
+  const exSlotPlus = () => load('expd_slot', '0') === '1' ? 1 : 0;
+  const exSlots = () => { const L = userLv(); return L < EX_OPEN_LV ? 0 : (L < 20 ? 1 : L < 30 ? 2 : L < 40 ? 3 : 4) + exSlotPlus(); };
+  const exRushCost = a => Math.max(1, Math.ceil(exLeft(a) / 3600000)) * EX_RUSH_GOLD_H;
   const exBusyUids = () => new Set([].concat(...exData.active.map(a => a.uids)));
   const exTeamBusy = t => { const b = exBusyUids(); return (teams[t] || []).some(uid => uid && b.has(uid)); };
   const exMembers = t => (teams[t] || []).map(unitOf).filter(Boolean);
@@ -8365,12 +8381,13 @@ body.tight .itembar{gap:6px;}
   function drawExpd(){
     fixTeam();
     const list = exToday(), dk = today(), done = exData.done[dk] || [], b = exBusyUids();
-    let h = (exLastMsg ? '<div class="exmsg">' + exLastMsg + '</div>' : '') + '<section><h3>遠征中 <small>（' + exData.active.length + ' / ' + exSlots() + '枠）</small></h3>';
+    let h = (exLastMsg ? '<div class="exmsg">' + exLastMsg + '</div>' : '') + '<section><h3>遠征中 <small>（' + exData.active.length + ' / ' + exSlots() + '枠）</small></h3>' +
+      (!exSlotPlus() ? '<button class="exslot" data-slotbuy="1">＋ 遠征枠をずっと1つ増やす<small>ゴールド ' + EX_SLOT_GOLD.toLocaleString() + '（1回だけ）</small></button>' : '');
     if (!exData.active.length) h += '<p class="sknote">いま遠征に出ているチームはありません。</p>';
     exData.active.forEach((a, i) => {
       const left = exLeft(a);
       h += '<div class="exact"><div><b>' + a.name + '</b> <small>チーム' + (a.team + 1) + '</small><div class="exmini">' + a.uids.map(uid => { const u = unitOf(uid); return u ? '<span class="cface" data-ci="' + ciOf(u) + '"></span>' : ''; }).join('') + '</div></div>' +
-        (left > 0 ? '<div class="exleft">のこり<br><b>' + exHM(left) + '</b></div>' : '<button class="exget" data-get="' + i + '">受け取る<small>達成率 ' + exPct(a.rate) + '</small></button>') + '</div>';
+        (left > 0 ? '<div class="exleft">のこり<br><b>' + exHM(left) + '</b><button class="exrush" data-rush="' + i + '">⚡ すぐ帰る<small>ゴールド ' + exRushCost(a) + '</small></button></div>' : '<button class="exget" data-get="' + i + '">受け取る<small>達成率 ' + exPct(a.rate) + '</small></button>') + '</div>';
     });
     h += '</section><section><h3>今日の遠征先 <small>（毎日0時に3か所入れかわり）</small></h3>';
     list.forEach(st => {
@@ -8424,8 +8441,25 @@ body.tight .itembar{gap:6px;}
   $('expdBody').addEventListener('click', e => {
     const t = e.target.closest('[data-ext]'); if (t) { const [id, k] = t.dataset.ext.split(':').map(Number); exPickTeam[id] = k; drawExpd(); return; }
     const g = e.target.closest('[data-go]'); if (g) { exGo(+g.dataset.go); return; }
-    const r = e.target.closest('[data-get]'); if (r) exGet(+r.dataset.get);
+    const r = e.target.closest('[data-get]'); if (r) { exGet(+r.dataset.get); return; }
+    const ru = e.target.closest('[data-rush]'); if (ru) { exRush(+ru.dataset.rush); return; }
+    if (e.target.closest('[data-slotbuy]')) exSlotBuy();
   });
+  async function exRush(i){
+    const a = exData.active[i]; if (!a || exLeft(a) <= 0) return;
+    const c = exRushCost(a);
+    payAsk('ゴールド ' + c + ' で「' + a.name + '」からすぐ帰らせますか？', async () => {
+      if (!(await spendGold(c, 'expd-rush'))) return;
+      a.end = Date.now() - 1; exSave(); refreshCoins(); exGet(exData.active.indexOf(a));
+    });
+  }
+  async function exSlotBuy(){
+    if (exSlotPlus()) return;
+    payAsk('ゴールド ' + EX_SLOT_GOLD.toLocaleString() + ' で、遠征枠をずっと1つ増やしますか？', async () => {
+      if (!(await spendGold(EX_SLOT_GOLD, 'expd-slot'))) return;
+      save('expd_slot', '1'); refreshCoins(); exLastMsg = '<b>遠征枠が1つ増えました！</b>'; drawExpd();
+    });
+  }
   setInterval(() => { drawExpdBadge(); if (!$('expd').classList.contains('hidden') && exData.active.length) drawExpd(); }, 30000);
 
   // ===== 武器（2026-11-14）：鍛冶屋で素材から作り、キャラに1つ装備する =====
