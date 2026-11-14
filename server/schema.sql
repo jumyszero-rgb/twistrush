@@ -180,3 +180,8 @@ CREATE TABLE IF NOT EXISTS votes ( month TEXT NOT NULL, account_id TEXT NOT NULL
 CREATE INDEX IF NOT EXISTS idx_votes_month ON votes(month, cid);
 CREATE TABLE IF NOT EXISTS vote_free ( account_id TEXT NOT NULL, day TEXT NOT NULL, PRIMARY KEY (account_id, day) );
 CREATE TABLE IF NOT EXISTS vote_refs ( ref TEXT PRIMARY KEY, account_id TEXT NOT NULL, n INTEGER NOT NULL, created_at INTEGER NOT NULL );
+
+-- 課金（Stripe）：買ったもの（受け取り待ちを含む）と、月パス・広告削除・初回パック
+CREATE TABLE IF NOT EXISTS purchases ( id TEXT PRIMARY KEY, account_id TEXT NOT NULL, sku TEXT NOT NULL, amount INTEGER NOT NULL DEFAULT 0, claimed INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL );
+CREATE INDEX IF NOT EXISTS idx_purchases_acc ON purchases(account_id, claimed);
+CREATE TABLE IF NOT EXISTS ents ( account_id TEXT PRIMARY KEY, pass_until INTEGER NOT NULL DEFAULT 0, pass_sub TEXT NOT NULL DEFAULT '', pass_auto INTEGER NOT NULL DEFAULT 0, noads INTEGER NOT NULL DEFAULT 0, first INTEGER NOT NULL DEFAULT 0, customer TEXT NOT NULL DEFAULT '' );

@@ -542,6 +542,7 @@ body.on-menu .battlemain{opacity:0;}
   .evobtns{display:flex;flex-direction:column;gap:8px;margin-top:8px;} .evobtns button{padding:11px;border-radius:12px;border:0;font-weight:900;font-size:14px;} .evogo{background:linear-gradient(#ffe27a,#f0a800);color:#3a2600;} .evogo:disabled{opacity:.5;} .evovote{background:rgba(255,255,255,.14);color:#fff;}
   .rsq-ad{margin:10px auto 0;display:block;padding:12px 18px;border:0;border-radius:14px;background:linear-gradient(90deg,#ffcf3d,#ff8a3d);color:#3a2210;font-weight:900;font-size:15px;box-shadow:0 4px 0 #b25a10;}
   .rsq-ad:disabled{opacity:.85;} .rsq-ad.done{background:#3fc67a;color:#fff;box-shadow:0 4px 0 #1f7a47;}
+  .paylink{margin-left:6px;border:0;border-radius:8px;padding:2px 8px;background:rgba(255,255,255,.18);color:inherit;font-weight:800;font-size:11px;}
   .chlist{margin-top:8px;} .chrew{font-size:12px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.06);} .chrew b{display:block;margin-bottom:6px;color:#ffd36b;} .chrew div{display:flex;gap:8px;padding:2px 0;} .chrew span{min-width:70px;font-weight:800;}
   .mroute.hide{color:rgba(255,255,255,.55);font-size:20px;text-align:center;line-height:1.2;} .mroute.hide small{display:block;font-size:10px;margin-top:4px;}
   #stageInfo .rt{font-size:12px;font-weight:700;color:#9fe3ff;margin:2px 0 4px;}
@@ -5414,12 +5415,14 @@ body.tight .itembar{gap:6px;}
     }), () => {});
   }
   function playAd(done){
+    if (noAds()) { done(); return; }
     const el = $('ad'); el.style.zIndex = 9700; el.classList.remove('hidden');
     let n = CFG.AD_SEC; $('adCount').textContent = n;
     const tm = setInterval(() => { n--; $('adCount').textContent = Math.max(0, n); if (n <= 0) { clearInterval(tm); el.classList.add('hidden'); el.style.zIndex = ''; done(); } }, 1000);
   }
   // 広告（プロトタイプはダミーのカウントダウン。本番はAdMobのリワード広告に差し替え）
   function watchAd(){
+    if (noAds()) { if (gameMode === 'story' && curVar === 0) contLeft = Math.max(0, contLeft - 1); $('cont').classList.add('hidden'); resumeGame(); return; }   // 広告削除を買った人は、すぐ続ける
     if (gameMode === 'story' && curVar === 0) contLeft = Math.max(0, contLeft - 1);   // 氷・石は広告コンティニュー何回でも
     $('cont').classList.add('hidden'); $('ad').classList.remove('hidden');
     let n = CFG.AD_SEC; $('adCount').textContent = n;
@@ -6729,7 +6732,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.125';
+  const APP_VER = '0.9.126';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -7395,14 +7398,14 @@ body.tight .itembar{gap:6px;}
   // 課金（アプリ版で使う。いまは表示だけ）。ゴールド1枚 ≒ 1円。ガチャは1回300枚・10連3,000枚（ほかのスマホゲームの相場：10連2,000〜3,000円）
   // 大きいパックほどおまけが多い（10連1回あたり 約2,600〜3,000円）
   const PACKS = [
-    {price: '¥300', name: 'ゴールドコイン 300枚', coin: 300},
-    {price: '¥1,000', name: 'ゴールドコイン 1,050枚', coin: 1050},
-    {price: '¥3,000', name: 'ゴールドコイン 3,200枚', coin: 3200},
-    {price: '¥5,000', name: 'ゴールドコイン 5,500枚', coin: 5500},
-    {price: '¥10,000', name: 'ゴールドコイン 11,500枚', coin: 11500},
-    {price: '¥980', name: '月パス（30日）', desc: '毎日：ガチャチケット×2・スタミナポット×1／30日ずっと：遠征の経験値+20%・遠征で素材が出る率+20%', pass: true},
-    {price: '¥480', name: '初回限定パック', desc: '最初の1回だけ：SR以上確定チケット×2・ガチャチケット×10・スタミナポット×3', first: true},
-    {price: '¥600', name: '広告削除', desc: 'コンティニューと毎日プレゼントの2倍を、広告なしで使える'},
+    {price: '¥300', name: 'ゴールドコイン 300枚', coin: 300, sku: 'gold300'},
+    {price: '¥1,000', name: 'ゴールドコイン 1,050枚', coin: 1050, sku: 'gold1050'},
+    {price: '¥3,000', name: 'ゴールドコイン 3,200枚', coin: 3200, sku: 'gold3200'},
+    {price: '¥5,000', name: 'ゴールドコイン 5,500枚', coin: 5500, sku: 'gold5500'},
+    {price: '¥10,000', name: 'ゴールドコイン 11,500枚', coin: 11500, sku: 'gold11500'},
+    {price: '¥980', sku: 'pass', name: '月パス（毎月自動更新）', desc: '毎日：ガチャチケット×2・スタミナポット×1／30日ずっと：遠征の経験値+20%・遠征で素材が出る率+20%', pass: true},
+    {price: '¥480', sku: 'first', name: '初回限定パック', desc: '最初の1回だけ：SR以上確定チケット×2・ガチャチケット×10・スタミナポット×3', first: true},
+    {price: '¥600', sku: 'noads', name: '広告削除', desc: 'コンティニューと毎日プレゼントの2倍を、広告なしで使える'},
   ];
   const today = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
   const loadJ = (k, def) => { try { const v = JSON.parse(load(k, '')); return v == null ? def : v; } catch(e) { return def; } };
@@ -7833,7 +7836,7 @@ body.tight .itembar{gap:6px;}
     setTimeout(() => toast('月パス：今日のガチャチケット×2・スタミナポット×1を受け取りました'), 1500);
   }
   document.addEventListener('click', e => {
-    if (!e.target.closest('[data-pass]')) return;
+    if (!e.target.closest('[data-pass]') || payOn) return;
     payAsk('【テスト】月パス（¥980・30日）を' + (passOn() ? '延長' : '開始') + 'しますか？ 本番では決済のあとに有効になります。', () => {
       save('pass_end', String(Math.max(Date.now(), passEnd()) + 30 * 86400000)); passDaily(); toast('月パスが有効になりました（のこり' + passLeft() + '日）'); try { drawShop(); } catch(_) {}
     });
@@ -7842,17 +7845,75 @@ body.tight .itembar{gap:6px;}
   const payAsk = (m, y) => { askYes(m, y); const a = $('askBox'); if (a) a.style.zIndex = 9600; };
   // 初回限定パック（テスト：決済なしで受け取れる。決済を入れたら購入完了後に呼ぶ）
   document.addEventListener('click', e => {
-    if (!e.target.closest('[data-firstpack]') || load('firstpack', '0') === '1') return;
+    if (!e.target.closest('[data-firstpack]') || load('firstpack', '0') === '1' || payOn) return;
     payAsk('【テスト】初回限定パック（¥480）を受け取りますか？ 本番では決済のあとに受け取ります。', () => {
       save('firstpack', '1'); giveItem('gticket_hi', 2); giveItem('gticket', 10); giveItem('stampot', 3);
       toast('初回限定パックを受け取りました'); try { drawShop(); } catch(_) {}
     });
   }, true);
+  // ===== 課金（Stripe・2026-11-15）=====
+  //   サーバーに STRIPE_SECRET_KEY が入ったら payOn（/api/ping の pay）。それまでは今のテスト用の動き
+  //   買うにはログイン（Googleなど）が必要。押すと Stripe の支払いページへ → 戻ってきたら反映（?pay=ok）
+  //   ゴールドはサーバーの財布へ。初回パックのアイテムは「受け取り待ち」をこの端末で受け取る。月パス・広告削除はサーバーの記録に合わせる
+  let payOn = false, payBusy = false;
+  const noAds = () => load('noads', '') === '1';
+  function drawPayPacks(){
+    const fb = load('firstpack', '0') === '1', na = noAds(), auto = load('pass_auto', '') === '1';
+    $('shopPacks').innerHTML = PACKS.filter(p => !(p.first && fb)).map(p => {
+      const own = (p.sku === 'noads' && na), sub = p.sku === 'pass' && auto && passOn();
+      return '<div class="shoprow' + (p.first ? ' firstpack' : '') + '"><img src="' + itemImg(p.coin ? 'coin' : 'charm') + '" alt=""><div class="tx"><div class="nm">' + (p.first ? '🎁 ' : '') + p.name + '</div>' +
+        (p.desc ? '<div class="ds">' + p.desc + '</div>' : '') + (sub ? '<div class="ds">契約中（のこり' + passLeft() + '日）<button class="paylink" data-portal="1">確認・解約</button></div>' : '') + '</div>' +
+        '<button class="buybtn" data-sku="' + p.sku + '"' + (own || sub ? ' disabled' : '') + '>' + (own ? '購入済み' : sub ? '契約中' : p.price) + '</button></div>'; }).join('') +
+      '<p class="note">' + (acctToken ? '' : '購入にはログインが必要です（設定 → アカウント）。') + '</p>';
+  }
+  document.addEventListener('click', async e => {
+    const pt = e.target.closest('[data-portal]');
+    if (pt) { e.preventDefault(); e.stopPropagation(); try { const r = await api('/api/pay/portal', {method: 'POST', body: '{}'}); if (r.url) location.href = r.url; else toast(r.error || '開けませんでした'); } catch (_) { toast('サーバーにつながりませんでした'); } return; }
+    const b = e.target.closest('[data-sku]'); if (!b || !payOn) return;
+    e.preventDefault(); e.stopPropagation(); if (b.disabled || payBusy) return;
+    const p = PACKS.find(x => x.sku === b.dataset.sku); if (!p) return;
+    if (!acctToken) { payAsk('購入には<b>ログイン</b>が必要です。<br>設定の「アカウント」からログインしてください。', () => { $('shop').classList.add('hidden'); $('setBtn').click(); setTimeout(() => { const a = $('acctState'); if (a) a.scrollIntoView({block: 'center'}); }, 300); }); return; }
+    payAsk('<b>' + p.name + '</b><br>' + p.price + '（税込）<br><small>Stripe の支払いページへ移動します</small>', async () => {
+      payBusy = true;
+      try { const r = await api('/api/pay/checkout', {method: 'POST', body: JSON.stringify({sku: p.sku})}); if (r.url) { save('pay_wait', String(Date.now())); location.href = r.url; return; } toast(r.error || '支払いページを開けませんでした'); }
+      catch (_) { toast('サーバーにつながりませんでした'); }
+      payBusy = false;
+    });
+  }, true);
+  // サーバーの記録に合わせる（ログイン中）。受け取り待ちのアイテムはここで受け取る
+  async function paySync(){
+    try { const r = await api('/api/ping'); payOn = !!(r && r.pay); } catch (_) { return false; }
+    if (!payOn || !acctToken) return false;
+    let got = false;
+    try {
+      const s = await api('/api/pay/status');
+      if (s.passUntil) save('pass_end', String(s.passUntil * 1000));
+      save('pass_auto', s.passAuto ? '1' : ''); if (s.noads) save('noads', '1'); if (s.first) save('firstpack', '1');
+      for (const c of s.claims || []) {
+        try { const k = await api('/api/pay/claim', {method: 'POST', body: JSON.stringify({id: c.id})}); if (k && k.ok) { Object.entries(k.items || {}).forEach(([key, n]) => giveItem(key, n)); saveInv(); got = true; toast('🎁 ' + ((PACKS.find(x => x.sku === k.sku) || {}).name || '購入したもの') + 'を受け取りました'); } } catch (_) {}
+      }
+      passDaily();
+    } catch (_) {}
+    try { await acctRefresh(); } catch (_) {}
+    try { if (!$('shop').classList.contains('hidden')) drawShop(); } catch (_) {}
+    return got;
+  }
+  setTimeout(async () => {
+    const q = new URLSearchParams(location.search), st = q.get('pay');
+    if (st) history.replaceState(null, '', location.pathname);
+    if (st === 'cancel') toast('購入をキャンセルしました');
+    await paySync();
+    if (st === 'ok') {                                   // 支払いのあと：反映されるまで少し待つ（Stripe の通知が先に届くとは限らない）
+      toast('お支払いを確認しています…'); const g0 = gold;
+      for (let k = 0; k < 8; k++) { await new Promise(res => setTimeout(res, 2500)); const got = await paySync(); if (got || gold !== g0 || +load('pass_end', '0') > Date.now()) { toast('✅ 購入が反映されました'); break; } }
+    }
+  }, 2000);
   function drawShop(){
     drawSpecial(); drawTickets();
     $('shopItems').innerHTML = ITEM_KEYS.map(k => { const it = ITEMS[k];
       return '<div class="shoprow"><img src="' + itemImg(k) + '" alt=""><div class="tx"><div class="nm">' + it.name + '<small>所持 ' + own(k) + '</small></div>' +
         '<div class="ds">' + it.desc + '</div></div><button class="buybtn" data-k="' + k + '"' + (coins < it.price ? ' disabled' : '') + '>' + coinTag() + it.price + '</button></div>'; }).join('');
+    if (payOn) { drawPayPacks(); refreshCoins(); return; }
     $('shopPacks').innerHTML = PACKS.filter(p => !(p.first && load('firstpack', '0') === '1')).map(p => '<div class="shoprow' + (p.first ? ' firstpack' : '') + '"><img src="' + itemImg(p.coin ? 'coin' : 'charm') + '" alt=""><div class="tx"><div class="nm">' + (p.first ? '🎁 ' : '') + p.name + '</div>' +
       (p.desc ? '<div class="ds">' + p.desc + '</div>' : '') + '</div><button class="buybtn"' + (p.first ? ' data-firstpack="1"' : p.pass ? ' data-pass="1"' : ' disabled') + '>' + (p.pass && passLeft() > 0 ? 'のこり' + passLeft() + '日<small style="display:block;font-size:9px">延長（テスト）</small>' : p.price + (p.first || p.pass ? '<small style="display:block;font-size:9px">テスト</small>' : '')) + '</button></div>').join('');
     refreshCoins();
@@ -11133,6 +11194,7 @@ body.tight .itembar{gap:6px;}
     };
     $('dailyGet').onclick = () => claim(1);
     $('dailyAd').onclick = () => {             // 広告（プロトタイプはダミーのカウントダウン）
+      if (noAds()) { claim(2); return; }
       $('dailyAd').disabled = true; $('dailyGet').disabled = true;
       let n = CFG.AD_SEC; $('dailyNote').textContent = '広告（テスト表示）… ' + n;
       const tm = setInterval(() => { n--; $('dailyNote').textContent = '広告（テスト表示）… ' + Math.max(0, n);

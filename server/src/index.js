@@ -31,6 +31,9 @@ const SCHEMA = [
   "CREATE INDEX IF NOT EXISTS idx_scores_player ON scores(player, created_at)",
   "CREATE TABLE IF NOT EXISTS meta ( k TEXT PRIMARY KEY, v TEXT NOT NULL )",
   "CREATE TABLE IF NOT EXISTS daily_active ( day TEXT NOT NULL, did TEXT NOT NULL, PRIMARY KEY (day, did) )",
+  "CREATE TABLE IF NOT EXISTS purchases ( id TEXT PRIMARY KEY, account_id TEXT NOT NULL, sku TEXT NOT NULL, amount INTEGER NOT NULL DEFAULT 0, claimed INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL )",
+  "CREATE INDEX IF NOT EXISTS idx_purchases_acc ON purchases(account_id, claimed)",
+  "CREATE TABLE IF NOT EXISTS ents ( account_id TEXT PRIMARY KEY, pass_until INTEGER NOT NULL DEFAULT 0, pass_sub TEXT NOT NULL DEFAULT '', pass_auto INTEGER NOT NULL DEFAULT 0, noads INTEGER NOT NULL DEFAULT 0, first INTEGER NOT NULL DEFAULT 0, customer TEXT NOT NULL DEFAULT '' )",
   "CREATE TABLE IF NOT EXISTS votes ( month TEXT NOT NULL, account_id TEXT NOT NULL, cid TEXT NOT NULL, n INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (month, account_id, cid) )",
   "CREATE INDEX IF NOT EXISTS idx_votes_month ON votes(month, cid)",
   "CREATE TABLE IF NOT EXISTS vote_free ( account_id TEXT NOT NULL, day TEXT NOT NULL, PRIMARY KEY (account_id, day) )",
@@ -262,7 +265,9 @@ async function addGold(env, id, source, amount, reason, ref) {
 
 async function api(env, req, url) {
   const p = url.pathname, M = req.method;
-  if (p === '/api/ping') return json(env, req, { ok: true, now: nowSec(), logins: Object.keys(PROVIDERS).filter(k => PROVIDERS[k].id(env)).concat(env.DEV_LOGIN === '1' ? ['dev'] : []) });
+  // Stripe の通知（署名を確かめてから、買ったものを渡す）。ログインなしで届く
+  if (p === '/api/pay/webhook' && M === 'POST') return payWebhook(env, req);
+  if (p === '/api/ping') return json(env, req, { ok: true, now: nowSec(), pay: !!env.STRIPE_SECRET_KEY, logins: Object.keys(PROVIDERS).filter(k => PROVIDERS[k].id(env)).concat(env.DEV_LOGIN === '1' ? ['dev'] : []) });
 
   // 毎日の利用者（端末ごとの乱数ID。名前やアカウントとはつながない）＋ 機能のオン・オフ
   if (p === '/api/hello' && M === 'POST') {
@@ -455,6 +460,23 @@ async function api(env, req, url) {
     if (!res.meta.changes) return fail(env, req, 'もう受け取りました', 409);
     return json(env, req, { ok: true, reward: r });
   }
+  // ---- 課金（Stripe）----
+  if (p === '/api/pay/status' && M === 'GET') return json(env, req, await payStatus(env, me.id));
+  if (p === '/api/pay/checkout' && M === 'POST') return payCheckout(env, req, me);
+  if (p === '/api/pay/claim' && M === 'POST') {
+    const b = await req.json().catch(() => ({}));
+    const row = await env.DB.prepare('SELECT sku FROM purchases WHERE id = ? AND account_id = ? AND claimed = 0').bind(String(b.id || ''), me.id).first();
+    if (!row) return fail(env, req, 'もう受け取りました', 409);
+    const u = await env.DB.prepare('UPDATE purchases SET claimed = 1 WHERE id = ? AND account_id = ? AND claimed = 0').bind(String(b.id), me.id).run();
+    if (!u.meta.changes) return fail(env, req, 'もう受け取りました', 409);
+    return json(env, req, { ok: true, sku: row.sku, items: (PAY_SKU[row.sku] || {}).items || {} });
+  }
+  if (p === '/api/pay/portal' && M === 'POST') {     // 月パス（サブスク）の確認・解約：Stripe のページへ
+    if (!env.STRIPE_SECRET_KEY) return fail(env, req, '準備中です', 503);
+    const e = await entsOf(env, me.id); if (!e.customer) return fail(env, req, '契約が見つかりません', 404);
+    const r = await stripe(env, 'billing_portal/sessions', { customer: e.customer, return_url: payOrigin(env, req) + '/' });
+    return r.url ? json(env, req, { url: r.url }) : fail(env, req, 'Stripe のページを開けませんでした', 502);
+  }
   // 先月の順位のごほうび（見る・受け取る）
   if (p === '/api/reward' && M === 'GET') return json(env, req, { rewards: await monthRewards(env, me.id) });
   if (p === '/api/reward/claim' && M === 'POST') {
@@ -631,6 +653,102 @@ async function chRewards(env, player) {
     out.push({ week: wk, mode, k, rank, total: total.c || 0, best: best.s, label: tier.label, items: tier.items });
   }
   return out;
+}
+
+// ---------- 課金（Stripe）----------
+// 値段と中身はサーバーが決める（ゲームから送られた値段は使わない）。秘密の鍵は Cloudflare の設定に入れる（STRIPE_SECRET_KEY・STRIPE_WEBHOOK_SECRET）
+// ゴールドはサーバーの財布へ（購入から180日）。初回パックのアイテムは「受け取り待ち」にして、ゲームが受け取る。月パス・広告削除はサーバーが覚える
+const PAY_SKU = {
+  gold300:   { name: 'ゴールドコイン 300枚',    yen: 300,   gold: 300 },
+  gold1050:  { name: 'ゴールドコイン 1,050枚',  yen: 1000,  gold: 1050 },
+  gold3200:  { name: 'ゴールドコイン 3,200枚',  yen: 3000,  gold: 3200 },
+  gold5500:  { name: 'ゴールドコイン 5,500枚',  yen: 5000,  gold: 5500 },
+  gold11500: { name: 'ゴールドコイン 11,500枚', yen: 10000, gold: 11500 },
+  first:     { name: '初回限定パック', yen: 480, once: 'first', items: { gticket_hi: 2, gticket: 10, stampot: 3 } },
+  noads:     { name: '広告削除', yen: 600, once: 'noads' },
+  pass:      { name: '月パス（毎月自動更新）', yen: 980, sub: true },
+};
+const PASS_DAYS = 30;
+async function stripe(env, path, params) {
+  const body = new URLSearchParams();
+  const put = (k, v) => { if (v == null) return; if (typeof v === 'object') Object.keys(v).forEach(x => put(k + '[' + x + ']', v[x])); else body.append(k, String(v)); };
+  Object.keys(params || {}).forEach(k => put(k, params[k]));
+  const r = await fetch('https://api.stripe.com/v1/' + path, { method: 'POST', headers: { Authorization: 'Bearer ' + env.STRIPE_SECRET_KEY, 'Content-Type': 'application/x-www-form-urlencoded' }, body });
+  return r.json().catch(() => ({}));
+}
+function payOrigin(env, req) {
+  const o = req.headers.get('Origin') || '', ok = listOf(env.RETURN_ORIGINS);
+  return ok.includes(o) ? o : ok[0] || 'https://twistrush.com';
+}
+async function entsOf(env, id) {
+  return (await env.DB.prepare('SELECT * FROM ents WHERE account_id = ?').bind(id).first()) || { pass_until: 0, pass_sub: '', pass_auto: 0, noads: 0, first: 0, customer: '' };
+}
+async function entsSet(env, id, kv) {
+  await env.DB.prepare('INSERT OR IGNORE INTO ents (account_id) VALUES (?)').bind(id).run();
+  const ks = Object.keys(kv);
+  await env.DB.prepare('UPDATE ents SET ' + ks.map(k => k + ' = ?').join(', ') + ' WHERE account_id = ?').bind(...ks.map(k => kv[k]), id).run();
+}
+async function payStatus(env, id) {
+  const e = await entsOf(env, id);
+  const claims = (await env.DB.prepare('SELECT id, sku FROM purchases WHERE account_id = ? AND claimed = 0 ORDER BY created_at').bind(id).all()).results || [];
+  return { enabled: !!env.STRIPE_SECRET_KEY, passUntil: e.pass_until, passAuto: !!e.pass_auto, noads: !!e.noads, first: !!e.first, portal: !!e.customer, claims: claims.map(c => ({ id: c.id, sku: c.sku, items: (PAY_SKU[c.sku] || {}).items || {} })) };
+}
+async function payCheckout(env, req, me) {
+  if (!env.STRIPE_SECRET_KEY) return fail(env, req, '準備中です', 503);
+  const b = await req.json().catch(() => ({})), sku = String(b.sku || ''), it = PAY_SKU[sku];
+  if (!it) return fail(env, req, '商品が見つかりません', 404);
+  const real = await env.DB.prepare("SELECT 1 FROM identities WHERE account_id = ? AND provider <> 'guest' LIMIT 1").bind(me.id).first();
+  if (!real) return fail(env, req, '購入にはログイン（Googleなど）が必要です', 401);
+  const e = await entsOf(env, me.id);
+  if (it.once && e[it.once]) return fail(env, req, 'もう購入済みです', 409);
+  if (it.sub && e.pass_auto && e.pass_until > nowSec()) return fail(env, req, '月パスはもう契約中です', 409);
+  const o = payOrigin(env, req), md = { account: me.id, sku };
+  const price = { currency: 'jpy', unit_amount: it.yen, product_data: { name: it.name } };
+  if (it.sub) price.recurring = { interval: 'month' };
+  const params = {
+    mode: it.sub ? 'subscription' : 'payment', locale: 'ja', client_reference_id: me.id, metadata: md,
+    'line_items[0][quantity]': 1, success_url: o + '/?pay=ok', cancel_url: o + '/?pay=cancel',
+  };
+  Object.keys(price).forEach(k => { params['line_items[0][price_data][' + k + ']'] = price[k]; });
+  if (it.sub) params.subscription_data = { metadata: md }; else params.payment_intent_data = { metadata: md };
+  if (e.customer) params.customer = e.customer; else if (!it.sub) params.customer_creation = 'always';
+  const r = await stripe(env, 'checkout/sessions', params);
+  if (!r.url) return fail(env, req, '決済のページを作れませんでした' + (r.error && r.error.message ? '（' + r.error.message + '）' : ''), 502);
+  return json(env, req, { url: r.url });
+}
+async function hmacHex(secret, msg) {
+  const k = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  return [...new Uint8Array(await crypto.subtle.sign('HMAC', k, new TextEncoder().encode(msg)))].map(x => x.toString(16).padStart(2, '0')).join('');
+}
+async function payWebhook(env, req) {
+  if (!env.STRIPE_WEBHOOK_SECRET) return new Response('not ready', { status: 503 });
+  const raw = await req.text(), sig = req.headers.get('Stripe-Signature') || '';
+  const parts = Object.fromEntries(sig.split(',').map(x => x.split('=')).filter(x => x.length === 2).map(([k, v]) => [k, v]));
+  const v1s = sig.split(',').filter(x => x.startsWith('v1=')).map(x => x.slice(3)), t = +parts.t;
+  if (!t || Math.abs(nowSec() - t) > 300 || !v1s.length) return new Response('bad signature', { status: 400 });
+  const want = await hmacHex(env.STRIPE_WEBHOOK_SECRET, t + '.' + raw);
+  if (!v1s.includes(want)) return new Response('bad signature', { status: 400 });
+  let ev; try { ev = JSON.parse(raw); } catch (_) { return new Response('bad json', { status: 400 }); }
+  const o = (ev.data && ev.data.object) || {};
+  if (ev.type === 'checkout.session.completed' && (o.payment_status === 'paid' || o.payment_status === 'no_payment_required')) {
+    const acc = o.client_reference_id || (o.metadata || {}).account, sku = (o.metadata || {}).sku;
+    if (acc && PAY_SKU[sku]) await payFulfill(env, acc, sku, o.id, o.amount_total || 0, { customer: o.customer || '', sub: o.subscription || '' });
+  } else if (ev.type === 'invoice.paid' && o.billing_reason === 'subscription_cycle') {   // 月パスの毎月の更新
+    const md = (o.subscription_details && o.subscription_details.metadata) || (o.parent && o.parent.subscription_details && o.parent.subscription_details.metadata) || {};
+    if (md.account && md.sku === 'pass') await payFulfill(env, md.account, 'pass', o.id, o.amount_paid || 0, {});
+  } else if (ev.type === 'customer.subscription.deleted') {                               // 解約：のこりの日数は使える
+    const md = o.metadata || {}; if (md.account) await entsSet(env, md.account, { pass_auto: 0 });
+  }
+  return new Response('ok');
+}
+async function payFulfill(env, acc, sku, id, amount, x) {
+  const it = PAY_SKU[sku], t = nowSec();
+  const ins = await env.DB.prepare('INSERT OR IGNORE INTO purchases (id, account_id, sku, amount, claimed, created_at) VALUES (?, ?, ?, ?, ?, ?)').bind(id, acc, sku, amount | 0, it.items ? 0 : 1, t).run();
+  if (!ins.meta.changes) return;                                     // 同じ通知が2回来ても1回だけ
+  if (x.customer) await entsSet(env, acc, { customer: x.customer });
+  if (it.gold) await addGold(env, acc, 'web', it.gold, 'buy:' + sku, id);
+  if (it.once) await entsSet(env, acc, { [it.once]: 1 });
+  if (it.sub) { const e = await entsOf(env, acc); await entsSet(env, acc, Object.assign({ pass_until: Math.max(t, e.pass_until) + PASS_DAYS * 86400, pass_auto: 1 }, x.sub ? { pass_sub: x.sub } : {})); }
 }
 
 // つないだ場所の国（Cloudflare が判定する2文字の国コード。住所などは使わない）
