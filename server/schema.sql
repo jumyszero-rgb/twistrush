@@ -171,3 +171,6 @@ CREATE TABLE IF NOT EXISTS gold_lots (
   ref         TEXT NOT NULL DEFAULT ''   -- 購入番号
 );
 CREATE INDEX IF NOT EXISTS idx_gold_lots ON gold_lots(account_id, expires_at);
+
+-- 毎日の利用者（端末ごとの乱数ID。チャレンジを始める目安：1日500人）
+CREATE TABLE IF NOT EXISTS daily_active ( day TEXT NOT NULL, did TEXT NOT NULL, PRIMARY KEY (day, did) );

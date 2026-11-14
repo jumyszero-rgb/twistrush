@@ -520,7 +520,7 @@ body.on-menu .battlemain{opacity:0;}
   .chgoals span small{display:block;font-size:9px;font-weight:600;opacity:.8;} .chgoals span.ok{background:rgba(255,211,107,.25);color:#ffd36b;}
   .chbtns{display:flex;gap:8px;margin-top:10px;} .chbtns button{flex:1;padding:10px;border-radius:12px;border:0;font-weight:900;font-size:14px;}
   .chplay{background:linear-gradient(#ff8ad0,#e0479e);color:#fff;} .chrk{background:rgba(255,255,255,.14);color:#fff;}
-  .chlist{margin-top:8px;} .chall{text-align:center;font-weight:900;font-size:13px;padding:10px;border-radius:12px;background:rgba(255,255,255,.06);} .chall.ok{background:rgba(255,211,107,.2);color:#ffd36b;}
+  .chlist{margin-top:8px;} .chrew{font-size:12px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.06);} .chrew b{display:block;margin-bottom:6px;color:#ffd36b;} .chrew div{display:flex;gap:8px;padding:2px 0;} .chrew span{min-width:70px;font-weight:800;}
   .mroute.hide{color:rgba(255,255,255,.55);font-size:20px;text-align:center;line-height:1.2;} .mroute.hide small{display:block;font-size:10px;margin-top:4px;}
   #stageInfo .rt{font-size:12px;font-weight:700;color:#9fe3ff;margin:2px 0 4px;}
   #stageInfo .rt.hard{color:#ff9a9a;}
@@ -1548,8 +1548,8 @@ body.tight .itembar{gap:6px;}
         <button class="mtile" id="sixtyBtn" data-tip="60秒で何点取れるか。記録はランキングに残る"><span class="mi"><img data-mimg="sixty" alt=""></span><span class="ml">60秒アタック</span></button>
         <button class="mtile" id="startBtn" data-tip="カラーHPがどれか30になるまで、どれだけ長く生き残れるか。時間がたつほど厳しくなる。記録あり・コンティニュー1回"><span class="mi"><img data-mimg="endless" alt=""></span><span class="ml">タイムアタック</span></button>
         <button class="mtile" id="easyBtn" data-tip="5段階の難しさで練習できる。記録なし・コンティニュー何度でも"><span class="mi"><img data-mimg="practice" alt=""></span><span class="ml">練習</span></button>
-        <div class="mrow2 three">
-          <button class="mtile low" id="chalBtn" data-tip="毎週3つのお題：みんな同じ盤面・同じ条件で点数を競う。目標達成でチケット"><span class="mi" style="font-size:26px">🎯</span><span class="ml">チャレンジ</span></button>
+        <div class="mrow2">
+          <button class="mtile low hidden" id="chalBtn" data-tip="毎週3つのお題：みんな同じ盤面・同じ条件で点数を競う。週間ランキングの順位でごほうび"><span class="mi" style="font-size:26px">🎯</span><span class="ml">チャレンジ</span></button>
           <button class="mtile low" id="vsBtn" data-tip="ほかの人と対戦する（準備中）"><span class="mi"><img data-mimg="online" alt=""></span><span class="ml">オンライン対戦</span></button>
           <button class="mtile low" id="rankBtn" data-tip="60秒アタックとタイムアタックの順位を見る"><span class="mi"><img data-mimg="ranking" alt=""></span><span class="ml">ランキング</span></button>
         </div>
@@ -2740,7 +2740,7 @@ body.tight .itembar{gap:6px;}
   const goldTier = () => { const m = Math.max(...stacks); return m >= CFG.WARN_AT ? 2 : (m >= CFG.WARN_AT / 2 ? 1 : 0); };
   // タイムアタックは時間で圧力が上がるので、オクタ（★）を多めに出す（約1.5倍：5%／11%／18%）
   const GOLD_TA = [0.05, 0.11, 0.18];
-  const goldRate = () => (gameMode === 'chal' && chCur && chCur.r.gold ? chCur.r.gold : 1) * (gameMode === 'rank' ? GOLD_TA[goldTier()] : [CFG.GOLD_RATE, CFG.GOLD_RATE_MID, CFG.GOLD_RATE_HIGH][goldTier()]);
+  const goldRate = () => (gameMode === 'rank' ? GOLD_TA[goldTier()] : [CFG.GOLD_RATE, CFG.GOLD_RATE_MID, CFG.GOLD_RATE_HIGH][goldTier()]);
   // エンドレスだけ：時間でも圧力を上げる（2026-11-13）。ふつうの人で3分前後、上手い人で5分前後に終わるように
   //   たまる量（1回あたり）：〜1分 1／〜2分 2／〜2分半 3／〜3分 4／〜3分半 5／〜4分 6／〜4分半 7／〜5分 8／そのあと20秒ごとに+2
   const ENDLESS_STEPS = [[60, 1], [120, 2], [150, 3], [180, 4], [210, 5], [240, 6], [270, 7], [300, 8]];
@@ -3614,7 +3614,11 @@ body.tight .itembar{gap:6px;}
   // ===== 盤面 =====
   function randType(allowGold){ return (allowGold && rng() < goldRate()) ? GOLD : Math.floor(rng() * TYPES); }
   // 補充用：盤面に少ない色ほど少し出やすく、多い色ほど少し出にくくする（極端な色の偏りを防ぐ。ランダム感は残す）
-  function refillType(){
+  // CHALLENGE：列ごとに決まった順番でブロックが降る（その列の何個目に何が来るかは全員同じ。盤面の状態やカラーHPでは変わらない）
+  let colRng = null;
+  const CH_GOLD = 0.05;                                   // チャレンジのオクタの出る率（固定。OCTA RAINは×2）
+  function refillType(c){
+    if (colRng && colRng[c]) { const g = colRng[c], a = g(), b = g(); return a < CH_GOLD * ((chCur && chCur.r.gold) || 1) ? GOLD : Math.floor(b * TYPES); }
     if (rng() < goldRate()) return GOLD;
     const cnt = Array(TYPES).fill(0); let n = 0;
     for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) { const v = grid[r][c]; if (v >= 0 && v < TYPES) { cnt[v]++; n++; } }
@@ -3792,7 +3796,7 @@ body.tight .itembar{gap:6px;}
       for (let i = 0; i < surv.length; i++, r--) { grid[r][c] = surv[i][0]; fallDist[r][c] = r - surv[i][1]; }
       const fresh = r + 1;
       for (let k = 0; k < fresh; k++) grid[k][c] = null;   // 上の空きを先に空にしてから数える
-      for (let k = 0; k < fresh; k++) { grid[k][c] = octaPend > 0 ? (octaPend--, GOLD) : refillType(); fallDist[k][c] = fresh; }
+      for (let k = 0; k < fresh; k++) { grid[k][c] = octaPend > 0 ? (octaPend--, GOLD) : refillType(c); fallDist[k][c] = fresh; }
     }
     fallStart = t0; phase = 'fall'; phaseStart = t0;
   }
@@ -3808,7 +3812,7 @@ body.tight .itembar{gap:6px;}
   }
   function addStack(n){
     n = statOn() ? incoming(n) : defCut(n);
-    n = Math.floor(n) + (Math.random() < n - Math.floor(n) ? 1 : 0);
+    n = Math.floor(n) + ((gameMode === 'chal' ? srng() : Math.random()) < n - Math.floor(n) ? 1 : 0);
     for (let k = 0; k < n; k++) {
       const i = Math.floor(srng() * TYPES);
       stacks[i] = Math.min(CFG.STACK_MAX, stacks[i] + 1);
@@ -4974,6 +4978,7 @@ body.tight .itembar{gap:6px;}
     document.body.classList.toggle('onl', gameMode === 'online');
     if (gameMode !== 'online') { $('onlOpp').classList.add('hidden'); $('onlRes').classList.add('hidden'); }
     rng = mulberry32(seed); srng = mulberry32(seed ^ 0x9e3779b9);
+    colRng = gameMode === 'chal' ? Array.from({length: N}, (_, c) => mulberry32((seed ^ Math.imul(c + 1, 0x85ebca6b)) >>> 0)) : null;
     newBoard();
     cur = {r: 2, c: 2}; curFrom = null; vis = {r: 2, c: 2}; dragFrac = {r:0, c:0};
     stacks = Array(TYPES).fill(0); score = 0; chain = 0; confirmUntil = 0; comboShowUntil = 0;
@@ -6294,10 +6299,27 @@ body.tight .itembar{gap:6px;}
     } catch (e) { /* つながらないときは次の起動で */ }
   }
   setTimeout(checkRewards, 2500);
+  // チャレンジ：先週のお題ごとの順位のごほうび
+  async function checkChRewards(){
+    if (!chalLive() || !rankTok()) return;
+    try {
+      const r = await api('/api/chal/reward', {tok: rankTok()});
+      const x = ((r && r.rewards) || [])[0]; if (!x) return;
+      const its = Object.entries(x.items).map(([k, n]) => itemLabel(k) + ' ×' + n).join('<br>');
+      const rule = (() => { try { const o = chWeekRules(x.week); return o[x.k] ? o[x.k].n : ''; } catch(_) { return ''; } })();
+      askChoice('🎯 先週のチャレンジ「' + rule + '」<br><b>' + x.rank + '位</b>（' + x.total + '人中・' + x.best.toLocaleString() + '点）<br><small>ごほうび（' + x.label + '）</small><br>' + its,
+        '受け取る', 'あとで',
+        async () => {
+          try { const c = await api('/api/chal/reward/claim', {method: 'POST', body: JSON.stringify({mode: x.mode}), tok: rankTok()});
+            Object.entries(c.reward.items).forEach(([k, n]) => giveItem(k, n)); saveInv(); toast('ごほうびを受け取りました'); setTimeout(checkChRewards, 600); }
+          catch (e) { toast(e.status === 409 ? 'もう受け取っています' : 'サーバーにつながりませんでした'); }
+        }, () => {});
+    } catch (_) {}
+  }
   async function checkVsRewards(){
     try {
       const r = await api('/api/vs/reward', {tok: rankTok()});
-      const x = ((r && r.rewards) || [])[0]; if (!x) return;
+      const x = ((r && r.rewards) || [])[0]; if (!x) return checkChRewards();
       const its = Object.entries(x.items).map(([k, n]) => itemLabel(k) + ' ×' + n).join('<br>');
       askChoice('⚔ ' + x.month.replace('-', '年') + '月の' + OL_KIND[x.kind] + 'ランキング<br><b>' + x.rank + '位</b>（' + x.total + '人中・レート ' + x.rate + '）<br><small>プレゼント（' + x.label + '）</small><br>' + its,
         '受け取る', 'あとで',
@@ -6490,7 +6512,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.98';
+  const APP_VER = '0.9.99';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -8673,34 +8695,45 @@ body.tight .itembar{gap:6px;}
   // ===== 解放（2026-11-14）：最初から全部入れておき、進み具合に合わせて少しずつ開く =====
   //   開いていないボタンには🔒と条件を出す。開いたときは「NEW！」とレインボーの一言で案内する
   // ===== CHALLENGE（2026-11-15）：毎週3つのお題。みんな同じ盤面（同じシード）・同じ条件でハイスコアを競う =====
-  //   週は月曜はじまり。お題は8種類から週ごとに3つ（全員同じ）。何回でも挑戦できる
-  //   目標（BRONZE・SILVER・GOLD）は1つのお題で1回ずつ。3つともGOLDでSR以上確定チケット
-  //   ランキングはお題ごと（サーバーの mode にお題のIDを入れる。サーバーの変更なし）
+  //   週は日本時間の月曜はじまり。お題は8種類から週ごとに3つ（全員同じ）。何回でも挑戦できる
+  //   盤面・降ってくるブロックの順番と場所はぜんぶ同じ（列ごとに決まった順番）。アイテム・キャラの技はなし
+  //   クリアのごほうびはなし。お題ごとの週間ランキングの順位だけでごほうび（サーバーの /api/chal/reward）
+  //   始まるのは、1日の利用者が500人を超えてから（サーバーの /api/hello が chal:true を返したら）
   const CH_RULES = [
-    {k: 'sprint', n: 'SPRINT 30',   d: '30秒で何点取れるか', sec: 30, goal: [200, 400, 700]},
-    {k: 'blitz',  n: 'BLITZ 20',    d: '20秒の超短期決戦', sec: 20, goal: [120, 260, 450]},
-    {k: 'long',   n: 'LONG 90',     d: '90秒の長期戦', sec: 90, goal: [650, 1200, 2000]},
-    {k: 'turns',  n: '30 TURNS',    d: '30回まわすまでに何点取れるか。時間は止まっているので、じっくり考えてOK', turns: 30, goal: [200, 400, 700]},
-    {k: 'color',  n: 'COLOR HUNT',  d: '60秒。指定の色を消すと点数×3', sec: 60, col: true, goal: [500, 950, 1600]},
-    {k: 'combo',  n: 'COMBO FEVER', d: '60秒。COMBO（連続消去の2回目から）の点数×3', sec: 60, combo: 3, goal: [500, 950, 1600]},
-    {k: 'hard',   n: 'HARD 60',     d: '60秒。外周もカラーHPも速い（難しさLv8）', sec: 60, lv: 8, goal: [300, 600, 1000]},
-    {k: 'octa',   n: 'OCTA RAIN',   d: '60秒。オクタブロックが2倍出る', sec: 60, gold: 2, goal: [500, 950, 1600]},
+    {k: 'sprint', n: 'SPRINT 30',   d: '30秒で何点取れるか', sec: 30},
+    {k: 'blitz',  n: 'BLITZ 20',    d: '20秒の超短期決戦', sec: 20},
+    {k: 'long',   n: 'LONG 90',     d: '90秒の長期戦', sec: 90},
+    {k: 'turns',  n: '30 TURNS',    d: '30回まわすまでに何点取れるか。時間は止まっているので、じっくり考えてOK', turns: 30},
+    {k: 'color',  n: 'COLOR HUNT',  d: '60秒。指定の色を消すと点数×3', sec: 60, col: true},
+    {k: 'combo',  n: 'COMBO FEVER', d: '60秒。COMBO（連続消去の2回目から）の点数×3', sec: 60, combo: 3},
+    {k: 'hard',   n: 'HARD 60',     d: '60秒。外周もカラーHPも速い（難しさLv8）', sec: 60, lv: 8},
+    {k: 'octa',   n: 'OCTA RAIN',   d: '60秒。オクタブロックが2倍出る', sec: 60, gold: 2},
   ];
-  const CH_REW = [{n: 'BRONZE', ic: '🥉', it: [['silver', 100]]}, {n: 'SILVER', ic: '🥈', it: [['gticket', 1]]}, {n: 'GOLD', ic: '🥇', it: [['gticket', 2], ['silver', 300]]}];
-  const CH_ALL = ['gticket_hi', 1];
+  // 週間ランキングのごほうび（表示用。実際の中身はサーバーの CH_REWARDS）
+  const CH_RANK_REW = [['1位', 'SR以上確定チケット×1・ガチャチケット×3'], ['2〜3位', 'SR以上確定チケット×1・ガチャチケット×1'], ['4〜10位', 'ガチャチケット×3'], ['11〜50位', 'ガチャチケット×2'], ['51〜100位', 'ガチャチケット×1'], ['参加賞', 'スタミナポット×1']];
+  // 利用者が増えたら始まる：サーバーの答えを覚えておく（1日1回あいさつ）
+  const chalLive = () => openAll() || !!(loadJ('flags', null) || {}).chal;
+  async function hello(){
+    let did = load('did', ''); if (!did) { did = Date.now().toString(36) + Math.random().toString(36).slice(2, 12); save('did', did); }
+    if (load('hello_day', '') === today() && loadJ('flags', null)) return;
+    try { const f = await api('/api/hello', {method: 'POST', body: JSON.stringify({did}), tok: ''}); if (f) { save('flags', JSON.stringify({chal: !!f.chal})); save('hello_day', today()); featRefresh(); } } catch(_) {}
+  }
+  setTimeout(hello, 3000);
   let chCur = null, chTurn = 0;
-  const chWeekKey = () => { const d = new Date(periodStart('week')); return d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0'); };
+  const JST = 9 * 3600e3;
+  const chWeekFrom = () => { const d = new Date(Date.now() + JST); return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - (d.getUTCDay() + 6) % 7) - JST; };   // 日本時間の月曜0時（ms）
+  const chWeekKey = () => new Date(chWeekFrom() + JST).toISOString().slice(0, 10).replace(/-/g, '');
   const chHash = s => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+  const chWeekRules = wk => { const g = mulberry32(chHash('tw' + wk)), o = CH_RULES.map((_, i) => i);
+    for (let i = o.length - 1; i > 0; i--) { const j = Math.floor(g() * (i + 1)); [o[i], o[j]] = [o[j], o[i]]; } return o.slice(0, 3).map(i => CH_RULES[i]); };
   function chWeek(){
     const wk = chWeekKey(), g = mulberry32(chHash('tw' + wk)), o = CH_RULES.map((_, i) => i);
     for (let i = o.length - 1; i > 0; i--) { const j = Math.floor(g() * (i + 1)); [o[i], o[j]] = [o[j], o[i]]; }
     return o.slice(0, 3).map((ri, k) => { const seed = chHash('ch' + wk + k) % 2 ** 31; return {id: 'ch' + wk + k, wk, r: CH_RULES[ri], seed, col: seed % TYPES}; });
   }
-  function chState(){ const wk = chWeekKey(); let s = loadJ('chal', null); if (!s || s.wk !== wk) s = {wk, best: {}, got: {}, all: false}; return s; }
+  function chState(){ const wk = chWeekKey(); let s = loadJ('chal', null); if (!s || s.wk !== wk) s = {wk, best: {}}; return s; }
   const chSave = s => save('chal', JSON.stringify(s));
   const chBest = () => (chCur && chState().best[chCur.id]) || 0;
-  const chItName = k => k === 'silver' ? 'シルバー' : (TICKET_LABEL[k] || k);
-  const chItTxt = it => it.map(([k, n]) => chItName(k) + '×' + n).join('・');
   function chTick(){
     const L = chCur.r.turns, left = Math.max(0, L - chTurn);
     if (left !== timeShown) { timeShown = left; $('timeLeft').textContent = left; $('timeFill').style.width = (left / L * 100).toFixed(2) + '%'; $('timeBar').classList.toggle('low', left <= 5); }
@@ -8710,31 +8743,23 @@ body.tight .itembar{gap:6px;}
     if (!chCur) return '';
     const s = chState(), id = chCur.id, old = s.best[id] || 0, nb = score > old;
     if (nb) s.best[id] = score;
-    const got = s.got[id] || 0; let tier = 0; chCur.r.goal.forEach((g, k) => { if (score >= g) tier = k + 1; });
-    const msgs = [];
-    for (let k = got; k < tier; k++) { CH_REW[k].it.forEach(([key, n]) => key === 'silver' ? addCoins(n) : giveItem(key, n)); msgs.push(CH_REW[k].ic + CH_REW[k].n + '（' + chItTxt(CH_REW[k].it) + '）'); }
-    if (tier > got) s.got[id] = tier;
-    if (!s.all && chWeek().every(c => (s.got[c.id] || 0) >= 3)) { s.all = true; giveItem(CH_ALL[0], CH_ALL[1]); msgs.push('👑ALL GOLD（' + chItTxt([CH_ALL]) + '）'); }
     chSave(s);
     try { userExpAdd(UEXP.sixty); } catch(_) {}
-    const nx = chCur.r.goal[tier];
-    return chCur.r.n + '：' + score.toLocaleString() + '点。' + (nb ? '自己ベスト更新！' : '自己ベスト ' + old.toLocaleString()) +
-      (msgs.length ? '　🎁 ' + msgs.join('、') : nx ? '　次の' + CH_REW[tier].n + 'まで あと' + (nx - score).toLocaleString() + '点' : '');
+    return chCur.r.n + '：' + score.toLocaleString() + '点。' + (nb ? '自己ベスト更新！' : '自己ベスト ' + old.toLocaleString());
   }
-  function chLeftTxt(){ const end = periodStart('week') + 7 * 864e5, ms = end - Date.now(), d = Math.floor(ms / 864e5), h = Math.floor(ms % 864e5 / 36e5); return d > 0 ? 'あと' + d + '日' + h + '時間' : 'あと' + h + '時間'; }
+  function chLeftTxt(){ const end = chWeekFrom() + 7 * 864e5, ms = end - Date.now(), d = Math.floor(ms / 864e5), h = Math.floor(ms % 864e5 / 36e5); return d > 0 ? 'あと' + d + '日' + h + '時間' : 'あと' + h + '時間'; }
   function drawChal(){
-    const s = chState(), W = chWeek(), allG = W.every(c => (s.got[c.id] || 0) >= 3);
-    const ws = new Date(periodStart('week')), we = new Date(periodStart('week') + 6 * 864e5), md = d => (d.getMonth() + 1) + '/' + d.getDate();
+    const s = chState(), W = chWeek();
+    const ws = new Date(chWeekFrom() + JST), we = new Date(chWeekFrom() + JST + 6 * 864e5), md = d => (d.getUTCMonth() + 1) + '/' + d.getUTCDate();
     $('chalBody').innerHTML = '<div class="chhead"><b>今週のお題</b>　' + md(ws) + '〜' + md(we) + '<span>' + chLeftTxt() + '</span></div>' +
-      '<p class="chnote">みんな同じ盤面・同じ条件。何回でも挑戦OK！ 目標を達成するとごほうび（1つのお題で1回ずつ）。</p>' +
-      W.map((c, i) => { const g = s.got[c.id] || 0, b = s.best[c.id] || 0, cl = c.r.col ? CH[c.col] : null;
+      '<p class="chnote">みんな同じ盤面・同じブロックの順番・同じ条件。何回でも挑戦OK！ アイテムとキャラの技はなし。<br>お題ごとの<b>週間ランキング</b>の順位で、次の週にごほうびがもらえます（世界ランキングへの登録が必要）。</p>' +
+      W.map((c, i) => { const b = s.best[c.id] || 0, cl = c.r.col ? CH[c.col] : null;
         return '<div class="chcard">' +
           '<div class="chtop"><span class="chn">' + c.r.n + '</span><span class="chbest">BEST <b>' + b.toLocaleString() + '</b></span></div>' +
           '<div class="chd">' + c.r.d + (cl ? '<br>今週の色：<i class="chcol" style="background:' + cl.col + '"></i><b>' + cl.name + '</b>' : '') + '</div>' +
-          '<div class="chgoals">' + CH_REW.map((w, k) => '<span class="' + (g > k ? 'ok' : '') + '">' + (g > k ? '✔' : w.ic) + w.n + ' ' + c.r.goal[k].toLocaleString() + '<small>' + chItTxt(w.it) + '</small></span>').join('') + '</div>' +
           '<div class="chbtns"><button class="chplay" data-chplay="' + i + '">▶ 挑戦する</button><button class="chrk" data-chrk="' + i + '">🌏 ランキング</button></div>' +
           '<div class="chlist hidden" id="chl' + i + '"></div></div>'; }).join('') +
-      '<div class="chall' + (allG ? ' ok' : '') + '">👑 3つともGOLDで ' + chItTxt([CH_ALL]) + (s.all ? '（受け取り済み）' : '') + '</div>';
+      '<div class="chrew"><b>🏆 週間ランキングのごほうび（お題1つごと）</b>' + CH_RANK_REW.map(x => '<div><span>' + x[0] + '</span>' + x[1] + '</div>').join('') + '</div>';
   }
   function openChal(){ drawChal(); $('chal').classList.remove('hidden'); $('chalBody').scrollTop = 0; }
   $('chalBtn').addEventListener('click', openChal);
@@ -8756,7 +8781,7 @@ body.tight .itembar{gap:6px;}
   });
   const FEAT = [
     {k: 'ta', n: 'タイムアタック', ok: () => bossesBeaten() >= 1, need: 'エリア1のボスを倒す', how: '時間がたつほど厳しくなる中で、どれだけ長く生き残れるかを競うモードだよ。ランキングにも残るから挑戦してね！'},
-    {k: 'chal', n: 'チャレンジ', ok: () => bossesBeaten() >= 1, need: 'エリア1のボスを倒す', how: '毎週3つのお題が出るよ。みんな同じ盤面・同じ条件で点数を競うの。目標を達成するとチケットがもらえるよ！'},
+    {k: 'chal', n: 'チャレンジ', ok: () => chalLive() && bossesBeaten() >= 1, need: 'エリア1のボスを倒す', how: '毎週3つのお題が出るよ。みんな同じ盤面・同じブロックの順番で点数を競うの。週間ランキングの順位でごほうびがもらえるよ！'},
     {k: 'rank', n: 'ランキング', ok: () => bossesBeaten() >= 1, need: 'エリア1のボスを倒す', how: '60秒アタックとタイムアタックの世界ランキングが見られるよ。月の順位でプレゼントももらえるの！'},
     {k: 'online', n: 'オンライン対戦', ok: () => userLv() >= 5, need: 'ユーザーLV5', how: 'ほかの人とリアルタイムで対戦できるよ。まずは「シンプル」から遊んでみてね。'},
     {k: 'arena', n: 'アリーナ（オート対戦）', ok: () => userLv() >= 8, need: 'ユーザーLV8', how: 'オンライン対戦の「オート」タブで、チームどうしを自動で戦わせられるよ。1日3回まで！'},
@@ -8777,6 +8802,7 @@ body.tight .itembar{gap:6px;}
     if (t && ((t.dataset.k === 'auto' && !featOk('arena')) || (t.dataset.k === 'chara' && !featOk('chara')))) { e.preventDefault(); e.stopImmediatePropagation(); featLockMsg(t.dataset.k === 'auto' ? 'arena' : 'chara'); }
   }, true);
   function featRefresh(){
+    { const cb = $('chalBtn'); if (cb) { const live = chalLive(); cb.classList.toggle('hidden', !live); cb.parentElement.classList.toggle('three', live); } }   // チャレンジは始まるまでボタンごと隠す
     Object.keys(FEAT_BTN).forEach(k => { const b = $(FEAT_BTN[k]); if (!b) return; const lk = !featOk(k); b.classList.toggle('flock', lk); b.dataset.need = lk ? featNeed(k) : ''; });
     document.querySelectorAll('[data-mt="expd"]').forEach(b => { b.classList.toggle('flock', !featOk('expd')); b.dataset.need = featOk('expd') ? '' : 'LV10'; });
     document.querySelectorAll('.oltabs button[data-k]').forEach(b => { const k = b.dataset.k === 'auto' ? 'arena' : b.dataset.k === 'chara' ? 'chara' : null; if (k) b.classList.toggle('flock', !featOk(k)); });

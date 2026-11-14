@@ -30,6 +30,7 @@ const SCHEMA = [
   "CREATE INDEX IF NOT EXISTS idx_scores_mode_score ON scores(mode, score DESC)",
   "CREATE INDEX IF NOT EXISTS idx_scores_player ON scores(player, created_at)",
   "CREATE TABLE IF NOT EXISTS meta ( k TEXT PRIMARY KEY, v TEXT NOT NULL )",
+  "CREATE TABLE IF NOT EXISTS daily_active ( day TEXT NOT NULL, did TEXT NOT NULL, PRIMARY KEY (day, did) )",
   "CREATE TABLE IF NOT EXISTS guest_log ( ip TEXT NOT NULL, t INTEGER NOT NULL )",
   "CREATE INDEX IF NOT EXISTS idx_guest_log ON guest_log(ip, t)",
   "CREATE TABLE IF NOT EXISTS reward_claims ( account_id TEXT NOT NULL, month TEXT NOT NULL, mode TEXT NOT NULL, created_at INTEGER NOT NULL, PRIMARY KEY (account_id, month, mode) )",
@@ -259,6 +260,13 @@ async function api(env, req, url) {
   const p = url.pathname, M = req.method;
   if (p === '/api/ping') return json(env, req, { ok: true, now: nowSec(), logins: Object.keys(PROVIDERS).filter(k => PROVIDERS[k].id(env)).concat(env.DEV_LOGIN === '1' ? ['dev'] : []) });
 
+  // 毎日の利用者（端末ごとの乱数ID。名前やアカウントとはつながない）＋ 機能のオン・オフ
+  if (p === '/api/hello' && M === 'POST') {
+    const b = await req.json().catch(() => ({})), did = String(b.did || '');
+    if (/^[A-Za-z0-9_-]{8,40}$/.test(did)) await env.DB.prepare('INSERT OR IGNORE INTO daily_active (day, did) VALUES (?, ?)').bind(jstDay(nowSec()), did).run();
+    return json(env, req, await flagsOf(env));
+  }
+  if (p === '/api/flags' && M === 'GET') return json(env, req, await flagsOf(env));
   // ランキング一覧はだれでも見られる
   if (p === '/api/top' && M === 'GET') return rankTop(env, req, url);
   if (p === '/api/vs/top' && M === 'GET') { const m = await who(env, req); return json(env, req, await vsTop(env, VS_KINDS.includes(url.searchParams.get('kind')) ? url.searchParams.get('kind') : 'simple', m && m.id)); }
@@ -412,6 +420,16 @@ async function api(env, req, url) {
     const o = await r.json();
     return o.error ? fail(env, req, o.error) : json(env, req, o);
   }
+  // チャレンジ：先週のお題ごとの順位のごほうび（見る・受け取る）
+  if (p === '/api/chal/reward' && M === 'GET') return json(env, req, { rewards: await chRewards(env, me.id) });
+  if (p === '/api/chal/reward/claim' && M === 'POST') {
+    const b = await req.json().catch(() => ({}));
+    const r = (await chRewards(env, me.id)).find(x => x.mode === b.mode);
+    if (!r) return fail(env, req, '受け取れるごほうびがありません', 404);
+    const res = await env.DB.prepare('INSERT OR IGNORE INTO reward_claims (account_id, month, mode, created_at) VALUES (?, ?, ?, ?)').bind(me.id, 'w' + r.week, r.mode, nowSec()).run();
+    if (!res.meta.changes) return fail(env, req, 'もう受け取りました', 409);
+    return json(env, req, { ok: true, reward: r });
+  }
   // 先月の順位のごほうび（見る・受け取る）
   if (p === '/api/reward' && M === 'GET') return json(env, req, { rewards: await monthRewards(env, me.id) });
   if (p === '/api/reward/claim' && M === 'POST') {
@@ -527,6 +545,49 @@ async function monthRewards(env, player) {
     const total = await env.DB.prepare('SELECT COUNT(DISTINCT player) AS c FROM scores WHERE mode = ? AND created_at >= ? AND created_at < ?').bind(mode, m.from, m.to).first();
     const rank = (above.c || 0) + 1, tier = MONTH_REWARDS.find(x => !x.upTo || rank <= x.upTo);
     out.push({ month: m.key, mode, rank, total: total.c || 0, best: unKey(mode, best.s).score, label: tier.label, items: tier.items });
+  }
+  return out;
+}
+
+// ---------- 毎日の利用者と、機能のオン・オフ ----------
+// チャレンジは「1日の利用者が CHAL_DAU 人（ふつう500人）を超えた日の次の日」から自動で始まる。一度始まったら止めない（meta の chal_on）
+// 手で決めたいときは CHAL_ON="1"（いつでもオン）／"0"（いつでもオフ）
+const jstDay = t => new Date((t + TZ) * 1000).toISOString().slice(0, 10);
+let flagCache = null;
+async function flagsOf(env) {
+  const t = nowSec();
+  if (flagCache && t - flagCache.at < 600) return flagCache.v;
+  const need = Number(env.CHAL_DAU || 500);
+  const y = await env.DB.prepare('SELECT COUNT(*) AS c FROM daily_active WHERE day = ?').bind(jstDay(t - 86400)).first();
+  let on = !!(await env.DB.prepare("SELECT 1 FROM meta WHERE k = 'chal_on' AND v = '1'").first());
+  if (!on && (y.c || 0) >= need) { await env.DB.prepare("INSERT OR REPLACE INTO meta (k, v) VALUES ('chal_on', '1')").run(); on = true; }
+  if (env.CHAL_ON === '1') on = true; else if (env.CHAL_ON === '0') on = false;
+  const v = { chal: on, dau: y.c || 0 };
+  flagCache = { at: t, v };
+  return v;
+}
+// ---------- チャレンジの週間ランキングのごほうび ----------
+// お題1つごとに、先週（日本時間の月曜はじまり）の順位で決まる。クリアのごほうびはない
+const CH_REWARDS = [
+  { upTo: 1,   label: '1位',       items: { gticket_hi: 1, gticket: 3 } },
+  { upTo: 3,   label: '2〜3位',    items: { gticket_hi: 1, gticket: 1 } },
+  { upTo: 10,  label: '4〜10位',   items: { gticket: 3 } },
+  { upTo: 50,  label: '11〜50位',  items: { gticket: 2 } },
+  { upTo: 100, label: '51〜100位', items: { gticket: 1 } },
+  { upTo: 0,   label: '参加賞',    items: { stampot: 1 } },
+];
+const chWeekKeyOf = from => jstDay(from).replace(/-/g, '');
+async function chRewards(env, player) {
+  const to = since('week', nowSec()), from = to - 7 * 86400, wk = chWeekKeyOf(from), out = [];
+  for (let k = 0; k < 3; k++) {
+    const mode = 'ch' + wk + k;
+    const best = await env.DB.prepare('SELECT MAX(score) AS s FROM scores WHERE mode = ? AND player = ?').bind(mode, player).first();
+    if (!best || best.s == null) continue;
+    if (await env.DB.prepare('SELECT 1 FROM reward_claims WHERE account_id = ? AND month = ? AND mode = ?').bind(player, 'w' + wk, mode).first()) continue;
+    const above = await env.DB.prepare('SELECT COUNT(*) AS c FROM (SELECT player, MAX(score) AS b FROM scores WHERE mode = ? GROUP BY player) WHERE b > ?').bind(mode, best.s).first();
+    const total = await env.DB.prepare('SELECT COUNT(DISTINCT player) AS c FROM scores WHERE mode = ?').bind(mode).first();
+    const rank = (above.c || 0) + 1, tier = CH_REWARDS.find(x => !x.upTo || rank <= x.upTo);
+    out.push({ week: wk, mode, k, rank, total: total.c || 0, best: best.s, label: tier.label, items: tier.items });
   }
   return out;
 }
