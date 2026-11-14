@@ -649,7 +649,7 @@ body.on-menu .battlemain{opacity:0;}
   /* 60秒アタックの残り時間 */
   .timebar{display:flex;align-items:center;gap:8px;flex:none;padding:2px 2px 0;}
   .timebar.hidden{display:none;}
-  .rushbox{display:flex;align-items:center;gap:8px;flex:none;padding:2px 2px 0;height:20px;} .rushbox.hidden{display:none;}
+  .rushbox{position:fixed;z-index:5;display:flex;align-items:center;gap:8px;height:18px;pointer-events:none;} .rushbox.hidden{display:none;}   /* 盤面のすぐ下に重ねる（どのモードでも盤面がずれないように） */
   .rushbox b{font-size:13px;font-weight:900;min-width:120px;letter-spacing:.5px;color:var(--ink);opacity:.45;white-space:pre;font-variant-numeric:tabular-nums;}
   .rushbox.on b{opacity:1;color:#ff4fa0;} .rushbox.hot b{color:#ff7a00;text-shadow:0 0 6px rgba(255,160,0,.6);}
   .rushbox i{flex:1;height:6px;border-radius:4px;background:var(--well);overflow:hidden;position:relative;}
@@ -3729,7 +3729,12 @@ body.tight .itembar{gap:6px;}
   //   RUSH：消し終わって回せるようになってから、次の列をそろえるまでが RUSH_MS 以内なら+1（1つ＋0.1倍、×3.0まで）。こえたら0
   //   確定待ち（2秒）と消える・落ちる時間は計らない（だれでも同じなので）。連鎖のあいだも止まっている
   const RUSH_MS = 3000, RUSH_STEP = 0.1, RUSH_CAP = 3.0;
-  const newScoring = () => gameMode === 'sixty' || gameMode === 'rank' || gameMode === 'chal';
+  const newScoring = () => true;                         // 2026-11-15：全モードで新しい点数（ストーリー・対戦・練習も）
+  // ストーリー・対戦のダメージ倍率（点数より弱め）：同時消し1列ごと+15%・COMBO1つごと+10%・RUSH1つごと+3%（最大+30%）
+  const dmgMulOf = (lines, ch) => (1 + 0.15 * (lines - 1)) * (1 + 0.10 * (ch - 1)) * Math.min(1.3, 1 + 0.03 * rush);
+  let pendingDmgMul = 1;
+  // ストーリーの敵の体力（見えない倍率）：消し方でダメージが増えたぶん。戦闘力 敵2,800・チーム2,500でギリギリになるように（2026-11-15。遊んで調整）
+  const EN_HP_MUL = 1.35;
   let rush = 0, rushFrom = 0, rushUndo = null, rushMax = 0;
   const rushMul = () => Math.min(RUSH_CAP, 1 + RUSH_STEP * rush);
   function rushHit(){                                     // 列がそろった瞬間（確定待ちのはじまり）
@@ -3749,7 +3754,9 @@ body.tight .itembar{gap:6px;}
     const f = rushFrom ? Math.max(0, 1 - (t - rushFrom) / RUSH_MS) : (rush > 0 || confirmUntil || phase !== 'idle' ? 1 : 0);
     const key = rush + '|' + Math.round(f * 60);
     if (key === rushShown) return; rushShown = key;
-    el.classList.remove('hidden'); el.classList.toggle('on', rush > 0); el.classList.toggle('hot', rush >= 10);
+    if (el.classList.contains('hidden')) { el.classList.remove('hidden'); }
+    { const r = canvas.getBoundingClientRect(); el.style.left = (r.left + 6) + 'px'; el.style.width = (r.width - 12) + 'px'; el.style.top = (r.bottom + 2) + 'px'; }
+    el.classList.toggle('on', rush > 0); el.classList.toggle('hot', rush >= 10);
     $('rushN').textContent = rush > 0 ? 'RUSH ' + rush : 'RUSH';
     $('rushFill').style.width = (f * 100).toFixed(1) + '%';
   }
@@ -3786,6 +3793,7 @@ body.tight .itembar{gap:6px;}
     if (chain >= 3) misAdd('combo2', 1);
     pendingGain = base * mult * (gameMode === 'chal' && chCur && chCur.r.combo && chain >= 2 ? chCur.r.combo : 1);   // CHALLENGE「COMBO FEVER」
     let calcTxt = base + '×' + mult;
+    pendingDmgMul = dmgMulOf(lines, chain);
     if (newScoring()) {                                   // 新しい点数
       const cnt = new Map(); gs.forEach(g => g.cells.forEach(([r, c]) => { const k = r * N + c; cnt.set(k, (cnt.get(k) || 0) + 1); }));
       const cross = [...cnt.values()].filter(v => v >= 2).length, octa = gs.filter(g => g.t === GOLD).length;
@@ -3842,8 +3850,9 @@ body.tight .itembar{gap:6px;}
     }
     score += gain;
     dec.forEach((d, i) => { if (d) { stacks[i] = Math.max(0, stacks[i] - d); bump(i); popMinus(i, d); } });
-    attackFromPlayer(clearSet.size, dec);        // 消した色のぶんだけ相手のHPを削る
-    onlAttack(dec);                              // オンライン対戦：相手のカラーHPへ
+    const decA = pendingDmgMul !== 1 ? dec.map(d => d * pendingDmgMul) : dec;   // 消し方（同時消し・COMBO・RUSH）でダメージが増える
+    attackFromPlayer(clearSet.size, decA);       // 消した色のぶんだけ相手のHPを削る
+    onlAttack(decA);                             // オンライン対戦：相手のカラーHPへ
     lapStart = t0;                               // 消せたらタイムゲージは1周目から
     // 壊したブロック数に応じて難しくする
     const prevLap = lapSec(), prevInc = stackInc();
@@ -6599,7 +6608,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.109';
+  const APP_VER = '0.9.110';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -8261,6 +8270,7 @@ body.tight .itembar{gap:6px;}
     runMy = statOn() ? teamStats() : [100, 100, 100, 100];
     runAttr = gameMode === 'story' && curStage ? teamAttr(curStage) : {out: 1, inn: 1};
     runEn = !statOn() ? [100, 100, 100, 100] : gameMode === 'online' ? ((onl.opp && onl.opp.team && onl.opp.team.st) || [100, 100, 100, 100]).map(v => Math.max(1, +v || 1)) : enemyStats(curStage);
+    if (statOn() && gameMode === 'story') runEn = [Math.round(runEn[0] * EN_HP_MUL)].concat(runEn.slice(1));
   }
   const myAtk = () => runMy[1] * (atkUntil && now() < atkUntil ? 2 : 1) * bm('atk');
   const myDef = () => runMy[2] * (defUntil && now() < defUntil ? 2 : 1) * bm('def');
