@@ -6420,7 +6420,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.90';
+  const APP_VER = '0.9.91';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -8241,7 +8241,9 @@ body.tight .itembar{gap:6px;}
   // ===== EXPEDITION（遠征）2026-11-14 =====
   //   チーム1〜4のどれかを丸ごと送り、8・12・24時間で経験値とアイテムを持ち帰る。遠征中のキャラはストーリーなどで使えない
   //   毎日10か所のうち3か所が出る。条件（2〜5個・難しさで決まる）は「必ず入る1つ」＋日替わりで選ぶ
-  //   結果：全部満たす＝大成功（経験値・アイテム1.5倍）／半分以上＝成功／半分未満＝失敗（経験値だけ半分）
+  //   結果は「達成率」＝満たした条件の割合。100%で報酬そのまま（×1）、75%なら報酬も75%（2026-11-14 本人指定）
+  //   ユーザーLV10で開放。遠征枠：LV10〜19＝1／20＝2／30＝3／40＝4
+  //   報酬：経験値・シルバー・アイテム・武器防具の素材（素材は今後の装備で使う）
   const EX_CND = {
     attrMin: c => ({t: ATTR[c.a].n + '属性 ' + c.n + '人以上', ok: m => m.filter(u => attrOf(u.id) === c.a).length >= c.n}),
     attrNone: c => ({t: ATTR[c.a].n + '属性を入れない', ok: m => !m.some(u => attrOf(u.id) === c.a)}),
@@ -8274,7 +8276,14 @@ body.tight .itembar{gap:6px;}
   const EX_ITEMS = [[], [['stampot', 1, 0.5], ['pot_N', 1, 0.5]], [['stampot', 1, 0.8], ['pot_N', 1, 1], ['gticket', 1, 0.2]],
     [['stampot', 1, 1], ['pot_R', 1, 0.6], ['gticket', 1, 0.4]], [['pot_R', 1, 1], ['gticket_hi', 1, 0.1], ['pot_SR', 1, 0.05]],
     [['pot_R', 2, 1], ['pot_SR', 1, 0.15], ['gticket_hi', 1, 0.25]]];
-  const EX_ITEM_NAME = k => k === 'silver' ? 'シルバー' : (TICKET_LABEL[k] || (k.startsWith('pot_') ? potName(k.slice(4)) : k));
+  const EX_MAT = {mat_iron: ['鉄鉱石', '🪨'], mat_hide: ['魔獣の革', '🧣'], mat_feather: ['怪鳥の羽', '🪶'], mat_fire: ['火炎石', '🔥'], mat_pearl: ['深海の真珠', '🫧'],
+    mat_scale: ['竜のうろこ', '🐉'], mat_crystal: ['雷晶石', '💎'], mat_mithril: ['ミスリル', '✨'], mat_herb: ['霊草', '🌿'], mat_wood: ['古木の枝', '🪵'], mat_cloth: ['聖なる布', '🧵'], mat_bone: ['悪霊の骨', '💀']};
+  // 遠征先ごとの素材 [キー, 個数, 確率]
+  const EX_MATS = {1: [['mat_feather', 3, 1], ['mat_hide', 1, 1]], 2: [['mat_fire', 3, 1], ['mat_iron', 1, 1]], 3: [['mat_scale', 2, 1], ['mat_pearl', 2, 1]],
+    4: [['mat_herb', 3, 1], ['mat_wood', 2, 1]], 5: [['mat_iron', 2, 1], ['mat_mithril', 1, 0.4]], 6: [['mat_hide', 2, 1], ['mat_cloth', 1, 1]],
+    7: [['mat_crystal', 2, 1], ['mat_iron', 1, 1]], 8: [['mat_iron', 2, 1], ['mat_hide', 1, 1]], 9: [['mat_bone', 2, 1], ['mat_cloth', 1, 1]],
+    10: [['mat_mithril', 1, 1], ['mat_scale', 1, 1], ['mat_crystal', 1, 1]]};
+  const EX_ITEM_NAME = k => k === 'silver' ? 'シルバー' : EX_MAT[k] ? EX_MAT[k][0] : (TICKET_LABEL[k] || (k.startsWith('pot_') ? potName(k.slice(4)) : k));
   const exSeed = s => { let h = 2166136261; for (const ch of s) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return () => { h ^= h << 13; h ^= h >>> 17; h ^= h << 5; return ((h >>> 0) % 100000) / 100000; }; };
   // 今日の3か所と、その条件（日付で決まる。だれが見ても同じ）
   function exToday(){
@@ -8290,12 +8299,14 @@ body.tight .itembar{gap:6px;}
   let exData = loadJ('expd', null);
   if (!exData || !Array.isArray(exData.active)) exData = {active: [], done: {}};
   const exSave = () => save('expd', JSON.stringify(exData));
-  const exSlots = () => 2 + (userLv() >= 20 ? 1 : 0) + (userLv() >= 40 ? 1 : 0);
+  const EX_OPEN_LV = 10;
+  const exSlots = () => { const L = userLv(); return L < EX_OPEN_LV ? 0 : L < 20 ? 1 : L < 30 ? 2 : L < 40 ? 3 : 4; };
   const exBusyUids = () => new Set([].concat(...exData.active.map(a => a.uids)));
   const exTeamBusy = t => { const b = exBusyUids(); return (teams[t] || []).some(uid => uid && b.has(uid)); };
   const exMembers = t => (teams[t] || []).map(unitOf).filter(Boolean);
-  function exJudge(st, m){ const ok = st.cnds.filter(c => c.ok(m)).length; return {ok, all: st.cnds.length, res: ok === st.cnds.length ? 'great' : ok * 2 >= st.cnds.length ? 'ok' : 'fail'}; }
-  const EX_RES = {great: ['大成功', '#ffd24a'], ok: ['成功', '#7ee8ff'], fail: ['失敗', '#ff8aa0']};
+  function exJudge(st, m){ const ok = st.cnds.filter(c => c.ok(m)).length; return {ok, all: st.cnds.length, rate: ok / st.cnds.length}; }
+  const exPct = r => Math.round(r * 100) + '%';
+  const exCol = r => r >= 1 ? '#ffd24a' : r >= 0.5 ? '#7ee8ff' : '#ff8aa0';
   const exLeft = a => Math.max(0, a.end - Date.now());
   const exHM = ms => { const m = Math.ceil(ms / 60000); return Math.floor(m / 60) + '時間' + String(m % 60).padStart(2, '0') + '分'; };
   let exPickTeam = {}, exLastMsg = '';
@@ -8305,9 +8316,9 @@ body.tight .itembar{gap:6px;}
     let h = (exLastMsg ? '<div class="exmsg">' + exLastMsg + '</div>' : '') + '<section><h3>遠征中 <small>（' + exData.active.length + ' / ' + exSlots() + '枠）</small></h3>';
     if (!exData.active.length) h += '<p class="sknote">いま遠征に出ているチームはありません。</p>';
     exData.active.forEach((a, i) => {
-      const left = exLeft(a), r = EX_RES[a.res];
+      const left = exLeft(a);
       h += '<div class="exact"><div><b>' + a.name + '</b> <small>チーム' + (a.team + 1) + '</small><div class="exmini">' + a.uids.map(uid => { const u = unitOf(uid); return u ? '<span class="cface" data-ci="' + ciOf(u) + '"></span>' : ''; }).join('') + '</div></div>' +
-        (left > 0 ? '<div class="exleft">のこり<br><b>' + exHM(left) + '</b></div>' : '<button class="exget" data-get="' + i + '">受け取る<small style="color:' + r[1] + '">' + r[0] + '</small></button>') + '</div>';
+        (left > 0 ? '<div class="exleft">のこり<br><b>' + exHM(left) + '</b></div>' : '<button class="exget" data-get="' + i + '">受け取る<small>達成率 ' + exPct(a.rate) + '</small></button>') + '</div>';
     });
     h += '</section><section><h3>今日の遠征先 <small>（毎日0時に3か所入れかわり）</small></h3>';
     list.forEach(st => {
@@ -8315,15 +8326,15 @@ body.tight .itembar{gap:6px;}
       const j = m.length === 4 ? exJudge(st, m) : null, busy = exTeamBusy(t);
       h += '<div class="excard' + (went ? ' went' : '') + '"><div class="exhd"><b>' + st.n + '</b><span class="exst">' + '★'.repeat(st.s) + '</span><span class="exh">' + st.h + '時間</span></div>' +
         '<ul class="excnd">' + st.cnds.map(c => '<li class="' + (m.length === 4 ? (c.ok(m) ? 'ok' : 'ng') : '') + '">' + (m.length === 4 ? (c.ok(m) ? '✓' : '✗') : '・') + ' ' + c.t + '</li>').join('') + '</ul>' +
-        '<div class="exrw">報酬：経験値 ひとり' + EX_EXP[st.s].toLocaleString() + '・シルバー' + (EX_SILVER[st.s] + ((st.bonus || []).find(x => x[0] === 'silver') || [0, 0])[1]) + '・' + EX_ITEMS[st.s].concat((st.bonus || []).filter(x => x[0] !== 'silver')).map(x => EX_ITEM_NAME(x[0]) + (x[2] < 1 ? '（ときどき）' : '')).join('・') + '</div>' +
+        '<div class="exrw">報酬：経験値 ひとり' + EX_EXP[st.s].toLocaleString() + '・シルバー' + (EX_SILVER[st.s] + ((st.bonus || []).find(x => x[0] === 'silver') || [0, 0])[1]) + '・' + EX_ITEMS[st.s].concat((st.bonus || []).filter(x => x[0] !== 'silver')).map(x => EX_ITEM_NAME(x[0]) + (x[2] < 1 ? '（ときどき）' : '')).join('・') + '<br>素材：' + (EX_MATS[st.id] || []).map(x => EX_MAT[x[0]][1] + EX_MAT[x[0]][0] + (x[2] < 1 ? '（ときどき）' : '×' + x[1])).join('・') + '</div>' +
         (went ? '<div class="exnote">今日はもう行きました</div>' :
           '<div class="exteam">' + [0, 1, 2, 3].map(k => '<button data-ext="' + st.id + ':' + k + '" class="' + (k === t ? 'on' : '') + (exTeamBusy(k) ? ' busy' : '') + '">チーム' + (k + 1) + (exTeamBusy(k) ? '<small>遠征中</small>' : '') + '</button>').join('') + '</div>' +
           '<div class="exmini">' + m.map(u => '<span class="cface" data-ci="' + ciOf(u) + '"></span>').join('') + '</div>' +
           (m.length < 4 ? '<div class="exnote">このチームは' + m.length + '人です。4人そろえてください</div>' : busy ? '<div class="exnote">このチームのキャラは遠征中です</div>' :
-            '<div class="exgo"><span>見込み：<b style="color:' + EX_RES[j.res][1] + '">' + EX_RES[j.res][0] + '</b>（条件 ' + j.ok + ' / ' + j.all + '）</span><button data-go="' + st.id + '"' + (exData.active.length >= exSlots() ? ' disabled' : '') + '>出発</button></div>')) +
+            '<div class="exgo"><span>達成率 <b style="color:' + exCol(j.rate) + ';font-size:16px">' + exPct(j.rate) + '</b>（条件 ' + j.ok + ' / ' + j.all + '）<br><small>報酬 ×' + j.rate.toFixed(2).replace(/0$/, '') + '</small></span><button data-go="' + st.id + '"' + (exData.active.length >= exSlots() ? ' disabled' : '') + '>出発</button></div>')) +
         '</div>';
     });
-    h += '<p class="sknote">遠征中のキャラは、帰ってくるまでストーリー・キャラ対戦・アリーナで使えません。条件を全部満たすと大成功（経験値とアイテム1.5倍）、半分以上で成功、半分未満は失敗（経験値だけ半分）。遠征枠はユーザーLV20・40で1つずつ増えます。</p></section>';
+    h += '<p class="sknote">遠征中のキャラは、帰ってくるまでストーリー・キャラ対戦・アリーナで使えません。達成率＝満たした条件の割合。100%で報酬がそのまま、50%なら報酬も半分になります。遠征枠はユーザーLV20・30・40で1つずつ増えます。素材は今後の武器・防具づくりで使います。</p></section>';
     const body = $('expdBody'); body.innerHTML = h;
     fillFaces(body);
   }
@@ -8333,23 +8344,24 @@ body.tight .itembar{gap:6px;}
     if (m.length < 4 || exTeamBusy(t) || exData.active.length >= exSlots()) return;
     const dk = today(); if ((exData.done[dk] || []).includes(id)) return;
     const j = exJudge(st, m), now = Date.now();
-    exData.active.push({id, name: st.n, s: st.s, team: t, uids: m.map(u => u.u), start: now, end: now + st.h * 3600000, res: j.res, bonus: st.bonus || []});
+    exData.active.push({id, name: st.n, s: st.s, team: t, uids: m.map(u => u.u), start: now, end: now + st.h * 3600000, rate: j.rate, bonus: st.bonus || []});
     exData.done = {[dk]: (exData.done[dk] || []).concat(id)};
     exSave(); toast('「' + st.n + '」へ出発しました（' + st.h + '時間）'); drawExpd(); drawExpdBadge();
   }
   function exGet(i){
     const a = exData.active[i]; if (!a || exLeft(a) > 0) return;
-    const mul = a.res === 'great' ? 1.5 : 1, gain = Math.round(EX_EXP[a.s] * (a.res === 'fail' ? 0.5 : mul)), ups = [], got = [];
+    const mul = a.rate != null ? a.rate : 1, gain = Math.round(EX_EXP[a.s] * mul), ups = [], got = [];
     a.uids.forEach(uid => { const u = unitOf(uid); if (!u) return; let lv = u.lv, exp = u.exp + gain; const cap = capOf(u), was = lv;
       while (lv < cap && exp >= expNeed(lv)) { exp -= expNeed(lv); lv++; } if (lv >= cap) exp = Math.min(exp, expNeed(lv) - 1);
       u.lv = lv; u.exp = exp; if (lv > was) ups.push(fullName(ALLC[ciOf(u)]) + ' LV' + lv); });
     saveUnits();
-    if (a.res !== 'fail') {
+    if (mul > 0) {
       const sv = Math.round((EX_SILVER[a.s] + ((a.bonus.find(x => x[0] === 'silver') || [0, 0])[1])) * mul); addCoins(sv); got.push('シルバー ' + sv);
       EX_ITEMS[a.s].concat(a.bonus.filter(x => x[0] !== 'silver')).forEach(([k, n, p]) => { if (Math.random() < Math.min(1, p * mul)) { giveItem(k, n); got.push(EX_ITEM_NAME(k) + ' ×' + n); } });
+      (EX_MATS[a.id] || []).forEach(([k, n, p]) => { const q = p < 1 ? (Math.random() < p * mul ? n : 0) : Math.max(1, Math.round(n * mul)); if (q > 0) { giveItem(k, q); got.push(EX_MAT[k][1] + EX_MAT[k][0] + ' ×' + q); } });
     }
     exData.active.splice(i, 1); exSave();
-    exLastMsg = '<b style="color:' + EX_RES[a.res][1] + '">遠征「' + a.name + '」' + EX_RES[a.res][0] + '！</b><br>経験値 ひとり +' + gain.toLocaleString() + (got.length ? '<br>' + got.join('・') : '') + (ups.length ? '<br>レベルアップ：' + ups.join('・') : '');
+    exLastMsg = '<b style="color:' + exCol(mul) + '">遠征「' + a.name + '」から帰ってきました！ 達成率 ' + exPct(mul) + '</b><br>経験値 ひとり +' + gain.toLocaleString() + (got.length ? '<br>' + got.join('・') : '') + (ups.length ? '<br>レベルアップ：' + ups.join('・') : '');
     drawExpd(); drawExpdBadge();
   }
   function drawExpdBadge(){ const b = document.querySelector('[data-mt="expd"]'); if (!b) return; const n = exData.active.filter(a => exLeft(a) <= 0).length; b.classList.toggle('exready', n > 0); }
@@ -8405,7 +8417,7 @@ body.tight .itembar{gap:6px;}
   document.querySelector('#story .maptools').addEventListener('click', e => {
     const b = e.target.closest('[data-mt]'); if (!b) return;
     const m = b.dataset.mt;
-    if (m === 'expd') { openExpd(); return; }
+    if (m === 'expd') { if (userLv() < EX_OPEN_LV) { toast('遠征はユーザーLV' + EX_OPEN_LV + 'で開放されます'); return; } openExpd(); return; }
     if (m === 'item') openBox('item'); else openBox('char', m === 'team' ? null : m);
   });
   // ===== ガチャ（ボス9人＝SR、ザコ90人＝N・R） =====
@@ -8759,6 +8771,8 @@ body.tight .itembar{gap:6px;}
         '<section><h3>ポット（アイテムガチャ・秘密のショップで手に入る）</h3><div class="potlist">' +
         LB_POT_G.concat(['N', 'R']).map(g => '<div class="potrow"><img src="' + potImg(g) + '" alt=""><b>' + potName(g) + '</b><span>所持 ' + own(potKey(g)) + '</span></div>').join('') +
         '</div><p class="thint">限界突破ポット：キャラの詳細 →「限界突破」で、同じグレードのキャラに使います。<br>経験値ポット：キャラの詳細 →「LVアップ」で、どのキャラにも使えます（小 +' + XP_POT.N.toLocaleString() + '・大 +' + XP_POT.R.toLocaleString() + '）。</p></section>';
+      const mats = Object.keys(EX_MAT).filter(k => own(k) > 0);
+      body.insertAdjacentHTML('beforeend', '<section><h3>素材（遠征で手に入る。武器・防具づくりで使う予定）</h3>' + (mats.length ? '<div class="potlist">' + mats.map(k => '<div class="potrow"><span style="font-size:24px;width:34px;text-align:center">' + EX_MAT[k][1] + '</span><b>' + EX_MAT[k][0] + '</b><span>所持 ' + own(k) + '</span></div>').join('') + '</div>' : '<p class="thint">まだありません。遠征に行くと手に入ります。</p>') + '</section>');
       const lo = $('loadout'); body.querySelector('#boxLoad').replaceWith(lo); lo.classList.add('inbox'); drawLoadout();
     }
   }
