@@ -174,3 +174,9 @@ CREATE INDEX IF NOT EXISTS idx_gold_lots ON gold_lots(account_id, expires_at);
 
 -- 毎日の利用者（端末ごとの乱数ID。チャレンジを始める目安：1日500人）
 CREATE TABLE IF NOT EXISTS daily_active ( day TEXT NOT NULL, did TEXT NOT NULL, PRIMARY KEY (day, did) );
+
+-- キャラの人気投票（月ごと）
+CREATE TABLE IF NOT EXISTS votes ( month TEXT NOT NULL, account_id TEXT NOT NULL, cid TEXT NOT NULL, n INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (month, account_id, cid) );
+CREATE INDEX IF NOT EXISTS idx_votes_month ON votes(month, cid);
+CREATE TABLE IF NOT EXISTS vote_free ( account_id TEXT NOT NULL, day TEXT NOT NULL, PRIMARY KEY (account_id, day) );
+CREATE TABLE IF NOT EXISTS vote_refs ( ref TEXT PRIMARY KEY, account_id TEXT NOT NULL, n INTEGER NOT NULL, created_at INTEGER NOT NULL );

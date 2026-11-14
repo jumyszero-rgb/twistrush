@@ -31,6 +31,10 @@ const SCHEMA = [
   "CREATE INDEX IF NOT EXISTS idx_scores_player ON scores(player, created_at)",
   "CREATE TABLE IF NOT EXISTS meta ( k TEXT PRIMARY KEY, v TEXT NOT NULL )",
   "CREATE TABLE IF NOT EXISTS daily_active ( day TEXT NOT NULL, did TEXT NOT NULL, PRIMARY KEY (day, did) )",
+  "CREATE TABLE IF NOT EXISTS votes ( month TEXT NOT NULL, account_id TEXT NOT NULL, cid TEXT NOT NULL, n INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (month, account_id, cid) )",
+  "CREATE INDEX IF NOT EXISTS idx_votes_month ON votes(month, cid)",
+  "CREATE TABLE IF NOT EXISTS vote_free ( account_id TEXT NOT NULL, day TEXT NOT NULL, PRIMARY KEY (account_id, day) )",
+  "CREATE TABLE IF NOT EXISTS vote_refs ( ref TEXT PRIMARY KEY, account_id TEXT NOT NULL, n INTEGER NOT NULL, created_at INTEGER NOT NULL )",
   "CREATE TABLE IF NOT EXISTS guest_log ( ip TEXT NOT NULL, t INTEGER NOT NULL )",
   "CREATE INDEX IF NOT EXISTS idx_guest_log ON guest_log(ip, t)",
   "CREATE TABLE IF NOT EXISTS reward_claims ( account_id TEXT NOT NULL, month TEXT NOT NULL, mode TEXT NOT NULL, created_at INTEGER NOT NULL, PRIMARY KEY (account_id, month, mode) )",
@@ -267,6 +271,8 @@ async function api(env, req, url) {
     return json(env, req, await flagsOf(env));
   }
   if (p === '/api/flags' && M === 'GET') return json(env, req, await flagsOf(env));
+  // キャラの人気投票：結果はだれでも見られる（ログインしていれば自分の票も）
+  if (p === '/api/vote' && M === 'GET') { const m = await who(env, req); return json(env, req, await voteHome(env, m && m.id)); }
   // ランキング一覧はだれでも見られる
   if (p === '/api/top' && M === 'GET') return rankTop(env, req, url);
   if (p === '/api/vs/top' && M === 'GET') { const m = await who(env, req); return json(env, req, await vsTop(env, VS_KINDS.includes(url.searchParams.get('kind')) ? url.searchParams.get('kind') : 'simple', m && m.id)); }
@@ -420,6 +426,25 @@ async function api(env, req, url) {
     const o = await r.json();
     return o.error ? fail(env, req, o.error) : json(env, req, o);
   }
+  // キャラの人気投票：無料は1日1票、ゴールドで追加（先にゴールドを払って、その支払いの ref を出す）
+  if (p === '/api/vote' && M === 'POST') {
+    const b = await req.json().catch(() => ({})), cid = String(b.id || ''), t = nowSec(), month = jstDay(t).slice(0, 7);
+    if (!/^[A-Za-z0-9_]{1,32}$/.test(cid)) return fail(env, req, 'キャラが不正です');
+    let n = 1;
+    if (b.kind === 'gold') {
+      n = Math.floor(Number(b.n)); const cost = VOTE_COST[n], ref = String(b.ref || '');
+      if (!cost || !/^[A-Za-z0-9_-]{8,64}$/.test(ref)) return fail(env, req, '票の数が不正です');
+      const paid = await env.DB.prepare("SELECT -SUM(delta) AS s FROM ledger WHERE account_id = ? AND reason = 'spend:vote' AND (ref = ? OR ref LIKE ?)").bind(me.id, ref, ref + '-%').first();
+      if (!((paid && paid.s) >= cost) && env.VOTE_TEST !== '1') return fail(env, req, 'ゴールドの支払いが確認できません', 402);   // VOTE_TEST="1"（テスト環境）だけ、端末のゴールドでの投票を受け付ける
+      const used = await env.DB.prepare('INSERT OR IGNORE INTO vote_refs (ref, account_id, n, created_at) VALUES (?, ?, ?, ?)').bind(ref, me.id, n, t).run();
+      if (!used.meta.changes) return fail(env, req, 'この支払いはもう使われています', 409);
+    } else {
+      const fr = await env.DB.prepare('INSERT OR IGNORE INTO vote_free (account_id, day) VALUES (?, ?)').bind(me.id, jstDay(t)).run();
+      if (!fr.meta.changes) return fail(env, req, '今日の無料の票はもう使いました', 409);
+    }
+    await env.DB.prepare('INSERT INTO votes (month, account_id, cid, n) VALUES (?, ?, ?, ?) ON CONFLICT(month, account_id, cid) DO UPDATE SET n = n + excluded.n').bind(month, me.id, cid, n).run();
+    return json(env, req, Object.assign({ ok: true, added: n }, await voteHome(env, me.id)));
+  }
   // チャレンジ：先週のお題ごとの順位のごほうび（見る・受け取る）
   if (p === '/api/chal/reward' && M === 'GET') return json(env, req, { rewards: await chRewards(env, me.id) });
   if (p === '/api/chal/reward/claim' && M === 'POST') {
@@ -565,6 +590,22 @@ async function flagsOf(env) {
   const v = { chal: on, dau: y.c || 0 };
   flagCache = { at: t, v };
   return v;
+}
+// ---------- キャラの人気投票（月ごと。上位3体が次の更新で進化できるようになる）----------
+const VOTE_COST = { 1: 10, 10: 90, 50: 400 };   // 票の数 → ゴールド
+async function voteHome(env, player) {
+  const t = nowSec(), month = jstDay(t).slice(0, 7);
+  const d = new Date((t + TZ) * 1000), last = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - 1, 1)).toISOString().slice(0, 7);
+  const ends = Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1) / 1000 - TZ;
+  const top = (await env.DB.prepare('SELECT cid AS id, SUM(n) AS n FROM votes WHERE month = ? GROUP BY cid ORDER BY n DESC LIMIT 60').bind(month).all()).results || [];
+  const prev = (await env.DB.prepare('SELECT cid AS id, SUM(n) AS n FROM votes WHERE month = ? GROUP BY cid ORDER BY n DESC LIMIT 3').bind(last).all()).results || [];
+  let me = null;
+  if (player) {
+    const f = await env.DB.prepare('SELECT 1 FROM vote_free WHERE account_id = ? AND day = ?').bind(player, jstDay(t)).first();
+    const mine = (await env.DB.prepare('SELECT cid AS id, n FROM votes WHERE month = ? AND account_id = ? ORDER BY n DESC').bind(month, player).all()).results || [];
+    me = { freeUsed: !!f, mine };
+  }
+  return { month, ends, top, last: { month: last, top: prev }, cost: VOTE_COST, me };
 }
 // ---------- チャレンジの週間ランキングのごほうび ----------
 // お題1つごとに、先週（日本時間の月曜はじまり）の順位で決まる。クリアのごほうびはない

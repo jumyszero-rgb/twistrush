@@ -522,6 +522,16 @@ body.on-menu .battlemain{opacity:0;}
   .chbtns{display:flex;gap:8px;margin-top:10px;} .chbtns button{flex:1;padding:10px;border-radius:12px;border:0;font-weight:900;font-size:14px;}
   .chplay{background:linear-gradient(#ff8ad0,#e0479e);color:#fff;} .chrk{background:rgba(255,255,255,.14);color:#fff;}
   .wlock{text-align:center;padding:22px 12px;border-radius:14px;background:rgba(255,255,255,.06);font-size:14px;line-height:1.7;} .wlock small{display:block;font-size:11px;opacity:.7;margin-top:6px;}
+  .vhead{display:flex;align-items:center;gap:8px;font-size:16px;margin:4px 0;} .vhead span{margin-left:auto;font-size:12px;color:#ffd36b;font-weight:800;}
+  .vnote{font-size:12px;opacity:.9;margin:0 0 8px;line-height:1.6;} .vlast{background:rgba(255,211,107,.15);border-radius:12px;padding:8px 10px;font-size:12px;margin-bottom:8px;display:flex;flex-wrap:wrap;gap:4px 12px;} .vlast b{width:100%;color:#ffd36b;}
+  .vjoin{background:rgba(255,255,255,.08);border-radius:12px;padding:10px;font-size:12px;margin-bottom:8px;} .vjoin div{display:flex;gap:6px;margin-top:6px;} .vjoin input{flex:1;padding:8px;border-radius:8px;border:0;font-size:14px;} .vjoin button{padding:8px 14px;border-radius:8px;border:0;background:#ffcc33;font-weight:900;}
+  .vme{font-size:12px;margin-bottom:8px;} .vme b{color:#ffd36b;}
+  .vrow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:6px 8px;border-radius:12px;background:rgba(255,255,255,.06);margin-bottom:6px;} .vrow.top{background:rgba(255,211,107,.14);} .vrow.open{outline:2px solid #ff7fb0;}
+  .vrk{width:24px;text-align:center;font-weight:900;font-size:15px;} .vrow .tic{width:40px;height:40px;flex:none;} .vnm{flex:1;min-width:0;font-weight:800;font-size:13px;} .vnm small{display:block;font-size:10px;opacity:.8;} .vnm em{display:block;font-style:normal;font-size:10px;color:#ff9ad6;}
+  .vn{font-weight:900;font-size:16px;} .vn small{font-size:10px;margin-left:2px;}
+  .vbtns{width:100%;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;} .vbtns button{padding:8px 2px;border-radius:10px;border:0;font-weight:900;font-size:12px;background:#ff7fb0;color:#fff;} .vbtns button.g{background:#ffcc33;color:#3a2600;} .vbtns button small{display:block;font-size:10px;} .vbtns button:disabled{opacity:.4;}
+  .evoreq{list-style:none;padding:0;margin:8px 0;font-size:12px;} .evoreq li{padding:4px 0;border-bottom:1px solid rgba(255,255,255,.08);} .evoreq li.ok{color:#9dffb0;}
+  .evobtns{display:flex;flex-direction:column;gap:8px;margin-top:8px;} .evobtns button{padding:11px;border-radius:12px;border:0;font-weight:900;font-size:14px;} .evogo{background:linear-gradient(#ffe27a,#f0a800);color:#3a2600;} .evogo:disabled{opacity:.5;} .evovote{background:rgba(255,255,255,.14);color:#fff;}
   .chlist{margin-top:8px;} .chrew{font-size:12px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.06);} .chrew b{display:block;margin-bottom:6px;color:#ffd36b;} .chrew div{display:flex;gap:8px;padding:2px 0;} .chrew span{min-width:70px;font-weight:800;}
   .mroute.hide{color:rgba(255,255,255,.55);font-size:20px;text-align:center;line-height:1.2;} .mroute.hide small{display:block;font-size:10px;margin-top:4px;}
   #stageInfo .rt{font-size:12px;font-weight:700;color:#9fe3ff;margin:2px 0 4px;}
@@ -1942,7 +1952,7 @@ body.tight .itembar{gap:6px;}
         <button class="how-back" id="boxBack" aria-label="戻る">‹ 戻る</button>
         <h2>ボックス</h2>
       </div>
-      <div class="boxtabs"><button class="on" data-t="char">持ちキャラ</button><button data-t="dex">図鑑</button><button data-t="item">アイテム</button></div>
+      <div class="boxtabs"><button class="on" data-t="char">持ちキャラ</button><button data-t="dex">図鑑</button><button data-t="item">アイテム</button><button data-t="vote">🗳投票</button></div>
       <div class="how-body" id="boxBody"></div>
     </div>
     <div class="overlay hidden" id="shop" role="dialog" aria-label="ショップ">
@@ -6520,7 +6530,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.100';
+  const APP_VER = '0.9.101';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -8443,7 +8453,9 @@ body.tight .itembar{gap:6px;}
    ['mat_hide', '魔獣の革（旧）'], ['mat_cloth', '聖なる布（旧）'], ['mat_scale', '竜のうろこ（旧）'], ['mat_robe', '天使の羽衣（旧）'], ['mat_phoenix', '不死鳥の羽（旧）'],
    ['mat_stone', 'きれいな石（旧）'], ['mat_pearl', '深海の真珠（旧）'], ['mat_crystal', '雷晶石（旧）'], ['mat_orb', '精霊の宝玉（旧）'], ['mat_rainbow', '虹の結晶（旧）'],
    ['mat_feather', '怪鳥の羽（旧）'], ['mat_fire', '火炎石（旧）'], ['mat_herb', '霊草（旧）'], ['mat_wood', '古木の枝（旧）'], ['mat_bone', '悪霊の骨（旧）']].forEach(([k, n]) => EX_MAT[k] = [n, '📦', '', 0]);
-  const EX_MAT_CAT = {w: '武器素材', a: '防具素材', x: 'アクセ素材', s: '属性石', l: '伝説素材'};
+  const EX_MAT_CAT = {w: '武器素材', a: '防具素材', x: 'アクセ素材', s: '属性石', l: '伝説素材', e: '進化素材'};
+  EX_MAT.evo_c = ['進化の結晶', '💠', 'e', 2]; EX_MAT.evo_g = ['進化の宝玉', '🔮', 'e', 3];
+  const EVO_DROP = [0, 0.04, 0.06, 0.09, 0.13, 0.18], EVO_DROP2 = [0, 0, 0, 0.02, 0.04, 0.07];   // 遠征の★ごとの進化素材の出る率
   const EX_MATS = {1: ['w', 'a'], 2: ['w'], 3: ['a', 'x'], 4: ['x'], 5: ['w', 'x'], 6: ['a'], 7: ['w', 'x'], 8: ['w', 'a'], 9: ['a', 'x'], 10: ['w', 'a', 'x']};
   const EX_STAGE_ATTR = {1: 'wind', 2: 'fire', 3: 'water', 4: 'earth', 5: 'dark', 6: 'water', 7: 'thunder', 8: 'none', 9: 'dark', 10: 'light'};   // 出やすい属性石
   const EX_TIER_W = [[], [70, 25, 5, 0, 0], [50, 35, 13, 2, 0], [30, 40, 25, 5, 0], [15, 35, 35, 12, 3], [5, 25, 40, 22, 8]];   // ★ごとの N/R/SR/MR/LR の出やすさ
@@ -8539,6 +8551,8 @@ body.tight .itembar{gap:6px;}
       const sv = Math.round((EX_SILVER[a.s] + ((a.bonus.find(x => x[0] === 'silver') || [0, 0])[1])) * mul); addCoins(sv); got.push('シルバー ' + sv);
       EX_ITEMS[a.s].concat(a.bonus.filter(x => x[0] !== 'silver')).forEach(([k, n, p]) => { if (Math.random() < Math.min(1, p * mul)) { giveItem(k, n); got.push(EX_ITEM_NAME(k) + ' ×' + n); } });
       (EX_MATS[a.id] || []).forEach(c => { if (Math.random() >= EX_MAT_P * mul * (passOn() ? 1.2 : 1)) return; const [k, q] = exRollMat(c, a.s, EX_STAGE_ATTR[a.id]); giveItem(k, q); got.push(EX_MAT[k][1] + EX_MAT[k][0] + ' ×' + q); });
+      if (Math.random() < EVO_DROP[a.s] * mul) { giveItem('evo_c', 1); got.push('💠 進化素材「進化の結晶」×1'); }
+      if (Math.random() < EVO_DROP2[a.s] * mul) { giveItem('evo_g', 1); got.push('🔮 進化素材「進化の宝玉」×1'); }
       if (Math.random() < EX_LEGEND_P[a.s] * mul) { const ks = Object.keys(LEGEND), k = 'lg_' + ks[Math.floor(Math.random() * ks.length)]; giveItem(k, 1); got.push('🌟 伝説素材「' + EX_MAT[k][0] + '」×1！'); }
       if (Math.random() < EX_GEAR_P[a.s] * mul) { const t = exTier(a.s), ws = WPN.filter(w => GT[w.g] === t), w = ws[Math.floor(Math.random() * ws.length)]; if (w) { gearAdd(w.id); got.push('⚔ 武器「' + w.n + '」（' + w.g + '）を見つけた！'); } }
     }
@@ -8787,6 +8801,80 @@ body.tight .itembar{gap:6px;}
         : '<div class="wrow"><span class="nm2">まだ記録がありません。一番乗りをめざそう！</span></div>') +
         (r.me && r.me.rank && !top.some(x => x.me) ? '<div class="wrow me"><span class="rk">' + r.me.rank + '</span><span class="nm2">あなた</span><span class="sc">' + r.me.best.toLocaleString() + '</span></div>' : '');
     } catch (_) { box.innerHTML = '<div class="wrow"><span class="nm2">サーバーにつながりませんでした</span></div>'; }
+  });
+  // ===== キャラ進化（2026-11-15）：SR→MR、MR→LR。人気投票の上位から少しずつ解放していく =====
+  //   毎月の人気投票（無料1日1票＋ゴールドで追加）で上位3体を決める → 進化後の絵・声を作って、次の更新で EVO_OPEN に入れる
+  //   進化の条件：①そのキャラの進化が解放されている ②レベル最大 ③★最大 ④進化素材＋属性の宝珠＋シルバー
+  //   進化のしくみ（グレードが上がる・絵が変わる・技が強くなる）は、最初のキャラの絵ができたときに入れる
+  const EVO_GR = {SR: {to: 'MR', mat: 'evo_c', n: 20, orb: 5, silver: 30000}, MR: {to: 'LR', mat: 'evo_g', n: 20, orb: 10, silver: 100000}};
+  const EVO_OPEN = {};                                    // 例：EVO_OPEN['x_g05'] = {month: '2026-12'}（進化が解放されたキャラ）
+  function evoHTML(u){
+    const cs = CHAR_STAT[u.id], e = EVO_GR[cs.grade], at = attrOf(u.id), orb = 'st_' + at + '_2';
+    const ok = [!!EVO_OPEN[u.id], u.lv >= lvMaxOf(u), (u.star || 0) >= starMaxOf(u), own(e.mat) >= e.n, own(orb) >= e.orb, coins >= e.silver];
+    const it = (b, t) => '<li class="' + (b ? 'ok' : '') + '">' + (b ? '✔' : '□') + ' ' + t + '</li>';
+    return '<div class="dsec evo"><h4>進化 <span>' + cs.grade + ' → ' + e.to + '</span></h4>' +
+      '<p>進化すると<b>' + e.to + '</b>になり、姿が変わります。レベル上限・★の上限が上がり、ステータスと技も強くなります。</p>' +
+      '<ul class="evoreq">' +
+        it(ok[0], ok[0] ? '進化が解放されている' : '進化の解放：<b>人気投票</b>で毎月の上位3体に選ばれると、次のアップデートで進化できるようになります') +
+        it(ok[1], 'レベル最大（LV' + u.lv + ' / ' + lvMaxOf(u) + '）') +
+        it(ok[2], '★最大（★' + (u.star || 0) + ' / ' + starMaxOf(u) + '）') +
+        it(ok[3], EX_MAT[e.mat][1] + EX_MAT[e.mat][0] + ' ×' + e.n + '（所持 ' + own(e.mat) + '）') +
+        it(ok[4], (EX_MAT[orb] ? EX_MAT[orb][1] + EX_MAT[orb][0] : ATTR[at].n + 'の宝珠') + ' ×' + e.orb + '（所持 ' + own(orb) + '）') +
+        it(ok[5], 'シルバー ' + e.silver.toLocaleString() + '（所持 ' + coins.toLocaleString() + '）') +
+      '</ul><p class="dnote">進化素材は遠征で手に入ります（★の高い遠征ほど出やすい）。</p>' +
+      '<div class="evobtns"><button class="evogo" disabled>' + (ok[0] ? '✨ 進化する' : '🔒 まだ進化できません') + '</button><button class="evovote" data-vote="' + u.id + '">🗳 このキャラに投票する</button></div></div>';
+  }
+  // ===== 人気投票 =====
+  const voteCands = () => ALLC.map((c, i) => ({c, i})).filter(({c}) => { const g = CHAR_STAT[c.id] && CHAR_STAT[c.id].grade; return EVO_GR[g] && SKILLS[c.id] && !EVO_OPEN[c.id]; });
+  let voteData = null, voteBusy = false, voteFocus = null;
+  async function voteLoad(){ try { voteData = await api('/api/vote', {tok: rankTok() || ''}); } catch(_) { voteData = {err: 1}; } }
+  async function drawVote(){
+    const body = $('boxBody');
+    if (!voteData) { body.innerHTML = '<p class="thint">読み込み中…</p>'; await voteLoad(); if (boxTab !== 'vote') return; }
+    const V = voteData; if (V.err) { body.innerHTML = '<p class="thint">サーバーにつながりませんでした。</p>'; return; }
+    const cnt = {}; (V.top || []).forEach(x => cnt[x.id] = x.n);
+    const mine = {}; ((V.me && V.me.mine) || []).forEach(x => mine[x.id] = x.n);
+    const byId = {}; ALLC.forEach((c, i) => byId[c.id] = i);
+    const left = Math.max(0, V.ends - Date.now() / 1000), dl = Math.floor(left / 86400), hl = Math.floor(left % 86400 / 3600);
+    const list = voteCands().sort((a, b) => (cnt[b.c.id] || 0) - (cnt[a.c.id] || 0) || GT[CHAR_STAT[b.c.id].grade] - GT[CHAR_STAT[a.c.id].grade] || a.i - b.i);
+    const rk = {}; let pr = 0, pv = -1; list.forEach((x, k) => { const v = cnt[x.c.id] || 0; if (v !== pv) { pr = k + 1; pv = v; } rk[x.c.id] = v ? pr : 0; });
+    const tok = rankTok(), free = tok && V.me && !V.me.freeUsed, cost = V.cost || {1: 10, 10: 90, 50: 400};
+    let h = '<div class="vhead"><b>🗳 キャラ人気投票</b><span>' + (+V.month.slice(5)) + '月　あと' + (dl ? dl + '日' : '') + hl + '時間</span></div>' +
+      '<p class="vnote">毎月の<b>上位3体</b>が、次のアップデートで<b>進化</b>できるようになります（SR→MR、MR→LR）。<br>無料の票は1日1票。ゴールドで追加できます。</p>';
+    if (V.last && V.last.top && V.last.top.length) h += '<div class="vlast"><b>' + (+V.last.month.slice(5)) + '月の結果（進化決定）</b>' + V.last.top.map((x, k) => '<span>' + ['👑', '🥈', '🥉'][k] + ' ' + (byId[x.id] != null ? ALLC[byId[x.id]].name : x.id) + '</span>').join('') + '</div>';
+    if (!tok) h += '<div class="vjoin">投票するには名前の登録が必要です（ランキングと同じ名前）<div><input id="vName" maxlength="12" placeholder="名前（12文字まで）"><button data-vjoin="1">登録</button></div></div>';
+    else h += '<div class="vme">今日の無料の票：<b>' + (free ? '残り1票' : '使いました') + '</b>' + (Object.keys(mine).length ? '　今月あなたの票 ' + Object.values(mine).reduce((a, b) => a + b, 0) + '票' : '') + '</div>';
+    h += '<div class="vlist">' + list.map(({c, i}) => { const n = cnt[c.id] || 0, op = voteFocus === c.id;
+      return '<div class="vrow' + (op ? ' open' : '') + (rk[c.id] && rk[c.id] <= 3 ? ' top' : '') + '" data-vsel="' + c.id + '"><span class="vrk">' + (rk[c.id] || '—') + '</span><span class="tic" data-ci="' + i + '"></span><span class="vnm"><small>' + CHAR_STAT[c.id].grade + ' ' + attrBadge(c.id) + '</small>' + c.name + (mine[c.id] ? '<em>あなた ' + mine[c.id] + '票</em>' : '') + '</span><span class="vn">' + n.toLocaleString() + '<small>票</small></span>' +
+        (op && tok ? '<div class="vbtns"><button data-vote1="' + c.id + '"' + (free ? '' : ' disabled') + '>無料 1票</button>' + [1, 10, 50].map(k => '<button class="g" data-voteg="' + c.id + ':' + k + '">🟡' + cost[k] + '<small>' + k + '票</small></button>').join('') + '</div>' : '') + '</div>'; }).join('') + '</div>';
+    body.innerHTML = h;
+    body.querySelectorAll('.tic').forEach(el => el.appendChild(charIcon(+el.dataset.ci, 40)));
+    if (voteFocus) { const el = body.querySelector('.vrow.open'); if (el) el.scrollIntoView({block: 'nearest'}); }
+  }
+  async function voteSend(id, kind, n){
+    if (voteBusy) return; voteBusy = true;
+    try {
+      let ref = '';
+      if (kind === 'gold') {
+        const c = (voteData.cost || {})[n]; ref = 'v' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+        if (acctToken) { const r = await api('/api/wallet/spend', {method: 'POST', body: JSON.stringify({amount: c, reason: 'vote', ref})}); if (r.gold) gold = r.gold.total; refreshCoins(); if (r._status === 402) { toast('ゴールドコインが足りません'); return; } }
+        else { if (gold < c) { toast('ゴールドコインが足りません'); return; } gold -= c; save('gold', String(gold)); refreshCoins(); }
+      }
+      const r = await api('/api/vote', {method: 'POST', body: JSON.stringify({id, kind, n, ref}), tok: rankTok()});
+      if (r && r.ok) { voteData = r; toast('🗳 ' + (ALLC.find(c => c.id === id) || {}).name + 'に ' + r.added + '票 入れました'); }
+      else toast((r && r.error) || '投票できませんでした');
+    } catch (e) { toast('サーバーにつながりませんでした'); }
+    finally { voteBusy = false; drawVote(); }
+  }
+  $('boxBody').addEventListener('click', async e => {
+    if (boxTab !== 'vote' && !e.target.closest('[data-vote]')) return;
+    const go = e.target.closest('[data-vote]'); if (go) { e.stopPropagation(); voteFocus = go.dataset.vote; boxDetail = null; boxTab = 'vote'; voteData = null; drawBox(); return; }
+    const v1 = e.target.closest('[data-vote1]'); if (v1) { e.stopPropagation(); voteSend(v1.dataset.vote1, 'free', 1); return; }
+    const vg = e.target.closest('[data-voteg]'); if (vg) { e.stopPropagation(); const [id, n] = vg.dataset.voteg.split(':'), c = (voteData.cost || {})[n];
+      payAsk('<b>' + (ALLC.find(x => x.id === id) || {}).name + '</b>に <b>' + n + '票</b> 入れますか？<br>🟡 ゴールドコイン ' + c + '<br><small>所持 ' + gold.toLocaleString() + '</small>', () => voteSend(id, 'gold', +n)); return; }
+    const vj = e.target.closest('[data-vjoin]'); if (vj) { e.stopPropagation(); const name = ($('vName').value || '').trim(); if (!name) { toast('名前を入れてください'); return; }
+      try { const r = await api('/api/guest', {method: 'POST', body: JSON.stringify({name}), tok: ''}); guestTok = r.token; save('rank_token', guestTok); save('rank_name', r.name); toast('登録しました：' + r.name); voteData = null; drawVote(); } catch (er) { toast((er && er.message) || '登録できませんでした'); } return; }
+    const s = e.target.closest('[data-vsel]'); if (s && boxTab === 'vote') { voteFocus = voteFocus === s.dataset.vsel ? null : s.dataset.vsel; drawVote(); }
   });
   const FEAT = [
     {k: 'ta', n: 'タイムアタック', ok: () => bossesBeaten() >= 1, need: 'エリア1のボスを倒す', how: '時間がたつほど厳しくなる中で、どれだけ長く生き残れるかを競うモードだよ。ランキングにも残るから挑戦してね！'},
@@ -9184,6 +9272,7 @@ body.tight .itembar{gap:6px;}
     $('boxBody').classList.toggle('slotmode', boxSlot >= 0 && !boxDetail && !boxPick && boxTab === 'char');
     document.querySelectorAll('.boxtabs button').forEach(b => b.classList.toggle('on', b.dataset.t === boxTab));
     const body = $('boxBody');
+    if (boxTab === 'vote') { drawVote(); return; }
     if ((boxTab === 'char' || boxTab === 'dex') && boxDetail && unitOf(boxDetail)) { drawDetail(unitOf(boxDetail)); return; }
     if (boxTab === 'char') {
       fixTeam();
@@ -9243,7 +9332,7 @@ body.tight .itembar{gap:6px;}
         '<section><h3>ポット（アイテムガチャ・秘密のショップで手に入る）</h3><div class="potlist">' +
         LB_POT_G.concat(['N', 'R']).map(g => '<div class="potrow"><img src="' + potImg(g) + '" alt=""><b>' + potName(g) + '</b><span>所持 ' + own(potKey(g)) + '</span></div>').join('') +
         '</div><p class="thint">限界突破ポット：キャラの詳細 →「限界突破」で、同じグレードのキャラに使います。<br>経験値ポット：キャラの詳細 →「LVアップ」で、どのキャラにも使えます（小 +' + XP_POT.N.toLocaleString() + '・大 +' + XP_POT.R.toLocaleString() + '）。</p></section>';
-      const catO = {w: 0, a: 1, x: 2, s: 3, l: 4, '': 5};
+      const catO = {w: 0, a: 1, x: 2, s: 3, l: 4, e: 5, '': 6};
       const mats = Object.keys(EX_MAT).filter(k => own(k) > 0).sort((x, y) => (catO[EX_MAT[x][2]] - catO[EX_MAT[y][2]]) || (EX_MAT[x][3] - EX_MAT[y][3]) || x.localeCompare(y));
       body.insertAdjacentHTML('beforeend', '<section><h3>素材（遠征で手に入る。鍛冶屋で武器を作る）</h3>' + (mats.length ? '<div class="potlist">' + mats.map(k => '<div class="potrow"><span style="font-size:24px;width:34px;text-align:center">' + EX_MAT[k][1] + '</span><b>' + EX_MAT[k][0] + '<small style="display:block;font-size:10px;opacity:.7">' + (EX_MAT_CAT[EX_MAT[k][2]] ? EX_MAT_CAT[EX_MAT[k][2]] + (EX_MAT[k][2] === 'w' || EX_MAT[k][2] === 'a' || EX_MAT[k][2] === 'x' ? '・' + POT_G[EX_MAT[k][3]] : '') : '') + '</small></b><span>所持 ' + own(k) + '</span></div>').join('') + '</div>' : '<p class="thint">まだありません。遠征に行くと手に入ります。</p>') + (featOk('forge') ? '<button class="eqforge" data-forge="1">⚒ 鍛冶屋で武器を作る</button>' : '<p class="thint">🔒 鍛冶屋は「' + featNeed('forge') + '」で解放されます</p>') + '</section>');
       const lo = $('loadout'); body.querySelector('#boxLoad').replaceWith(lo); lo.classList.add('inbox'); drawLoadout();
@@ -9322,7 +9411,7 @@ body.tight .itembar{gap:6px;}
       '<div class="dsub"><i class="dgr">' + cs.grade + '</i> ' + typeBadge(c.id).replace('tbadge', 'tbadge inl') + ' ' + tp.name + '　' + attrBadge(c.id, true) + ' ' + ATTR[attrOf(c.id)].n + '属性</div>' +
       '<div class="dlv">LV <b>' + u.lv + '</b> / ' + capOf(u) + '</div>' + starsHTMLu(u).replace('ustar', 'ustar big') +
       '<div class="dexp">' + (atCap ? 'レベル上限です（限界突破で上限が上がります）' : '次のレベルまで ' + Math.max(0, expNeed(u.lv) - u.exp).toLocaleString()) + '</div></div></div>' +
-      '<div class="dtabs">' + [['info', 'ステータス・技'], ['equip', '装備'], ['feed', 'LVアップ'], ['lb', '限界突破']].filter(([k]) => k !== 'equip' || featOk('forge')).map(([k, n]) => '<button data-ftab="' + k + '" class="' + (detTab === k ? 'on' : '') + '">' + n + '</button>').join('') + '</div>';
+      '<div class="dtabs">' + [['info', 'ステータス・技'], ['equip', '装備'], ['feed', 'LVアップ'], ['lb', '限界突破'], ['evo', '進化']].filter(([k]) => (k !== 'equip' || featOk('forge')) && (k !== 'evo' || EVO_GR[cs.grade])).map(([k, n]) => '<button data-ftab="' + k + '" class="' + (detTab === k ? 'on' : '') + '">' + n + '</button>').join('') + '</div>';
     if (detTab === 'info') {
       h += '<div class="dsec"><div class="stt">' + ST_NAME.map((n, k) => '<div>' + n + '<b>' + st[k] + '</b></div>').join('') + '</div></div>' +
         (isZakoId(c.id) ? '<div class="dsec"><h4>必殺技 <span>' + (SPECIAL_NAME[c.id] || '').replace('！', '') + '</span><em>基準' + skBaseSec(c.id, 'sp') + '秒（スピードで変わる）</em></h4><p>' + skDescU(c.id, 'sp', u) + '</p>' +
@@ -9333,6 +9422,8 @@ body.tight .itembar{gap:6px;}
         : '<div class="dsec"><h4>技</h4><p>このキャラは、まだ技を持っていません。サブ（②〜④）に入れて、ステータスでチームを強くします。メイン（①）にはなれません。</p></div>') +
         voiceSecHTML(c.id) +
         '<div class="dsec"><h4>プロフィール</h4><p>' + (CHAR_BIO[c.id] || '') + '</p></div>';
+    } else if (detTab === 'evo') {
+      h += evoHTML(u);
     } else if (detTab === 'equip') {
       const w = wpnOfUnit(u), wb = wpnBonus(u), acc = u.lv >= 30 ? 2 : u.lv >= 10 ? 1 : 0;
       h += '<div class="dsec"><h4>武器</h4>' + (w ? '<div class="eqslot on"><b>' + w.n + '</b> <small>' + w.g + '・' + w.t + '・' + ATTR[w.a].n + '属性' + (attrOf(c.id) === w.a ? '（同じ属性 ×1.2）' : '') + '</small><div>' + ST_NAME.map((n, k) => wb[k] ? n + '+' + wb[k] : '').filter(Boolean).join('　') + '</div><button data-eq="off">外す</button></div>' : '<div class="eqslot">なし</div>') + '</div>' +
