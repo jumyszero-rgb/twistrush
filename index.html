@@ -540,6 +540,8 @@ body.on-menu .battlemain{opacity:0;}
   .vbtns{width:100%;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;} .vbtns button{padding:8px 2px;border-radius:10px;border:0;font-weight:900;font-size:12px;background:#ff7fb0;color:#fff;} .vbtns button.g{background:#ffcc33;color:#3a2600;} .vbtns button small{display:block;font-size:10px;} .vbtns button:disabled{opacity:.4;}
   .evoreq{list-style:none;padding:0;margin:8px 0;font-size:12px;} .evoreq li{padding:4px 0;border-bottom:1px solid rgba(255,255,255,.08);} .evoreq li.ok{color:#9dffb0;}
   .evobtns{display:flex;flex-direction:column;gap:8px;margin-top:8px;} .evobtns button{padding:11px;border-radius:12px;border:0;font-weight:900;font-size:14px;} .evogo{background:linear-gradient(#ffe27a,#f0a800);color:#3a2600;} .evogo:disabled{opacity:.5;} .evovote{background:rgba(255,255,255,.14);color:#fff;}
+  .rsq-ad{margin:10px auto 0;display:block;padding:12px 18px;border:0;border-radius:14px;background:linear-gradient(90deg,#ffcf3d,#ff8a3d);color:#3a2210;font-weight:900;font-size:15px;box-shadow:0 4px 0 #b25a10;}
+  .rsq-ad:disabled{opacity:.85;} .rsq-ad.done{background:#3fc67a;color:#fff;box-shadow:0 4px 0 #1f7a47;}
   .chlist{margin-top:8px;} .chrew{font-size:12px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.06);} .chrew b{display:block;margin-bottom:6px;color:#ffd36b;} .chrew div{display:flex;gap:8px;padding:2px 0;} .chrew span{min-width:70px;font-weight:800;}
   .mroute.hide{color:rgba(255,255,255,.55);font-size:20px;text-align:center;line-height:1.2;} .mroute.hide small{display:block;font-size:10px;margin-top:4px;}
   #stageInfo .rt{font-size:12px;font-weight:700;color:#9fe3ff;margin:2px 0 4px;}
@@ -3951,7 +3953,7 @@ body.tight .itembar{gap:6px;}
   // 誰かが消したら、ほかの全員のカラーHPがその数だけ増える。30で脱落、最後の1人が勝ち
   let vsOn = false, cpuSpec = {every: 4600, burst: [3, 5]}, cpus = [], curStage = null;
   // 相手のHP（色ごと）。goalColor＝色指定のときの色（-1ならどれか1色）
-  let enemyHP = 30, goalColor = -1, curVar = 0, obsWant = null;
+  let enemyHP = 30, goalColor = -1, curVar = 0, obsWant = null, lastVarList = [], lastAdx = false;
   const isZako = () => !!(curStage && curStage.char == null);   // 暴走ブロック（立ち絵なし）
   // ===== お題の進み具合 =====
   let mis = [], misPen = 0;
@@ -4407,7 +4409,7 @@ body.tight .itembar{gap:6px;}
     itemsStop();
     let coinNote = '';
     // ストーリー：★を付けて保存（すぐ保存）。★＝クリア＋コンティニューなし＋カラーHPを警告ラインまで上げない
-    let got = 0, firstClear = false, bossBefore = 0, seqC0 = coins, seqExtra = [], areaTk = null;
+    let got = 0, firstClear = false, bossBefore = 0, seqC0 = coins, seqExtra = [], areaTk = null; lastVarList = []; lastAdx = false;
     lastExpInfo = null;
     if (gameMode === 'story' && curStage) {
       const i = curStage.no - 1;
@@ -4422,7 +4424,7 @@ body.tight .itembar{gap:6px;}
       got = storyStars[i];
       coinNote = storyWinCoins(i, curStage.area + VAR_SHIFT[curVar], firstClear, got - bits(oldMask)) + teamExp(curStage) + zakoDrop();
       const vr = varRewards(curVar, curStage.area); coinNote += vr.txt;
-      if (curVar >= 1) { const g0 = coins - seqC0; setTimeout(() => adDouble(g0, vr.list), 3800); }
+      lastVarList = vr.list; lastAdx = curVar >= 1;      // 結果画面の「ごほうび」に出して、そこで広告2倍を選べる
       seqExtra = [];
       if (firstClear && curStage.kind === 'boss') {         // エリアクリア報酬：ボスを初めて倒したとき
         const ab = 100 * (curStage.area + 1); addCoins(ab);
@@ -4479,7 +4481,7 @@ body.tight .itembar{gap:6px;}
       if (autoOn) { autoRep.done++; autoNext = autoRep.done < autoRep.total; if (!autoNext) { toast('オート ' + autoRep.total + '回 おわりました'); autoRep = null; } }
       else autoRep = null;                                    // 途中で手動にした
     }
-    const seqData = (gameMode === 'story' && curStage) ? {label: curStage.label, score, stars: lastStars, coins: coins - seqC0, exp: lastExpInfo, gets: winGets.slice(), extra: seqExtra, tickets: areaTk, autoNext} : null;
+    const seqData = (gameMode === 'story' && curStage) ? {label: curStage.label, score, stars: lastStars, coins: coins - seqC0, exp: lastExpInfo, gets: winGets.slice(), extra: seqExtra, tickets: areaTk, autoNext, vlist: lastVarList.slice(), adx: lastAdx} : null;
     showGets();
     $('stageBtn').classList.toggle('hidden', gameMode !== 'story');   // ストーリーならマップへ戻る（次の面はマップで選ぶ）
     $('stageBtn').classList.toggle('next', gameMode === 'story');
@@ -6727,7 +6729,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.123';
+  const APP_VER = '0.9.124';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -8463,6 +8465,11 @@ body.tight .itembar{gap:6px;}
     const next = () => { timers.forEach(clearTimeout); timers = []; idx++; if (idx < steps.length) steps[idx](); };
     const close = () => { timers.forEach(clearTimeout); timers = []; d.remove(); };
     d.addEventListener('click', e => {
+      const ad = e.target.closest('[data-rsqad]');
+      if (ad) { if (ad.disabled) return; ad.disabled = true;
+        playAd(() => { if (r.coins > 0) addCoins(r.coins); (r.vlist || []).forEach(([k, n]) => giveItem(k, n)); if ((r.vlist || []).length) saveInv();
+          ad.textContent = '✔ ごほうび2倍！'; ad.classList.add('done'); toast('🎁 ごほうび2倍！' + (r.coins > 0 ? ' コイン +' + r.coins : '')); });
+        return; }
       const b = e.target.closest('[data-rsq]');
       if (b) { const id = {map: 'stageBtn', retry: 'retryBtn', title: 'titleBtn'}[b.dataset.rsq]; close(); autoRep = null; document.querySelectorAll('.autorep').forEach(x => x.remove()); if (id === 'stageBtn') mapEvtNext = true; if (id) $(id).click(); return; }
       if (performance.now() < lockUntil || idx >= steps.length - 1) return;
@@ -8535,7 +8542,9 @@ body.tight .itembar{gap:6px;}
       const dial = v => { const s = String(Math.max(0, v | 0)); return '<span class="rsq-dial"><span class="pl">+</span>' + s.split('').map(() => '<span class="dg"><span>' + '0123456789'.repeat(3).split('').map(x => '<i>' + x + '</i>').join('') + '</span></span>').join('') + '</span>'; };
       const p = pane('<div class="rsq-ttl" style="font-size:30px">REWARD</div><div class="rsq-rows">' +
         '<div class="rsq-row">' + coinTag() + 'コイン ' + dial(r.coins) + '</div>' +
-        '<div class="rsq-row">EXP ' + dial(ex.gain) + '</div>' + (r.extra || []).map(t => '<div class="rsq-row rsq-ex">🎉 ' + t + '</div>').join('') + '</div>' +
+        '<div class="rsq-row">EXP ' + dial(ex.gain) + '</div>' + (r.extra || []).map(t => '<div class="rsq-row rsq-ex">🎉 ' + t + '</div>').join('') +
+        (r.vlist || []).map(([k, n]) => '<div class="rsq-row rsq-ex">🎁 ' + (ITEMS[k] ? ITEMS[k].name : EX_MAT[k] ? EX_MAT[k][1] + EX_MAT[k][0] : k) + ' ×' + n + '</div>').join('') + '</div>' +
+        (r.adx && !r.skip ? '<button class="rsq-ad" data-rsqad="1">📺 広告を見て ごほうび2倍</button>' : '') +
         (ex.list.length ? '<div class="rsq-team">' + ex.list.map(() => '<div class="rsq-mem"><span class="lvb"></span><div class="ic"></div><div class="lv"></div><div class="bar"><i></i></div></div>').join('') + '</div>' : '') +
         (r.skip ? '<div class="resbtns rsq-btns"><button class="rbtn next" data-rsq="close"><i>🗺</i><span>マップへ</span></button></div>'   // スキップはマップの上で出しているので、閉じるだけ
         : '<div class="resbtns rsq-btns"><button class="rbtn next" data-rsq="map"><i>🗺</i><span>マップへ</span></button><button class="rbtn" data-rsq="retry"><i>↻</i><span>もう一度</span></button><button class="rbtn" data-rsq="title"><i>⌂</i><span>タイトル</span></button></div>'));
