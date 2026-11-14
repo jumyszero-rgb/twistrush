@@ -410,7 +410,20 @@ body.on-menu .battlemain{opacity:0;}
   .wrow .sc{font-weight:800;font-variant-numeric:tabular-nums;}
   /* ===== ストーリーのマップ ===== */
   .areabar{display:flex;align-items:center;gap:8px;margin-top:8px;}
-  .maptools{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:8px;}
+
+  #expd.overlay{position:fixed;inset:0;z-index:23;border-radius:0;padding:0;gap:0;justify-content:flex-start;text-align:left;color:#f6f0ff;background:linear-gradient(180deg, rgba(22,10,44,.94), rgba(22,10,44,.97)), var(--title-img, url('img/title.jpg')) center / cover no-repeat, #1f1236;}
+  .excard,.exact{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:10px;margin:8px 0;}
+  .excard.went{opacity:.55;} .exhd{display:flex;align-items:center;gap:8px;} .exhd b{font-size:15px;flex:1;} .exst{color:#ffd24a;font-size:12px;} .exh{font-size:11px;padding:1px 7px;border-radius:8px;background:rgba(255,255,255,.14);}
+  .excnd{list-style:none;margin:6px 0;padding:0;font-size:12.5px;} .excnd li{padding:2px 0;} .excnd li.ok{color:#7ff0a8;} .excnd li.ng{color:#ff9db0;}
+  .exrw{font-size:11px;opacity:.8;margin-bottom:6px;} .exnote{font-size:12px;color:#ffd0dc;margin-top:4px;}
+  .exteam{display:flex;gap:5px;margin:6px 0;} .exteam button{flex:1;font-size:11.5px;padding:5px 0;border-radius:8px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#f6f0ff;line-height:1.15;}
+  .exteam button.on{background:#7ee8ff;color:#152;font-weight:900;} .exteam button.busy small{display:block;font-size:9px;color:#ffb0c0;}
+  .exmini{display:flex;gap:4px;margin:4px 0;} .exmini .cface{position:relative;inset:auto;flex:0 0 40px;width:40px;height:40px;border-radius:8px;overflow:hidden;display:block;background:rgba(255,255,255,.1);}
+  .exgo{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12.5px;} .exgo button,.exget{padding:7px 18px;border-radius:10px;border:0;background:linear-gradient(135deg,#ffd24a,#ff8a3d);color:#3a1a00;font-weight:900;font-size:14px;}
+  .exgo button[disabled]{opacity:.4;} .exact{display:flex;align-items:center;justify-content:space-between;gap:8px;} .exleft{font-size:11px;text-align:right;} .exleft b{font-size:15px;}
+  .exget small{display:block;font-size:10px;font-weight:900;} .exmsg{background:rgba(255,210,74,.14);border:1px solid rgba(255,210,74,.5);border-radius:12px;padding:10px;margin:8px 0;font-size:13px;line-height:1.5;}
+  .maptools{grid-template-columns:repeat(5,minmax(0,1fr));} .maptools button.exready{animation:autoBlink 1.2s ease-in-out infinite;background:#ffd24a;color:#3a2210;}
+  .maptools{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:8px;}
   .maptools button{border:2px solid rgba(255,210,74,.7);border-radius:12px;background:linear-gradient(#3b2566,#26174a);color:#fff;font-weight:900;font-size:17px;padding:5px 2px 4px;line-height:1.1;font-family:inherit;}
   .maptools button span{display:block;font-size:10px;margin-top:2px;white-space:nowrap;}
   .maptools button:active{transform:translateY(2px);}
@@ -1523,6 +1536,13 @@ body.tight .itembar{gap:6px;}
       </div>
       <div class="how-body" id="skprofBody"></div>
     </div>
+    <div class="overlay hidden" id="expd" role="dialog" aria-label="遠征">
+      <div class="how-head">
+        <button class="how-back" id="expdBack" aria-label="マップに戻る">‹ 戻る</button>
+        <h2>EXPEDITION <small style="font-size:12px;opacity:.75">遠征</small></h2>
+      </div>
+      <div class="how-body" id="expdBody"></div>
+    </div>
     <div class="overlay hidden" id="quest" role="dialog" aria-label="ミッション">
       <div class="how-head">
         <button class="how-back" id="questBack" aria-label="タイトルに戻る">‹ 戻る</button>
@@ -1661,7 +1681,7 @@ body.tight .itembar{gap:6px;}
         <div class="coinchip headcoin" id="storyCoin"></div>
       </div>
       <div class="how-body">
-        <div class="maptools"><button data-mt="team">👥<span>チーム編成</span></button><button data-mt="feed">⬆<span>レベルアップ</span></button><button data-mt="lb">★<span>限界突破</span></button><button data-mt="item">🎒<span>アイテム</span></button></div>
+        <div class="maptools"><button data-mt="team">👥<span>チーム編成</span></button><button data-mt="feed">⬆<span>レベルアップ</span></button><button data-mt="lb">★<span>限界突破</span></button><button data-mt="item">🎒<span>アイテム</span></button><button data-mt="expd">🧭<span>遠征</span></button></div>
         <div class="areabar">
           <button class="areanav" id="areaPrev" aria-label="前のエリア">‹</button>
           <div class="areatitle"><b id="areaName"></b><small id="areaStars"></small><small id="areaBonus" class="abonus"></small></div>
@@ -6400,7 +6420,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.89';
+  const APP_VER = '0.9.90';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -6595,6 +6615,7 @@ body.tight .itembar{gap:6px;}
     introSrc.forEach(s => { try { s.stop(); } catch(_) {} }); introSrc = [];
   }
   function startStory(i, auto){
+    if (exTeamBusy(teamNo)) { toast('このチームのキャラは遠征中です。別のチームを選んでください'); return; }
     const st = STORY[i], o = auto ? {stage: i, autoGo: true} : {stage: i};
     if (st && st.kind === 'boss') playBossIntro(st, () => start('story', o));
     else start('story', o);
@@ -7921,8 +7942,8 @@ body.tight .itembar{gap:6px;}
   }
   const curTeam = () => teams[teamNo];
   // キャラを使うモード（ストーリー・キャラ対戦・アリーナ）は4人そろわないと始められない
-  const teamFull = () => !!curTeam()[0] && curTeam().filter(Boolean).length >= 4;
-  const teamNeedMsg = () => { const n = curTeam().filter(Boolean).length; return !curTeam()[0] ? 'チームのメイン（①）がいません。4人そろえてください' : 'チームが ' + n + '人です。4人そろえてください'; };
+  const teamFull = () => !!curTeam()[0] && curTeam().filter(Boolean).length >= 4 && !exTeamBusy(teamNo);
+  const teamNeedMsg = () => { const n = curTeam().filter(Boolean).length; if (n >= 4 && curTeam()[0] && exTeamBusy(teamNo)) return 'このチームのキャラは遠征中です。別のチームを選んでください'; return !curTeam()[0] ? 'チームのメイン（①）がいません。4人そろえてください' : 'チームが ' + n + '人です。4人そろえてください'; };
   // サブが使う技（'sp'＝必殺技／'ougi'＝奥義）。メインは両方使うので [0] は使わない
   let teamSk = loadJ('teamsk', null);
   if (!Array.isArray(teamSk) || teamSk.length !== 4) teamSk = [0, 1, 2, 3].map(() => ['both', 'sp', 'sp', 'sp']);
@@ -8216,6 +8237,130 @@ body.tight .itembar{gap:6px;}
     lastExpInfo = {gain, list: info.list.map(m => ({ci: m.ci, lv0: m.lv0, e0: m.e0, cap: m.cap, lv1: m.lv1, e1: m.e1}))};
     return ' 経験値 +' + gain + (ups.length ? '（レベルアップ：' + ups.join('・') + '）' : '') + '。';
   }
+
+  // ===== EXPEDITION（遠征）2026-11-14 =====
+  //   チーム1〜4のどれかを丸ごと送り、8・12・24時間で経験値とアイテムを持ち帰る。遠征中のキャラはストーリーなどで使えない
+  //   毎日10か所のうち3か所が出る。条件（2〜5個・難しさで決まる）は「必ず入る1つ」＋日替わりで選ぶ
+  //   結果：全部満たす＝大成功（経験値・アイテム1.5倍）／半分以上＝成功／半分未満＝失敗（経験値だけ半分）
+  const EX_CND = {
+    attrMin: c => ({t: ATTR[c.a].n + '属性 ' + c.n + '人以上', ok: m => m.filter(u => attrOf(u.id) === c.a).length >= c.n}),
+    attrNone: c => ({t: ATTR[c.a].n + '属性を入れない', ok: m => !m.some(u => attrOf(u.id) === c.a)}),
+    typeMin: c => ({t: TYPE_INFO[c.ty].name + ' ' + c.n + '人以上', ok: m => m.filter(u => CHAR_STAT[u.id] && CHAR_STAT[u.id].type === c.ty).length >= c.n}),
+    lvAll: c => ({t: '全員 LV' + c.n + '以上', ok: m => m.every(u => u.lv >= c.n)}),
+    gradeMin: c => ({t: 'SR以上 ' + c.n + '人以上', ok: m => m.filter(u => ['SR', 'MR', 'LR'].includes((CHAR_STAT[u.id] || {}).grade)).length >= c.n}),
+    gradeAll: c => ({t: '全員 SR以上', ok: m => m.every(u => ['SR', 'MR', 'LR'].includes((CHAR_STAT[u.id] || {}).grade))}),
+    heal: c => ({t: '回復の技を持つキャラ ' + c.n + '人以上', ok: m => m.filter(u => exHas(u.id, ['heart', 'sheart', 'gheart', 'heal'])).length >= c.n}),
+    octa: c => ({t: 'オクタの技を持つキャラ ' + c.n + '人以上', ok: m => m.filter(u => exHas(u.id, ['octa', 'octaDrop', 'octaRect'])).length >= c.n}),
+    powMin: c => ({t: 'チーム戦闘力 ' + c.n.toLocaleString() + '以上', ok: m => statPow(m.reduce((s, u) => { unitStats(u).forEach((v, k) => s[k] += v); return s; }, [0, 0, 0, 0])) >= c.n}),
+    diffAttr: c => ({t: '全員ちがう属性', ok: m => new Set(m.map(u => attrOf(u.id))).size === m.length}),
+    diffType: c => ({t: '全員ちがうタイプ', ok: m => new Set(m.map(u => (CHAR_STAT[u.id] || {}).type)).size === m.length}),
+  };
+  function exHas(id, kinds){ const f = FX_DEF[id]; if (!f) return false; return [].concat(f.sp || [], f.ougi || []).some(e => kinds.includes(e[0])); }
+  const EX_STAGES = [
+    {id: 1, n: '大豆島の鳥類討伐', s: 1, h: 8, core: {k: 'attrMin', a: 'fire', n: 2}, pool: [{k: 'lvAll', n: 10}, {k: 'typeMin', ty: 'atk', n: 1}, {k: 'heal', n: 1}, {k: 'typeMin', ty: 'spd', n: 1}]},
+    {id: 2, n: '火山島 マカニ村防衛戦', s: 2, h: 12, core: {k: 'attrMin', a: 'water', n: 2}, pool: [{k: 'typeMin', ty: 'def', n: 1}, {k: 'heal', n: 1}, {k: 'lvAll', n: 15}, {k: 'attrNone', a: 'wind'}, {k: 'gradeMin', n: 1}]},
+    {id: 3, n: '海底大渦 竜種討伐', s: 4, h: 24, core: {k: 'attrMin', a: 'thunder', n: 2}, pool: [{k: 'lvAll', n: 30}, {k: 'gradeMin', n: 2}, {k: 'typeMin', ty: 'spd', n: 1}, {k: 'heal', n: 1}, {k: 'attrNone', a: 'fire'}, {k: 'powMin', n: 2200}]},
+    {id: 4, n: '迷いの森の薬草採り', s: 1, h: 8, core: {k: 'heal', n: 2}, pool: [{k: 'attrMin', a: 'wind', n: 1}, {k: 'lvAll', n: 8}, {k: 'typeMin', ty: 'hp', n: 1}, {k: 'attrNone', a: 'dark'}]},
+    {id: 5, n: '古代遺跡の宝探し', s: 2, h: 12, core: {k: 'attrMin', a: 'light', n: 1}, pool: [{k: 'typeMin', ty: 'spd', n: 2}, {k: 'lvAll', n: 15}, {k: 'octa', n: 1}, {k: 'gradeMin', n: 1}], bonus: [['gticket', 1, 0.3]]},
+    {id: 6, n: '雪原の行商キャラバン護衛', s: 2, h: 8, core: {k: 'typeMin', ty: 'def', n: 2}, pool: [{k: 'diffAttr'}, {k: 'lvAll', n: 12}, {k: 'heal', n: 1}, {k: 'attrMin', a: 'fire', n: 1}], bonus: [['silver', 200, 1]]},
+    {id: 7, n: '雷雲の塔の登頂', s: 3, h: 12, core: {k: 'attrMin', a: 'earth', n: 2}, pool: [{k: 'typeMin', ty: 'atk', n: 2}, {k: 'lvAll', n: 20}, {k: 'attrNone', a: 'water'}, {k: 'gradeMin', n: 1}, {k: 'typeMin', ty: 'spd', n: 1}]},
+    {id: 8, n: '王都の闘技大会', s: 3, h: 12, core: {k: 'powMin', n: 1500}, pool: [{k: 'gradeMin', n: 1}, {k: 'diffType'}, {k: 'lvAll', n: 20}, {k: 'octa', n: 1}], bonus: [['gticket', 1, 0.5]]},
+    {id: 9, n: '月夜の墓地の悪霊払い', s: 4, h: 24, core: {k: 'attrMin', a: 'light', n: 2}, pool: [{k: 'heal', n: 1}, {k: 'attrNone', a: 'dark'}, {k: 'lvAll', n: 25}, {k: 'gradeMin', n: 2}, {k: 'typeMin', ty: 'hp', n: 1}]},
+    {id: 10, n: '天空城の魔王軍偵察', s: 5, h: 24, core: {k: 'gradeAll'}, pool: [{k: 'attrMin', a: 'light', n: 1}, {k: 'attrMin', a: 'dark', n: 1}, {k: 'lvAll', n: 40}, {k: 'powMin', n: 3000}, {k: 'heal', n: 1}, {k: 'octa', n: 1}]},
+  ];
+  const EX_NCND = [0, 2, 3, 3, 4, 5];                         // 難しさ（★）ごとの条件の数
+  const EX_EXP = [0, 1500, 3000, 4500, 9000, 14000];          // ひとりあたりの経験値（成功のとき）
+  const EX_SILVER = [0, 100, 200, 300, 500, 800];
+  const EX_ITEMS = [[], [['stampot', 1, 0.5], ['pot_N', 1, 0.5]], [['stampot', 1, 0.8], ['pot_N', 1, 1], ['gticket', 1, 0.2]],
+    [['stampot', 1, 1], ['pot_R', 1, 0.6], ['gticket', 1, 0.4]], [['pot_R', 1, 1], ['gticket_hi', 1, 0.1], ['pot_SR', 1, 0.05]],
+    [['pot_R', 2, 1], ['pot_SR', 1, 0.15], ['gticket_hi', 1, 0.25]]];
+  const EX_ITEM_NAME = k => k === 'silver' ? 'シルバー' : (TICKET_LABEL[k] || (k.startsWith('pot_') ? potName(k.slice(4)) : k));
+  const exSeed = s => { let h = 2166136261; for (const ch of s) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return () => { h ^= h << 13; h ^= h >>> 17; h ^= h << 5; return ((h >>> 0) % 100000) / 100000; }; };
+  // 今日の3か所と、その条件（日付で決まる。だれが見ても同じ）
+  function exToday(){
+    const r = exSeed('expd' + today()), ids = EX_STAGES.map(s => s.id);
+    for (let i = ids.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [ids[i], ids[j]] = [ids[j], ids[i]]; }
+    return ids.slice(0, 3).sort((a, b) => a - b).map(id => {
+      const st = EX_STAGES.find(s => s.id === id), pool = st.pool.slice();
+      for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+      const cnds = [st.core].concat(pool.slice(0, EX_NCND[st.s] - 1)).map(c => Object.assign({k: c.k}, EX_CND[c.k](c)));
+      return Object.assign({}, st, {cnds});
+    });
+  }
+  let exData = loadJ('expd', null);
+  if (!exData || !Array.isArray(exData.active)) exData = {active: [], done: {}};
+  const exSave = () => save('expd', JSON.stringify(exData));
+  const exSlots = () => 2 + (userLv() >= 20 ? 1 : 0) + (userLv() >= 40 ? 1 : 0);
+  const exBusyUids = () => new Set([].concat(...exData.active.map(a => a.uids)));
+  const exTeamBusy = t => { const b = exBusyUids(); return (teams[t] || []).some(uid => uid && b.has(uid)); };
+  const exMembers = t => (teams[t] || []).map(unitOf).filter(Boolean);
+  function exJudge(st, m){ const ok = st.cnds.filter(c => c.ok(m)).length; return {ok, all: st.cnds.length, res: ok === st.cnds.length ? 'great' : ok * 2 >= st.cnds.length ? 'ok' : 'fail'}; }
+  const EX_RES = {great: ['大成功', '#ffd24a'], ok: ['成功', '#7ee8ff'], fail: ['失敗', '#ff8aa0']};
+  const exLeft = a => Math.max(0, a.end - Date.now());
+  const exHM = ms => { const m = Math.ceil(ms / 60000); return Math.floor(m / 60) + '時間' + String(m % 60).padStart(2, '0') + '分'; };
+  let exPickTeam = {}, exLastMsg = '';
+  function drawExpd(){
+    fixTeam();
+    const list = exToday(), dk = today(), done = exData.done[dk] || [], b = exBusyUids();
+    let h = (exLastMsg ? '<div class="exmsg">' + exLastMsg + '</div>' : '') + '<section><h3>遠征中 <small>（' + exData.active.length + ' / ' + exSlots() + '枠）</small></h3>';
+    if (!exData.active.length) h += '<p class="sknote">いま遠征に出ているチームはありません。</p>';
+    exData.active.forEach((a, i) => {
+      const left = exLeft(a), r = EX_RES[a.res];
+      h += '<div class="exact"><div><b>' + a.name + '</b> <small>チーム' + (a.team + 1) + '</small><div class="exmini">' + a.uids.map(uid => { const u = unitOf(uid); return u ? '<span class="cface" data-ci="' + ciOf(u) + '"></span>' : ''; }).join('') + '</div></div>' +
+        (left > 0 ? '<div class="exleft">のこり<br><b>' + exHM(left) + '</b></div>' : '<button class="exget" data-get="' + i + '">受け取る<small style="color:' + r[1] + '">' + r[0] + '</small></button>') + '</div>';
+    });
+    h += '</section><section><h3>今日の遠征先 <small>（毎日0時に3か所入れかわり）</small></h3>';
+    list.forEach(st => {
+      const went = done.includes(st.id), t = exPickTeam[st.id] != null ? exPickTeam[st.id] : teamNo, m = exMembers(t);
+      const j = m.length === 4 ? exJudge(st, m) : null, busy = exTeamBusy(t);
+      h += '<div class="excard' + (went ? ' went' : '') + '"><div class="exhd"><b>' + st.n + '</b><span class="exst">' + '★'.repeat(st.s) + '</span><span class="exh">' + st.h + '時間</span></div>' +
+        '<ul class="excnd">' + st.cnds.map(c => '<li class="' + (m.length === 4 ? (c.ok(m) ? 'ok' : 'ng') : '') + '">' + (m.length === 4 ? (c.ok(m) ? '✓' : '✗') : '・') + ' ' + c.t + '</li>').join('') + '</ul>' +
+        '<div class="exrw">報酬：経験値 ひとり' + EX_EXP[st.s].toLocaleString() + '・シルバー' + (EX_SILVER[st.s] + ((st.bonus || []).find(x => x[0] === 'silver') || [0, 0])[1]) + '・' + EX_ITEMS[st.s].concat((st.bonus || []).filter(x => x[0] !== 'silver')).map(x => EX_ITEM_NAME(x[0]) + (x[2] < 1 ? '（ときどき）' : '')).join('・') + '</div>' +
+        (went ? '<div class="exnote">今日はもう行きました</div>' :
+          '<div class="exteam">' + [0, 1, 2, 3].map(k => '<button data-ext="' + st.id + ':' + k + '" class="' + (k === t ? 'on' : '') + (exTeamBusy(k) ? ' busy' : '') + '">チーム' + (k + 1) + (exTeamBusy(k) ? '<small>遠征中</small>' : '') + '</button>').join('') + '</div>' +
+          '<div class="exmini">' + m.map(u => '<span class="cface" data-ci="' + ciOf(u) + '"></span>').join('') + '</div>' +
+          (m.length < 4 ? '<div class="exnote">このチームは' + m.length + '人です。4人そろえてください</div>' : busy ? '<div class="exnote">このチームのキャラは遠征中です</div>' :
+            '<div class="exgo"><span>見込み：<b style="color:' + EX_RES[j.res][1] + '">' + EX_RES[j.res][0] + '</b>（条件 ' + j.ok + ' / ' + j.all + '）</span><button data-go="' + st.id + '"' + (exData.active.length >= exSlots() ? ' disabled' : '') + '>出発</button></div>')) +
+        '</div>';
+    });
+    h += '<p class="sknote">遠征中のキャラは、帰ってくるまでストーリー・キャラ対戦・アリーナで使えません。条件を全部満たすと大成功（経験値とアイテム1.5倍）、半分以上で成功、半分未満は失敗（経験値だけ半分）。遠征枠はユーザーLV20・40で1つずつ増えます。</p></section>';
+    const body = $('expdBody'); body.innerHTML = h;
+    fillFaces(body);
+  }
+  function exGo(id){
+    const st = exToday().find(s => s.id === id); if (!st) return;
+    const t = exPickTeam[id] != null ? exPickTeam[id] : teamNo, m = exMembers(t);
+    if (m.length < 4 || exTeamBusy(t) || exData.active.length >= exSlots()) return;
+    const dk = today(); if ((exData.done[dk] || []).includes(id)) return;
+    const j = exJudge(st, m), now = Date.now();
+    exData.active.push({id, name: st.n, s: st.s, team: t, uids: m.map(u => u.u), start: now, end: now + st.h * 3600000, res: j.res, bonus: st.bonus || []});
+    exData.done = {[dk]: (exData.done[dk] || []).concat(id)};
+    exSave(); toast('「' + st.n + '」へ出発しました（' + st.h + '時間）'); drawExpd(); drawExpdBadge();
+  }
+  function exGet(i){
+    const a = exData.active[i]; if (!a || exLeft(a) > 0) return;
+    const mul = a.res === 'great' ? 1.5 : 1, gain = Math.round(EX_EXP[a.s] * (a.res === 'fail' ? 0.5 : mul)), ups = [], got = [];
+    a.uids.forEach(uid => { const u = unitOf(uid); if (!u) return; let lv = u.lv, exp = u.exp + gain; const cap = capOf(u), was = lv;
+      while (lv < cap && exp >= expNeed(lv)) { exp -= expNeed(lv); lv++; } if (lv >= cap) exp = Math.min(exp, expNeed(lv) - 1);
+      u.lv = lv; u.exp = exp; if (lv > was) ups.push(fullName(ALLC[ciOf(u)]) + ' LV' + lv); });
+    saveUnits();
+    if (a.res !== 'fail') {
+      const sv = Math.round((EX_SILVER[a.s] + ((a.bonus.find(x => x[0] === 'silver') || [0, 0])[1])) * mul); addCoins(sv); got.push('シルバー ' + sv);
+      EX_ITEMS[a.s].concat(a.bonus.filter(x => x[0] !== 'silver')).forEach(([k, n, p]) => { if (Math.random() < Math.min(1, p * mul)) { giveItem(k, n); got.push(EX_ITEM_NAME(k) + ' ×' + n); } });
+    }
+    exData.active.splice(i, 1); exSave();
+    exLastMsg = '<b style="color:' + EX_RES[a.res][1] + '">遠征「' + a.name + '」' + EX_RES[a.res][0] + '！</b><br>経験値 ひとり +' + gain.toLocaleString() + (got.length ? '<br>' + got.join('・') : '') + (ups.length ? '<br>レベルアップ：' + ups.join('・') : '');
+    drawExpd(); drawExpdBadge();
+  }
+  function drawExpdBadge(){ const b = document.querySelector('[data-mt="expd"]'); if (!b) return; const n = exData.active.filter(a => exLeft(a) <= 0).length; b.classList.toggle('exready', n > 0); }
+  function openExpd(){ audio(); exPickTeam = {}; exLastMsg = ''; $('expd').classList.remove('hidden'); drawExpd(); $('expdBody').scrollTop = 0; }
+  $('expdBack').addEventListener('click', () => { $('expd').classList.add('hidden'); try { drawStory(); } catch(_) {} });
+  $('expdBody').addEventListener('click', e => {
+    const t = e.target.closest('[data-ext]'); if (t) { const [id, k] = t.dataset.ext.split(':').map(Number); exPickTeam[id] = k; drawExpd(); return; }
+    const g = e.target.closest('[data-go]'); if (g) { exGo(+g.dataset.go); return; }
+    const r = e.target.closest('[data-get]'); if (r) exGet(+r.dataset.get);
+  });
+  setInterval(() => { drawExpdBadge(); if (!$('expd').classList.contains('hidden') && exData.active.length) drawExpd(); }, 30000);
   // ----- チーム画面（ストーリーのマップの下） -----
   function typeBadge(id){ const cs = CHAR_STAT[id]; if (!cs) return ''; const t = TYPE_INFO[cs.type]; return '<i class="tbadge" style="background:' + t.col + '" title="' + t.name + '">' + t.mark + '</i>'; }
   function teamTabs(){ return '<div class="ttabs">' + [0, 1, 2, 3].map(k => '<button data-team="' + k + '" class="' + (k === teamNo ? 'on' : '') + '">チーム' + (k + 1) + (k === teamNo ? '<small>使用中</small>' : '') + '</button>').join('') + '</div>'; }
@@ -8260,6 +8405,7 @@ body.tight .itembar{gap:6px;}
   document.querySelector('#story .maptools').addEventListener('click', e => {
     const b = e.target.closest('[data-mt]'); if (!b) return;
     const m = b.dataset.mt;
+    if (m === 'expd') { openExpd(); return; }
     if (m === 'item') openBox('item'); else openBox('char', m === 'team' ? null : m);
   });
   // ===== ガチャ（ボス9人＝SR、ザコ90人＝N・R） =====
@@ -8693,7 +8839,7 @@ body.tight .itembar{gap:6px;}
         voiceSecHTML(c.id) +
         '<div class="dsec"><h4>プロフィール</h4><p>' + (CHAR_BIO[c.id] || '') + '</p></div>';
     } else if (detTab === 'feed') {
-      const mats0 = units.filter(x => x.u !== u.u && !x.lock && !teams.some(t => t.includes(x.u)));
+      const mats0 = units.filter(x => x.u !== u.u && !x.lock && !teams.some(t => t.includes(x.u)) && !exBusyUids().has(x.u));
       const nLock = units.filter(x => x.u !== u.u && x.lock).length;
       feedSel.forEach(id => { if (!mats0.some(m => m.u === id)) feedSel.delete(id); });
       const mats = mats0.filter(m => matF === 'all' || (matF === 'same' ? m.id === u.id : CHAR_STAT[m.id].grade === matF))
