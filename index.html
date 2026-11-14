@@ -5797,13 +5797,16 @@ body.tight .itembar{gap:6px;}
     location.reload();
   }
   const deviceName = () => /iPhone|iPad/.test(navigator.userAgent) ? 'iPhone' : /Android/.test(navigator.userAgent) ? 'Android' : 'ブラウザ';
+  // この端末の印（2026-11-15）：アプリを閉じる直前の保存は返事を受け取れないことがある（Stripeへ移ったときなど）。同じ端末の保存は「ほかの端末のデータ」と見なさない
+  const myDid = () => { let d = load('did', ''); if (!d) { d = Date.now().toString(36) + Math.random().toString(36).slice(2, 12); save('did', d); } return d; };
+  const myDev = () => deviceName() + '|' + myDid();
   const fmtTime = t => { const d = new Date(t * 1000); return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + d.getHours() + ':' + String(d.getMinutes()).padStart(2, '0'); };
   let syncBusy = false;
   async function syncUp(force){
     if (!acctToken || syncBusy) return;
     syncBusy = true;
     try {
-      const r = await api('/api/save', {method: 'PUT', body: JSON.stringify({baseRev: syncRev, data: collectSave(), device: deviceName(), force: !!force}), keepalive: true});
+      const r = await api('/api/save', {method: 'PUT', body: JSON.stringify({baseRev: syncRev, data: collectSave(), device: myDev(), force: !!force}), keepalive: true});
       if (r._status === 409) { syncBusy = false; return chooseSave(r); }
       syncRev = r.rev; save('sync_rev', String(syncRev)); syncDirty = false;
       save('sync_at', String(r.updated)); drawAcct();
@@ -5829,6 +5832,7 @@ body.tight .itembar{gap:6px;}
       const sv = await api('/api/save');
       if (!sv.rev) { await syncUp(true); if (window.__justLoggedIn) toast('ログインしました。この端末のデータをクラウドに保存しました'); }
       else if (sv.rev === syncRev) { if (syncDirty) syncUp(); }
+      else if (sv.device === myDev()) { syncRev = sv.rev; save('sync_rev', String(syncRev)); if (syncDirty) syncUp(); }   // 自分が前に保存したもの：そのまま続ける
       else if (!syncRev || syncDirty) chooseSave(sv);
       else { toast('ほかの端末で保存されたデータを読み込みます'); applySave(sv.data); }
       window.__justLoggedIn = false;
@@ -6657,7 +6661,7 @@ body.tight .itembar{gap:6px;}
   })();
   // 設定の保存と、押されているボタンの見た目
   // クラウドに送らないもの（この端末だけの設定・ログイン情報・サーバーが持つゴールドコイン）
-  var SYNC_SKIP = /^(acct_|sync_|vol_|api$|theme$|side$|gold$|pid$|pname$|lite$|liteauto$)/;   // var：上の方の行から save() が呼ばれても大丈夫なように
+  var SYNC_SKIP = /^(acct_|sync_|vol_|api$|theme$|side$|gold$|pid$|pname$|lite$|liteauto$|did$)/;   // var：上の方の行から save() が呼ばれても大丈夫なように
   var syncDirty = false;
   function save(k, v){ try { localStorage.setItem('twistrush.' + k, v); } catch(e) {} if (SYNC_SKIP && !SYNC_SKIP.test(k)) syncDirty = true; }
   function load(k, def){ try { return localStorage.getItem('twistrush.' + k) || def; } catch(e) { return def; } }
@@ -6732,7 +6736,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.127';
+  const APP_VER = '0.9.128';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -7892,7 +7896,7 @@ body.tight .itembar{gap:6px;}
       for (const c of s.claims || []) {
         try { const k = await api('/api/pay/claim', {method: 'POST', body: JSON.stringify({id: c.id})}); if (k && k.ok) { Object.entries(k.items || {}).forEach(([key, n]) => giveItem(key, n)); saveInv(); got = true;
           const nm = (PACKS.find(x => x.sku === k.sku) || {}).name || '購入したもの', its = Object.entries(k.items || {}).map(([key, n]) => itemLabel(key) + ' ×' + n).join('<br>');
-          askYes('🎁 <b>' + nm + '</b>を受け取りました<br><small>' + its + '</small>', () => {}); } } catch (_) {}
+          askYes('🎁 <b>' + nm + '</b>を受け取りました<br><small>' + its + '</small>', () => {}); try { syncDirty = true; syncUp(); } catch (_) {} } } catch (_) {}   // 受け取ったらすぐクラウドへ
       }
       passDaily();
     } catch (_) {}

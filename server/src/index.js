@@ -344,7 +344,9 @@ async function api(env, req, url) {
     const cur = await env.DB.prepare('SELECT rev, data, updated_at, device FROM saves WHERE account_id = ?').bind(me.id).first();
     const curRev = cur ? cur.rev : 0;
     // ほかの端末が先に保存していたら、上書きせずにサーバーの方を返す（端末側でどちらを使うか決める）
-    if (!b.force && Number(b.baseRev) !== curRev) return json(env, req, { conflict: true, rev: curRev, data: cur ? JSON.parse(cur.data) : null, updated: cur ? cur.updated_at : 0, device: cur ? cur.device : '' }, 409);
+    // 同じ端末（端末ごとの乱数ID「|」つき）が前に保存したものなら、ぶつかりではない（アプリを閉じる直前の保存の返事を受け取れなかっただけ）
+    const sameDev = cur && String(b.device || '').includes('|') && cur.device === String(b.device || '').slice(0, 40);
+    if (!b.force && !sameDev && Number(b.baseRev) !== curRev) return json(env, req, { conflict: true, rev: curRev, data: cur ? JSON.parse(cur.data) : null, updated: cur ? cur.updated_at : 0, device: cur ? cur.device : '' }, 409);
     const rev = curRev + 1, t = nowSec(), device = String(b.device || '').slice(0, 40), data = JSON.stringify(b.data);
     await env.DB.prepare('INSERT INTO saves (account_id, rev, data, device, updated_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT(account_id) DO UPDATE SET rev = excluded.rev, data = excluded.data, device = excluded.device, updated_at = excluded.updated_at').bind(me.id, rev, data, device, t).run();
     return json(env, req, { ok: true, rev, updated: t });
