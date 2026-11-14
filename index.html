@@ -515,7 +515,10 @@ body.on-menu .battlemain{opacity:0;}
   .mstart,.mroute{position:absolute;transform:translate(-50%,-50%);font-weight:800;white-space:nowrap;pointer-events:none;}
   .mstart{background:#ffd24a;color:#3a2748;font-size:11px;padding:2px 9px;border-radius:9px;box-shadow:0 2px 0 rgba(0,0,0,.35);}
   .mroute{color:#fff;font-size:11px;text-shadow:0 1px 3px rgba(0,0,0,.8);}
-  .mroute.hard{color:#ff9a9a;}
+  .mroute.hard{color:#ff9a9a;} .mroute.ice{color:#9fe8ff;} .mroute.stone{color:#d8cfc4;}
+  .mnode.ice{box-shadow:0 0 0 3px #9fe8ff,0 4px 10px rgba(0,0,0,.4);} .mnode.stone{box-shadow:0 0 0 3px #b9aea0,0 4px 10px rgba(0,0,0,.4);}
+  .bvar{display:flex;gap:6px;margin:6px 0;} .bvar button{flex:1;padding:7px 4px;border-radius:10px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.3);color:#fff;font-weight:900;font-size:13px;}
+  .bvar button.on{background:#ff7fb0;border-color:#ffd0e2;} .bvar button[data-bvar="1"].on{background:#3fb8e8;} .bvar button[data-bvar="2"].on{background:#8a7d6e;}
   #chal .how-body{padding:12px 14px 30px;}
   .chhead{font-size:14px;margin-bottom:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;} .chhead span{margin-left:auto;font-size:12px;color:#ffd36b;font-weight:800;}
   .chnote{font-size:12px;opacity:.85;margin:0 0 10px;}
@@ -2066,7 +2069,11 @@ body.tight .itembar{gap:6px;}
   const GHEART = 7;            // ゴールドハート：タップで全色のカラーHPを50%回復
   const HEART = 6;             // ハートブロック：そろえても消えない。タップで全色のカラーHPを10%回復
   const HEART_MAX = 5, HEART_COL = '#ff6b9a';
-  const GOLD = 5;              // ★ゴールド（★同士でだけ消える。並べた数に応じて全色のカラーHPを大きく減らす）
+  const GOLD = 5;
+  // おじゃまブロック（2026-11-15）：氷＝20＋色（中の色は見えるが、そろわない・回せない。となりで消すと割れて元の色に戻る）
+  //   石＝31（ひび1つ）・30（無傷）。色がない。回せる。となりで2回消すとこわれる。割る・こわすと敵に少しダメージ
+  const OBS = 20, ICE = 20, STONE2 = 30, STONE1 = 31;
+  const isIce = v => v >= ICE && v < ICE + 10, isStone = v => v === STONE2 || v === STONE1;              // ★ゴールド（★同士でだけ消える。並べた数に応じて全色のカラーHPを大きく減らす）
   const CFG = {
     GOLD_RATE: 0.03,           // 補充時に★が出る確率（いちばん高いカラーHPが0〜9）
     GOLD_RATE_MID: 0.07,       //   〃 カラーHP10〜19
@@ -2450,7 +2457,11 @@ body.tight .itembar{gap:6px;}
   // おじゃまブロックが混ざる面（設計書の表から。氷＝1回で割れる／石＝2回で割れる）。まだ作っていないので今は通常の盤面
   // 1エリア＝ふつうルート5面＋つよいルート5面＋ボス1面（全99面）。どちらかのルートを抜ければボスへ
   // 番号：0〜4＝ふつう、5〜9＝つよい、10＝ボス
-  const PER = 11, ZAKO_N = 5, BOSS_I = 10;
+  // 2026-11-15：ルートを3本に。0〜4＝ふつう、5〜9＝氷、10〜14＝石、15＝ボス（前は1エリア11面。記録は16面の形に移す）
+  //   氷のルートはふつうのルートをクリアで、石のルートは氷のルートをクリアで出てくる。ボスはクリアしたルートの盤面（ふつう・氷・石）を選べる
+  const PER = 16, ZAKO_N = 5, BOSS_I = 15;
+  const VAR_MUL = [1, 1.15, 1.3];                       // ルート（ボスは選んだ盤面）ごとの敵の強さ：ふつう・氷・石
+  const VAR_NAME = ['ふつう', '氷', '石'];
   // 1戦の長さ（2026-11-15：「1ステージ長すぎ」）：敵の体力を×FIGHT_T、受けるダメージを÷FIGHT_T。強さのつり合いはそのままで、戦う時間だけ短くなる
   const FIGHT_T = 0.6;
   const ROUTE_UP = 1.15;                                // つよいルート：敵のHP・ステータスの倍率
@@ -2535,9 +2546,10 @@ body.tight .itembar{gap:6px;}
   const bossMul = k => k <= 1 ? 1.3 + 0.5 * k + 0.45 * k * k : 2.25 + 1.4 * (k - 1);
   AREAS.forEach((ar, a) => {
     for (let i = 0; i < PER; i++) {
-      const route = i === BOSS_I ? -1 : (i >= 5 ? 1 : 0), step = i === BOSS_I ? 5 : i % 5;
+      const route = i === BOSS_I ? -1 : Math.floor(i / 5), step = i === BOSS_I ? 5 : i % 5;
       const g = a * PER + i + 1, k = (a * 6 + step) / (AREA_REF * 6 - 1);   // 通し番号と、その進み具合（ルートの何面目か）
-      const kind = i === BOSS_I ? 'boss' : ((AREA_GIMMICK[a] || AREA_GIMMICK[AREA_GIMMICK.length - 1])[step] || 'normal')   /* 決めていないエリアは最後のエリアのしかけ */;
+      const gOld = a * 11 + (i === BOSS_I ? 10 : i) + 1;                     // 前の番号（お題の種を変えないため）
+      const kind = i === BOSS_I ? 'boss' : 'normal';
       const big = kind === 'boss' || kind === 'mid';
       // HP：ザコは少なめでテンポよく。中ボスはザコの1.5倍、ボスは強め
       // HP：ザコは少し多め、ボスは進むほど倍率が上がる（エリア1は1.3倍→エリア9は2倍）。長く戦うほど速くなるので、その分苦戦する
@@ -2545,25 +2557,25 @@ body.tight .itembar{gap:6px;}
       let hp = kind === 'boss' ? Math.round((32 + 28 * k) * bossMul(k)) : (kind === 'mid' ? Math.round(zhp * 1.5) : zhp);
       if (a === 0 && kind === 'boss') hp = Math.round(hp * 0.8);
       hp *= 4;                                          // 自分は4人チームなので、敵のHPも4人分（ステータスはチーム合計と比べる数字なのでそのまま）
-      if (route === 1) hp = Math.round(hp * ROUTE_UP);
+      if (route >= 1) hp = Math.round(hp * VAR_MUL[route]);
       // 難しさ：ザコはLv4〜16、ボスはそのエリアのザコ＋3（上限18）。ボスは苦戦するくらいに
       // 後半のエリアほどグッと難しくなる曲線（ザコ上限18、ボスは＋3で上限20）
       const baseLv = Math.round(4 + 9 * k + 7 * k * k);
       let lv = big ? Math.min(20, baseLv + 3) : Math.min(18, baseLv);
       if (a === 0 && kind === 'boss') lv -= 2;          // 最初のボス（いちご）はやさしく
-      if (route === 1) lv = Math.min(19, lv + 1);
+      if (route >= 1) lv = Math.min(19 + route - 1, lv + route);
       const boss = CHARS[ar.boss];
       STORY.push({
         no: g, area: a, idx: i, kind, route, step,
-        label: (a + 1) + '-' + (route === 1 ? '強' : '') + (route < 0 ? 'BOSS' : step + 1),
+        label: (a + 1) + '-' + (route === 1 ? '氷' : route === 2 ? '石' : '') + (route < 0 ? 'BOSS' : step + 1),
         name: kind === 'boss' ? boss.name : (kind === 'mid' ? '大きな暴走ブロック' : (ZAKO_CREW[a] ? ar.name + (a === 2 ? 'の魔物' : 'の住人') : '暴走ブロック')),
         char: kind === 'boss' ? ar.boss : null,       // ザコと中ボスは立ち絵なし
         bgmChar: ar.boss,                              // 曲はそのエリアのボスの曲
         zako: kind === 'boss' ? null : ar.zako,        // ザコと中ボスの顔
         diff: lv, every: boss.every, burst: boss.burst, face: ar.col,
         hp, goal: -1, count: hp,
-        ready: !!RULE_READY[kind],
-        missions: makeMissions(route === 1 ? 1000 + g : a * 6 + step + 1, a, hp, kind, k),
+        ready: true, gim: route === 1 ? 'ice' : route === 2 ? 'stone' : null,
+        missions: makeMissions(route === 1 ? 1000 + gOld : route === 2 ? 2000 + g : a * 6 + step + 1, a, hp, kind, k),
       });
     }
   });
@@ -3678,7 +3690,7 @@ body.tight .itembar{gap:6px;}
     }
     for (const line of lines) {
       let run = [], t = null;
-      const flush = () => { if (run.length >= CFG.MIN_GROUP && t !== HEART && t !== GHEART && t != null) out.push({t, cells: run}); run = []; };
+      const flush = () => { if (run.length >= CFG.MIN_GROUP && t !== HEART && t !== GHEART && t != null && t < OBS) out.push({t, cells: run}); run = []; };
       for (const [r, c] of line) {
         const v = grid[r][c];
         if (v !== t) { flush(); t = v; }
@@ -3698,6 +3710,26 @@ body.tight .itembar{gap:6px;}
       const g = gs[0], [r, c] = g.cells[Math.floor(rng() * g.cells.length)];
       grid[r][c] = randType(false);
     }
+    if (obsWant) placeObs(obsWant.k, obsWant.n);
+  }
+  function placeObs(k, n){
+    const cells = []; for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if (isNormal(grid[r][c])) cells.push([r, c]);
+    for (let i = cells.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [cells[i], cells[j]] = [cells[j], cells[i]]; }
+    cells.slice(0, n).forEach(([r, c]) => { grid[r][c] = k === 'ice' ? ICE + grid[r][c] : STONE2; });
+  }
+  const sqFrozen = (g, r, c) => [[r, c], [r, c + 1], [r + 1, c + 1], [r + 1, c]].some(([a, b]) => isIce(g[a][b]));
+  // となりで消えたおじゃまを割る（1回の消しで1つにつき1回）。割ったぶん、敵にも少しダメージ（dec に足す）
+  function hitObs(cells, dec){
+    const hit = new Set(); let ice = 0, st = 0;
+    cells.forEach(([r, c]) => [[r - 1, c], [r + 1, c], [r, c - 1], [r, c + 1]].forEach(([a, b]) => {
+      if (a < 0 || b < 0 || a >= N || b >= N) return; const k = a * N + b, v = grid[a][b]; if (hit.has(k)) return;
+      if (isIce(v)) { hit.add(k); grid[a][b] = v - ICE; ice++; if (dec) dec[v - ICE] += 1; flashes.push({r: a, c: b, v: v - ICE, t: now()}); }
+      else if (v === STONE2) { hit.add(k); grid[a][b] = STONE1; st++; }
+      else if (v === STONE1) { hit.add(k); grid[a][b] = null; st++; if (dec) for (let i = 0; i < TYPES; i++) dec[i] += 0.4; }
+    }));
+    if (ice || st) { try { tone(1400, T(), 0.06, 'triangle', 0.05); tone(2100, T() + 0.04, 0.05, 'triangle', 0.035); } catch(_) {}
+      pops.push({text: ice ? 'ICE BREAK' : 'CRACK', style: 'sync', r: 2.5, c: 2.5, row: 3, n: 1, t: now() + 120}); }
+    return ice + st;
   }
 
   function inRot(r, c){ return rotAnim && r >= rotAnim.r && r <= rotAnim.r + 1 && c >= rotAnim.c && c <= rotAnim.c + 1; }
@@ -3709,6 +3741,7 @@ body.tight .itembar{gap:6px;}
     if (autoOn && !ai) return;                     // オート中は指の操作を受け付けない
     const {r, c} = cur;
     const four = [[r, c], [r, c+1], [r+1, c+1], [r+1, c]];
+    if (sqFrozen(grid, r, c)) { if (!ai) { try { tone(180, T(), 0.08, 'square', 0.05); } catch(_) {} toast('🧊 凍っていて回せない'); } return; }
     // 消える点滅中でも回せる。ただし点滅中のブロックを含む枠は回せない
     if (phase === 'clear' && four.some(([a, b]) => clearSet.has(a * N + b))) return;
     const tl = grid[r][c], tr = grid[r][c+1], br = grid[r+1][c+1], bl = grid[r+1][c];
@@ -3849,6 +3882,7 @@ body.tight .itembar{gap:6px;}
     }
     misAdd('total', clearSet.size);              // お題：壊した数・色ごとの数
     dec.forEach((d, i) => { if (d) misAdd('color', d, i); });
+    hitObs([...clearSet].map(k => [(k / N) | 0, k % N]), dec);   // となりのおじゃま（氷・石）を割る（お題の数には入れない）
     // ★は一発逆転：並べた数で全色を大きく減らす（3個=3、4個=6、5個=10、6個=15）
     let slow = 0;
     for (const g of clearGroups) if (g.t === GOLD) { golds += CFG.STAR_BONUS[Math.min(6, g.cells.length)] || 0; slow += (CFG.STAR_SLOW[Math.min(6, g.cells.length)] || 0) * CFG.STAR_SLOW_MULT; }
@@ -3914,7 +3948,7 @@ body.tight .itembar{gap:6px;}
   // 誰かが消したら、ほかの全員のカラーHPがその数だけ増える。30で脱落、最後の1人が勝ち
   let vsOn = false, cpuSpec = {every: 4600, burst: [3, 5]}, cpus = [], curStage = null;
   // 相手のHP（色ごと）。goalColor＝色指定のときの色（-1ならどれか1色）
-  let enemyHP = 30, goalColor = -1;
+  let enemyHP = 30, goalColor = -1, curVar = 0, obsWant = null;
   const isZako = () => !!(curStage && curStage.char == null);   // 暴走ブロック（立ち絵なし）
   // ===== お題の進み具合 =====
   let mis = [], misPen = 0;
@@ -4001,6 +4035,9 @@ body.tight .itembar{gap:6px;}
     zakoNow = stage && stage.char == null ? pickZako(stage) : null;   // ザコはエリアの住人からランダムで1人
     goalColor = stage && stage.goal >= 0 ? stage.goal : -1;
     enemyHP = stage ? (goalColor >= 0 ? stage.count : stage.hp) : CFG.STACK_MAX;
+    curVar = gameMode === 'story' ? varOf(stage) : 0;
+    if (stage && stage.kind === 'boss' && curVar > 0) enemyHP = Math.round(enemyHP * VAR_MUL[curVar]);   // ボスの氷・石の盤面は体力も上がる
+    obsWant = gameMode === 'story' && curVar > 0 ? {k: curVar === 1 ? 'ice' : 'stone', n: Math.min(8, 3 + Math.floor((stage.area || 0) / 2))} : null;
     cpuSpec = stage ? {every: stage.every, burst: stage.burst} : {every: 4600, burst: [3, 5]};
     cpus = [];
     for (let i = 1; i < count; i++) {
@@ -4381,6 +4418,8 @@ body.tight .itembar{gap:6px;}
       achvCheck();
       got = storyStars[i];
       coinNote = storyWinCoins(i, curStage.area, firstClear, got - bits(oldMask)) + teamExp(curStage) + zakoDrop();
+      const vr = varRewards(curVar, curStage.area); coinNote += vr.txt;
+      if (curVar >= 1) { const g0 = coins - seqC0; setTimeout(() => adDouble(g0, vr.list), 3800); }
       seqExtra = [];
       if (firstClear && curStage.kind === 'boss') {         // エリアクリア報酬：ボスを初めて倒したとき
         const ab = 100 * (curStage.area + 1); addCoins(ab);
@@ -4670,6 +4709,26 @@ body.tight .itembar{gap:6px;}
     g.globalAlpha = 1;
   }
   function drawTileRaw(g, x, y, s, v, alpha){
+    if (isIce(v)) {                                // 氷：元の色のブロックに、水色の氷をかぶせる
+      drawTileRaw(g, x, y, s, v - ICE, alpha);
+      const d = s * 0.08, h = s - d, rad = s * 0.28;
+      g.globalAlpha = (alpha == null ? 1 : alpha) * 0.62; g.fillStyle = '#d8f6ff'; rr(g, x - 1, y - 1, s + 2, h + d + 2, rad); g.fill();
+      g.globalAlpha = (alpha == null ? 1 : alpha); g.strokeStyle = '#7fd4f5'; g.lineWidth = Math.max(2, s * 0.06); rr(g, x, y, s, h + d, rad); g.stroke();
+      g.strokeStyle = 'rgba(255,255,255,.95)'; g.lineWidth = Math.max(1.5, s * 0.045); g.beginPath();
+      g.moveTo(x + s * 0.22, y + s * 0.3); g.lineTo(x + s * 0.42, y + s * 0.18); g.moveTo(x + s * 0.6, y + s * 0.78); g.lineTo(x + s * 0.8, y + s * 0.62); g.stroke();
+      g.globalAlpha = 1; return;
+    }
+    if (isStone(v)) {                              // 石：灰色。ひびが入ると線が出る
+      const d = s * 0.08, h = s - d, rad = s * 0.24;
+      g.globalAlpha = alpha == null ? 1 : alpha;
+      g.fillStyle = '#5d554d'; rr(g, x, y + d, s, h, rad); g.fill();
+      const gr = g.createLinearGradient(x, y, x, y + h); gr.addColorStop(0, '#b5aba0'); gr.addColorStop(1, '#8c8278');
+      g.fillStyle = gr; rr(g, x, y, s, h, rad); g.fill();
+      g.fillStyle = 'rgba(0,0,0,.12)'; [[0.3, 0.35, 0.09], [0.66, 0.6, 0.07], [0.42, 0.72, 0.06]].forEach(([a, b, q]) => { g.beginPath(); g.arc(x + s * a, y + h * b, s * q, 0, Math.PI * 2); g.fill(); });
+      if (v === STONE1) { g.strokeStyle = '#3a332d'; g.lineWidth = Math.max(1.5, s * 0.05); g.beginPath();
+        g.moveTo(x + s * 0.5, y + h * 0.05); g.lineTo(x + s * 0.42, y + h * 0.4); g.lineTo(x + s * 0.6, y + h * 0.55); g.lineTo(x + s * 0.5, y + h * 0.95); g.moveTo(x + s * 0.42, y + h * 0.4); g.lineTo(x + s * 0.15, y + h * 0.5); g.stroke(); }
+      g.globalAlpha = 1; return;
+    }
     const col = v === GOLD ? GOLD_COL : (v === HEART ? HEART_COL : v === GHEART ? '#ffb21f' : CH[v].col);
     const depth = s * 0.08, h = s - depth, rad = s * 0.28;
     g.globalAlpha = alpha == null ? 1 : alpha;
@@ -5214,31 +5273,40 @@ body.tight .itembar{gap:6px;}
   const bits = m => (m & 1) + (m >> 1 & 1) + (m >> 2 & 1);
   let storyClr = STORY.map(() => 0), storyMask = STORY.map(() => 0), runMaxBar = 0, lastStars = null;
   // 前の形（1エリア6面）の番号 → いまの番号（ザコ5面はふつうルート、6面目はボス）
-  const fromOld6 = o => { const a = Math.floor(o / 6), j = o % 6; return a * PER + (j < 5 ? j : BOSS_I); };
+  const fromOld6 = o => { const a = Math.floor(o / 6), j = o % 6; return a * 11 + (j < 5 ? j : 10); };   // 11面の形へ（このあと16面の形へ移す）
   if (load('map11', '') !== '1') {
     try { const a = JSON.parse(load('clears6', '[]')), m = JSON.parse(load('mask6', '[]'));
       if (Array.isArray(a) && a.length && load('clears11', '') === '') {
-        const c = STORY.map(() => 0), k = STORY.map(() => 0);
+        const c = Array(AREAS.length * 11).fill(0), k = Array(AREAS.length * 11).fill(0);
         a.forEach((v, o) => { const n = fromOld6(o); if (n < c.length) c[n] = v ? 1 : 0; });
         (Array.isArray(m) ? m : []).forEach((v, o) => { const n = fromOld6(o); if (n < k.length) k[n] = (+v || 0) & 7; });
         save('clears11', JSON.stringify(c)); save('mask11', JSON.stringify(k));
       }
-      const sg = +load('stage', '0') || 0; save('stage', String(Math.min(STORY.length - 1, fromOld6(sg))));
+      const sg = +load('stage', '0') || 0; save('stage', String(fromOld6(sg)));
     } catch(e) {}
     save('map11', '1');
   }
-  try { const a = JSON.parse(load('clears11', '[]')); if (Array.isArray(a)) storyClr = STORY.map((_, i) => a[i] ? 1 : 0); } catch(e) {}
-  try { const a = JSON.parse(load('mask11', '[]')); if (Array.isArray(a)) storyMask = STORY.map((_, i) => (+a[i] || 0) & 7); } catch(e) {}
+  // 11面 → 16面の形へ（2026-11-15）：ふつう0〜4・つよい5〜9はそのまま（つよい＝氷のルート）、ボス10→15
+  if (load('map16', '') !== '1') {
+    try { const to16 = o => { const a = Math.floor(o / 11), j = o % 11; return a * 16 + (j === 10 ? 15 : j); };
+      [['clears11', 'clears16'], ['mask11', 'mask16'], ['nc11', 'nc16']].forEach(([f, t]) => { const a = JSON.parse(load(f, 'null')); if (!Array.isArray(a)) return;
+        const o = Array(AREAS.length * 16).fill(0); a.forEach((v, i) => { const n = to16(i); if (n < o.length) o[n] = v; }); save(t, JSON.stringify(o)); });
+      const sg = load('stage', ''); if (sg !== '') save('stage', String(to16(+sg || 0)));
+    } catch(e) {}
+    save('map16', '1');
+  }
+  try { const a = JSON.parse(load('clears16', '[]')); if (Array.isArray(a)) storyClr = STORY.map((_, i) => a[i] ? 1 : 0); } catch(e) {}
+  try { const a = JSON.parse(load('mask16', '[]')); if (Array.isArray(a)) storyMask = STORY.map((_, i) => (+a[i] || 0) & 7); } catch(e) {}
   let storyStars = storyMask.map(bits);
   // storyNC＝コンティニューなしで勝ったことがあるか（あればオートで挑戦できる）
   let storyNC = STORY.map(() => 0);
-  try { const a = JSON.parse(load('nc11', 'null'));
+  try { const a = JSON.parse(load('nc16', 'null'));
     if (Array.isArray(a)) storyNC = STORY.map((_, i) => a[i] ? 1 : 0);
     else storyNC = STORY.map(() => 0);                    // 記録がない前のデータは0から（お題では決めない）
   } catch(e) {}
   // 記録ができる前にクリアしていたステージは、オート・スキップOKにする（1回だけ移行）
-  if (load('ncmig1', '') !== '1') { storyNC = storyNC.map((v, i) => v || storyClr[i] ? 1 : 0); save('nc11', JSON.stringify(storyNC)); save('ncmig1', '1'); }
-  const saveStars = () => { storyStars = storyMask.map(bits); save('clears11', JSON.stringify(storyClr)); save('mask11', JSON.stringify(storyMask)); save('nc11', JSON.stringify(storyNC)); };
+  if (load('ncmig1', '') !== '1') { storyNC = storyNC.map((v, i) => v || storyClr[i] ? 1 : 0); save('nc16', JSON.stringify(storyNC)); save('ncmig1', '1'); }
+  const saveStars = () => { storyStars = storyMask.map(bits); save('clears16', JSON.stringify(storyClr)); save('mask16', JSON.stringify(storyMask)); save('nc16', JSON.stringify(storyNC)); };
   const openAll = () => load('openall', '0') === '1';                 // テスト用：全部開放
   const starTotal = () => storyStars.reduce((s, v) => s + v, 0);      // 集めた★（合計・減らない）
   const bossesBeaten = () => AREAS.filter((_, a) => storyClr[a * PER + PER - 1] > 0).length;
@@ -5248,21 +5316,28 @@ body.tight .itembar{gap:6px;}
   const areaOpen = a => openAll() || a === 0 || storyClr[a * PER - 1] > 0;
   // ルートは下のルートをクリアすると出てくる（2026-11-15）：つよいルートは、ふつうルートの5面目に勝つと出現。第3のルートを入れるときも同じ決まり
   //   すでにつよいルートを遊んでいた人は、そのまま見える
-  const hardShown = a => { const b = a * PER; if (openAll() || storyClr[b + 4] > 0) return true; for (let k = 5; k < BOSS_I; k++) if (storyClr[b + k] > 0) return true; return false; };
+  const routeShown = (a, rt) => { if (rt <= 0) return true; const b = a * PER, s = rt * 5; if (openAll() || storyClr[b + s - 1] > 0) return true; for (let k = s; k < s + 5; k++) if (storyClr[b + k] > 0) return true; return false; };
+  const hardShown = a => routeShown(a, 1);
+  const routeClear = (a, rt) => storyClr[a * PER + rt * 5 + 4] > 0;   // そのルートの5面目に勝った
+  // ボスの盤面：クリアしたルートの数だけ選べる（0＝ふつう・1＝氷・2＝石）
+  let bossVar = null; const bvGet = () => bossVar || (bossVar = loadJ('bossvar', null) || {});
+  const bossVarMax = a => openAll() ? 2 : routeClear(a, 2) ? 2 : routeClear(a, 1) ? 1 : 0;
+  const bossVarOf = a => Math.min(bossVarMax(a), +bvGet()[a] || 0);
+  const varOf = st => !st ? 0 : st.kind === 'boss' ? bossVarOf(st.area) : Math.max(0, st.route);
   // ステージはエリアが開いていて、ルートのひとつ前に勝っていれば開く。ボスはどちらかのルートの5面目に勝てば開く
   const stageOpen = i => { if (!(i >= 0 && i < STORY.length)) return false;
     const a = Math.floor(i / PER), j = i % PER, b = a * PER;
-    if (!areaOpen(a)) return false; if (j >= 5 && j < BOSS_I && !hardShown(a)) return false; if (openAll() || j === 0 || j === 5) return true;
-    if (j === BOSS_I) return storyClr[b + 4] > 0 || storyClr[b + 9] > 0;
+    if (!areaOpen(a)) return false; if (j < BOSS_I && !routeShown(a, Math.floor(j / 5))) return false; if (openAll() || j === 0 || j === 5 || j === 10) return true;
+    if (j === BOSS_I) return storyClr[b + 4] > 0 || storyClr[b + 9] > 0 || storyClr[b + 14] > 0;
     return storyClr[i - 1] > 0; };
   // 続きのステージ：先へ進む道（ふつうルート・ボス）でまだ勝っていない面。全部勝っていたら、つよいルートの残り
   const nextStageIdx = () => { let last = 0, hard = -1;
     for (let i = 0; i < STORY.length; i++) { if (!stageOpen(i)) continue;
-      if (STORY[i].route === 1) { if (hard < 0 && !storyClr[i]) hard = i; continue; }
+      if (STORY[i].route >= 1) { if (hard < 0 && !storyClr[i]) hard = i; continue; }
       last = i; if (!storyClr[i]) return i; }
     return hard >= 0 ? hard : last; };
   // 勝ったあとに選んでおく面：同じルートの次。5面目のあとはボス、ボスのあとは次のエリア
-  const nextOnRoute = i => { const j = i % PER, b = i - j; return j === BOSS_I ? b + PER : (j === 4 || j === 9 ? b + BOSS_I : i + 1); };
+  const nextOnRoute = i => { const j = i % PER, b = i - j; return j === BOSS_I ? b + PER : (j === 4 || j === 9 || j === 14 ? b + BOSS_I : i + 1); };
   // 結果画面の★
   function showResStars(s){
     const el = $('resStars');
@@ -5288,7 +5363,8 @@ body.tight .itembar{gap:6px;}
     if (gameMode === 'sixty' || gameMode === 'chal') { $('over').classList.remove('hidden'); return; }   // 60秒アタック・チャレンジはコンティニューなし
     if (gameMode === 'story') {                          // ストーリー：広告は1ステージ3回まで。使い切ったらお守りだけ
       const ch = own('charm');
-      $('contRule').textContent = contLeft > 0 ? 'このステージはあと' + contLeft + '回' : 'このステージの広告コンティニューは使い切りました';
+      if (curVar > 0) contLeft = Math.max(contLeft, 1);
+      $('contRule').textContent = curVar > 0 ? '広告を見れば何度でも続けられます' : contLeft > 0 ? 'このステージはあと' + contLeft + '回' : 'このステージの広告コンティニューは使い切りました';
       $('contAd').classList.toggle('hidden', contLeft <= 0);
       $('contCharm').classList.toggle('hidden', ch <= 0);
       $('contCharm').textContent = 'お守りを使って続ける（所持 ' + ch + '）';
@@ -5308,9 +5384,32 @@ body.tight .itembar{gap:6px;}
     const ux = Math.max(UEXP.pracMin, Math.min(UEXP.pracMax, Math.round((now() - runStart) / 60000 * UEXP.pracPerMin)));
     userExpAdd(ux); $('finalNote').textContent += '　経験値 +' + ux;
   }
+  // 氷・石のルート（とボスの氷・石）のごほうび：氷＝アイテム2つ／石＝素材2つ（経験値・コイン・仲間の率は別で上がる）
+  const VAR_ITEMS = ['refresh30', 'refresh50', 'slow', 'bomb', 'star3'];
+  function varRewards(v, area){
+    const list = [];
+    if (v === 1) for (let k = 0; k < 2; k++) list.push([VAR_ITEMS[Math.floor(Math.random() * VAR_ITEMS.length)], 1]);
+    if (v === 2) for (let k = 0; k < 2; k++) { const [mk, q] = exRollMat(['w', 'a', 'x'][Math.floor(Math.random() * 3)], 3, ATTR_AREA[area] || 'none'); list.push([mk, q]); }
+    list.forEach(([k, n]) => giveItem(k, n)); if (list.length) saveInv();
+    const nm = k => ITEMS[k] ? ITEMS[k].name : EX_MAT[k] ? EX_MAT[k][0] : k;
+    return {list, txt: list.length ? ' ' + list.map(([k, n]) => nm(k) + '×' + n).join('・') + '。' : ''};
+  }
+  // 広告を見て、ごほうび2倍（コインとアイテム・素材をもう一度）
+  function adDouble(c, list){
+    if (running) return;
+    askChoice('📺 広告を見て、ごほうびを<b>2倍</b>にしますか？', '見る', 'いらない', () => playAd(() => {
+      if (c > 0) addCoins(c); list.forEach(([k, n]) => giveItem(k, n)); if (list.length) saveInv();
+      toast('🎁 ごほうび2倍！' + (c > 0 ? ' コイン +' + c : ''));
+    }), () => {});
+  }
+  function playAd(done){
+    const el = $('ad'); el.style.zIndex = 9700; el.classList.remove('hidden');
+    let n = CFG.AD_SEC; $('adCount').textContent = n;
+    const tm = setInterval(() => { n--; $('adCount').textContent = Math.max(0, n); if (n <= 0) { clearInterval(tm); el.classList.add('hidden'); el.style.zIndex = ''; done(); } }, 1000);
+  }
   // 広告（プロトタイプはダミーのカウントダウン。本番はAdMobのリワード広告に差し替え）
   function watchAd(){
-    if (gameMode === 'story') contLeft = Math.max(0, contLeft - 1);
+    if (gameMode === 'story' && curVar === 0) contLeft = Math.max(0, contLeft - 1);   // 氷・石は広告コンティニュー何回でも
     $('cont').classList.add('hidden'); $('ad').classList.remove('hidden');
     let n = CFG.AD_SEC; $('adCount').textContent = n;
     clearInterval(adTimer);
@@ -6619,7 +6718,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.120';
+  const APP_VER = '0.9.121';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -6645,11 +6744,11 @@ body.tight .itembar{gap:6px;}
   }
   // ===== ストーリーのマップ：スタート → 2つのルート（左＝ふつう、右＝つよい）→ ボス =====
   // マスの位置（マップの幅を100としたときの x, y。高さは124）。番号0〜4＝ふつう、5〜9＝つよい、10＝ボス
-  const MAP_BASE = [[24, 100], [14, 81], [28, 62], [14, 44], [27, 26], [76, 100], [86, 81], [72, 62], [86, 44], [73, 26], [50, 15]];
+  const MAP_BASE = [[17, 100], [10, 82], [20, 64], [10, 46], [19, 28], [50, 100], [40, 85], [60, 70], [40, 54], [58, 39], [83, 100], [90, 82], [80, 64], [90, 46], [81, 28], [50, 11]];
   const MAP_START = [50, 116];
   // エリアごとに少しだけ道の形を変える（種つきの乱数なので、毎回同じエリアは同じ形）
   const mapPosOf = area => { const R = stageRng(900 + area), flip = R() < 0.5;
-    return MAP_BASE.map(([x, y], i) => i === BOSS_I ? [x, y] : [(flip ? (i < 5 ? 42 - x : 158 - x) : x) + Math.round((R() - 0.5) * 6), y + Math.round((R() - 0.5) * 4)]); };
+    return MAP_BASE.map(([x, y], i) => i === BOSS_I ? [x, y] : [(flip ? 100 - x : x) + Math.round((R() - 0.5) * 5), y + Math.round((R() - 0.5) * 4)]); };
   let MAP_POS = MAP_BASE;
   let mapArea = Math.floor(pickStage / PER);
   // お題の報酬＝レインボーブロック（★は限界突破用に取っておく）
@@ -6660,9 +6759,10 @@ body.tight .itembar{gap:6px;}
   // つよいルートが出てきたら1回だけ知らせる（はじめて入れたときは、いま見えているぶんを黙って「見た」にする）
   function hardNotice(){
     let seen = loadJ('hard_seen', null); const first = !seen; seen = seen || [];
-    const nw = AREAS.map((_, a) => a).filter(a => hardShown(a) && !seen.includes(a)); if (!nw.length) return;
-    save('hard_seen', JSON.stringify(seen.concat(nw)));
-    if (!first && !openAll()) setTimeout(() => toast('🔥 エリア' + (nw[0] + 1) + 'に「つよいルート」が出現！ 敵は強いけど、ごほうびも多い'), 400);
+    const key = (a, rt) => rt === 1 ? a : 's' + a;
+    const nw = []; AREAS.forEach((_, a) => [1, 2].forEach(rt => { if (routeShown(a, rt) && !seen.includes(key(a, rt))) nw.push([a, rt]); })); if (!nw.length) return;
+    save('hard_seen', JSON.stringify(seen.concat(nw.map(([a, rt]) => key(a, rt)))));
+    if (!first && !openAll()) setTimeout(() => toast('エリア' + (nw[0][0] + 1) + 'に「' + VAR_NAME[nw[0][1]] + 'のルート」が出現！'), 400);
   }
   function drawStory(){
     try { hardNotice(); } catch(_) {}
@@ -6678,38 +6778,39 @@ body.tight .itembar{gap:6px;}
     $('areaStars').innerHTML = rb(1) + ' ' + areaStars(a) + ' / ' + PER * 3 + '<span class="tpow">⚔ チーム戦闘力 <b>' + myStoryPow().toLocaleString() + '</b></span>';
     // このエリアのボス確定ボーナス（4体）の進み具合：あと何をすればもらえるかを見せる
     { const rc = r => { let n = 0, m = 0; for (let k = 0; k < PER; k++) { const st = STORY[a * PER + k]; if (st && st.route === r) { m++; if (storyClr[a * PER + k] > 0) n++; } } return [n, m]; };
-      const hs = hardShown(a), boss = CHARS[ar.boss], r0 = rc(0), r1 = rc(1), rbN = areaStars(a), done = [storyClr[a * PER + PER - 1] > 0, r0[0] >= r0[1], r1[0] >= r1[1], rbN >= PER * 3];
+      const hs = hardShown(a), hs2 = routeShown(a, 2), boss = CHARS[ar.boss], r0 = rc(0), r1 = rc(1), r2 = rc(2), rbN = areaStars(a), done = [storyClr[a * PER + PER - 1] > 0, r0[0] >= r0[1], r1[0] >= r1[1], rbN >= PER * 3, r2[0] >= r2[1]];
       const it = (ok, t) => '<i class="' + (ok ? 'ok' : '') + '">' + (ok ? '✔' : '□') + t + '</i>';
-      $('areaBonus').innerHTML = '👑' + (boss ? boss.name : 'ボス') + ' 確定 ' + done.filter(Boolean).length + '/4：' +
-        it(done[0], 'ボス') + it(done[1], 'ふつう' + (done[1] ? '' : r0[0] + '/' + r0[1])) + it(done[2], hs ? 'つよい' + (done[2] ? '' : r1[0] + '/' + r1[1]) : '？？？') + it(done[3], 'ニジ' + (done[3] ? '' : rbN + '/' + PER * 3)); }
+      $('areaBonus').innerHTML = '👑' + (boss ? boss.name : 'ボス') + ' 確定 ' + done.filter(Boolean).length + '/5：' +
+        it(done[0], 'ボス') + it(done[1], 'ふつう' + (done[1] ? '' : r0[0] + '/' + r0[1])) + it(done[2], hs ? '氷' + (done[2] ? '' : r1[0] + '/' + r1[1]) : '？？？') + it(done[4], hs2 ? '石' + (done[4] ? '' : r2[0] + '/' + r2[1]) : '？？？') + it(done[3], 'ニジ' + (done[3] ? '' : rbN + '/' + PER * 3)); }
     $('areaPrev').disabled = a === 0;
     $('areaNext').disabled = a === AREAS.length - 1;
     // 道（マスとマスをつなぐ線）。クリアした区間は金色
     MAP_POS = mapPosOf(a);
     // マスを選んだだけ（エリアもクリア状況も同じ）なら、マップを作り直さずに「選択中」の印だけ動かす
     // （作り直すと敵の顔の絵が一瞬ぜんぶ消えることがあった）
-    const nowIdx0 = nextStageIdx(), mapKey = [a, open, hardShown(a), nowIdx0, myStoryPow(), storyClr.slice(a * PER, a * PER + PER).join(''), storyStars.slice(a * PER, a * PER + PER).join('')].join('|');
+    const nowIdx0 = nextStageIdx(), mapKey = [a, open, hardShown(a), routeShown(a, 2), bossVarOf(a), nowIdx0, myStoryPow(), storyClr.slice(a * PER, a * PER + PER).join(''), storyStars.slice(a * PER, a * PER + PER).join('')].join('|');
     if (map.dataset.key === mapKey && map.querySelector('.mnode')) {
       map.querySelectorAll('.mnode').forEach(n => n.classList.toggle('sel', +n.dataset.i === pickStage));
     } else { map.dataset.key = mapKey;
     const P = MAP_POS, b0 = a * PER, S = MAP_START;
     const seg = (p, q, done) => '<path class="' + (done ? 'done' : '') + '" d="M' + p[0] + ' ' + p[1] + ' L' + q[0] + ' ' + q[1] + '"/>';
     let svg = '<svg viewBox="0 0 100 124" preserveAspectRatio="none" aria-hidden="true">';
-    const hs = hardShown(a);
-    svg += seg(S, P[0], storyClr[b0] > 0) + (hs ? seg(S, P[5], storyClr[b0 + 5] > 0) : '');
-    for (let j = 0; j < 4; j++) { svg += seg(P[j], P[j + 1], storyClr[b0 + j + 1] > 0); if (hs) svg += seg(P[j + 5], P[j + 6], storyClr[b0 + j + 6] > 0); }
-    svg += seg(P[4], P[BOSS_I], storyClr[b0 + 4] > 0 && storyClr[b0 + BOSS_I] > 0) + (hs ? seg(P[9], P[BOSS_I], storyClr[b0 + 9] > 0 && storyClr[b0 + BOSS_I] > 0) : '');
+    const hs = hardShown(a), shR = [true, hs, routeShown(a, 2)];
+    for (let rt = 0; rt < 3; rt++) { if (!shR[rt]) continue; const o = rt * 5;
+      svg += seg(S, P[o], storyClr[b0 + o] > 0);
+      for (let j = 0; j < 4; j++) svg += seg(P[o + j], P[o + j + 1], storyClr[b0 + o + j + 1] > 0);
+      svg += seg(P[o + 4], P[BOSS_I], storyClr[b0 + o + 4] > 0 && storyClr[b0 + BOSS_I] > 0); }
     map.innerHTML = svg + '</svg>' +
       '<div class="mstart" style="left:' + S[0] + '%;top:' + (S[1] / 124 * 100) + '%">START</div>' +
-      '<div class="mroute" style="left:37%;top:' + (121 / 124 * 100) + '%">ふつう</div>' +
-      (hs ? '<div class="mroute hard" style="left:63%;top:' + (121 / 124 * 100) + '%">つよい</div>'
-          : '<div class="mroute hide" style="left:72%;top:50%">？？？<small>ふつうルートを<br>クリアで出現</small></div>');
+      '<div class="mroute" style="left:' + (P[0][0] < 50 ? 22 : 78) + '%;top:' + (121 / 124 * 100) + '%">ふつう</div>' +
+      (hs ? '<div class="mroute ice" style="left:60%;top:' + (121 / 124 * 100) + '%">氷</div>' : '<div class="mroute hide" style="left:50%;top:55%">？？？</div>') +
+      (shR[2] ? '<div class="mroute stone" style="left:' + (P[10][0] < 50 ? 22 : 78) + '%;top:' + (121 / 124 * 100) + '%">石</div>' : hs ? '<div class="mroute hide" style="left:' + (P[10][0] < 50 ? 15 : 85) + '%;top:55%">？？？</div>' : '');
     const nowIdx = nextStageIdx(), myPw = myStoryPow();
     STORY.slice(a * PER, a * PER + PER).forEach((st, k) => {
-      if (st.route === 1 && !hs) return;               // つよいルートは、出現するまでマスごと隠す
+      if (st.route >= 1 && !shR[st.route]) return;      // 氷・石のルートは、出現するまでマスごと隠す
       const i = st.no - 1, op = stageOpen(i), got = storyStars[i], clr = storyClr[i];
       const b = document.createElement('button');
-      b.className = 'mnode' + (st.kind === 'boss' ? ' boss' : (st.kind === 'mid' ? ' mid' : '')) + (st.route === 1 ? ' hard' : '') +
+      b.className = 'mnode' + (st.kind === 'boss' ? ' boss' : (st.kind === 'mid' ? ' mid' : '')) + (st.route === 1 ? ' hard ice' : st.route === 2 ? ' hard stone' : '') +
         (clr ? ' done' : '') + (op ? '' : ' lock') + (i === nowIdx && op && !clr ? ' now' : '') + (i === pickStage ? ' sel' : '');
       b.style.left = MAP_POS[k][0] + '%'; b.style.top = (MAP_POS[k][1] / 124 * 100) + '%'; b.dataset.i = i;
       const zk = st.kind === 'boss' ? null : zakoAt(st);
@@ -6730,7 +6831,6 @@ body.tight .itembar{gap:6px;}
           b.appendChild(fc);
         }
         b.insertAdjacentHTML('beforeend', '<span class="lb">' + (op ? st.label : '🔒') + '</span>');
-        if (!st.ready) b.insertAdjacentHTML('beforeend', '<span class="tmp">仮</span>');
       }
       b.insertAdjacentHTML('beforeend', '<span class="ms">' + starsHTML(got) + '</span>');
       if (op) { const need = stagePow(st); b.insertAdjacentHTML('beforeend', '<span class="pw ' + powCls(myPw, need) + '">⚔' + need.toLocaleString() + '</span>'); }
@@ -6750,8 +6850,10 @@ body.tight .itembar{gap:6px;}
     if (inArea) {
       const zk = st.kind === 'boss' ? null : zakoAt(st);
       const rule = st.kind === 'boss' ? 'ボス：' + fullName(CHARS[st.char]) : (st.kind === 'mid' ? '中ボス：' + st.name : (zk ? zakoFull(zk) : RULE_NAME[st.kind] + '：' + st.name));
-      const rtx = st.route === 1 ? '<div class="rt hard">つよいルート：敵のHP・ステータス+15%／コイン×1.5・経験値×1.3・仲間になりやすい（×1.5）</div>' :
-        (st.route === 0 ? '<div class="rt">ふつうルート</div>' : '<div class="rt">どちらかのルートを抜けると戦える</div>');
+      const bm = st.kind === 'boss' ? bossVarMax(a) : 0, bv = st.kind === 'boss' ? bossVarOf(a) : 0;
+      const rtx = st.route === 1 ? '<div class="rt hard">氷のルート：氷のおじゃまブロック</div>' : st.route === 2 ? '<div class="rt hard">石のルート：石のおじゃまブロック</div>' :
+        st.route === 0 ? '<div class="rt">ふつうルート</div>' :
+        (bm ? '<div class="bvar">' + VAR_NAME.slice(0, bm + 1).map((n, k) => '<button data-bvar="' + k + '" class="' + (k === bv ? 'on' : '') + '">' + n + '</button>').join('') + '</div>' : '');
       $('stageInfo').innerHTML = '<div class="t">' + st.label + '　' + rule + '</div>' + rtx +
         '<div class="g">' + goalText(st) + '</div>' +
         (() => { const need = stagePow(st), mine = myStoryPow(), c = powCls(mine, need);
@@ -6765,7 +6867,7 @@ body.tight .itembar{gap:6px;}
             (sc < 1 ? '<div class="d">攻撃力が高いぶん、数を集めるお題は少なくなっています</div>' : ''); })() +
         '<div class="d tries' + (stamNow() >= stamCost(pickStage) ? '' : ' none') + '">スタミナ ⚡' + stamCost(pickStage) + '（いま ' + stamNow() + '）</div>' +
         '<div class="d">難しさ Lv' + st.diff + (storyClr[pickStage] ? '　クリア済み' : '') +
-        (st.ready ? '' : '<br>おじゃまブロックは準備中です。いまは通常の盤面で遊べます。') + '</div>';
+        '</div>';
     } else {
       $('stageInfo').innerHTML = '<div class="d">' + (open ? 'マスを選んでください。' : 'このエリアはまだ入れません。') + '</div>';
     }
@@ -6776,6 +6878,7 @@ body.tight .itembar{gap:6px;}
     $('mapTotal').innerHTML = rb(1) + ' レインボーブロック ' + starTotal() + '個 ／ 倒したボス ' + bossesBeaten() + '人。勝ったうえで、お題を1つ達成するごとにレインボーブロック1つ（1ステージ最大3つ）。';
   }
   $('areaPrev').addEventListener('click', () => { mapArea--; drawStory(); });
+  $('stageInfo').addEventListener('click', e => { const b = e.target.closest('[data-bvar]'); if (!b) return; bvGet()[mapArea] = +b.dataset.bvar; save('bossvar', JSON.stringify(bossVar)); drawStory(); });
   $('areaNext').addEventListener('click', () => { mapArea++; drawStory(); });
   // タイトルのボタンに「続きのステージ」を出す
   function refreshStoryBtn(){
@@ -7108,7 +7211,7 @@ body.tight .itembar{gap:6px;}
     return sc * (1 + 0.5 * (gs.length - 1)) + seen.size;
   }
   const autoCopy = () => grid.map(row => row.slice());
-  const autoBusy = (r, c) => phase === 'clear' && [[r, c], [r, c+1], [r+1, c+1], [r+1, c]].some(([a, b]) => clearSet.has(a * N + b));
+  const autoBusy = (r, c) => sqFrozen(grid, r, c) || (phase === 'clear' && [[r, c], [r, c+1], [r+1, c+1], [r+1, c]].some(([a, b]) => clearSet.has(a * N + b)));
   // いちばんよい1手（なければ2手先まで見て、1手目を返す）
   function autoThink(){
     const L = AUTO_LV[autoLv] || AUTO_LV.gachi;
@@ -8149,13 +8252,13 @@ body.tight .itembar{gap:6px;}
   storyUnits();
   // ボスの確定ボーナス（天井の代わり。2026-11-13）：ボスに勝ったエリアで、ふつうルート全クリア・つよいルート全クリア・レインボーブロック全部ゲットのたびにボス本人を1体ずつ
   // 初回クリアの1体と合わせて、1エリアで確定4体
-  const BB_KINDS = [['r0', 'ふつうルートを全部クリア'], ['r1', 'つよいルートを全部クリア'], ['rb', 'レインボーブロックを全部ゲット']];
+  const BB_KINDS = [['r0', 'ふつうルートを全部クリア'], ['r1', '氷のルートを全部クリア'], ['r2', '石のルートを全部クリア'], ['rb', 'レインボーブロックを全部ゲット']];
   function bossBonus(){
     const given = loadJ('storygiven', null) || [], out = [];
     AREAS.forEach((ar, a) => {
       if (!(storyClr[a * PER + PER - 1] > 0) || !CHARS[ar.boss] || !CHAR_STAT[CHARS[ar.boss].id]) return;
       const rc = r => { for (let k = 0; k < PER; k++) { const st = STORY[a * PER + k]; if (st && st.route === r && !(storyClr[a * PER + k] > 0)) return false; } return true; };
-      const ok = {r0: rc(0), r1: rc(1), rb: areaStars(a) >= PER * 3};
+      const ok = {r0: rc(0), r1: rc(1), r2: rc(2), rb: areaStars(a) >= PER * 3};
       BB_KINDS.forEach(([k, why]) => { const key = 'bb' + k + '_' + a; if (ok[k] && !given.includes(key)) { given.push(key); newUnit(ar.boss); out.push({ci: ar.boss, why, a}); } });
     });
     if (out.length) { save('storygiven', JSON.stringify(given)); saveUnits(); }
@@ -8223,7 +8326,7 @@ body.tight .itembar{gap:6px;}
     // 面ごとの固定値：ザコはエリアの1面目が表の数字、そこから1面ごとに+3.5%（5面目で+14%。次のエリアの1面目を超えない）。中ボスは表の中ボスの数字以上、ボスは表のボスの数字
     const zk = Math.round(row[0] * (1 + 0.035 * Math.min(4, st.step || 0)));
     let base = st.kind === 'boss' ? row[2] : (st.kind === 'mid' ? Math.max(row[1], zk) : zk);
-    if (st.route === 1) base = Math.round(base * ROUTE_UP);
+    if (varOf(st) > 0) base = Math.round(base * VAR_MUL[varOf(st)]);   // 氷・石（ルートと、ボスの盤面）
     const out = [base, base, base, base];
     if (st.kind === 'boss') {
       const cs = CHARS[st.char] && CHAR_STAT[CHARS[st.char].id];
@@ -8305,7 +8408,7 @@ body.tight .itembar{gap:6px;}
   function dropRate(mode){
     const st = curStage; let p = (DROP_BASE[mode] || DROP_BASE.manual) * (1 + Math.floor(Math.random() * 30)) / 10;
     if (st && st.area < 4) p *= 1.5;
-    if (st && st.route === 1) p *= 1.5;
+    if (curVar >= 1) p *= 1.5;                             // 氷・石：仲間になりやすい
     return Math.min(0.9, p);
   }
   const dropMode = () => autoOn ? 'auto' : 'manual';
@@ -8470,7 +8573,7 @@ body.tight .itembar{gap:6px;}
     later(next, 600);
   }
   function teamExp(st){
-    const gain = Math.round((50 + 30 * (st.area + 1)) * (st.kind === 'boss' ? 3 : (st.kind === 'mid' ? 2 : 1)) * (st.route === 1 ? 1.3 : 1));
+    const gain = Math.round((50 + 30 * (st.area + 1)) * (st.kind === 'boss' ? 3 : (st.kind === 'mid' ? 2 : 1)) * [1, 1.3, 1.6][varOf(st)]);   // 経験値：氷×1.3・石×1.6
     const ups = [], info = {gain, list: []};
     teamMembers().forEach(u => {
       const cs = CHAR_STAT[u.id]; let lv = u.lv, exp = u.exp + gain;
@@ -10335,7 +10438,7 @@ body.tight .itembar{gap:6px;}
   }
   const meTalking = () => !!clipNow.me;
   // ---- 盤面の道具 ----
-  const isNormal = v => v != null && v !== GOLD && v !== HEART && v !== GHEART;
+  const isNormal = v => v != null && v !== GOLD && v !== HEART && v !== GHEART && v < OBS;
   const shuf = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
   const inB = (r, c) => r >= 0 && r < N && c >= 0 && c < N;
   const cellsWhere = f => { const o = []; for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if (f(grid[r][c], r, c)) o.push([r, c]); return o; };
@@ -10464,6 +10567,7 @@ body.tight .itembar{gap:6px;}
   }
   // 指定したマスを消す（ふつうに消したのと同じく、カラーHPと相手のHPに反映）
   function blast(cells){
+    { const ob = cells.filter(([r, c]) => inB(r, c) && (isIce(grid[r][c]) || isStone(grid[r][c]))); if (ob.length) ob.forEach(([r, c]) => { const v = grid[r][c]; grid[r][c] = isIce(v) ? v - ICE : v === STONE2 ? STONE1 : null; }); }   // 技はおじゃまも割る
     const seen = new Set(), byColor = {};
     cells.forEach(([r, c]) => { const k = r * N + c; if (seen.has(k) || !inB(r, c) || !isNormal(grid[r][c])) return; seen.add(k); (byColor[grid[r][c]] = byColor[grid[r][c]] || []).push([r, c]); });
     if (!seen.size) return 0;
@@ -10955,7 +11059,7 @@ body.tight .itembar{gap:6px;}
   });
   // ストーリーで勝ったときのコイン。クリア済みの面は1日1回まで半分もらえる
   function storyWinCoins(i, area, firstClear, newStars){
-    const base = Math.round((10 + 2 * (area + 1)) * (STORY[i] && STORY[i].route === 1 ? 1.5 : 1));
+    const base = Math.round((10 + 2 * (area + 1)) * [1, 1.5, 2][varOf(STORY[i])]);
     let c = 0, parts = [], limited = false;
     if (firstClear) { c += base; parts.push('クリア ' + base); }
     else {
