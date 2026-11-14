@@ -543,6 +543,8 @@ body.on-menu .battlemain{opacity:0;}
   .rsq-ad{margin:10px auto 0;display:block;padding:12px 18px;border:0;border-radius:14px;background:linear-gradient(90deg,#ffcf3d,#ff8a3d);color:#3a2210;font-weight:900;font-size:15px;box-shadow:0 4px 0 #b25a10;}
   .rsq-ad:disabled{opacity:.85;} .rsq-ad.done{background:#3fc67a;color:#fff;box-shadow:0 4px 0 #1f7a47;}
   .paylink{margin-left:6px;border:0;border-radius:8px;padding:2px 8px;background:rgba(255,255,255,.18);color:inherit;font-weight:800;font-size:11px;}
+  .updbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 14px);z-index:9000;border:0;border-radius:999px;padding:8px 8px 8px 14px;background:#2a1740;color:#fff;font-weight:800;font-size:12px;box-shadow:0 4px 14px rgba(0,0,0,.45);display:flex;align-items:center;gap:8px;white-space:nowrap;max-width:94vw;}
+  .updbar b{background:#ffcc33;color:#3a2600;border-radius:999px;padding:4px 10px;} .updbar.hidden{display:none;}
   .chlist{margin-top:8px;} .chrew{font-size:12px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.06);} .chrew b{display:block;margin-bottom:6px;color:#ffd36b;} .chrew div{display:flex;gap:8px;padding:2px 0;} .chrew span{min-width:70px;font-weight:800;}
   .mroute.hide{color:rgba(255,255,255,.55);font-size:20px;text-align:center;line-height:1.2;} .mroute.hide small{display:block;font-size:10px;margin-top:4px;}
   #stageInfo .rt{font-size:12px;font-weight:700;color:#9fe3ff;margin:2px 0 4px;}
@@ -5688,7 +5690,7 @@ body.tight .itembar{gap:6px;}
   const newsRead = () => new Set(loadJ('news_read', []));
   const newsUnread = () => { const r = newsRead(); return news.filter(n => !r.has(n.id)).length; };
   function newsBadge(){
-    const b = $('newsBtn'); let el = b.querySelector('.nbadge'); const c = newsUnread();
+    const b = $('newsBtn'); let el = b.querySelector('.nbadge'); const c = newsUnread() + (newVer ? 1 : 0);   // 新しいバージョンも1件に数える
     if (!c) { if (el) el.remove(); return; }
     if (!el) { el = document.createElement('i'); el.className = 'nbadge'; b.appendChild(el); }
     el.textContent = c > 99 ? '99+' : c;
@@ -5699,14 +5701,35 @@ body.tight .itembar{gap:6px;}
     newsBadge();
   }
   function markNews(ids){ const r = newsRead(); ids.forEach(id => r.add(id)); save('news_read', JSON.stringify([...r].slice(-300))); newsBadge(); }
+  // ===== 新しいバージョンのお知らせ（2026-11-15）：開きっぱなしのあいだに新しい版が出たら、タイトルとニュースで知らせる =====
+  //   ゲーム本体を「保存しないで」取りに行って、中の APP_VER と今の版を比べる。開いたとき・戻ってきたとき・10分ごと
+  let newVer = '';
+  const verNum = v => String(v || '').split('.').map(x => +x || 0).reduce((a, x) => a * 1000 + x, 0);
+  async function verCheck(){
+    try {
+      const t = await fetch('/?vc=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.text() : '');
+      const m = /const APP_VER = '([\d.]+)'/.exec(t); if (!m) return;
+      if (verNum(m[1]) > verNum(APP_VER)) { newVer = m[1]; drawUpd(); newsBadge(); }
+    } catch (_) {}
+  }
+  function drawUpd(){
+    let el = $('updBar');
+    if (!newVer || running) { if (el) el.classList.add('hidden'); return; }
+    if (!el) { el = document.createElement('button'); el.id = 'updBar'; el.className = 'updbar'; el.onclick = () => location.reload(); document.body.appendChild(el); }
+    el.innerHTML = '🆕 新しいバージョン（v' + newVer + '）があります<b>更新する</b>'; el.classList.remove('hidden');
+  }
+  setTimeout(verCheck, 8000); setInterval(verCheck, 10 * 60 * 1000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) verCheck(); });
+  setInterval(drawUpd, 2000);                              // 遊んでいる間は隠して、終わったら出す
   function drawNews(){
     const r = newsRead(), body = $('newsBody');
-    body.innerHTML = (news.length ? news.map(n => '<div class="news-item" data-id="' + newsEsc(n.id) + '"><button>' + (r.has(n.id) ? '' : '<span class="nnew">NEW</span>') +
+    body.innerHTML = (newVer ? '<button class="btn" id="newsUpd" style="margin:6px 0 12px;width:100%">🆕 新しいバージョン（v' + newVer + '）があります。更新する</button>' : '') + (news.length ? news.map(n => '<div class="news-item" data-id="' + newsEsc(n.id) + '"><button>' + (r.has(n.id) ? '' : '<span class="nnew">NEW</span>') +
       (n.tag ? '<span class="news-tag">' + newsEsc(n.tag) + '</span>' : '') + '<span class="nt">' + newsEsc(n.title) + '</span><span class="nd">' + newsEsc(n.date || '') + '</span></button><div class="nb">' + newsEsc(n.body || '') + '</div></div>').join('')
       : '<section><p>お知らせはまだありません。</p></section>') +
       (newsUnread() ? '<button class="btn gray" id="newsAll" style="margin:14px 0">すべて読んだことにする</button>' : '');
     body.querySelectorAll('.news-item>button').forEach(b => b.onclick = () => { const it = b.parentNode; it.classList.toggle('open'); if (it.classList.contains('open')) { markNews([it.dataset.id]); const nw = b.querySelector('.nnew'); if (nw) nw.remove(); } });
     const all = $('newsAll'); if (all) all.onclick = () => { markNews(news.map(n => n.id)); drawNews(); };
+    const up = $('newsUpd'); if (up) up.onclick = () => location.reload();
   }
   $('newsBtn').addEventListener('click', () => { audio(); drawNews(); $('news').classList.remove('hidden'); $('newsBody').scrollTop = 0; newsFetch().then(() => { if (!$('news').classList.contains('hidden')) drawNews(); }); });
   $('newsBack').addEventListener('click', () => { $('news').classList.add('hidden'); newsBadge(); });
@@ -6736,7 +6759,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.128';
+  const APP_VER = '0.9.129';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
