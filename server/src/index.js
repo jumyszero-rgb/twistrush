@@ -715,8 +715,11 @@ async function payLimit(env, id) {
   if (!row) return { birth: false };
   const age = ageOf(row.birth), cap = capOfAge(age);
   const j = new Date(Date.now() + 9 * 3600 * 1000), from = Date.UTC(j.getUTCFullYear(), j.getUTCMonth(), 1) / 1000 - 9 * 3600;
-  const s = await env.DB.prepare('SELECT COALESCE(SUM(amount), 0) AS y FROM purchases WHERE account_id = ? AND created_at >= ?').bind(id, from).first();
-  return { birth: true, minor: age < 18, cap, spent: (s && s.y) | 0 };
+  const s = await env.DB.prepare("SELECT COALESCE(SUM(amount), 0) AS y, SUM(CASE WHEN sku = 'pass' THEN 1 ELSE 0 END) AS np FROM purchases WHERE account_id = ? AND created_at >= ?").bind(id, from).first();
+  // 月パス契約中（自動更新あり）で、今月まだ更新の支払いがないときは、更新分（980円）を先に「使ったもの」として数えておく
+  //   → ほかの買い物で上限いっぱいまで使っても、月パスの更新で上限をこえない
+  const e = await entsOf(env, id), reserve = e.pass_auto && e.pass_until > nowSec() && !((s && s.np) | 0) ? PAY_SKU.pass.yen : 0;
+  return { birth: true, minor: age < 18, cap, spent: ((s && s.y) | 0) + reserve, reserve };
 }
 async function payStatus(env, id) {
   const e = await entsOf(env, id), lim = await payLimit(env, id);
