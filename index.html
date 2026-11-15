@@ -923,6 +923,7 @@ body.on-menu .battlemain{opacity:0;}
   .toast.show{opacity:1;}
   .toast{position:fixed;top:calc(env(safe-area-inset-top,0px) + 60px);z-index:100;max-width:calc(100vw - 24px);box-sizing:border-box;overflow:hidden;}
   .toast span{display:inline-block;}
+  .paylink+.paylink{margin-left:10px;} [data-pcancel].paylink{color:#ff8a8a;}
   .birthin{display:block;margin:12px auto 0;font-size:18px;padding:8px 10px;border-radius:10px;border:2px solid #c9b6ff;}
   .pcons{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:10px;font-size:13px;font-weight:800;} .pcons input{width:20px;height:20px;}
   /* 広告のあとの「再開」ボタン */
@@ -6810,7 +6811,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.137';
+  const APP_VER = '0.9.138';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -7939,13 +7940,32 @@ body.tight .itembar{gap:6px;}
   function drawPayPacks(){
     const fb = load('first_srv', '') === '1', na = noAds(), auto = load('pass_auto', '') === '1';   // 初回パックは、サーバーの記録で判断（テストで受け取った分は数えない）
     $('shopPacks').innerHTML = PACKS.filter(p => !(p.first && fb)).map(p => {
-      const own = (p.sku === 'noads' && na), sub = p.sku === 'pass' && auto && passOn();
+      const own = (p.sku === 'noads' && na), sub = p.sku === 'pass' && auto && passOn(), stop = p.sku === 'pass' && !auto && passOn() && load('pass_srv', '') === '1';
       return '<div class="shoprow' + (p.first ? ' firstpack' : '') + '"><img src="' + itemImg(p.coin ? 'coin' : 'charm') + '" alt=""><div class="tx"><div class="nm">' + (p.first ? '🎁 ' : '') + p.name + '</div>' +
-        (p.desc ? '<div class="ds">' + p.desc + '</div>' : '') + (sub ? '<div class="ds">契約中（のこり' + passLeft() + '日）<button class="paylink" data-portal="1">確認・解約</button></div>' : '') + '</div>' +
-        '<button class="buybtn" data-sku="' + p.sku + '"' + (own || sub ? ' disabled' : '') + '>' + (own ? '購入済み' : sub ? '契約中' : p.price) + '</button></div>'; }).join('') +
+        (p.desc ? '<div class="ds">' + p.desc + '</div>' : '') +
+        (sub ? '<div class="ds">契約中（次の更新 ' + passDay() + '）<br><button class="paylink" data-pcancel="1">解約する</button><button class="paylink" data-portal="1">支払い方法・領収書</button></div>' : '') +
+        (stop ? '<div class="ds">解約済み（' + passDay() + ' まで使えます）<br>' + (load('pass_sub', '') === '1' ? '<button class="paylink" data-presume="1">解約をとりけす</button>' : '') + '</div>' : '') + '</div>' +
+        '<button class="buybtn" data-sku="' + p.sku + '"' + (own || sub || stop ? ' disabled' : '') + '>' + (own ? '購入済み' : sub ? '契約中' : stop ? '解約済み' : p.price) + '</button></div>'; }).join('') +
       '<p class="note">' + (acctToken ? '' : '購入にはログインが必要です（設定 → アカウント）。') + '</p>';
   }
+  // 2026-11-15：月パスの解約・解約のとりけしをゲームの中で（Stripe のページへ行かなくてよい）
+  const passDay = () => { const d = new Date(passEnd()); return (d.getMonth() + 1) + '月' + d.getDate() + '日'; };
+  async function passSet(cancel){
+    if (payBusy) return; payBusy = true;
+    try { const r = await api('/api/pay/pass/' + (cancel ? 'cancel' : 'resume'), {method: 'POST', body: '{}'});
+      if (r.ok) { save('pass_auto', r.auto ? '1' : ''); if (r.until) save('pass_end', String(r.until * 1000)); try { drawShop(); } catch (_) {}
+        msgLog('buy', cancel ? '🛑 月パスを解約しました（' + passDay() + ' まで使えます）' : '↩ 月パスの解約をとりけしました');
+        payAsk(cancel ? '<b>月パスを解約しました</b><br><small>次の更新から支払いは止まります。<br><b>' + passDay() + '</b> までは、今まで通り使えます。<br>その日までなら「解約をとりけす」で元にもどせます。</small>' : '<b>解約をとりけしました</b><br><small>月パスは今まで通り、毎月自動で更新されます。<br>次の更新は ' + passDay() + ' です。</small>'); }
+      else payAsk(r.error || 'できませんでした'); }
+    catch (e) { payAsk(e.message || 'サーバーにつながりませんでした'); }
+    payBusy = false;
+  }
   document.addEventListener('click', async e => {
+    const pc = e.target.closest('[data-pcancel],[data-presume]');
+    if (pc) { e.preventDefault(); e.stopPropagation();
+      if (pc.dataset.pcancel) payAsk('<b>月パスを解約しますか？</b><br><small>次の更新（' + passDay() + '）から支払いが止まります。<br>' + passDay() + ' までは今まで通り使えます。<br>毎日のガチャチケット・スタミナポットも、その日まで受け取れます。</small>', () => passSet(true));
+      else payAsk('<b>解約をとりけしますか？</b><br><small>月パスがまた毎月自動で更新されます（980円・税込）。</small>', () => passSet(false));
+      return; }
     const pt = e.target.closest('[data-portal]');
     if (pt) { e.preventDefault(); e.stopPropagation(); try { const r = await api('/api/pay/portal', {method: 'POST', body: '{}'}); if (r.url) location.href = r.url; else toast(r.error || '開けませんでした'); } catch (_) { toast('サーバーにつながりませんでした'); } return; }
     const b = e.target.closest('[data-sku]'); if (!b || !payOn) return;
@@ -7998,7 +8018,7 @@ body.tight .itembar{gap:6px;}
     try {
       const s = await api('/api/pay/status');
       if (s.passUntil) save('pass_end', String(s.passUntil * 1000));
-      payLim = s.limit || null; save('pass_auto', s.passAuto ? '1' : ''); if (s.noads) save('noads', '1'); save('first_srv', s.first ? '1' : ''); if (s.first) save('firstpack', '1');
+      payLim = s.limit || null; save('pass_auto', s.passAuto ? '1' : ''); save('pass_srv', s.passSub ? '1' : ''); save('pass_sub', s.passSub ? '1' : ''); if (s.noads) save('noads', '1'); save('first_srv', s.first ? '1' : ''); if (s.first) save('firstpack', '1');
       for (const c of s.claims || []) {
         try { const k = await api('/api/pay/claim', {method: 'POST', body: JSON.stringify({id: c.id})}); if (k && k.ok) { Object.entries(k.items || {}).forEach(([key, n]) => giveItem(key, n)); saveInv(); got = true;
           const nm = (PACKS.find(x => x.sku === k.sku) || {}).name || '購入したもの', its = Object.entries(k.items || {}).map(([key, n]) => itemLabel(key) + ' ×' + n).join('<br>');

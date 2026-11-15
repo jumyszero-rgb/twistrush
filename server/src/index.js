@@ -482,6 +482,18 @@ async function api(env, req, url) {
     if (!u.meta.changes) return fail(env, req, 'もう受け取りました', 409);
     return json(env, req, { ok: true, sku: row.sku, items: (PAY_SKU[row.sku] || {}).items || {} });
   }
+  // 月パスの解約（次の更新から止める。のこりの日数は使える）／解約のとりけし（期限までなら元にもどせる）
+  if ((p === '/api/pay/pass/cancel' || p === '/api/pay/pass/resume') && M === 'POST') {
+    if (!env.STRIPE_SECRET_KEY) return fail(env, req, '準備中です', 503);
+    const e = await entsOf(env, me.id), cancel = p.endsWith('cancel');
+    if (!e.pass_sub || e.pass_until <= nowSec()) return fail(env, req, '契約中の月パスが見つかりません', 404);
+    if (cancel && !e.pass_auto) return json(env, req, { ok: true, until: e.pass_until, auto: false });
+    if (!cancel && e.pass_auto) return json(env, req, { ok: true, until: e.pass_until, auto: true });
+    const r = await stripe(env, 'subscriptions/' + encodeURIComponent(e.pass_sub), { cancel_at_period_end: cancel ? 'true' : 'false' });
+    if (!r.id) return fail(env, req, (cancel ? '解約' : '解約のとりけし') + 'ができませんでした' + (r.error && r.error.message ? '（' + r.error.message + '）' : ''), 502);
+    await entsSet(env, me.id, { pass_auto: cancel ? 0 : 1 });
+    return json(env, req, { ok: true, until: e.pass_until, auto: !cancel });
+  }
   if (p === '/api/pay/portal' && M === 'POST') {     // 月パス（サブスク）の確認・解約：Stripe のページへ
     if (!env.STRIPE_SECRET_KEY) return fail(env, req, '準備中です', 503);
     const e = await entsOf(env, me.id); if (!e.customer) return fail(env, req, '契約が見つかりません', 404);
@@ -724,7 +736,7 @@ async function payLimit(env, id) {
 async function payStatus(env, id) {
   const e = await entsOf(env, id), lim = await payLimit(env, id);
   const claims = (await env.DB.prepare('SELECT id, sku FROM purchases WHERE account_id = ? AND claimed = 0 ORDER BY created_at').bind(id).all()).results || [];
-  return { enabled: !!env.STRIPE_SECRET_KEY, passUntil: e.pass_until, passAuto: !!e.pass_auto, noads: !!e.noads, first: !!e.first && env.PAY_TEST !== '1', limit: lim, portal: !!e.customer, claims: claims.map(c => ({ id: c.id, sku: c.sku, items: (PAY_SKU[c.sku] || {}).items || {} })) };
+  return { enabled: !!env.STRIPE_SECRET_KEY, passUntil: e.pass_until, passAuto: !!e.pass_auto, passSub: !!e.pass_sub, noads: !!e.noads, first: !!e.first && env.PAY_TEST !== '1', limit: lim, portal: !!e.customer, claims: claims.map(c => ({ id: c.id, sku: c.sku, items: (PAY_SKU[c.sku] || {}).items || {} })) };
 }
 async function payCheckout(env, req, me) {
   if (!env.STRIPE_SECRET_KEY) return fail(env, req, '準備中です', 503);
@@ -772,6 +784,8 @@ async function payWebhook(env, req) {
   } else if (ev.type === 'invoice.paid' && o.billing_reason === 'subscription_cycle') {   // 月パスの毎月の更新
     const md = (o.subscription_details && o.subscription_details.metadata) || (o.parent && o.parent.subscription_details && o.parent.subscription_details.metadata) || {};
     if (md.account && md.sku === 'pass') await payFulfill(env, md.account, 'pass', o.id, o.amount_paid || 0, {});
+  } else if (ev.type === 'customer.subscription.updated') {                               // Stripe のページで解約・とりけしをしたとき
+    const md = o.metadata || {}; if (md.account && md.sku === 'pass') await entsSet(env, md.account, { pass_auto: o.cancel_at_period_end || o.status !== 'active' ? 0 : 1 });
   } else if (ev.type === 'customer.subscription.deleted') {                               // 解約：のこりの日数は使える
     const md = o.metadata || {}; if (md.account) await entsSet(env, md.account, { pass_auto: 0 });
   }
