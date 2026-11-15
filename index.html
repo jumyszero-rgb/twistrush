@@ -6808,7 +6808,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.134';
+  const APP_VER = '0.9.135';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -7958,6 +7958,12 @@ body.tight .itembar{gap:6px;}
     });
   }, true);
   // サーバーの記録に合わせる（ログイン中）。受け取り待ちのアイテムはここで受け取る
+  // 2026-11-15：買ったものは横に流すお知らせではなく、ポップアップで「OK」を押すまで出す（何を買ったか、まとめて1つ）
+  let payGot = [];
+  function payShow(){
+    if (!payGot.length) return; const a = payGot; payGot = [];
+    askYes('🎁 <b>購入ありがとうございます</b><br><small>' + a.join('<br>') + '</small>');
+  }
   async function paySync(){
     try { const r = await api('/api/ping'); payOn = !!(r && r.pay); } catch (_) { return false; }
     if (!payOn || !acctToken) return false;
@@ -7969,7 +7975,7 @@ body.tight .itembar{gap:6px;}
       for (const c of s.claims || []) {
         try { const k = await api('/api/pay/claim', {method: 'POST', body: JSON.stringify({id: c.id})}); if (k && k.ok) { Object.entries(k.items || {}).forEach(([key, n]) => giveItem(key, n)); saveInv(); got = true;
           const nm = (PACKS.find(x => x.sku === k.sku) || {}).name || '購入したもの', its = Object.entries(k.items || {}).map(([key, n]) => itemLabel(key) + ' ×' + n).join('<br>');
-          askYes('🎁 <b>' + nm + '</b>を受け取りました<br><small>' + its + '</small>', () => {}); msgLog('buy', '🛒 ' + nm + '：' + its.replace(/<br>/g, '・')); try { syncDirty = true; syncUp(); } catch (_) {} } } catch (_) {}   // 受け取ったらすぐクラウドへ
+          payGot.push('<b>' + nm + '</b><br>' + its); msgLog('buy', '🛒 ' + nm + '：' + its.replace(/<br>/g, '・')); try { syncDirty = true; syncUp(); } catch (_) {} } } catch (_) {}   // 受け取ったらすぐクラウドへ
       }
       passDaily();
     } catch (_) {}
@@ -7983,9 +7989,15 @@ body.tight .itembar{gap:6px;}
     if (st === 'cancel') toast('購入をキャンセルしました');
     await paySync();
     if (st === 'ok') {                                   // 支払いのあと：反映されるまで少し待つ（Stripe の通知が先に届くとは限らない）
-      toast('お支払いを確認しています…'); const g0 = gold;
-      for (let k = 0; k < 8; k++) { await new Promise(res => setTimeout(res, 2500)); const got = await paySync(); if (got || gold !== g0 || +load('pass_end', '0') > Date.now()) { toast('✅ 購入が反映されました'); if (gold > g0) msgLog('buy', '🛒 ゴールドコイン +' + (gold - g0).toLocaleString()); else if (!got && load('pass_auto', '') === '1') msgLog('buy', '🛒 月パス（のこり' + passLeft() + '日）'); break; } }
-    }
+      toast('お支払いを確認しています…'); const g0 = gold, pe0 = +load('pass_end', '0'), na0 = load('noads', '') === '1';
+      let done = false;
+      for (let k = 0; k < 8 && !done; k++) { await new Promise(res => setTimeout(res, 2500)); const got = await paySync(); const pe = +load('pass_end', '0'), na = load('noads', '') === '1';
+        if (gold > g0) { payGot.push('<b>ゴールドコイン</b> +' + (gold - g0).toLocaleString()); msgLog('buy', '🛒 ゴールドコイン +' + (gold - g0).toLocaleString()); done = true; }
+        if (pe > pe0 && pe > Date.now()) { payGot.push('<b>月パス</b>（のこり' + passLeft() + '日）'); msgLog('buy', '🛒 月パス（のこり' + passLeft() + '日）'); done = true; }
+        if (na && !na0) { payGot.push('<b>広告削除</b>（これから広告は出ません）'); msgLog('buy', '🛒 広告削除'); done = true; }
+        if (got) done = true; }
+      if (done) payShow(); else askYes('お支払いの反映に時間がかかっています。<br><small>少したってから開き直すと受け取れます。</small>');
+    } else payShow();
   }, 2000);
   function drawShop(){
     drawSpecial(); drawTickets();
@@ -10045,6 +10057,8 @@ body.tight .itembar{gap:6px;}
       document.body.appendChild(d);
     }
     d.querySelector('p').innerHTML = msg; d.style.display = 'flex';
+    d.querySelector('[data-a="no"]').style.display = yes ? '' : 'none';   // yes なし＝お知らせだけ（OK のみ）
+    yes = yes || (() => {});
     d.onclick = e => { const b = e.target.closest('[data-a]'); if (!b) return; d.style.display = 'none'; if (b.dataset.a === 'yes') yes(); };
   }
   // 並べかえ：入手順・レベル・グレード・各ステータス・キャラ
