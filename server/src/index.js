@@ -34,6 +34,7 @@ const SCHEMA = [
   "CREATE TABLE IF NOT EXISTS purchases ( id TEXT PRIMARY KEY, account_id TEXT NOT NULL, sku TEXT NOT NULL, amount INTEGER NOT NULL DEFAULT 0, claimed INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL )",
   "CREATE INDEX IF NOT EXISTS idx_purchases_acc ON purchases(account_id, claimed)",
   "CREATE TABLE IF NOT EXISTS ents ( account_id TEXT PRIMARY KEY, pass_until INTEGER NOT NULL DEFAULT 0, pass_sub TEXT NOT NULL DEFAULT '', pass_auto INTEGER NOT NULL DEFAULT 0, noads INTEGER NOT NULL DEFAULT 0, first INTEGER NOT NULL DEFAULT 0, customer TEXT NOT NULL DEFAULT '' )",
+  "CREATE TABLE IF NOT EXISTS pay_birth ( account_id TEXT PRIMARY KEY, birth TEXT NOT NULL, created_at INTEGER NOT NULL )",
   "CREATE TABLE IF NOT EXISTS votes ( month TEXT NOT NULL, account_id TEXT NOT NULL, cid TEXT NOT NULL, n INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (month, account_id, cid) )",
   "CREATE INDEX IF NOT EXISTS idx_votes_month ON votes(month, cid)",
   "CREATE TABLE IF NOT EXISTS vote_free ( account_id TEXT NOT NULL, day TEXT NOT NULL, PRIMARY KEY (account_id, day) )",
@@ -465,6 +466,14 @@ async function api(env, req, url) {
   // ---- 課金（Stripe）----
   if (p === '/api/pay/status' && M === 'GET') return json(env, req, await payStatus(env, me.id));
   if (p === '/api/pay/checkout' && M === 'POST') return payCheckout(env, req, me);
+  if (p === '/api/pay/birth' && M === 'POST') {       // 生年月日：一度だけ登録できる（あとから変えられない＝上限を外すためのうそを防ぐ）
+    const b = await req.json().catch(() => ({})), d = String(b.birth || '');
+    const age = ageOf(d);
+    if (age == null || age < 3 || age > 120) return fail(env, req, '生年月日を正しく入れてください', 400);
+    const r = await env.DB.prepare('INSERT OR IGNORE INTO pay_birth (account_id, birth, created_at) VALUES (?, ?, ?)').bind(me.id, d, nowSec()).run();
+    if (!r.meta.changes) return fail(env, req, '生年月日はもう登録されています', 409);
+    return json(env, req, { ok: true, ...(await payLimit(env, me.id)) });
+  }
   if (p === '/api/pay/claim' && M === 'POST') {
     const b = await req.json().catch(() => ({}));
     const row = await env.DB.prepare('SELECT sku FROM purchases WHERE id = ? AND account_id = ? AND claimed = 0').bind(String(b.id || ''), me.id).first();
@@ -690,10 +699,29 @@ async function entsSet(env, id, kv) {
   const ks = Object.keys(kv);
   await env.DB.prepare('UPDATE ents SET ' + ks.map(k => k + ' = ?').join(', ') + ' WHERE account_id = ?').bind(...ks.map(k => kv[k]), id).run();
 }
+// ---------- 年齢ごとの1か月の上限（日本時間の月で数える）----------
+//   15歳以下：5,000円／16〜17歳：10,000円／18歳以上：上限なし。誕生日をむかえると自動で上がる
+function ageOf(birth) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(birth || ''); if (!m) return null;
+  const y = +m[1], mo = +m[2], d = +m[3], dt = new Date(Date.UTC(y, mo - 1, d));
+  if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== mo - 1 || dt.getUTCDate() !== d) return null;
+  const j = new Date(Date.now() + 9 * 3600 * 1000), ty = j.getUTCFullYear(), tm = j.getUTCMonth() + 1, td = j.getUTCDate();
+  if (y > ty || (y === ty && (mo > tm || (mo === tm && d > td)))) return null;
+  return ty - y - (tm < mo || (tm === mo && td < d) ? 1 : 0);
+}
+const capOfAge = a => a == null ? null : a < 16 ? 5000 : a < 18 ? 10000 : 0;   // 0＝上限なし
+async function payLimit(env, id) {
+  const row = await env.DB.prepare('SELECT birth FROM pay_birth WHERE account_id = ?').bind(id).first();
+  if (!row) return { birth: false };
+  const age = ageOf(row.birth), cap = capOfAge(age);
+  const j = new Date(Date.now() + 9 * 3600 * 1000), from = Date.UTC(j.getUTCFullYear(), j.getUTCMonth(), 1) / 1000 - 9 * 3600;
+  const s = await env.DB.prepare('SELECT COALESCE(SUM(amount), 0) AS y FROM purchases WHERE account_id = ? AND created_at >= ?').bind(id, from).first();
+  return { birth: true, minor: age < 18, cap, spent: (s && s.y) | 0 };
+}
 async function payStatus(env, id) {
-  const e = await entsOf(env, id);
+  const e = await entsOf(env, id), lim = await payLimit(env, id);
   const claims = (await env.DB.prepare('SELECT id, sku FROM purchases WHERE account_id = ? AND claimed = 0 ORDER BY created_at').bind(id).all()).results || [];
-  return { enabled: !!env.STRIPE_SECRET_KEY, passUntil: e.pass_until, passAuto: !!e.pass_auto, noads: !!e.noads, first: !!e.first && env.PAY_TEST !== '1', portal: !!e.customer, claims: claims.map(c => ({ id: c.id, sku: c.sku, items: (PAY_SKU[c.sku] || {}).items || {} })) };
+  return { enabled: !!env.STRIPE_SECRET_KEY, passUntil: e.pass_until, passAuto: !!e.pass_auto, noads: !!e.noads, first: !!e.first && env.PAY_TEST !== '1', limit: lim, portal: !!e.customer, claims: claims.map(c => ({ id: c.id, sku: c.sku, items: (PAY_SKU[c.sku] || {}).items || {} })) };
 }
 async function payCheckout(env, req, me) {
   if (!env.STRIPE_SECRET_KEY) return fail(env, req, '準備中です', 503);
@@ -704,6 +732,9 @@ async function payCheckout(env, req, me) {
   const e = await entsOf(env, me.id);
   if (it.once && e[it.once] && env.PAY_TEST !== '1') return fail(env, req, 'もう購入済みです', 409);   // PAY_TEST="1"（テスト環境）だけ、初回パックを何度でも買える
   if (it.sub && e.pass_auto && e.pass_until > nowSec()) return fail(env, req, '月パスはもう契約中です', 409);
+  const lim = await payLimit(env, me.id);
+  if (!lim.birth) return json(env, req, { error: '生年月日を入れてください', need: 'birth' }, 402);
+  if (lim.cap && lim.spent + it.yen > lim.cap) return json(env, req, { error: '今月の購入の上限（' + lim.cap.toLocaleString() + '円）をこえるため購入できません。今月はあと ' + Math.max(0, lim.cap - lim.spent).toLocaleString() + '円 まで購入できます', need: 'cap' }, 402);
   const o = payOrigin(env, req), md = { account: me.id, sku };
   const price = { currency: 'jpy', unit_amount: it.yen, product_data: { name: it.name } };
   if (it.sub) price.recurring = { interval: 'month' };

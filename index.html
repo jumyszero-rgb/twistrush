@@ -923,6 +923,8 @@ body.on-menu .battlemain{opacity:0;}
   .toast.show{opacity:1;}
   .toast{position:fixed;top:calc(env(safe-area-inset-top,0px) + 60px);z-index:100;max-width:calc(100vw - 24px);box-sizing:border-box;overflow:hidden;}
   .toast span{display:inline-block;}
+  .birthin{display:block;margin:12px auto 0;font-size:18px;padding:8px 10px;border-radius:10px;border:2px solid #c9b6ff;}
+  .pcons{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:10px;font-size:13px;font-weight:800;} .pcons input{width:20px;height:20px;}
   /* 広告のあとの「再開」ボタン */
   .cdown{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:30;background:rgba(20,12,30,.45);}
   .cdown.hidden{display:none;}
@@ -6808,7 +6810,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.135';
+  const APP_VER = '0.9.136';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -7950,13 +7952,38 @@ body.tight .itembar{gap:6px;}
     e.preventDefault(); e.stopPropagation(); if (b.disabled || payBusy) return;
     const p = PACKS.find(x => x.sku === b.dataset.sku); if (!p) return;
     if (!acctToken) { payAsk('購入には<b>ログイン</b>が必要です。<br>設定の「アカウント」からログインしてください。', () => { $('shop').classList.add('hidden'); $('setBtn').click(); setTimeout(() => { const a = $('acctState'); if (a) a.scrollIntoView({block: 'center'}); }, 300); }); return; }
-    payAsk('<b>' + p.name + '</b><br>' + p.price + '（税込）<br><small>Stripe の支払いページへ移動します</small>', async () => {
+    payBuy(p);
+  }, true);
+  // 2026-11-15：買う前に生年月日（一度だけ）。年齢ごとに1か月の上限（15歳以下 5,000円／16〜17歳 10,000円）。18歳未満は毎回、保護者の同意を確認
+  let payLim = null;
+  function birthAsk(next){
+    payAsk('<b>生年月日を入れてください</b><br><small>年齢に合わせて、1か月に購入できる金額の上限が決まります。<br>・15歳以下：5,000円まで<br>・16〜17歳：10,000円まで<br>・18歳以上：上限なし<br>誕生日をむかえると上限は自動で変わります。<br><b>一度入れると変えられません。</b></small><br><input type="date" id="birthIn" class="birthin" min="1900-01-01" max="' + new Date().toISOString().slice(0, 10) + '">', () => {
+      const v = ($('birthIn') || {}).value || '';
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(v)) { toast('生年月日を入れてください'); setTimeout(() => birthAsk(next), 300); return; }
+      const [y, m, d] = v.split('-').map(Number);
+      setTimeout(() => payAsk(y + '年' + m + '月' + d + '日<br>でよろしいですか？<br><small>あとから変えられません</small>', async () => {
+        try { const r = await api('/api/pay/birth', {method: 'POST', body: JSON.stringify({birth: v})}); payLim = r; if (r.birth) next(); else payAsk(r.error || '登録できませんでした'); }
+        catch (e) { payAsk(e.message || 'サーバーにつながりませんでした'); }
+      }), 50);
+    });
+  }
+  async function payBuy(p){
+    if (!payLim || !payLim.birth) { try { const s = await api('/api/pay/status'); payLim = s.limit || null; } catch (_) {} }
+    if (!payLim || !payLim.birth) { birthAsk(() => payBuy(p)); return; }
+    const left = payLim.cap ? Math.max(0, payLim.cap - payLim.spent) : -1, yen = +String(p.price).replace(/[^\d]/g, '') || 0;
+    if (left >= 0 && yen > left) { payAsk('今月の購入の上限（' + payLim.cap.toLocaleString() + '円）をこえるため、購入できません。<br><small>今月はあと ' + left.toLocaleString() + '円 まで購入できます。来月1日にもどります。</small>'); return; }
+    const minor = payLim.minor ? '<br><br><b>⚠ 18歳未満の方へ</b><br><small>購入する前に、かならず<b>保護者の方の同意</b>を得てください。<br>今月はあと ' + left.toLocaleString() + '円 まで購入できます。</small><br><label class="pcons"><input type="checkbox" id="parentOk"> 保護者の同意を得ました</label>' : '';
+    payAsk('<b>' + p.name + '</b><br>' + p.price + '（税込）<br><small>Stripe の支払いページへ移動します</small>' + minor, async () => {
+      if (payLim.minor && !($('parentOk') || {}).checked) { toast('保護者の同意を得てから購入してください'); setTimeout(() => payBuy(p), 300); return; }
       payBusy = true;
-      try { const r = await api('/api/pay/checkout', {method: 'POST', body: JSON.stringify({sku: p.sku})}); if (r.url) { save('pay_wait', String(Date.now())); location.href = r.url; return; } toast(r.error || '支払いページを開けませんでした'); }
-      catch (_) { toast('サーバーにつながりませんでした'); }
+      try { const r = await api('/api/pay/checkout', {method: 'POST', body: JSON.stringify({sku: p.sku})});
+        if (r.url) { save('pay_wait', String(Date.now())); location.href = r.url; return; }
+        if (r.need === 'birth') { payLim = null; payBusy = false; birthAsk(() => payBuy(p)); return; }
+        payAsk(r.error || '支払いページを開けませんでした'); }
+      catch (e) { payAsk(e.message || 'サーバーにつながりませんでした'); }
       payBusy = false;
     });
-  }, true);
+  }
   // サーバーの記録に合わせる（ログイン中）。受け取り待ちのアイテムはここで受け取る
   // 2026-11-15：買ったものは横に流すお知らせではなく、ポップアップで「OK」を押すまで出す（何を買ったか、まとめて1つ）
   let payGot = [];
@@ -7971,7 +7998,7 @@ body.tight .itembar{gap:6px;}
     try {
       const s = await api('/api/pay/status');
       if (s.passUntil) save('pass_end', String(s.passUntil * 1000));
-      save('pass_auto', s.passAuto ? '1' : ''); if (s.noads) save('noads', '1'); save('first_srv', s.first ? '1' : ''); if (s.first) save('firstpack', '1');
+      payLim = s.limit || null; save('pass_auto', s.passAuto ? '1' : ''); if (s.noads) save('noads', '1'); save('first_srv', s.first ? '1' : ''); if (s.first) save('firstpack', '1');
       for (const c of s.claims || []) {
         try { const k = await api('/api/pay/claim', {method: 'POST', body: JSON.stringify({id: c.id})}); if (k && k.ok) { Object.entries(k.items || {}).forEach(([key, n]) => giveItem(key, n)); saveInv(); got = true;
           const nm = (PACKS.find(x => x.sku === k.sku) || {}).name || '購入したもの', its = Object.entries(k.items || {}).map(([key, n]) => itemLabel(key) + ' ×' + n).join('<br>');

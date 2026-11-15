@@ -184,4 +184,6 @@ CREATE TABLE IF NOT EXISTS vote_refs ( ref TEXT PRIMARY KEY, account_id TEXT NOT
 -- 課金（Stripe）：買ったもの（受け取り待ちを含む）と、月パス・広告削除・初回パック
 CREATE TABLE IF NOT EXISTS purchases ( id TEXT PRIMARY KEY, account_id TEXT NOT NULL, sku TEXT NOT NULL, amount INTEGER NOT NULL DEFAULT 0, claimed INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL );
 CREATE INDEX IF NOT EXISTS idx_purchases_acc ON purchases(account_id, claimed);
+-- 生年月日（年齢ごとの1か月の購入上限に使う。一度だけ登録）
+CREATE TABLE IF NOT EXISTS pay_birth ( account_id TEXT PRIMARY KEY, birth TEXT NOT NULL, created_at INTEGER NOT NULL );
 CREATE TABLE IF NOT EXISTS ents ( account_id TEXT PRIMARY KEY, pass_until INTEGER NOT NULL DEFAULT 0, pass_sub TEXT NOT NULL DEFAULT '', pass_auto INTEGER NOT NULL DEFAULT 0, noads INTEGER NOT NULL DEFAULT 0, first INTEGER NOT NULL DEFAULT 0, customer TEXT NOT NULL DEFAULT '' );
