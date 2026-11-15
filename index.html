@@ -424,6 +424,21 @@ body.on-menu .battlemain{opacity:0;}
   .exget small{display:block;font-size:10px;font-weight:900;} .exmsg{background:rgba(255,210,74,.14);border:1px solid rgba(255,210,74,.5);border-radius:12px;padding:10px;margin:8px 0;font-size:13px;line-height:1.5;}
 
   #forge.overlay{position:fixed;inset:0;z-index:26;border-radius:0;padding:0;gap:0;justify-content:flex-start;text-align:left;color:#f6f0ff;background:linear-gradient(180deg, rgba(22,10,44,.94), rgba(22,10,44,.97)), var(--title-img, url('img/title.jpg')) center / cover no-repeat, #1f1236;}
+  #forge.overlay{background:linear-gradient(180deg, rgba(20,8,4,.15) 0%, rgba(20,8,4,.35) 30%, rgba(22,10,30,.93) 46%, rgba(22,10,30,.97) 100%), var(--fg-bg, none) center top / 100% auto no-repeat, #1f1236;}
+  .fgstage{position:relative;align-self:stretch;width:100%;height:clamp(170px, 30vh, 260px);flex:0 0 auto;overflow:visible;pointer-events:none;}
+  .fgch{position:absolute;bottom:-6px;height:118%;width:auto;filter:drop-shadow(0 6px 10px rgba(0,0,0,.55));}
+  .fghn{right:3%;transform-origin:50% 100%;} .fgdw{left:2%;height:104%;}
+  .fghn.hit{animation:fgHit .42s ease-in-out;}
+  @keyframes fgHit{0%{transform:rotate(0) translateY(0);}35%{transform:rotate(-4deg) translateY(-6px);}60%{transform:rotate(3deg) translateY(2px);}100%{transform:rotate(0) translateY(0);}}
+  .fgsay{position:absolute;bottom:14px;max-width:50%;padding:8px 12px;border-radius:14px;background:#fff8ec;color:#3a1a00;font-weight:900;font-size:14px;line-height:1.35;box-shadow:0 4px 10px rgba(0,0,0,.4);z-index:2;animation:fgPop .25s ease-out;}
+  .fgsay.hn{right:40%;} .fgsay.dw{left:40%;background:#ffe7d6;}
+  .fgsay::after{content:'';position:absolute;top:10px;border:8px solid transparent;} .fgsay.hn::after{right:-14px;border-left-color:#fff8ec;} .fgsay.dw::after{left:-14px;border-right-color:#ffe7d6;} .fgsay.hidden{display:none;}
+  @keyframes fgPop{from{transform:scale(.6);opacity:0;}to{transform:scale(1);opacity:1;}}
+  .fgspark{position:absolute;left:62%;bottom:18%;width:0;height:0;z-index:3;}
+  .fgspark i{position:absolute;width:5px;height:5px;border-radius:50%;background:#ffd26a;box-shadow:0 0 8px #ff8a1f,0 0 3px #fff;opacity:0;}
+  .fgspark.go i{animation:fgSp .75s ease-out forwards;} .fgspark.go.big i{animation-duration:1.3s;width:7px;height:7px;}
+  @keyframes fgSp{0%{opacity:1;transform:translate(0,0) scale(1);}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.3);}}
+  #forgeBody [data-craft].ng{opacity:.45;}
   .fgtabs{display:flex;gap:6px;margin:6px 0;} .fgtabs button{flex:1;padding:7px 0;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#f6f0ff;font-weight:900;}
   .fgtabs button.on{background:#ffd24a;color:#3a1a00;} .fgsub{font-size:12px;margin:4px 0;} .fgsub small{opacity:.75;}
   .fgrc{list-style:none;margin:4px 0;padding:0;font-size:12px;display:grid;grid-template-columns:1fr 1fr;gap:2px 8px;} .fgrc li.ok{color:#7ff0a8;} .fgrc li.ng{color:#ff9db0;}
@@ -1635,6 +1650,7 @@ body.tight .itembar{gap:6px;}
         <button class="how-back" id="forgeBack" aria-label="戻る">‹ 戻る</button>
         <h2>FORGE <small style="font-size:12px;opacity:.75">鍛冶屋</small></h2>
       </div>
+      <div class="fgstage" id="fgStage"><img class="fgch fgdw" id="fgDwarf" alt="" src="img/smith/dwarf.webp"><img class="fgch fghn" id="fgHana" alt="" src="img/smith/hana.webp"><div class="fgsay hidden" id="fgSay"></div><div class="fgspark" id="fgSpark"></div></div>
       <div class="how-body" id="forgeBody"></div>
     </div>
     <div class="overlay hidden" id="expd" role="dialog" aria-label="遠征">
@@ -2923,7 +2939,10 @@ body.tight .itembar{gap:6px;}
     for (let i = 0; i < 6; i++) noise(t + 0.05 + i * 0.06, 0.06, 'bandpass', 1400 + Math.random() * 1600, 0, 0.12, 2);
   };
   // 録音した効果音・声（あとから足す）。名前 → [claude.ai用の番号, Web版のファイル]。無いものは合成音で鳴らす
-  const SE_FILES = {};
+  const SE_FILES = {
+    smith_kinkon1: ['', 'sfx/smith_kinkon1.mp3'], smith_kinkon2: ['', 'sfx/smith_kinkon2.mp3'], smith_kinkon3: ['', 'sfx/smith_kinkon3.mp3'],   // 鍛冶屋：キンコンカンの連打
+    smith_kan: ['', 'sfx/smith_kan.mp3'], smith_don: ['', 'sfx/smith_don.mp3'], smith_far: ['', 'sfx/smith_far.mp3'],                          // 最後の一打／大成功の一打／遠くの金づち
+  };
   const seBuf = {}, seLoading = {};
   function playSeFile(name, vol){
     const a = audio(), f = SE_FILES[name]; if (!a || !f) return false;
@@ -3039,6 +3058,8 @@ body.tight .itembar{gap:6px;}
     title_song14: {local: 'bgm/title_song14.mp3', blob: '/_blob/7de93631fe802cd6f9ce2746fa0a77b7'},   // Team Up!
     title_song15: {local: 'bgm/title_song15.mp3', blob: '/_blob/667663e9119e98dbe7e15b45250197b4'},   // Level Up Days
     title_song16: {local: 'bgm/title_song16.mp3', blob: '/_blob/8f6fcf64e1f7a571c4faf34ac2661ff2'},   // Little Steps, Big Dreams
+    smith_bgm1: {local: 'bgm/smith_bgm1.mp3', blob: ''},   // 鍛冶屋（2026-11-15）
+    smith_bgm2: {local: 'bgm/smith_bgm2.mp3', blob: ''},
     gacha_bgm1: {local: 'bgm/gacha_bgm1.mp3', blob: '/_blob/6ce89fca5ad13c55d8ff8df49514b08d'},   // ガチャ画面「Gathering the Chosen Ones」
     gilbert_calm1: {local: 'bgm/gilbert_calm1.mp3', blob: '/_blob/dc4d32c224c99a649ea09a022fc87fde'},
     gilbert_calm2: {local: 'bgm/gilbert_calm2.mp3', blob: '/_blob/193b9a2d8887248e3cb0d63040604d35'},
@@ -3164,6 +3185,7 @@ body.tight .itembar{gap:6px;}
   const TITLE_FIRST = (() => { const l = Object.keys(BGM_CLIPS).filter(k => /^title_song\d+$/.test(k)).filter(x => BGM_CLIPS[x]); return l[Math.floor(Math.random() * l.length)] || 'title_song1'; })();
   function bgmPick(mode){
     if (mode === 'gacha' && BGM_CLIPS.gacha_bgm1) return [BGM_CLIPS.gacha_bgm1.blob, BGM_CLIPS.gacha_bgm1.local];
+    if (mode === 'smith') { const c = BGM_CLIPS[Math.random() < 0.5 ? 'smith_bgm1' : 'smith_bgm2']; return [c.blob, c.local]; }
     if (mode === 'map') {                                 // ストーリーのマップ：そのエリアのボスの「ゆっくり」の曲
       const st = STORY[mapBgmArea * PER + BOSS_I], set = st && CHARS[st.char] ? BGM_SETS[CHARS[st.char].id] : null;
       const list = ((set && set.calm) || []).filter(x => BGM_CLIPS[x]);
@@ -6811,7 +6833,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.139';
+  const APP_VER = '0.9.140';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -9102,7 +9124,7 @@ body.tight .itembar{gap:6px;}
         '<ul class="fgrc">' + rc.map(([k, n]) => { const hv = inv[k] || 0; return '<li class="' + (hv >= n ? 'ok' : 'ng') + '">' + EX_MAT[k][1] + ' ' + EX_MAT[k][0] + ' <b>' + hv + '/' + n + '</b></li>'; }).join('') +
         '<li class="' + (coins >= cost ? 'ok' : 'ng') + '">🪙 シルバー <b>' + cost.toLocaleString() + '</b></li></ul>' +
         (matShort(rc).cost > 0 && matShort(rc).ok ? '<button class="fgbuy" data-buymat="' + w.id + '">足りない素材をゴールド ' + matShort(rc).cost + ' で買う</button>' : '') +
-        '<div class="exgo"><span>所持 ' + own(w.id) + '</span><button data-craft="' + w.id + '"' + (ok ? '' : ' disabled') + '>作る</button></div></div>';
+        '<div class="exgo"><span>所持 ' + own(w.id) + '</span><button data-craft="' + w.id + '"' + (ok ? '' : ' class="ng"') + '>作る</button></div></div>';
     });
     h += '<p class="sknote">素材は遠征で手に入ります。キャラと同じ属性の武器を持つと、武器のステータスが1.2倍になります。作った武器は、キャラの詳細 →「装備」で付けます。</p>';
     const b = $('forgeBody'); b.innerHTML = h;
@@ -9118,8 +9140,42 @@ body.tight .itembar{gap:6px;}
   }
   const GEAR_RATE = {LR: 1, MR: 4, SR: 15, R: 35, N: 45}, GEAR_COST = [300, 3000];
   const attrBadge0 = a => '<i class="abadge inl" style="background:' + ATTR[a].col + '">' + ATTR[a].n + '</i>';
-  function openForge(){ audio(); forgeMsg = ''; $('forge').classList.remove('hidden'); drawForge(); $('forgeBody').scrollTop = 0; }
-  $('forgeBack').addEventListener('click', () => { $('forge').classList.add('hidden'); try { drawBox(); } catch(_) {} });
+  // ===== 鍛冶屋の演出（2026-11-15）：背景・ハナとガンテツ親方・専用BGM・金づちの音 =====
+  //   開く：キンコンカン → ハナ「お！来たね！」／作る：キンコンカン → 最後の一打 → できあがり／装備ガチャでSR以上：大成功の一打＋火花
+  //   開いているあいだ、BGMの下でときどき遠くの金づち。声（voice/smith_*.mp3）は届いたら足す
+  const FG_IMG = {hana: 'img/smith/hana.webp', hana_happy: 'img/smith/hana_happy.webp', hana_sad: 'img/smith/hana_sad.webp', hana_surprise: 'img/smith/hana_surprise.webp',
+    dwarf: 'img/smith/dwarf.webp', dwarf_happy: 'img/smith/dwarf_happy.webp', dwarf_angry: 'img/smith/dwarf_angry.webp'};
+  let fgKin = 0, fgFar = null, fgSayT = null, fgBusy = false;
+  const fgKinkon = () => playSeFile('smith_kinkon' + (1 + (fgKin++ % 3)), 0.9);
+  function fgFace(hana, dwarf){ $('fgHana').src = FG_IMG[hana || 'hana']; $('fgDwarf').src = FG_IMG[dwarf || 'dwarf']; }
+  function fgSay(txt, who, hana, dwarf, ms){
+    const s = $('fgSay'); s.textContent = txt; s.className = 'fgsay ' + (who === 'dwarf' ? 'dw' : 'hn');
+    fgFace(hana, dwarf); clearTimeout(fgSayT);
+    fgSayT = setTimeout(() => { s.className = 'fgsay hidden'; fgFace(); }, ms || 2600);
+  }
+  function fgSparks(big){
+    const b = $('fgSpark'); b.innerHTML = '';
+    for (let i = 0; i < (big ? 46 : 18); i++) { const p = document.createElement('i'); const a = Math.random() * Math.PI * 2, d = 40 + Math.random() * (big ? 160 : 80);
+      p.style.setProperty('--dx', Math.cos(a) * d + 'px'); p.style.setProperty('--dy', Math.sin(a) * d - 30 + 'px'); p.style.animationDelay = Math.random() * 0.15 + 's'; b.appendChild(p); }
+    b.className = 'fgspark'; void b.offsetWidth; b.className = 'fgspark go' + (big ? ' big' : '');
+  }
+  function fgHammer(){ const h = $('fgHana'); h.classList.remove('hit'); void h.offsetWidth; h.classList.add('hit'); }
+  // 作る・ガチャ：キンコンカン（約2秒）のあいだハナが打つ → 最後の一打（great なら大成功の一打）→ done()
+  function fgForge(great, done){
+    fgBusy = true; fgKinkon(); fgSay('よーし、まかせて！', 'hana', 'hana', 'dwarf', 1800);
+    [0, 450, 900, 1350].forEach(t => setTimeout(fgHammer, t));
+    setTimeout(() => { playSeFile(great ? 'smith_don' : 'smith_kan', 1); fgSparks(great); fgBusy = false; done(); }, 1900);
+  }
+  function fgFarLoop(){ clearTimeout(fgFar); fgFar = setTimeout(() => { if ($('forge').classList.contains('hidden')) return; if (!fgBusy) playSeFile('smith_far', 0.7); fgFarLoop(); }, 20000 + Math.random() * 20000); }
+  function openForge(){
+    audio(); forgeMsg = ''; $('forge').classList.remove('hidden'); drawForge(); $('forgeBody').scrollTop = 0;
+    $('forge').style.setProperty('--fg-bg', "url('img/smith/bg.webp')");
+    try { bgmOn = true; bgmMode = null; bgmPlay('smith'); } catch (_) {}
+    fgKinkon(); setTimeout(() => { if (!$('forge').classList.contains('hidden')) fgSay(['お！来たね！武器が必要かい？', 'いらっしゃい！今日は何を作る？', '炉はあったまってるよ！'][Math.floor(Math.random() * 3)], 'hana', 'hana_happy'); }, 900);
+    if (Math.random() < 0.35) setTimeout(() => { if (!$('forge').classList.contains('hidden')) fgSay('……ふん。いい目をしとる', 'dwarf', 'hana', 'dwarf'); }, 3800);
+    fgFarLoop();
+  }
+  $('forgeBack').addEventListener('click', () => { $('forge').classList.add('hidden'); clearTimeout(fgFar); clearTimeout(fgSayT); try { bgmOn = true; bgmMode = null; titleBgm(); } catch (_) {} try { drawBox(); } catch(_) {} });
   $('forgeBody').addEventListener('click', e => {
     const t = e.target.closest('[data-fg]'); if (t) { forgeG = t.dataset.fg; forgeMsg = ''; drawForge(); return; }
     const bm = e.target.closest('[data-buymat]'); if (bm) { const w = WPN_BY[bm.dataset.buymat], sh = matShort(wpnRecipe(w)); if (!sh.ok || !sh.cost) return;
@@ -9129,12 +9185,18 @@ body.tight .itembar{gap:6px;}
         const got = []; for (let i = 0; i < n; i++) { const r = Math.random() * 100; let acc = 0, g = 'N'; for (const k of ['LR', 'MR', 'SR', 'R', 'N']) { acc += GEAR_RATE[k]; if (r < acc) { g = k; break; } }
           if (n > 1 && i === n - 1 && !got.some(w => GT[w.g] >= 2) && GT[g] < 2) g = 'SR';
           const ws = WPN.filter(w => w.g === g), w = ws[Math.floor(Math.random() * ws.length)]; gearAdd(w.id); got.push(w); }
-        forgeMsg = '🎰 装備ガチャ：' + got.map(w => '<b>' + w.g + '</b> ' + w.n).join('・'); drawForge(); }); return; }
-    const c = e.target.closest('[data-craft]'); if (!c) return;
+        const great = got.some(w => GT[w.g] >= 2);
+        fgForge(great, () => { forgeMsg = '🎰 装備ガチャ：' + got.map(w => '<b>' + w.g + '</b> ' + w.n).join('・'); drawForge();
+          if (great) { fgSay('すごい！最高の一本だ！', 'hana', 'hana_surprise', 'dwarf_happy', 3200); setTimeout(() => { if (!$('forge').classList.contains('hidden')) fgSay('……わしの最高傑作じゃ', 'dwarf', 'hana_happy', 'dwarf_happy'); }, 3300); }
+          else fgSay('できたー！いい出来だよ！', 'hana', 'hana_happy', 'dwarf'); }); }); return; }
+    const c = e.target.closest('[data-craft]'); if (!c || fgBusy) return;
     const w = WPN_BY[c.dataset.craft], rc = wpnRecipe(w), cost = WPN_COST[GT[w.g]];
-    if (!rc.every(([k, n]) => (inv[k] || 0) >= n) || coins < cost) return;
+    if (!rc.every(([k, n]) => (inv[k] || 0) >= n) || coins < cost) { fgSay(coins < cost && rc.every(([k, n]) => (inv[k] || 0) >= n) ? 'シルバーが足りないみたい…' : 'うーん、素材が足りないみたい', 'hana', 'hana_sad', 'dwarf_angry'); return; }
     rc.forEach(([k, n]) => inv[k] -= n); saveInv(); addCoins(-cost); gearAdd(w.id);
-    forgeMsg = '⚒ <b>' + w.n + '</b> ができました！ キャラの詳細 →「装備」で付けられます。'; drawForge();
+    fgForge(GT[w.g] >= 3, () => { forgeMsg = '⚒ <b>' + w.n + '</b> ができました！ キャラの詳細 →「装備」で付けられます。'; drawForge();
+      if (GT[w.g] >= 3) fgSay('すごい！最高の一本だ！', 'hana', 'hana_surprise', 'dwarf_happy', 3200);
+      else if (Math.random() < 0.4) fgSay('うむ。これなら戦える', 'dwarf', 'hana_happy', 'dwarf_happy');
+      else fgSay('できたー！いい出来だよ！', 'hana', 'hana_happy', 'dwarf'); });
   });
 
   // ===== 解放（2026-11-14）：最初から全部入れておき、進み具合に合わせて少しずつ開く =====
