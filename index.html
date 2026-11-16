@@ -6873,7 +6873,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.155';
+  const APP_VER = '0.9.156';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -9205,7 +9205,9 @@ body.tight .itembar{gap:6px;}
   //   2026-11-16 本人：強化石（ふつう）＝成功率50%・失敗するとランクダウン（−1）／祝福の強化石＝成功率100%。成功で武器の輝きが変わる
   //   使う数：N・R＝1／SR＝2／MR・LR＝3個。ほかにシルバー。成功のうち10%は大成功（一気に＋2）
   const ENH_MAX = 10, enhMul = p => 1 + 0.08 * (p || 0), ENH_RATE = {enh_n: 50, enh_b: 100};
-  const enhCost = (w, p, k) => ({rc: [[k || 'enh_n', [1, 1, 2, 3, 3][GT[w.g]]]], sv: Math.round(WPN_COST[GT[w.g]] * 0.3 * (p + 1) / 10) * 10});
+  //   2026-11-16 本人「仕上げが必要なのでは？」→ 仕上げ系の素材（砥石〜神鉄の槌。武器のグレードで決まり、＋5からは1つ上）も使う
+  const enhPolish = (w, p) => ['m_polish_' + Math.min(4, GT[w.g] + (p >= 5 ? 1 : 0)), 2 + Math.floor(p / 2)];
+  const enhCost = (w, p, k) => ({rc: [[k || 'enh_n', [1, 1, 2, 3, 3][GT[w.g]]], enhPolish(w, p)], sv: Math.round(WPN_COST[GT[w.g]] * 0.3 * (p + 1) / 10) * 10});
   const enhGlow = p => !p ? '' : p >= 10 ? ' pl4' : p >= 7 ? ' pl3' : p >= 4 ? ' pl2' : ' pl1';
   // いちばん高いステータスは、少なくとも強化値ぶん（＋1につき＋1）は上がる（Nの武器でも強化が見えるように）
   const wpnStOf = (w, p) => { const mx = Math.max(...w.st); return w.st.map(v => !v ? 0 : v === mx ? Math.max(Math.round(v * enhMul(p)), v + (p | 0)) : Math.round(v * enhMul(p))); };
@@ -9220,15 +9222,17 @@ body.tight .itembar{gap:6px;}
     let h = (forgeMsg ? '<div class="exmsg">' + forgeMsg + '</div>' : '') + '<div class="fgtabs">' + ['N', 'R', 'SR', 'MR', 'LR', 'UP', 'GACHA'].map(g => '<button data-fg="' + g + '" class="' + (g === forgeG ? 'on' : '') + '">' + (g === 'GACHA' ? '🎰' : g === 'UP' ? '強化' : g) + '</button>').join('') + '</div>';
     if (forgeG === 'UP') {
       const mine = gear.filter(g => WPN_BY[g.k]).sort((a, b) => GT[WPN_BY[b.k].g] - GT[WPN_BY[a.k].g] || (b.p | 0) - (a.p | 0));
-      h += '<p class="sknote" style="margin-top:4px">持っている武器を強くします（最大＋10）。強くなるほど武器が輝きます。<br>🔷 強化石：成功率50%。<b>失敗すると1つ下がります</b><br>✨ 祝福の強化石：成功率100%<br>たまに大成功で一気に＋2！ 強化石は遠征で手に入ります。</p>';
+      h += '<p class="sknote" style="margin-top:4px">持っている武器を強くします（最大＋10）。強くなるほど武器が輝きます。<br>🔷 強化石：成功率50%。<b>失敗すると1つ下がります</b><br>✨ 祝福の強化石：成功率100%<br>強化には石のほかに、仕上げの素材（砥石など）とシルバーも使います。たまに大成功で一気に＋2！ 強化石も仕上げの素材も遠征で手に入ります。</p>';
       if (!mine.length) h += '<section><p>まだ武器を持っていません。「N」〜「LR」のタブで作るか、🎰の装備ガチャで手に入れてください。</p></section>';
       mine.forEach(g => { const w = WPN_BY[g.k], p = g.p | 0, us = gearUser(g.g), mx = p >= ENH_MAX;
         const c = mx ? null : enhCost(w, p);
         h += '<div class="excard fgcard"><div class="exhd">' + wpnPic(w, '', p) + '<b>' + w.n + plusTxt(p) + '</b><span class="exh">' + w.g + '</span></div>' +
           '<div class="fgsub">' + (us ? fullName(ALLC[ciOf(us)]) + 'が装備中　' : '') + '<b>' + wpnLineP(w, p) + '</b>' + (mx ? '' : '<br>→ ＋' + (p + 1) + '：<b style="color:#ffd24a">' + wpnLineP(w, p + 1) + '</b>') + '</div>' +
           (mx ? '<div class="exnote">最大まで強くなっています！</div>' :
-            '<ul class="fgrc"><li class="' + (coins >= c.sv ? 'ok' : 'ng') + '">🪙 シルバー <b>' + c.sv.toLocaleString() + '</b></li><li>1回に使う数 <b>' + c.rc[0][1] + '個</b></li></ul>' +
-            '<div class="enhbtns">' + ['enh_n', 'enh_b'].map(k => { const n = c.rc[0][1], hv = inv[k] || 0, ok = hv >= n && coins >= c.sv, sh = matShort([[k, n]]);
+            '<ul class="fgrc">' + (([k, n]) => { const hv = inv[k] || 0; return '<li class="' + (hv >= n ? 'ok' : 'ng') + '">' + EX_MAT[k][1] + ' ' + EX_MAT[k][0] + ' <b>' + hv + '/' + n + '</b></li>'; })(c.rc[1]) +
+            '<li class="' + (coins >= c.sv ? 'ok' : 'ng') + '">🪙 シルバー <b>' + c.sv.toLocaleString() + '</b></li><li>強化石 <b>' + c.rc[0][1] + '個</b></li></ul>' +
+            (((p0, sh0) => sh0.cost > 0 && sh0.ok ? '<button class="fgbuy" data-buyenh="' + g.g + ':pol">足りない仕上げ素材をゴールド ' + sh0.cost + ' で買う</button>' : '')(0, matShort([c.rc[1]]))) +
+            '<div class="enhbtns">' + ['enh_n', 'enh_b'].map(k => { const n = c.rc[0][1], hv = inv[k] || 0, pol = (inv[c.rc[1][0]] || 0) >= c.rc[1][1], ok = hv >= n && pol && coins >= c.sv, sh = matShort([[k, n]]);
               return '<div class="enhopt ' + k + '"><button data-enh="' + g.g + ':' + k + '"' + (ok ? '' : ' class="ng"') + '>' + EX_MAT[k][1] + ' ' + EX_MAT[k][0] + 'で強くする<small>成功率 ' + ENH_RATE[k] + '%' + (k === 'enh_n' ? '・失敗で−1' : '') + '　持っている ' + hv + '個</small></button>' +
                 (hv < n && sh.cost > 0 && sh.ok ? '<button class="fgbuy" data-buyenh="' + g.g + ':' + k + '">足りない' + (n - hv) + '個をゴールド ' + sh.cost + ' で買う</button>' : '') + '</div>'; }).join('') + '</div>') + '</div>';
       });
@@ -9316,7 +9320,7 @@ body.tight .itembar{gap:6px;}
         fgForge(great, () => { forgeMsg = '🎰 装備ガチャ：' + got.map(w => '<b>' + w.g + '</b> ' + w.n).join('・'); drawForge();
           if (great) { fgSay('すごい！最高の一本だ！', 'hana', 'hana_surprise', 'dwarf_happy', 3200); setTimeout(() => { if (!$('forge').classList.contains('hidden')) fgSay('……わしの最高傑作じゃ', 'dwarf', 'hana_happy', 'dwarf_happy'); }, 3300); }
           else fgSay('できたー！いい出来だよ！', 'hana', 'hana_happy', 'dwarf'); }); }); return; }
-    const be = e.target.closest('[data-buyenh]'); if (be) { const [gid, ek] = be.dataset.buyenh.split(':'), g = gearOf(gid); if (!g) return; const sh = matShort(enhCost(WPN_BY[g.k], g.p | 0, ek).rc); if (!sh.ok || !sh.cost) return;
+    const be = e.target.closest('[data-buyenh]'); if (be) { const [gid, ek] = be.dataset.buyenh.split(':'), g = gearOf(gid); if (!g) return; const cc = enhCost(WPN_BY[g.k], g.p | 0, ek === 'pol' ? 'enh_n' : ek), sh = matShort(ek === 'pol' ? [cc.rc[1]] : [cc.rc[0]]); if (!sh.ok || !sh.cost) return;
       payAsk('足りない素材（' + sh.list.map(([k, n]) => EX_MAT[k][0] + '×' + n).join('・') + '）をゴールド ' + sh.cost + ' で買いますか？', async () => { if (!(await spendGold(sh.cost, 'mat'))) return; sh.list.forEach(([k, n]) => giveItem(k, n)); saveInv(); refreshCoins(); drawForge(); }); return; }
     const en = e.target.closest('[data-enh]'); if (en) { if (fgBusy) return;
       const [gid, ek] = en.dataset.enh.split(':'), g = gearOf(gid); if (!g) return; const w = WPN_BY[g.k], p = g.p | 0; if (p >= ENH_MAX) return;
