@@ -413,7 +413,7 @@ body.on-menu .battlemain{opacity:0;}
 
   #expd.overlay{position:fixed;inset:0;z-index:23;border-radius:0;padding:0;gap:0;justify-content:flex-start;text-align:left;color:#f6f0ff;background:linear-gradient(180deg, rgba(22,10,44,.94), rgba(22,10,44,.97)), var(--title-img, url('img/title.jpg')) center / cover no-repeat, #1f1236;}
   .excard,.exact{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:10px;margin:8px 0;}
-  .excard.exlock{opacity:.55;} .exhrs{display:flex;gap:6px;margin:6px 0 4px;} .exhrs button{flex:1;padding:6px 0;border-radius:9px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.06);color:inherit;font-weight:800;font-size:12px;} .exhrs button.on{background:linear-gradient(135deg,#ffd24a,#ff8a3d);color:#3a1a00;border-color:transparent;} .excard.went{opacity:.55;} .exhd{display:flex;align-items:center;gap:8px;} .exhd b{font-size:15px;flex:1;} .exst{color:#ffd24a;font-size:12px;} .exh{font-size:11px;padding:1px 7px;border-radius:8px;background:rgba(255,255,255,.14);}
+  .excard.exlock{opacity:.55;} .exhrs{display:flex;gap:6px;margin:6px 0 4px;} .exhrs button{flex:1;padding:6px 0;border-radius:9px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.06);color:inherit;font-weight:800;font-size:12px;} .exgrs{display:grid;grid-template-columns:repeat(3,1fr);} .exst10{color:#ff7ad9;font-weight:900;text-shadow:0 0 6px rgba(255,122,217,.6);} .exhrs button small{display:block;font-size:9px;opacity:.8;} .exhrs button:disabled{opacity:.45;} .exhrs.exgrs button.on{background:linear-gradient(135deg,#c79bff,#7a5cff);color:#fff;} .exhrs button.on{background:linear-gradient(135deg,#ffd24a,#ff8a3d);color:#3a1a00;border-color:transparent;} .excard.went{opacity:.55;} .exhd{display:flex;align-items:center;gap:8px;} .exhd b{font-size:15px;flex:1;} .exst{color:#ffd24a;font-size:12px;} .exh{font-size:11px;padding:1px 7px;border-radius:8px;background:rgba(255,255,255,.14);}
   .excnd{list-style:none;margin:6px 0;padding:0;font-size:12.5px;} .excnd li{padding:2px 0;} .excnd li.ok{color:#7ff0a8;} .excnd li.ng{color:#ff9db0;}
   .exrw{font-size:11px;opacity:.8;margin-bottom:6px;} .exnote{font-size:12px;color:#ffd0dc;margin-top:4px;}
   .exteam{display:flex;gap:5px;margin:6px 0;} .exteam button{flex:1;font-size:11.5px;padding:5px 0;border-radius:8px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#f6f0ff;line-height:1.15;}
@@ -6861,7 +6861,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.145';
+  const APP_VER = '0.9.147';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -8888,12 +8888,17 @@ body.tight .itembar{gap:6px;}
     {id: 9, lv: 50, n: '月夜の墓地の悪霊払い', s: 4, h: 24, core: {k: 'attrMin', a: 'light', n: 2}, pool: [{k: 'heal', n: 1}, {k: 'attrNone', a: 'dark'}, {k: 'lvAll', n: 25}, {k: 'gradeMin', n: 2}, {k: 'typeMin', ty: 'hp', n: 1}]},
     {id: 10, lv: 60, n: '天空城の魔王軍偵察', s: 5, h: 24, core: {k: 'gradeAll'}, pool: [{k: 'attrMin', a: 'light', n: 1}, {k: 'attrMin', a: 'dark', n: 1}, {k: 'lvAll', n: 40}, {k: 'powMin', n: 3000}, {k: 'heal', n: 1}, {k: 'octa', n: 1}]},
   ];
-  const EX_NCND = [0, 2, 3, 3, 4, 5];                         // 難しさ（★）ごとの条件の数
-  const EX_EXP = [0, 1500, 3000, 4500, 9000, 14000];          // ひとりあたりの経験値（成功のとき）
-  const EX_SILVER = [0, 100, 200, 300, 500, 800];
+  const EX_NCND = [0, 2, 3, 3, 4, 5, 5, 5, 5, 5, 5];   // ★6〜10（2026-11-16）は条件の数は5のまま、中身がきびしくなる                         // 難しさ（★）ごとの条件の数
+  const EX_EXP = [0, 1500, 3000, 4500, 9000, 14000, 20000, 28000, 38000, 50000, 65000];          // ひとりあたりの経験値（成功のとき）
+  const EX_SILVER = [0, 100, 200, 300, 500, 800, 1100, 1500, 2000, 2600, 3300];
   const EX_ITEMS = [[], [['stampot', 1, 0.5], ['pot_N', 1, 0.5]], [['stampot', 1, 0.8], ['pot_N', 1, 1], ['gticket', 1, 0.2]],
     [['stampot', 1, 1], ['pot_R', 1, 0.6], ['gticket', 1, 0.4]], [['pot_R', 1, 1], ['gticket_hi', 1, 0.1], ['pot_SR', 1, 0.05]],
-    [['pot_R', 2, 1], ['pot_SR', 1, 0.15], ['gticket_hi', 1, 0.25]]];
+    [['pot_R', 2, 1], ['pot_SR', 1, 0.15], ['gticket_hi', 1, 0.25]],
+    [['pot_R', 2, 1], ['pot_SR', 1, 0.25], ['gticket_hi', 1, 0.3], ['gticket', 1, 0.5]],          // ★6〜10（2026-11-16）
+    [['pot_SR', 1, 0.4], ['gticket_hi', 1, 0.35], ['gticket', 1, 1]],
+    [['pot_SR', 1, 0.6], ['gticket_hi', 1, 0.45], ['gticket', 2, 1]],
+    [['pot_SR', 1, 0.8], ['gticket_hi', 1, 0.6], ['gticket', 2, 1]],
+    [['pot_SR', 2, 1], ['gticket_hi', 1, 0.8], ['gticket', 3, 1]]];
   // ===== 素材（2026-11-14 決定）：系統9×5グレード＋属性石8×3段階＋伝説素材20 =====
   //   遠征先のカードには「武器素材・防具素材・アクセ素材」とだけ書く。何が何個出るかはランダム（出ないこともある）
   const MAT_FAM = {
@@ -8924,14 +8929,15 @@ body.tight .itembar{gap:6px;}
    ['mat_feather', '怪鳥の羽（旧）'], ['mat_fire', '火炎石（旧）'], ['mat_herb', '霊草（旧）'], ['mat_wood', '古木の枝（旧）'], ['mat_bone', '悪霊の骨（旧）']].forEach(([k, n]) => EX_MAT[k] = [n, '📦', '', 0]);
   const EX_MAT_CAT = {w: '武器素材', a: '防具素材', x: 'アクセ素材', s: '属性石', l: '伝説素材', e: '進化素材'};
   EX_MAT.evo_c = ['進化の結晶', '💠', 'e', 2]; EX_MAT.evo_g = ['進化の宝玉', '🔮', 'e', 3];
-  const EVO_DROP = [0, 0.04, 0.06, 0.09, 0.13, 0.18], EVO_DROP2 = [0, 0, 0, 0.02, 0.04, 0.07];   // 遠征の★ごとの進化素材の出る率
+  const EVO_DROP = [0, 0.04, 0.06, 0.09, 0.13, 0.18, 0.22, 0.26, 0.30, 0.35, 0.40], EVO_DROP2 = [0, 0, 0, 0.02, 0.04, 0.07, 0.09, 0.11, 0.13, 0.16, 0.20];   // 遠征の★ごとの進化素材の出る率
   const EX_MATS = {1: ['w', 'a'], 2: ['w'], 3: ['a', 'x'], 4: ['x'], 5: ['w', 'x'], 6: ['a'], 7: ['w', 'x'], 8: ['w', 'a'], 9: ['a', 'x'], 10: ['w', 'a', 'x']};
   const EX_STAGE_ATTR = {1: 'wind', 2: 'fire', 3: 'water', 4: 'earth', 5: 'dark', 6: 'water', 7: 'thunder', 8: 'none', 9: 'dark', 10: 'light'};   // 出やすい属性石
-  const EX_TIER_W = [[], [70, 25, 5, 0, 0], [50, 35, 13, 2, 0], [30, 40, 25, 5, 0], [15, 35, 35, 12, 3], [5, 25, 40, 22, 8]];   // ★ごとの N/R/SR/MR/LR の出やすさ
+  const EX_TIER_W = [[], [70, 25, 5, 0, 0], [50, 35, 13, 2, 0], [30, 40, 25, 5, 0], [15, 35, 35, 12, 3], [5, 25, 40, 22, 8],
+    [0, 20, 42, 28, 10], [0, 12, 43, 32, 13], [0, 6, 40, 38, 16], [0, 2, 36, 42, 20], [0, 0, 32, 45, 23]];   // ★6〜10：高いグレードはここでもまれ   // ★ごとの N/R/SR/MR/LR の出やすさ
   const EX_TIER_MAX = [4, 3, 2, 1, 1];                  // 1回に出る個数の上限
   const EX_MAT_P = 0.6;                                 // 種類ごとに出る確率（達成率100%のとき）
-  const EX_LEGEND_P = [0, 0, 0, 0, 0.005, 0.015];       // 伝説素材（★4・★5だけ・とても低い）
-  const EX_GEAR_P = [0, 0.002, 0.002, 0.003, 0.006, 0.01];   // 武器の現物（超まれ）
+  const EX_LEGEND_P = [0, 0, 0, 0, 0.005, 0.015, 0.025, 0.035, 0.05, 0.065, 0.08];       // 伝説素材（★4・★5だけ・とても低い）
+  const EX_GEAR_P = [0, 0.002, 0.002, 0.003, 0.006, 0.01, 0.015, 0.02, 0.025, 0.03, 0.04];   // 武器の現物（超まれ）
   const exTier = star => { const w = EX_TIER_W[star], tot = w.reduce((x, y) => x + y, 0); let r = Math.random() * tot, t = 0; while (t < 4 && r >= w[t]) { r -= w[t]; t++; } return t; };
   function exRollMat(cat, star, attr){
     const t = exTier(star);
@@ -8948,9 +8954,28 @@ body.tight .itembar{gap:6px;}
     return ids.map(id => {
       const st = EX_STAGES.find(s => s.id === id), pool = st.pool.slice();
       for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
-      const cnds = [st.core].concat(pool.slice(0, EX_NCND[st.s] - 1)).map(c => Object.assign({k: c.k}, EX_CND[c.k](c)));
-      return Object.assign({}, st, {cnds});
+      return Object.assign({}, st, {poolS: pool});
     });
+  }
+  // 2026-11-16 本人：遠征先ごとの基本LVのうえに、さらに「グレード」と「時間」を選べる
+  //   グレード：ノーマル（基本LV）／ハード（基本LV＋10）／エキスパート（基本LV＋20）。上がるほど★が増え、条件がきびしく、報酬と素材のグレードが上がる
+  //   2026-11-16 本人：今はクリアできなくても目標になるので★10くらいまであってよい → グレード6段階（★＋0〜＋5・最大★10）。開放は基本LV＋10ずつ
+  const EX_GR = [{n: 'ノーマル', add: 0, lv: 0}, {n: 'ハード', add: 1, lv: 10}, {n: 'エキスパート', add: 2, lv: 20}, {n: 'マスター', add: 3, lv: 30}, {n: 'レジェンド', add: 4, lv: 40}, {n: 'ゴッド', add: 5, lv: 50}];
+  const exStar = s => s <= 5 ? '★'.repeat(s) : '<span class="exst10">★' + s + '</span>';
+  let exPickG = {};
+  const exGOf = st => exPickG[st.id] != null ? exPickG[st.id] : 0;
+  const exGLv = (st, g) => st.lv + EX_GR[g].lv;
+  function exCndUp(c, g){
+    if (!g) return c; const u = Object.assign({}, c), cap = {attrMin: 4, typeMin: 4, gradeMin: 4, heal: 3, octa: 3};
+    if (u.k === 'lvAll') u.n += 10 * g;
+    else if (u.k === 'powMin') u.n = Math.round(u.n * (1 + 0.6 * g) / 100) * 100;
+    else if (cap[u.k] && g >= 2) u.n = Math.min(cap[u.k], u.n + (g >= 4 ? 2 : 1));
+    return u;
+  }
+  function exView(st){
+    const g = exGOf(st), s = Math.min(10, st.s + EX_GR[g].add), boost = 1;
+    const cnds = [st.core].concat(st.poolS.slice(0, EX_NCND[s] - 1)).map(c => exCndUp(c, g)).map(c => Object.assign({k: c.k}, EX_CND[c.k](c)));
+    return Object.assign({}, st, {s, s0: st.s, g, boost, cnds});
   }
   let exData = loadJ('expd', null);
   if (!exData || !Array.isArray(exData.active)) exData = {active: [], done: {}};
@@ -8989,14 +9014,16 @@ body.tight .itembar{gap:6px;}
     });
     h += '</section><section><h3>遠征先 <small>（条件は毎日0時に入れかわり）</small></h3>';
     const ULv = userLv();
-    list.forEach(st => {
-      if (ULv < st.lv) { h += '<div class="excard exlock"><div class="exhd"><b>' + st.n + '</b><span class="exst">' + '★'.repeat(st.s) + '</span><span class="exh">6〜24時間</span></div><div class="exnote">🔒 ユーザーLV' + st.lv + 'で行けるようになります</div></div>'; return; }
+    list.forEach(st0 => {
+      const st = exView(st0);
+      if (ULv < st.lv) { h += '<div class="excard exlock"><div class="exhd"><b>' + st.n + '</b><span class="exst">' + '★'.repeat(st.s0) + '</span><span class="exh">6〜24時間</span></div><div class="exnote">🔒 ユーザーLV' + st.lv + 'で行けるようになります</div></div>'; return; }
       const went = done.includes(st.id), t = exPickTeam[st.id] != null ? exPickTeam[st.id] : teamNo, m = exMembers(t);
       const j = m.length === 4 ? exJudge(st, m) : null, busy = exTeamBusy(t);
-      h += '<div class="excard' + (went ? ' went' : '') + '"><div class="exhd"><b>' + st.n + '</b><span class="exst">' + '★'.repeat(st.s) + '</span><span class="exh">' + exHOf(st) + '時間</span></div>' +
+      h += '<div class="excard' + (went ? ' went' : '') + '"><div class="exhd"><b>' + st.n + '</b><span class="exst">' + exStar(st.s) + '</span><span class="exh">' + exHOf(st) + '時間</span></div>' +
         '<ul class="excnd">' + st.cnds.map(c => '<li class="' + (m.length === 4 ? (c.ok(m) ? 'ok' : 'ng') : '') + '">' + (m.length === 4 ? (c.ok(m) ? '✓' : '✗') : '・') + ' ' + c.t + '</li>').join('') + '</ul>' +
+        (went ? '' : '<div class="exhrs exgrs">' + EX_GR.map((G, k) => { const ok = ULv >= exGLv(st, k); return '<button data-exg="' + st.id + ':' + k + '" class="' + (k === st.g ? 'on' : '') + '"' + (ok ? '' : ' disabled') + '>' + G.n + '<small>' + (ok ? '★' + Math.min(10, st.s0 + G.add) : '🔒LV' + exGLv(st, k)) + '</small></button>'; }).join('') + '</div>') +
         (went ? '' : '<div class="exhrs">' + EX_HOURS.map(h => '<button data-exh="' + st.id + ':' + h + '" class="' + (h === exHOf(st) ? 'on' : '') + '">' + h + '時間</button>').join('') + '</div>') +
-        '<div class="exrw">報酬：経験値 ひとり' + Math.round(EX_EXP[st.s] * exTm(st, exHOf(st))).toLocaleString() + '・シルバー' + Math.round((EX_SILVER[st.s] + ((st.bonus || []).find(x => x[0] === 'silver') || [0, 0])[1]) * exTm(st, exHOf(st))) + '・' + EX_ITEMS[st.s].concat((st.bonus || []).filter(x => x[0] !== 'silver')).map(x => EX_ITEM_NAME(x[0]) + (x[2] < 1 ? '（ときどき）' : '')).join('・') + '<br>素材：' + (EX_MATS[st.id] || []).map(c => EX_MAT_CAT[c]).join('・') + '（ときどき・中身はランダム）</div>' +
+        '<div class="exrw">報酬：経験値 ひとり' + Math.round(EX_EXP[st.s] * st.boost * exTm(st, exHOf(st))).toLocaleString() + '・シルバー' + Math.round((EX_SILVER[st.s] + ((st.bonus || []).find(x => x[0] === 'silver') || [0, 0])[1]) * st.boost * exTm(st, exHOf(st))) + '・' + EX_ITEMS[st.s].concat((st.bonus || []).filter(x => x[0] !== 'silver')).map(x => EX_ITEM_NAME(x[0]) + (x[2] < 1 ? '（ときどき）' : '')).join('・') + '<br>素材：' + (EX_MATS[st.id] || []).map(c => EX_MAT_CAT[c]).join('・') + '（ときどき・中身はランダム）</div>' +
         (went ? '<div class="exnote">今日はもう行きました</div>' :
           '<div class="exteam">' + [0, 1, 2, 3].map(k => '<button data-ext="' + st.id + ':' + k + '" class="' + (k === t ? 'on' : '') + (exTeamBusy(k) ? ' busy' : '') + '">チーム' + (k + 1) + (exTeamBusy(k) ? '<small>遠征中</small>' : '') + '</button>').join('') + '</div>' +
           '<div class="exmini">' + m.map(u => '<span class="cface" data-ci="' + ciOf(u) + '"></span>').join('') + '<button class="exedit" data-exedit="' + t + '">👥 編成</button></div>' +
@@ -9009,12 +9036,13 @@ body.tight .itembar{gap:6px;}
     fillFaces(body);
   }
   function exGo(id){
-    const st = exToday().find(s => s.id === id); if (!st || userLv() < st.lv) return;
+    const st0 = exToday().find(s => s.id === id); if (!st0 || userLv() < st0.lv) return;
+    const st = exView(st0); if (userLv() < exGLv(st, st.g)) return;
     const t = exPickTeam[id] != null ? exPickTeam[id] : teamNo, m = exMembers(t);
     if (m.length < 4 || exTeamBusy(t) || exData.active.length >= exSlots()) return;
     const dk = today(); if ((exData.done[dk] || []).includes(id)) return;
     const j = exJudge(st, m), now = Date.now(), hh = exHOf(st);
-    exData.active.push({id, name: st.n, s: st.s, team: t, uids: m.map(u => u.u), start: now, end: now + hh * 3600000, rate: j.rate, bonus: st.bonus || [], h: hh, tm: exTm(st, hh)});
+    exData.active.push({id, name: st.n + (st.g ? '（' + EX_GR[st.g].n + '）' : ''), s: st.s, g: st.g, team: t, uids: m.map(u => u.u), start: now, end: now + hh * 3600000, rate: j.rate, bonus: st.bonus || [], h: hh, tm: exTm(st, hh) * st.boost});
     exData.done = {[dk]: (exData.done[dk] || []).concat(id)};
     exSave(); toast('「' + st.n + '」へ出発しました（' + hh + '時間）'); drawExpd(); drawExpdBadge();
   }
@@ -9047,6 +9075,7 @@ body.tight .itembar{gap:6px;}
   $('expdBody').addEventListener('click', e => {
     const ed = e.target.closest('[data-exedit]'); if (ed) { exEditPrev = teamNo; teamNo = +ed.dataset.exedit; save('teamno', String(teamNo)); openBox('char'); return; }
     const t = e.target.closest('[data-ext]'); if (t) { const [id, k] = t.dataset.ext.split(':').map(Number); exPickTeam[id] = k; drawExpd(); return; }
+    const gb = e.target.closest('[data-exg]'); if (gb) { const [id, g] = gb.dataset.exg.split(':').map(Number); exPickG[id] = g; drawExpd(); return; }
     const hb = e.target.closest('[data-exh]'); if (hb) { const [id, h] = hb.dataset.exh.split(':').map(Number); exPickH[id] = h; drawExpd(); return; }
     const g = e.target.closest('[data-go]'); if (g) { exGo(+g.dataset.go); return; }
     const r = e.target.closest('[data-get]'); if (r) { exGet(+r.dataset.get); return; }
