@@ -446,7 +446,7 @@ body.on-menu .battlemain{opacity:0;}
   .eqitem{display:block;width:100%;text-align:left;margin:4px 0;padding:7px 9px;border-radius:10px;border:1px solid rgba(0,0,0,.15);background:#fff;font-family:inherit;}
   .eqitem small{display:block;font-size:11px;opacity:.75;} .eqitem em{font-style:normal;font-size:10.5px;color:#d0506a;} .eqitem.on{outline:2px solid #ffb400;}
   .wpic{width:46px;height:46px;flex:0 0 46px;border-radius:10px;object-fit:contain;background:radial-gradient(circle,rgba(255,255,255,.14),rgba(255,255,255,.03));vertical-align:middle;margin-right:6px;}
-  .wpic.none{display:inline-flex;align-items:center;justify-content:center;font-size:24px;opacity:.7;}
+  .wplus{color:#ffd24a;font-weight:900;} .wpic.none{display:inline-flex;align-items:center;justify-content:center;font-size:24px;opacity:.7;}
   .wpic.gR{box-shadow:inset 0 0 0 2px #5aa8ff;} .wpic.gSR{box-shadow:inset 0 0 0 2px #c58bff;} .wpic.gMR{box-shadow:inset 0 0 0 2px #ffcc3d;} .wpic.gLR{box-shadow:inset 0 0 0 2px #ff6ad5;}
   .wpic.big{width:72px;height:72px;flex-basis:72px;float:left;}
   .eqitem .wpic{width:38px;height:38px;flex-basis:38px;float:left;}
@@ -6869,7 +6869,7 @@ body.tight .itembar{gap:6px;}
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.153';
+  const APP_VER = '0.9.154';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -9193,13 +9193,38 @@ body.tight .itembar{gap:6px;}
   const wpnPic = (w, cls) => WPN_PIC.has(w.id) ? '<img class="wpic ' + (cls || '') + ' g' + w.g + '" src="img/wpn/' + w.id + '.webp" alt="" loading="lazy">' : '<span class="wpic ' + (cls || '') + ' g' + w.g + ' none">' + ({'剣': '🗡', '槍': '🔱', '短剣': '🔪', '斧': '🪓', 'ハンマー': '🔨', '銃': '🔫', '拳': '🥊', '弓': '🏹', '杖': '🪄'}[w.t] || '⚔') + '</span>';
   const wpnOfUnit = u => { const g = u && u.wp ? gearOf(u.wp) : null; return g ? WPN_BY[g.k] : null; };
   const gearUser = gid => units.find(u => u.wp === gid) || null;
-  function wpnBonus(u){ const w = wpnOfUnit(u); if (!w) return [0, 0, 0, 0]; const m = attrOf(u.id) === w.a ? 1.2 : 1; return w.st.map(v => Math.round(v * m)); }
+  // ===== 武器の強化（2026-11-16）：＋0〜＋10。1つ上がるごとに武器のステータス＋8%（＋10で×1.8）=====
+  //   素材＝仕上げ系（砥石〜神鉄の槌・武器のグレードと強化値で決まる）＋シルバー。成功率は＋1へ100% → 1つ上がるごとに−8%（最低30%）
+  //   成功のうち15%は大成功（一気に＋2）。失敗しても強化値は下がらない（素材とシルバーはなくなる）
+  const ENH_MAX = 10, enhMul = p => 1 + 0.08 * (p || 0), enhRate = p => Math.max(30, 100 - 8 * p);
+  const enhCost = (w, p) => ({rc: [['m_polish_' + Math.min(4, GT[w.g] + (p >= 5 ? 1 : 0)), 2 + Math.floor(p / 2)]], sv: Math.round(WPN_COST[GT[w.g]] * 0.3 * (p + 1) / 10) * 10});
+  // いちばん高いステータスは、少なくとも強化値ぶん（＋1につき＋1）は上がる（Nの武器でも強化が見えるように）
+  const wpnStOf = (w, p) => { const mx = Math.max(...w.st); return w.st.map(v => !v ? 0 : v === mx ? Math.max(Math.round(v * enhMul(p)), v + (p | 0)) : Math.round(v * enhMul(p))); };
+  const wpnLineP = (w, p) => { const st = wpnStOf(w, p); return [['HP', 0], ['攻', 1], ['防', 2], ['速', 3]].filter(([, k]) => st[k]).map(([n, k]) => n + '+' + st[k]).join(' '); };
+  const plusTxt = p => p ? ' <span class="wplus">+' + p + '</span>' : '';
+  function wpnBonus(u){ const w = wpnOfUnit(u); if (!w) return [0, 0, 0, 0]; const g = gearOf(u.wp), m = attrOf(u.id) === w.a ? 1.2 : 1; return wpnStOf(w, g && g.p).map(v => Math.round(v * m)); }
   const wpnLine = w => [['HP', 0], ['攻', 1], ['防', 2], ['速', 3]].filter(([, k]) => w.st[k]).map(([n, k]) => n + '+' + w.st[k]).join(' ');
   // ----- 鍛冶屋 -----
   let forgeG = 'N', forgeMsg = '';
   function drawForge(){
     const list = WPN.filter(w => w.g === forgeG), own = k => gear.filter(x => x.k === k).length;
-    let h = (forgeMsg ? '<div class="exmsg">' + forgeMsg + '</div>' : '') + '<div class="fgtabs">' + ['N', 'R', 'SR', 'MR', 'LR', 'GACHA'].map(g => '<button data-fg="' + g + '" class="' + (g === forgeG ? 'on' : '') + '">' + (g === 'GACHA' ? '🎰' : g) + '</button>').join('') + '</div>';
+    let h = (forgeMsg ? '<div class="exmsg">' + forgeMsg + '</div>' : '') + '<div class="fgtabs">' + ['N', 'R', 'SR', 'MR', 'LR', 'UP', 'GACHA'].map(g => '<button data-fg="' + g + '" class="' + (g === forgeG ? 'on' : '') + '">' + (g === 'GACHA' ? '🎰' : g === 'UP' ? '強化' : g) + '</button>').join('') + '</div>';
+    if (forgeG === 'UP') {
+      const mine = gear.filter(g => WPN_BY[g.k]).sort((a, b) => GT[WPN_BY[b.k].g] - GT[WPN_BY[a.k].g] || (b.p | 0) - (a.p | 0));
+      h += '<p class="sknote" style="margin-top:4px">持っている武器を強くします。1つ上がるごとに武器のステータスが8%ずつ上がります（最大＋10）。失敗しても強化値は下がりません。たまに大成功で一気に＋2！</p>';
+      if (!mine.length) h += '<section><p>まだ武器を持っていません。「N」〜「LR」のタブで作るか、🎰の装備ガチャで手に入れてください。</p></section>';
+      mine.forEach(g => { const w = WPN_BY[g.k], p = g.p | 0, us = gearUser(g.g), mx = p >= ENH_MAX;
+        const c = mx ? null : enhCost(w, p), ok = c && c.rc.every(([k, n]) => (inv[k] || 0) >= n) && coins >= c.sv, sh = c ? matShort(c.rc) : null;
+        h += '<div class="excard fgcard"><div class="exhd">' + wpnPic(w) + '<b>' + w.n + plusTxt(p) + '</b><span class="exh">' + w.g + '</span></div>' +
+          '<div class="fgsub">' + (us ? fullName(ALLC[ciOf(us)]) + 'が装備中　' : '') + '<b>' + wpnLineP(w, p) + '</b>' + (mx ? '' : '<br>→ ＋' + (p + 1) + '：<b style="color:#ffd24a">' + wpnLineP(w, p + 1) + '</b>') + '</div>' +
+          (mx ? '<div class="exnote">最大まで強くなっています！</div>' :
+            '<ul class="fgrc">' + c.rc.map(([k, n]) => { const hv = inv[k] || 0; return '<li class="' + (hv >= n ? 'ok' : 'ng') + '">' + EX_MAT[k][1] + ' ' + EX_MAT[k][0] + ' <b>' + hv + '/' + n + '</b></li>'; }).join('') +
+            '<li class="' + (coins >= c.sv ? 'ok' : 'ng') + '">🪙 シルバー <b>' + c.sv.toLocaleString() + '</b></li></ul>' +
+            (sh.cost > 0 && sh.ok ? '<button class="fgbuy" data-buyenh="' + g.g + '">足りない素材をゴールド ' + sh.cost + ' で買う</button>' : '') +
+            '<div class="exgo"><span>成功率 <b>' + enhRate(p) + '%</b></span><button data-enh="' + g.g + '"' + (ok ? '' : ' class="ng"') + '>強くする</button></div>') + '</div>';
+      });
+      $('forgeBody').innerHTML = h; return;
+    }
     if (forgeG === 'GACHA') {
       h += '<div class="excard"><div class="exhd"><b>装備ガチャ</b><span class="exh">ゴールド</span></div><p class="fgsub">武器がそのまま出るガチャ。出る確率：' + Object.keys(GEAR_RATE).map(g => g + ' ' + GEAR_RATE[g] + '%').join('・') + '</p>' +
         '<div class="exgo"><button data-ggacha="1">1回 ゴールド' + GEAR_COST[0] + '</button><button data-ggacha="11">10連（11個） ゴールド' + GEAR_COST[1].toLocaleString() + '</button></div></div>';
@@ -9253,10 +9278,10 @@ body.tight .itembar{gap:6px;}
   }
   function fgHammer(){ const h = $('fgHana'); h.classList.remove('hit'); void h.offsetWidth; h.classList.add('hit'); }
   // 作る・ガチャ：キンコンカン（約2秒）のあいだハナが打つ → 最後の一打（great なら大成功の一打）→ done()
-  function fgForge(great, done){
+  function fgForge(great, done, fail){
     fgBusy = true; fgKinkon(); fgSay('よーし、まかせて！', 'hana', 'hana', 'dwarf', 1800);
     [0, 450, 900, 1350].forEach(t => setTimeout(fgHammer, t));
-    setTimeout(() => { playSeFile(great ? 'smith_don' : 'smith_kan', 1); fgSparks(great); fgBusy = false; done(); }, 1900);
+    setTimeout(() => { playSeFile(great ? 'smith_don' : 'smith_kan', fail ? 0.6 : 1); if (!fail) fgSparks(great); fgBusy = false; done(); }, 1900);
   }
   function fgFarLoop(){ clearTimeout(fgFar); fgFar = setTimeout(() => { if ($('forge').classList.contains('hidden')) return; if (!fgBusy) playSeFile('smith_far', 0.7); fgFarLoop(); }, 20000 + Math.random() * 20000); }
   function openForge(){
@@ -9282,6 +9307,21 @@ body.tight .itembar{gap:6px;}
         fgForge(great, () => { forgeMsg = '🎰 装備ガチャ：' + got.map(w => '<b>' + w.g + '</b> ' + w.n).join('・'); drawForge();
           if (great) { fgSay('すごい！最高の一本だ！', 'hana', 'hana_surprise', 'dwarf_happy', 3200); setTimeout(() => { if (!$('forge').classList.contains('hidden')) fgSay('……わしの最高傑作じゃ', 'dwarf', 'hana_happy', 'dwarf_happy'); }, 3300); }
           else fgSay('できたー！いい出来だよ！', 'hana', 'hana_happy', 'dwarf'); }); }); return; }
+    const be = e.target.closest('[data-buyenh]'); if (be) { const g = gearOf(be.dataset.buyenh); if (!g) return; const sh = matShort(enhCost(WPN_BY[g.k], g.p | 0).rc); if (!sh.ok || !sh.cost) return;
+      payAsk('足りない素材（' + sh.list.map(([k, n]) => EX_MAT[k][0] + '×' + n).join('・') + '）をゴールド ' + sh.cost + ' で買いますか？', async () => { if (!(await spendGold(sh.cost, 'mat'))) return; sh.list.forEach(([k, n]) => giveItem(k, n)); saveInv(); refreshCoins(); drawForge(); }); return; }
+    const en = e.target.closest('[data-enh]'); if (en) { if (fgBusy) return;
+      const g = gearOf(en.dataset.enh); if (!g) return; const w = WPN_BY[g.k], p = g.p | 0; if (p >= ENH_MAX) return;
+      const c = enhCost(w, p);
+      if (!c.rc.every(([k, n]) => (inv[k] || 0) >= n) || coins < c.sv) { fgSay(coins < c.sv && c.rc.every(([k, n]) => (inv[k] || 0) >= n) ? 'シルバーが足りないみたい…' : 'うーん、素材が足りないみたい', 'hana', 'hana_sad', 'dwarf_angry'); return; }
+      c.rc.forEach(([k, n]) => inv[k] -= n); saveInv(); addCoins(-c.sv);
+      const win = Math.random() * 100 < enhRate(p), great = win && p + 2 <= ENH_MAX && Math.random() < 0.15;
+      if (win) { g.p = p + (great ? 2 : 1); saveGear(); }
+      fgForge(great, () => { const nm = '<b>' + w.n + '</b>';
+        if (great) { forgeMsg = '🌟 大成功！ ' + nm + ' が <b>+' + g.p + '</b> になりました！'; fgSay('すごい！最高の一本だ！', 'hana', 'hana_surprise', 'dwarf_happy', 3200); setTimeout(() => { if (!$('forge').classList.contains('hidden')) fgSay('……わしの最高傑作じゃ', 'dwarf', 'hana_happy', 'dwarf_happy'); }, 3300); }
+        else if (win) { forgeMsg = '⬆ 成功！ ' + nm + ' が <b>+' + g.p + '</b> になりました。'; if (Math.random() < 0.4) fgSay('うむ。これなら戦える', 'dwarf', 'hana_happy', 'dwarf_happy'); else fgSay('できたー！いい出来だよ！', 'hana', 'hana_happy', 'dwarf'); }
+        else { forgeMsg = '💦 失敗… ' + nm + ' は +' + p + ' のまま（強化値は下がりません）'; fgSay('あちゃー、ごめん！もう一回やらせて！', 'hana', 'hana_sad', 'dwarf_angry', 2900); setTimeout(() => { if (!$('forge').classList.contains('hidden')) fgSay('焦るな。鉄は待ってくれる', 'dwarf', 'hana_sad', 'dwarf'); }, 3000); }
+        drawForge(); }, !win);
+      return; }
     const c = e.target.closest('[data-craft]'); if (!c || fgBusy) return;
     const w = WPN_BY[c.dataset.craft], rc = wpnRecipe(w), cost = WPN_COST[GT[w.g]];
     if (!rc.every(([k, n]) => (inv[k] || 0) >= n) || coins < cost) { fgSay(coins < cost && rc.every(([k, n]) => (inv[k] || 0) >= n) ? 'シルバーが足りないみたい…' : 'うーん、素材が足りないみたい', 'hana', 'hana_sad', 'dwarf_angry'); return; }
@@ -10006,12 +10046,12 @@ body.tight .itembar{gap:6px;}
       h += evoHTML(u);
     } else if (detTab === 'equip') {
       const w = wpnOfUnit(u), wb = wpnBonus(u), acc = u.lv >= 30 ? 2 : u.lv >= 10 ? 1 : 0;
-      h += '<div class="dsec"><h4>武器</h4>' + (w ? '<div class="eqslot on">' + wpnPic(w, 'big') + '<b>' + w.n + '</b> <small>' + w.g + '・' + w.t + '・' + ATTR[w.a].n + '属性' + (attrOf(c.id) === w.a ? '（同じ属性 ×1.2）' : '') + '</small><div>' + ST_NAME.map((n, k) => wb[k] ? n + '+' + wb[k] : '').filter(Boolean).join('　') + '</div><button data-eq="off">外す</button></div>' : '<div class="eqslot">なし</div>') + '</div>' +
+      h += '<div class="dsec"><h4>武器</h4>' + (w ? '<div class="eqslot on">' + wpnPic(w, 'big') + '<b>' + w.n + plusTxt((gearOf(u.wp) || {}).p | 0) + '</b> <small>' + w.g + '・' + w.t + '・' + ATTR[w.a].n + '属性' + (attrOf(c.id) === w.a ? '（同じ属性 ×1.2）' : '') + '</small><div>' + ST_NAME.map((n, k) => wb[k] ? n + '+' + wb[k] : '').filter(Boolean).join('　') + '</div><button data-eq="off">外す</button></div>' : '<div class="eqslot">なし</div>') + '</div>' +
         '<div class="dsec"><h4>防具</h4><div class="eqslot">準備中（今後追加）</div></div>' +
         '<div class="dsec"><h4>アクセ（' + acc + ' / 2枠）</h4><div class="eqslot">' + (acc ? '準備中（今後追加）' : 'LV10で1つ目、LV30で2つ目の枠がひらきます') + '</div></div>';
       const mine = gear.filter(g => WPN_BY[g.k]).sort((a, b) => GT[WPN_BY[b.k].g] - GT[WPN_BY[a.k].g]);
       h += '<div class="dsec"><h4>持っている武器</h4>' + (mine.length ? mine.map(g => { const ww = WPN_BY[g.k], us = gearUser(g.g);
-        return '<button class="eqitem' + (u.wp === g.g ? ' on' : '') + '" data-eq="' + g.g + '">' + wpnPic(ww) + '<b>' + ww.n + '</b><small>' + ww.g + '・' + ww.t + '・' + ATTR[ww.a].n + (ww.a === attrOf(c.id) ? '★' : '') + '　' + wpnLine(ww) + '</small>' + (us ? '<em>' + (us.u === u.u ? '装備中' : fullName(ALLC[ciOf(us)]) + 'が装備中') + '</em>' : '') + '</button>'; }).join('') : '<p>まだ武器がありません。</p>') +
+        return '<button class="eqitem' + (u.wp === g.g ? ' on' : '') + '" data-eq="' + g.g + '">' + wpnPic(ww) + '<b>' + ww.n + plusTxt(g.p | 0) + '</b><small>' + ww.g + '・' + ww.t + '・' + ATTR[ww.a].n + (ww.a === attrOf(c.id) ? '★' : '') + '　' + wpnLineP(ww, g.p | 0) + '</small>' + (us ? '<em>' + (us.u === u.u ? '装備中' : fullName(ALLC[ciOf(us)]) + 'が装備中') + '</em>' : '') + '</button>'; }).join('') : '<p>まだ武器がありません。</p>') +
         '<button class="eqforge" data-forge="1">⚒ 鍛冶屋で武器を作る</button></div>';
     } else if (detTab === 'feed') {
       const mats0 = units.filter(x => x.u !== u.u && !x.lock && !teams.some(t => t.includes(x.u)) && !exBusyUids().has(x.u));
