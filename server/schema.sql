@@ -187,3 +187,8 @@ CREATE INDEX IF NOT EXISTS idx_purchases_acc ON purchases(account_id, claimed);
 -- 生年月日（年齢ごとの1か月の購入上限に使う。一度だけ登録）
 CREATE TABLE IF NOT EXISTS pay_birth ( account_id TEXT PRIMARY KEY, birth TEXT NOT NULL, created_at INTEGER NOT NULL );
 CREATE TABLE IF NOT EXISTS ents ( account_id TEXT PRIMARY KEY, pass_until INTEGER NOT NULL DEFAULT 0, pass_sub TEXT NOT NULL DEFAULT '', pass_auto INTEGER NOT NULL DEFAULT 0, noads INTEGER NOT NULL DEFAULT 0, first INTEGER NOT NULL DEFAULT 0, customer TEXT NOT NULL DEFAULT '' );
+
+-- ミケの店（プレイヤーどうしの預け販売）2026-11-17
+CREATE TABLE IF NOT EXISTS market ( id TEXT PRIMARY KEY, seller TEXT NOT NULL, item TEXT NOT NULL, plus INTEGER NOT NULL DEFAULT 0, qty INTEGER NOT NULL DEFAULT 1, price INTEGER NOT NULL, created_at INTEGER NOT NULL, show_at INTEGER NOT NULL, expires_at INTEGER NOT NULL, status TEXT NOT NULL DEFAULT 'on', buyer TEXT, sold_at INTEGER );
+CREATE INDEX IF NOT EXISTS idx_market_shelf ON market(status, show_at);
+CREATE INDEX IF NOT EXISTS idx_market_seller ON market(seller, created_at);
