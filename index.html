@@ -1645,7 +1645,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         <button class="mtile" id="boxBtn" data-tip="持っているキャラとアイテムを見る。チームの4人と、持っていくアイテムをセットする"><span class="mi"><img data-mimg="box" alt=""></span><span class="ml">ボックス</span></button>
         <button class="mtile" id="shopBtn" data-tip="コインでアイテムを買う"><span class="mi"><img data-mimg="shop" alt=""></span><span class="ml">ショップ</span></button>
         <button class="mtile" id="sixtyBtn" data-tip="60秒で何点取れるか。記録はランキングに残る"><span class="mi"><img data-mimg="sixty" alt=""></span><span class="ml">60秒アタック</span></button>
-        <button class="mtile" id="startBtn" data-tip="カラーHPがどれか30になるまで、どれだけ長く生き残れるか。時間がたつほど厳しくなる。記録あり・コンティニュー1回"><span class="mi"><img data-mimg="endless" alt=""></span><span class="ml">タイムアタック</span></button>
+        <button class="mtile" id="startBtn" data-tip="カラーHPがどれか30になるまで、どれだけ長く生き残れるか。時間がたつほど厳しくなる。壊した中身と生き残った時間から、サバイバルレートが決まる。記録あり・コンティニュー1回"><span class="mi"><img data-mimg="endless" alt=""></span><span class="ml">サバイバル</span></button>
         <button class="mtile" id="easyBtn" data-tip="5段階の難しさで練習できる。記録なし・コンティニュー何度でも"><span class="mi"><img data-mimg="practice" alt=""></span><span class="ml">練習</span></button>
         <div class="mrow2 two">
           <button class="mtile low" id="forgeBtn" data-forge="1" data-tip="鍛冶屋：遠征で集めた素材で武器を作る。装備ガチャもここ"><span class="mi" style="font-size:26px">⚒</span><span class="ml">鍛冶屋</span></button>
@@ -1654,7 +1654,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         <div class="mrow2 three">
           <button class="mtile low" id="chalBtn" data-tip="毎週3つのお題：みんな同じ盤面・同じ条件で点数を競う。週間ランキングの順位でごほうび"><span class="mi" style="font-size:26px">🎯</span><span class="ml">チャレンジ</span></button>
           <button class="mtile low" id="vsBtn" data-tip="ほかの人と対戦する（準備中）"><span class="mi"><img data-mimg="online" alt=""></span><span class="ml">オンライン対戦</span></button>
-          <button class="mtile low" id="rankBtn" data-tip="60秒アタックとタイムアタックの順位を見る"><span class="mi"><img data-mimg="ranking" alt=""></span><span class="ml">ランキング</span></button>
+          <button class="mtile low" id="rankBtn" data-tip="60秒アタックとサバイバルの順位を見る"><span class="mi"><img data-mimg="ranking" alt=""></span><span class="ml">ランキング</span></button>
         </div>
         <div class="mtip hidden" id="menuTip"></div>
         <p class="mhint">長押しで説明が出ます</p>
@@ -1781,7 +1781,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
             <li>盤面の周りを回る光が1周するまでに消せないと、<b>全色のカラーHPが増えます</b>。</li>
             <li>ストーリーでは、そろって点滅している間は周りの光が止まります（消えるのを待っている間に1周してしまうことはありません）。</li>
             <li>カラーHPは一定時間ごとにも全色+1され、進むほど増える数が大きくなります。</li>
-            <li>光の1周はだんだん短くなります（SPEED UP）。タイムアタックは時間がたつほど、ほかのモードはブロックを消すほど短くなります。オクタブロックで少し戻せますが、戻せる量には上限があるので、いつかは追いつかれます。</li>
+            <li>光の1周はだんだん短くなります（SPEED UP）。サバイバルは時間がたつほど、ほかのモードはブロックを消すほど短くなります。オクタブロックで少し戻せますが、戻せる量には上限があるので、いつかは追いつかれます。</li>
           </ul>
         </section>
         <section>
@@ -1791,7 +1791,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         <section>
           <h3>コンティニュー</h3>
           <p>ゲームオーバーのあと、<b>広告を見るとカラーHPを全部0にして</b>続きから再開できます。スコアはそのままで、スピードも少し戻ります。</p>
-          <p>ストーリーは1ステージ3回まで、タイムアタックは1回まで、練習は何度でも使えます。3回使い切ったあとは、アイテムの「お守り」で続けられます。</p>
+          <p>ストーリーは1ステージ3回まで、サバイバルは1回まで、練習は何度でも使えます。3回使い切ったあとは、アイテムの「お守り」で続けられます。</p>
         </section>
         <section>
           <h3>オートとスキップ（ストーリー）</h3>
@@ -1909,7 +1909,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       </div>
       <div class="how-body">
         <div class="modesel" data-key="rmode" style="margin-top:10px">
-          <button data-v="sixty">60秒アタック</button><button data-v="ta">タイムアタック</button>
+          <button data-v="sixty">60秒アタック</button><button data-v="ta">サバイバル</button>
         </div>
         <section>
           <h3>自己ベスト</h3>
@@ -2663,7 +2663,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   // ステージの目標の文
   const goalText = st => '相手のHP ' + ((st.kind === 'boss' && st.hpV ? st.hpV[varOf(st)] : st.hp) * enemyStats(st)[0]).toLocaleString() + ' を削りきる（どれか1色を削りきれば勝ち）';
   const misText = m => MISSION[m.t].text(m);
-  const MODE_LABEL = {story: 'STORY', practice: 'PRACTICE', rank: 'TIME ATTACK', sixty: '60秒', online: '対戦', chal: 'CHALLENGE'};
+  const MODE_LABEL = {story: 'STORY', practice: 'PRACTICE', rank: 'SURVIVAL', sixty: '60秒', online: '対戦', chal: 'CHALLENGE'};
   const SIXTY_SEC = 60;                                   // 60秒アタックの持ち時間
   const isRec = m => m === 'rank' || m === 'sixty';      // 記録が残るモード
   // キャラ（仮）。イラストが来たら col と sym を画像に差し替える
@@ -2865,7 +2865,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   // ★や広告で戻せるのは、進んだ分の一定割合まで（戻し続けて永久に遊べないようにする）
   const diffBlocks = () => Math.max(0, broken - Math.min(relief, broken * CFG.RELIEF_CAP));
   const secTxt = v => String(Math.round(v * 10) / 10);   // 秒の表示（小数の計算のずれで 9.1000000001 のように長く出ないように）
-  // タイムアタックは時間で速くする（2026-11-18 本人：壊した数で速くすると、早く壊せる上手い人ほど早く速くなっておかしい）
+  // サバイバルは時間で速くする（2026-11-18 本人：壊した数で速くすると、早く壊せる上手い人ほど早く速くなっておかしい）
   //   30秒ごとに1周が0.5秒短くなる。★は時間を巻き戻す（戻せるのは、たった時間の一定割合まで）
   const TA_LAP_EVERY = 30, TA_SLOW_PER_BLOCK = TA_LAP_EVERY / 120;   // ★の巻き戻し量（ブロック数）を秒にする：前の120個＝1段＝30秒
   let reliefT = 0, lapShown = 0;
@@ -2875,7 +2875,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   const speedLv = () => Math.round((CFG.LAP_SEC - lapSec()) / CFG.LAP_STEP_SEC);
   // ★の出やすさは、いちばん高いカラーHPで決める（曲の切り替えと同じ境目）
   const goldTier = () => { const m = Math.max(...stacks); return m >= CFG.WARN_AT ? 2 : (m >= CFG.WARN_AT / 2 ? 1 : 0); };
-  // タイムアタックは時間で圧力が上がるので、オクタ（★）を多めに出す（約1.5倍：5%／11%／18%）
+  // サバイバルは時間で圧力が上がるので、オクタ（★）を多めに出す（約1.5倍：5%／11%／18%）
   const GOLD_TA = [0.05, 0.11, 0.18];
   const goldRate = () => (gameMode === 'rank' ? GOLD_TA[goldTier()] : [CFG.GOLD_RATE, CFG.GOLD_RATE_MID, CFG.GOLD_RATE_HIGH][goldTier()]);
   // エンドレスだけ：時間でも圧力を上げる（2026-11-13）。ふつうの人で3分前後、上手い人で5分前後に終わるように
@@ -2888,7 +2888,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const stackInc = () => {
     const b = Math.min(CFG.STACK_INC_MAX, 1 + Math.floor(diffBlocks() / CFG.STACK_STEP_BLOCKS));
-    return gameMode === 'rank' ? endlessTimeInc() : b;   // タイムアタックは時間だけで決める（壊した数では増やさない）
+    return gameMode === 'rank' ? endlessTimeInc() : b;   // サバイバルは時間だけで決める（壊した数では増やさない）
   };
   let endlessIncShown = 1;
   let size = 0, cell = 0, gm = 0, dpr = 1;
@@ -3865,7 +3865,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     sndMove();
   }
 
-  // ===== 点数の新ルール（2026-11-15。まず60秒アタック・タイムアタック・チャレンジ）=====
+  // ===== 点数の新ルール（2026-11-15。まず60秒アタック・サバイバル・チャレンジ）=====
   //   1個10点×並べた数の倍率 ＋ 十字・L字のボーナス ＋ オクタのボーナス
   //   × 同時消し（2列で×1.5、3列で×2.0…）× COMBO（連鎖。1つごとに＋25%）× RUSH
   //   RUSH：消し終わって回せるようになってから、次の列をそろえるまでが RUSH_MS 以内なら+1（1つ＋0.1倍、×3.0まで）。こえたら0
@@ -3943,6 +3943,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       const pts = base * 10 + cross * 100 + octa * 300;
       const m = (1 + 0.5 * (lines - 1)) * (1 + 0.25 * (chain - 1)) * rushMul() * (gameMode === 'chal' && chCur && chCur.r.combo && chain >= 2 ? chCur.r.combo : 1);
       pendingGain = Math.round(pts * m); calcTxt = pts + '×' + (Math.round(m * 100) / 100);
+      if (pst) pst.cross += cross;   // サバイバルのレート用
       if (cross) pops.push({text: cross >= 2 ? 'CROSS×' + cross : 'CROSS', style: 'sync', r: 2.5, c: 2.5, row: 2, n: 1, t: now() + 200});
     }
     if (pst) {                                       // SKILL PROFILE：60秒・エンドレスのくせを数える
@@ -4002,7 +4003,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     // 壊したブロック数に応じて難しくする
     const prevLap = lapSec(), prevInc = stackInc();
     broken += clearSet.size;
-    if (slow) { relief = Math.min(broken, relief + slow); if (gameMode === 'rank') reliefT += slow * TA_SLOW_PER_BLOCK; }   // ★を消すとスピードが少し戻る（タイムアタックは時間で戻す）
+    if (slow) { relief = Math.min(broken, relief + slow); if (gameMode === 'rank') reliefT += slow * TA_SLOW_PER_BLOCK; }   // ★を消すとスピードが少し戻る（サバイバルは時間で戻す）
     if (lapSec() > prevLap || stackInc() < prevInc) { speedDown(t0, 300); lapShown = lapSec(); }
     else if (lapSec() < prevLap && gameMode !== 'rank') {
       // 盤面の真ん中に大きく出す（音だけだと気づかないため）
@@ -4667,7 +4668,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       if (gameMode === 'rank' && inc > endlessIncShown) { endlessIncShown = inc;
         pops.push({text: 'PRESSURE UP! ×' + inc, style: 'speed', r: 2.2, c: 2.5, row: 0, n: 1, t: t + 100, big: true}); speedFlash = t; sndSpeed(); }
       addStackAll(inc); }
-    if (running && gameMode === 'rank') { const L = lapSec();   // タイムアタック：時間で1周が短くなった
+    if (running && gameMode === 'rank') { const L = lapSec();   // サバイバル：時間で1周が短くなった
       if (L < lapShown) { pops.push({text: 'SPEED UP!', style: 'speed', r: 2.2, c: 2.5, row: 0, n: 1, t: t + 100, big: true}); toast('1周 ' + secTxt(L) + '秒'); speedFlash = t; sndSpeed(); }
       lapShown = L; }
     if (running && t - lapStart >= lapSec() * spdMul() * 1000) {
@@ -5273,7 +5274,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     phase = 'idle'; rotAnim = null; fallDist = null; flashes = []; pops = []; feed = []; broken = 0; relief = 0; speedFlash = 0; warnNext = 0; lastGoldTier = 0; overFx = null; clearTimeout(overTimer);
     document.querySelectorAll('.stk.dead').forEach(d => d.classList.remove('dead')); canvas.style.transform = '';
     const t = now(); lapStart = t; lastStackTick = t; penaltyFlash = 0; runStart = t; reliefT = 0; lapShown = lapSec();
-    pst = (gameMode === 'sixty' || gameMode === 'rank') ? {len: {3: 0, 4: 0, 5: 0, 6: 0}, col: [], gold: 0, turns: 0, sync: 0, chainT: 0, pts: 0, clears: 0, wait: 0, pen: 0, mar: 0, marN: 0, lastT: t} : null;
+    pst = (gameMode === 'sixty' || gameMode === 'rank') ? {len: {3: 0, 4: 0, 5: 0, 6: 0}, col: [], gold: 0, turns: 0, sync: 0, chainT: 0, pts: 0, clears: 0, wait: 0, pen: 0, mar: 0, marN: 0, cross: 0, lastT: t} : null;
     $('over').querySelector('h1').textContent = 'RESULT';
     running = true; refreshZone();
     bgmOn = true; bgmMode = null; bgmUnlock(); primeVoice(); bgmPlay(gameMode === 'sixty' || gameMode === 'chal' ? 'panic' : 'calm');
@@ -5369,7 +5370,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     // 記録はランキングモードだけ。練習モードは残さない
     const taSec = Math.round((now() - runStart) / 1000);
     if (isRec(gameMode)) addHist(gameMode, score, gameMode === 'rank' ? taSec : null);
-    // タイムアタック：生き残った時間で自己ベスト（同じ時間なら点数）
+    if (gameMode === 'rank' && pst) svLast = {st: {sec: taSec, sc: score | 0, bl: broken, tu: pst.turns, sy: pst.sync, ch: pst.chainT, cr: pst.cross, oc: pst.gold, pe: pst.pen, col: (pst.col || []).map(v => v || 0)}, t: Date.now(), rate: null};
+    // サバイバル：生き残った時間で自己ベスト（同じ時間なら点数）
     let taBest = null, taNew = false;
     if (gameMode === 'rank') {
       taBest = loadJ('ta_best', null);
@@ -5382,11 +5384,12 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     $('finalScore').textContent = score;
     const why = i >= 0 ? CH[i].name + 'のゲージが30になりました。' : '';
     $('finalNote').textContent = gameMode === 'rank'
-      ? why + 'TIME ' + taFmt(taSec) + '・' + score.toLocaleString() + '点。' + (taNew ? '自己ベスト更新！' : '自己ベスト ' + taFmt(taBest.d) + '（' + taBest.s.toLocaleString() + '点）')
+      ? why + 'TIME ' + taFmt(taSec) + '・破壊 ' + score.toLocaleString() + '点。サバイバルレートを計算しています…'
       : gameMode === 'chal' ? why + chRecord()
       : isRec(gameMode)
       ? why + (isBest ? '自己ベスト更新！' : '自己ベスト ' + best)
       : why + (gameMode === 'story' ? '何度でも挑戦できます。' : '練習の記録は残りません。');
+    if (gameMode === 'rank' && svLast) svCalc(svLast, why);   // サバイバルのレート（サーバーで計算）
     sendScore();                                  // ランキングモードなら世界ランキングへ送る
     // ===== ゲームオーバー演出 =====
     // ①ゲージが赤く点滅 → ②盤面が灰色に → ③ブロックが崩れ落ちる
@@ -5910,7 +5913,38 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   // ブロックの見た目（イラスト／ノーマル）。選んだものは次回も使う
   // ===== 記録（この端末に保存）=====
   const HIST_KEY = 'twistrush.hist';
-  const taFmt = sec => Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');   // タイムアタックの時間 3:12
+  const taFmt = sec => Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');   // サバイバルの時間 3:12
+  // ===== サバイバルのレート（2026-11-18）=====
+  //   壊した中身と生き残った時間を合わせた独自の数値。式はサーバーだけにある（ゲームのファイルには入れない）
+  //   通信できないときは、次につながったときに計算する
+  let svLast = null;
+  const svFmt = r => r.rate.toLocaleString();
+  async function svAsk(st){ return api('/api/sv/rate', {method: 'POST', body: JSON.stringify({st})}); }
+  function svStore(st, t, r){
+    const h = hist(); const e = h.slice().reverse().find(x => x.m === 'rank' && x.d === st.sec && x.s === st.sc && x.v == null);
+    if (e) { e.v = r.rate; e.g = r.g; try { localStorage.setItem(HIST_KEY, JSON.stringify(h)); } catch (_) {} }
+    const b = loadJ('sv_best', null), nw = !b || r.rate > b.v;
+    if (nw) save('sv_best', JSON.stringify({v: r.rate, g: r.g, d: st.sec, t}));
+    return {nw, best: nw ? {v: r.rate, g: r.g, d: st.sec} : b};
+  }
+  async function svCalc(x, why){
+    try {
+      const r = await svAsk(x.st); x.rate = r.rate; x.g = r.g;
+      const o = svStore(x.st, x.t, r);
+      $('finalNote').innerHTML = (why || '') + 'TIME ' + taFmt(x.st.sec) + '・破壊 ' + x.st.sc.toLocaleString() + '点<br><b style="font-size:1.25em">SURVIVAL RATE ' + svFmt(r) + '</b>（生存' + r.g[0] + '・破壊' + r.g[1] + '・技' + r.g[2] + '）<br>' +
+        (o.nw ? '自己ベスト更新！' : '自己ベスト ' + o.best.v.toLocaleString());
+    } catch (e) {
+      const pend = loadJ('sv_pend', []) || []; pend.push({st: x.st, t: x.t}); save('sv_pend', JSON.stringify(pend.slice(-20)));
+      $('finalNote').textContent = (why || '') + 'TIME ' + taFmt(x.st.sec) + '・破壊 ' + x.st.sc.toLocaleString() + '点。サバイバルレートは、通信できたときに計算します。';
+    }
+  }
+  async function svFlush(){   // 通信できなかった分を計算する
+    const pend = loadJ('sv_pend', []) || []; if (!pend.length) return;
+    const left = [];
+    for (const x of pend) { try { const r = await svAsk(x.st); svStore(x.st, x.t, r); } catch (e) { if (!(e.status >= 400 && e.status < 500)) left.push(x); } }
+    save('sv_pend', JSON.stringify(left));
+  }
+  setTimeout(() => svFlush(), 4000);
   function hist(){ try { return JSON.parse(localStorage.getItem(HIST_KEY) || '[]'); } catch(e) { return []; } }
   function addHist(m, sc, d){
     if (m === 'easy') return;                       // イージーは記録しない
@@ -6101,7 +6135,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     awardPlay();
     if (score <= 0) return;
     if (!chalLive()) return;                               // 世界ランキングは利用者が増えてから
-    const b = {mode: gameMode === 'rank' ? 'ta' : gameMode === 'chal' ? chCur.id : gameMode, score, blocks: broken, dur: Math.round((now() - runStart) / 1000), ver: GAME_VER};   // エンドレスはタイムアタック（ta）として送る：時間→点数で順位
+    const b = {mode: gameMode === 'rank' ? 'sv' : gameMode === 'chal' ? chCur.id : gameMode, score, blocks: broken, dur: Math.round((now() - runStart) / 1000), ver: GAME_VER};
+    if (gameMode === 'rank' && svLast) b.st = svLast.st;   // サバイバル：点数はサーバーがレートを計算しなおす   // エンドレスはサバイバル（ta）として送る：時間→点数で順位
     if (rankTok()) { postScore(b); return; }
     rankPend = b;
     if (load('rank_skip', '') === today()) return;          // 「今はしない」を選んだ日は聞かない
@@ -6119,18 +6154,18 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     const isCh = /^ch/.test(b.mode), el = $('rankRes'), d = isCh ? R.all : R.day, rank = d.rank, total = d.total;
     const tier = rank === 1 ? 't1' : rank === 2 ? 't2' : rank === 3 ? 't3' : rank <= 10 ? 't10' : '';
     const medal = rank === 1 ? '👑' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank <= 10 ? '🏅' : '';
-    const best = R.all && R.all.best != null && (b.mode === 'ta' ? (b.dur > (R.all.bestDur || 0) || (b.dur === R.all.bestDur && b.score >= R.all.best)) : b.score >= R.all.best);
-    const bestNote = d.bestRank && d.bestRank < rank ? '<div class="rk-best">（自己ベスト ' + (b.mode === 'ta' ? taFmt(d.bestDur || 0) : d.best.toLocaleString() + '点') + 'は今日 ' + d.bestRank + '位）</div>' : '';
+    const best = R.all && R.all.best != null && b.score >= R.all.best;
+    const bestNote = d.bestRank && d.bestRank < rank ? '<div class="rk-best">（自己ベスト ' + d.best.toLocaleString() + (b.mode === 'sv' ? '' : '点') + 'は今日 ' + d.bestRank + '位）</div>' : '';
     const msg = rank === 1 ? (isCh ? 'このお題で世界1位！' : '今日の世界1位！') : rank <= 3 ? '表彰台！' : rank <= 10 ? 'トップ10入り！' : best ? '自己ベスト更新！' : (rank <= Math.ceil(total / 2) ? '上位' + Math.max(1, Math.round(rank / total * 100)) + '%！' : 'もっと上をめざそう！');
     const sub = [['今週', R.week], ['今月', R.month], ['全期間', R.all]].filter(x => x[1] && x[1].rank).map(x => '<span>' + x[0] + ' <b>' + x[1].rank + '</b>位</span>').join('');
     el.className = 'rkres ' + tier;
-    el.innerHTML = '<div class="rk-head">🌏 WORLD RANKING</div><div class="rk-mode">' + (b.mode === 'ta' ? '⏳ タイムアタック ' + taFmt(b.dur) : isCh ? '🎯 CHALLENGE ' + (chCur ? chCur.r.n : '') : '⏱ 60秒アタック') + '</div>' +
+    el.innerHTML = '<div class="rk-head">🌏 WORLD RANKING</div><div class="rk-mode">' + (b.mode === 'sv' ? '⏳ サバイバル ' + taFmt(b.dur) : isCh ? '🎯 CHALLENGE ' + (chCur ? chCur.r.n : '') : '⏱ 60秒アタック') + '</div>' +
       (welcome ? '<div class="rk-wel">ようこそ、<b>' + String(welcome).replace(/[<>&]/g, '') + '</b> さん！ 登録しました</div>' : '') +
       '<div class="rk-medal">' + medal + '</div>' +
       '<div class="rk-main"><span class="rk-lbl">今日</span><span class="rk-num">' + Math.max(rank, total) + '</span><span class="rk-i">位</span><span class="rk-of">/ ' + total.toLocaleString() + '人</span></div>' +
       '<div class="rk-sub">' + sub + '</div><div class="rk-msg">' + msg + '</div>' + bestNote +
       '<button class="rk-see">ランキングを見る ›</button>';
-    el.querySelector('.rk-see').addEventListener('click', () => { rankMode = b.mode === 'ta' ? 'ta' : 'sixty'; wPeriod = 'day'; drawRank(); $('rank').classList.remove('hidden'); $('rank').querySelector('.how-body').scrollTop = 0; });
+    el.querySelector('.rk-see').addEventListener('click', () => { rankMode = b.mode === 'sv' ? 'ta' : 'sixty'; wPeriod = 'day'; drawRank(); $('rank').classList.remove('hidden'); $('rank').querySelector('.how-body').scrollTop = 0; });
     // 数字が大きい方から回って、自分の順位で止まる
     const num = el.querySelector('.rk-num'), from = Math.max(rank, Math.min(total, rank + 40)), t0 = performance.now(), dur = rank === from ? 300 : 1300;
     try { sndShine(T(), rank <= 3); } catch (_) {}
@@ -6668,7 +6703,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     setTimeout(step, 700);
   }
   // 月間ランキングのごほうび：先月の順位でアイテムがもらえる（起動したとき・登録したときに確認）
-  const RW_MODE = {sixty: '60秒アタック', rank: 'エンドレス', ta: 'タイムアタック'};
+  const RW_MODE = {sixty: '60秒アタック', rank: 'エンドレス', ta: 'タイムアタック（前の記録）', sv: 'サバイバル'};
   const TICKET_LABEL = {gticket: 'ガチャチケット', gticket_hi: 'SR以上確定チケット', aticket: 'スキップチケット', stampot: 'スタミナポット'};
   // スタミナポットの絵（まだ画像がないので図で描く：黄色い薬びんに⚡）
   const STAMPOT_IMG = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff59a"/><stop offset="1" stop-color="#ffb21e"/></linearGradient></defs>' +
@@ -6739,12 +6774,12 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     }
     box.innerHTML = ''; note.textContent = '読み込み中…';
     try {
-      const r = await api('/api/top?mode=' + rankMode + '&limit=20&period=' + wPeriod, {tok: rankTok()});
+      const r = await api('/api/top?mode=' + (rankMode === 'ta' ? 'sv' : rankMode) + '&limit=20&period=' + wPeriod, {tok: rankTok()});   // サバイバル＝sv（前のサバイバル ta とは別）
       const esc = v => String(v).replace(/[<>&]/g, ''), top = r.top || [];
-      const ta = rankMode === 'ta', val = x => ta ? taFmt(x.dur || 0) + '<small> ' + x.score.toLocaleString() + '点</small>' : x.score.toLocaleString();
+      const ta = rankMode === 'ta', val = x => ta ? x.score.toLocaleString() + '<small> ' + taFmt(x.dur || 0) + '</small>' : x.score.toLocaleString();
       const podOf = (x, k) => x ? '<div class="pod p' + x.rank + (x.me ? ' me' : '') + '" style="--i:' + k + '"><span class="pm">' + ['👑', '🥈', '🥉'][x.rank - 1] + '</span><div class="pr">' + x.rank + '</div><div class="pn">' + flagOf(x.cc) + esc(x.name) + '</div><div class="ps">' + val(x) + '</div></div>'
         : '<div class="pod empty p' + (k === 0 ? 2 : k === 1 ? 1 : 3) + '" style="--i:' + k + '"><div class="pr">—</div><div class="pn">まだいない</div></div>';
-      const meCard = r.me && r.me.rank ? '<div class="wme"><span class="wme-l">あなたは</span><span class="wme-n">' + r.me.rank + '位</span><span class="wme-s">/ ' + r.me.total + '人<br>' + (ta ? taFmt(r.me.bestDur || 0) + '・' : '') + r.me.best.toLocaleString() + '点</span></div>' : '';
+      const meCard = r.me && r.me.rank ? '<div class="wme"><span class="wme-l">あなたは</span><span class="wme-n">' + r.me.rank + '位</span><span class="wme-s">/ ' + r.me.total + '人<br>' + r.me.best.toLocaleString() + (ta ? '' : '点') + '</span></div>' : '';
       box.innerHTML = top.length ? meCard + '<div class="podium">' + podOf(top[1], 0) + podOf(top[0], 1) + podOf(top[2], 2) + '</div>' +
         top.slice(3).map((x, i) => '<div class="wrow' + (x.me ? ' me' : '') + '" style="--i:' + i + '"><span class="rk">' + x.rank + '</span><span class="nm2">' + flagOf(x.cc) + esc(x.name) + '</span><span class="sc">' + val(x) + '</span></div>').join('')
         : '<div class="wrow"><span class="nm2">まだ記録がありません。一番乗りをめざそう！</span></div>';
@@ -6752,7 +6787,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       const meRow = box.querySelector('.wrow.me'); if (meRow) setTimeout(() => meRow.scrollIntoView({block: 'nearest', behavior: 'smooth'}), 600);
       $('rankMe').classList.toggle('hidden', !rankTok());
       if (rankTok() && document.activeElement !== $('rankNameIn')) $('rankNameIn').value = rankName();
-      note.textContent = !rankTok() ? '60秒アタックかタイムアタックを遊び終わったら、名前を入れてランキングに登録できます。毎月の順位でアイテムがもらえます。'
+      note.textContent = !rankTok() ? '60秒アタックかサバイバルを遊び終わったら、名前を入れてランキングに登録できます。毎月の順位でアイテムがもらえます。'
         : r.me && r.me.rank ? '' : 'この期間はまだ記録がありません。';
     } catch (e) {
       note.textContent = 'サーバーにつながりませんでした（まだ準備中です）。';
@@ -6770,16 +6805,16 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         : rankTok() ? '今月はまだ記録がありません。遊ぶとプレゼントがもらえます' : '名前を登録してランキングに載ると、毎月もらえます') + '</div>' +
       pz.map((x, i) => '<div class="prz-r' + (i === cur ? ' on' : '') + '"><span class="prz-l">' + (ic[i] || '🎁') + ' ' + x.label + '</span><span class="prz-i">' +
         Object.entries(x.items).map(([k, n]) => '<i>' + itemLabel(k) + ' ×' + n + '</i>').join('') + '</span></div>').join('') +
-      '<div class="prz-f">翌月1日（日本時間）に、ゲームを開くと受け取れます。60秒アタックとタイムアタックで別々にもらえます。</div></div>';
+      '<div class="prz-f">翌月1日（日本時間）に、ゲームを開くと受け取れます。60秒アタックとサバイバルで別々にもらえます。</div></div>';
   }
   function drawRank(){
     const rows = [['今日', 'day'], ['今週', 'week'], ['今月', 'month'], ['全期間', 'all']];
     markSel('rmode', rankMode);
-    const ta = rankMode === 'ta', h = hist().filter(r => r.m === (ta ? 'rank' : rankMode) && (!ta || r.d != null));
+    const ta = rankMode === 'ta', h = hist().filter(r => r.m === (ta ? 'rank' : rankMode) && (!ta || r.v != null));   // サバイバルはレートのある記録だけ
     const body = rows.map(([label, kind]) => {
       const from = periodStart(kind), list = h.filter(r => r.t >= from);
-      const top = !list.length ? null : ta ? list.reduce((a, r) => (r.d > a.d || (r.d === a.d && r.s > a.s)) ? r : a) : Math.max(...list.map(r => r.s));
-      return '<tr><th>' + label + '</th><td>' + (!list.length ? '—' : ta ? taFmt(top.d) + '・' + top.s.toLocaleString() + '点' : top.toLocaleString()) + '</td><td>' + list.length + '</td></tr>';
+      const top = !list.length ? null : ta ? list.reduce((a, r) => r.v > a.v ? r : a) : Math.max(...list.map(r => r.s));
+      return '<tr><th>' + label + '</th><td>' + (!list.length ? '—' : ta ? top.v.toLocaleString() + '（' + taFmt(top.d) + '）' : top.toLocaleString()) + '</td><td>' + list.length + '</td></tr>';
     }).join('');
     $('rankTable').innerHTML = '<tr><th>期間</th><th>自己ベスト</th><th>プレイ回数</th></tr>' + body;
     drawWorld();
@@ -6925,7 +6960,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.166';
+  const APP_VER = '0.9.167';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -7637,7 +7672,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     {k: 'boss',    name: 'ボスを倒す',                u: '人', tiers: () => [1, 3, 6, AREAS.length], val: () => bossesBeaten()},
     {k: 'nc',      name: 'コンティニュー・アイテムなしでクリア', u: '面', tiers: () => [10, 30, 60, STORY.length], val: () => storyNC.filter(Boolean).length},
     {k: 'rainbow', name: 'レインボーブロックを集める', u: '個', tiers: () => [30, 100, 200, STORY.length * 3], val: () => starTotal()},
-    {k: 'endless', name: 'タイムアタックで遊ぶ',          u: '回', tiers: () => [10, 50, 200, 500]},
+    {k: 'endless', name: 'サバイバルで遊ぶ',          u: '回', tiers: () => [10, 50, 200, 500]},
     {k: 'sixty',   name: '60秒アタックで遊ぶ',        u: '回', tiers: () => [10, 50, 200, 500]},
     {k: 'olwin',   name: 'オンライン対戦で勝つ',      u: '勝', tiers: () => [1, 10, 50, 200]},
     {k: 'arwin',   name: 'オートバトルで勝つ',        u: '勝', tiers: () => [1, 10, 50, 200]},
@@ -7666,7 +7701,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     {k: 'b3', t: 'どれかのキャラを LV5 にする', ok: () => units.some(u => u.lv >= 5), r: [['stampot', 1]]},
     {k: 'b4', t: 'ストーリー 1-5 をクリア', ok: () => storyClr[4] > 0, r: [['gticket', 5]]},
     {k: 'b5', t: '60秒アタックを遊ぶ', ok: () => load('bplay_sixty', '') === '1', r: [['gticket', 2]]},
-    {k: 'b6', t: 'タイムアタックを遊ぶ', ok: () => load('bplay_endless', '') === '1', r: [['gticket', 2]]},
+    {k: 'b6', t: 'サバイバルを遊ぶ', ok: () => load('bplay_endless', '') === '1', r: [['gticket', 2]]},
     {k: 'b7', t: 'ストーリーで仲間を3体ふやす', ok: () => units.filter(u => /^z_/.test(u.id) || STORY_IDS.has(u.id)).length >= 3, r: [['gticket', 3]]},
     {k: 'b8', t: '限界突破を1回する', ok: () => units.some(u => (u.star || 0) >= 1), r: [['stampot', 1]]},
   ];
@@ -7694,7 +7729,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     {min: 18000, k: 'S',  n: 'MASTER'},
     {min: 20000, k: 'SS', n: 'GOD'},
   ];
-  // 点数の新ルール（2026-11-15）：前の記録は点数の大きさがちがうので、SKILLの記録は×10に直し、60秒・タイムアタックの自己ベストと履歴はリセット
+  // 点数の新ルール（2026-11-15）：前の記録は点数の大きさがちがうので、SKILLの記録は×10に直し、60秒・サバイバルの自己ベストと履歴はリセット
   if (load('score_v', '') !== '2') {
     try { const k = loadJ('sk60', null); if (Array.isArray(k)) save('sk60', JSON.stringify(k.map(v => v * 10))); } catch(_) {}
     try { const a = loadJ('skprof', null); if (Array.isArray(a)) save('skprof', JSON.stringify(a.map(x => Object.assign(x, {sc: (x.sc || 0) * 10, pts: (x.pts || 0) * 10})))); } catch(_) {}
@@ -7740,9 +7775,9 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   function skRank(){ const st = skStats(); if (!st.nS) return null; let r = SKR[0]; SKR.forEach(x => { if (st.val >= x.min) r = x; }); return r; }
   function skType(st){
-    if (!st.nS || !st.nE) return {t: 'タイプはまだ不明', d: 'タイムアタックも遊ぶと、瞬発型か持久型かが分かります'};
+    if (!st.nS || !st.nE) return {t: 'タイプはまだ不明', d: 'サバイバルも遊ぶと、瞬発型か持久型かが分かります'};
     const dash = cl01(st.sixty / 20000), sta = cl01((st.endl - 1) / 5);
-    if (sta - dash >= 0.15) return {t: '持久型', d: 'じっくり長く戦うほど力を出すタイプ。タイムアタック向き'};
+    if (sta - dash >= 0.15) return {t: '持久型', d: 'じっくり長く戦うほど力を出すタイプ。サバイバル向き'};
     if (dash - sta >= 0.15) return {t: '瞬発型', d: '短い時間で一気に稼ぐタイプ。60秒アタック向き。長く戦うと息切れぎみ'};
     return {t: 'バランス型', d: '短い勝負でも長い勝負でも、同じように力を出せるタイプ'};
   }
@@ -7756,12 +7791,12 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     return [
       {k: 'SPD',  n: 'スピード', p: cl01((tpm - 3) / 15), raw: '1分に ' + tpm.toFixed(1) + 'ターン', d: '1分間に何回くずせるか'},
       {k: 'DASH', n: 'ダッシュ', p: cl01(st.sixty / 20000), raw: '60秒 安定値 ' + Math.round(st.sixty).toLocaleString() + '点', d: '短期決戦の爆発力（60秒アタック）'},
-      {k: 'STA',  n: 'スタミナ', p: st.nE ? cl01((st.endl - 1) / 5) : 0, raw: st.nE ? 'タイムアタック 安定値 ' + skMS(st.endl) : 'タイムアタック未プレイ', d: 'タイムアタックで長く生き残る力（3分でC、5分でA）', na: !st.nE},
+      {k: 'STA',  n: 'スタミナ', p: st.nE ? cl01((st.endl - 1) / 5) : 0, raw: st.nE ? 'サバイバル 安定値 ' + skMS(st.endl) : 'サバイバル未プレイ', d: 'サバイバルで長く生き残る力（3分でC、5分でA）', na: !st.nE},
       {k: 'POW',  n: '破壊力', p: cl01((cpt - 3) / 12), raw: '1ターン ' + cpt.toFixed(1) + '個', d: '1回でこわすブロックの数'},
       {k: 'ATK',  n: '攻撃力', p: cl01(st.ppt / 1400), raw: '1ターン ' + Math.round(st.ppt).toLocaleString() + '点', d: '1回くずしたときの点数'},
       // 2026-11-17 本人：回避999・反応8・空間認識949は目もりがおかしい → 本人の数字が真ん中（0.37前後）に来るように直す
       //   回避率：1周逃しの回数だと、なれた人はほぼ0回で全員999になる → 消したときに外周の1周があとどれだけ残っていたか（平均）で見る
-      {k: 'EVA',  n: '回避率', p: st.mar != null ? cl01((st.mar - 0.3) / 0.6) * cl01(st.marN / 150) : 0, raw: st.mar != null ? '消したとき 1周の残り 平均' + pc(st.mar) : '60秒アタック・タイムアタックを遊ぶと計測', d: '外周の光が1周する前に、余裕をもって消す力（ギリギリが多いと下がる）', na: st.mar == null},
+      {k: 'EVA',  n: '回避率', p: st.mar != null ? cl01((st.mar - 0.3) / 0.6) * cl01(st.marN / 150) : 0, raw: st.mar != null ? '消したとき 1周の残り 平均' + pc(st.mar) : '60秒アタック・サバイバルを遊ぶと計測', d: '外周の光が1周する前に、余裕をもって消す力（ギリギリが多いと下がる）', na: st.mar == null},
       {k: 'REA',  n: '反応', p: st.turns ? cl01((4.5 - st.wait) / 3.5) * cl01(st.turns / 150) : 0, raw: '次まで ' + st.wait.toFixed(1) + '秒', d: '消えてから次をそろえるまでの速さ'},
       {k: 'SPA',  n: '空間認識', p: cl01((st.sync - 0.5) / 0.45) * cl01(st.turns / 150), raw: '同時消し ' + pc(st.sync), d: '盤面を広く見て、何列も同時にそろえる力'},
       {k: 'DEX',  n: '器用さ', p: cl01(lr / 0.6), raw: '4つ ' + pc(st.r4) + '・5つ ' + pc(st.r5) + '・6つ ' + pc(st.r6), d: '長い列（4つ以上）をそろえる技術'},
@@ -7796,8 +7831,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       '<div class="skval">SKILL SCORE <b>' + Math.round(st.val).toLocaleString() + '</b><small>60秒アタック 安定値 ' + Math.round(st.sixty).toLocaleString() + '（直近' + st.nS + '回）</small></div>' +
       '<div class="sktype"><b>' + ty.t + '</b><small>' + ty.d + '</small></div>' +
       '<div class="sknext">' + (() => { const i = rk ? SKR.indexOf(rk) : -1, nx = SKR[i + 1]; return nx ? '次の ' + nx.k + '（' + nx.n + '）まで あと <b>' + Math.max(0, Math.ceil(nx.min - st.val)).toLocaleString() + '</b>' : '最高ランクです！'; })() + '</div></section>' +
-      '<section><h3>STATUS <small>（60秒アタック・タイムアタックの直近' + st.n + '回）</small></h3>' +
-      (st.turns ? skStatusHTML(st) : '<p>60秒アタックかタイムアタックを遊ぶと、ここにあなたのステータスが出ます。</p>') + '</section>' +
+      '<section><h3>STATUS <small>（60秒アタック・サバイバルの直近' + st.n + '回）</small></h3>' +
+      (st.turns ? skStatusHTML(st) : '<p>60秒アタックかサバイバルを遊ぶと、ここにあなたのステータスが出ます。</p>') + '</section>' +
       '<section><h3>SKILL RANK</h3><div class="sklist">' + SKR.map(x => '<div class="' + (rk && rk.k === x.k ? 'on' : '') + '"><b>' + x.k + '</b> ' + x.n + '<small>' + x.min.toLocaleString() + '〜</small></div>').join('') + '</div>' +
       '</section>';
   }
@@ -7809,7 +7844,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     d: {name: '毎日のミッション', reset: '毎日0時にリセット', list: [
       {k: 'days',  n: 1, t: '毎日のプレゼントを受け取る', r: [['coin', 50]]},
       {k: 'stage', n: 3, t: 'ストーリーで3回勝つ', r: [['gticket', 1]]},
-      {k: 'mini',  n: 1, t: '60秒アタックかタイムアタックを1回遊ぶ', r: [['coin', 100]]},
+      {k: 'mini',  n: 1, t: '60秒アタックかサバイバルを1回遊ぶ', r: [['coin', 100]]},
       {k: 'gacha', n: 1, t: 'ガチャを1回引く', r: [['coin', 50]]},
       {k: 'vs',    n: 1, t: 'オンライン対戦かオートバトルで1回勝つ', r: [['coin', 100]]},
     ], all: [['gticket', 2]]},
@@ -7817,7 +7852,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       {k: 'days',  n: 5,  t: '毎日のプレゼントを5日受け取る', r: [['gticket', 2]]},
       {k: 'stage', n: 20, t: 'ストーリーで20回勝つ', r: [['gticket', 3]]},
       {k: 'boss',  n: 3,  t: 'ボスに3回勝つ', r: [['stampot', 1]]},
-      {k: 'mini',  n: 10, t: '60秒アタックかタイムアタックを10回遊ぶ', r: [['coin', 500]]},
+      {k: 'mini',  n: 10, t: '60秒アタックかサバイバルを10回遊ぶ', r: [['coin', 500]]},
       {k: 'vs',    n: 5,  t: 'オンライン対戦かオートバトルで5回勝つ', r: [['coin', 500]]},
     ], all: [['gticket', 5]]},
     m: {name: '毎月のミッション', reset: '毎月1日0時にリセット', list: [
@@ -9443,7 +9478,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   //   盤面・降ってくるブロックの順番と場所はぜんぶ同じ（列ごとに決まった順番）。アイテム・キャラの技はなし
   //   クリアのごほうびはなし。お題ごとの週間ランキングの順位だけでごほうび（サーバーの /api/chal/reward）
   //   始まるのは、1日の利用者が500人を超えてから（サーバーの /api/hello が chal:true を返したら）。それまでは鍵つきで見せる
-  //   60秒アタック・タイムアタックの世界ランキングと月間ランキングのごほうびも、同じ時から（それまでは鍵。自己ベストは見られる）
+  //   60秒アタック・サバイバルの世界ランキングと月間ランキングのごほうびも、同じ時から（それまでは鍵。自己ベストは見られる）
   const CH_RULES = [
     {k: 'sprint', n: 'SPRINT 30',   d: '30秒で何点取れるか', sec: 30},
     {k: 'blitz',  n: 'BLITZ 20',    d: '20秒の超短期決戦', sec: 20},
@@ -9599,9 +9634,9 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     const s = e.target.closest('[data-vsel]'); if (s && boxTab === 'vote') { voteFocus = voteFocus === s.dataset.vsel ? null : s.dataset.vsel; drawVote(); }
   });
   const FEAT = [
-    {k: 'ta', n: 'タイムアタック', ok: () => bossesBeaten() >= 1, need: 'エリア1のボスを倒す', how: '時間がたつほど厳しくなる中で、どれだけ長く生き残れるかを競うモードだよ。ランキングにも残るから挑戦してね！'},
+    {k: 'ta', n: 'サバイバル', ok: () => bossesBeaten() >= 1, need: 'エリア1のボスを倒す', how: '時間がたつほど厳しくなる中で、どれだけ長く生き残れるかを競うモードだよ。壊した中身と生き残った時間から「サバイバルレート」が決まるよ。ランキングにも残るから挑戦してね！'},
     {k: 'chal', n: 'チャレンジ', ok: () => chalLive() && bossesBeaten() >= 1, need: () => chalLive() ? 'エリア1のボスを倒す' : '', how: '毎週3つのお題が出るよ。みんな同じ盤面・同じブロックの順番で点数を競うの。週間ランキングの順位でごほうびがもらえるよ！'},
-    {k: 'rank', n: 'ランキング', ok: () => chalLive() && bossesBeaten() >= 1, need: () => chalLive() ? 'エリア1のボスを倒す' : '', how: '60秒アタックとタイムアタックの世界ランキングが見られるよ。月の順位でプレゼントももらえるの！'},
+    {k: 'rank', n: 'ランキング', ok: () => chalLive() && bossesBeaten() >= 1, need: () => chalLive() ? 'エリア1のボスを倒す' : '', how: '60秒アタックとサバイバルの世界ランキングが見られるよ。月の順位でプレゼントももらえるの！'},
     {k: 'online', n: 'オンライン対戦', ok: () => userLv() >= 5, need: 'ユーザーLV5', how: 'ほかの人とリアルタイムで対戦できるよ。まずは「シンプル」から遊んでみてね。'},
     {k: 'arena', n: 'アリーナ（オート対戦）', ok: () => chalLive() && userLv() >= 8, need: () => chalLive() ? 'ユーザーLV8' : '', how: 'オンライン対戦の「オート」タブで、チームどうしを自動で戦わせられるよ。1日3回まで！'},
     {k: 'expd', n: '遠征（EXPEDITION）', ok: () => true, need: '', how: 'ストーリーのマップ下の「遠征」から、チームを送り出して経験値や素材を集めてこられるよ。'},
@@ -11943,7 +11978,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     const PAGES = [
       {img: 'guide', face: true, t: 'TWIST RUSHへようこそ！', b: 'このゲームは、ブロックを<b>回転</b>させて色をあわせて、<b>点数を競い合う</b>かんたんなゲームです。<br>モードは主に<b>4種類</b>あります。'},
       {img: 'story', t: '① ストーリーモード', b: '奪われた<b>虹色のブロック</b>を取り戻す旅！ 敵は強大です。<br><b>ガチャ</b>でキャラクターをゲットして<b>チーム</b>を組み、各ステージの敵キャラ・ボスを倒して<b>経験値とコイン</b>をゲット！<br>キャラの<b>合成・限界突破</b>で味方をどんどん強くしよう！'},
-      {img: 'simple', t: '② 60秒アタック・タイムアタック', b: 'キャラやスキルなどは一切なし。シンプルに<b>的確な判断とスピード</b>が問われます。<br>時間内の点数を競う<b>60秒アタック</b>、だんだん厳しくなる中でどれだけ生き残れるかの<b>タイムアタック</b>。どちらも<b>リアルタイム世界ランキング</b>に記録を残せます。<br><small>※上位に入ると、ストーリーで使えるアイテムがもらえます</small>'},
+      {img: 'simple', t: '② 60秒アタック・サバイバル', b: 'キャラやスキルなどは一切なし。シンプルに<b>的確な判断とスピード</b>が問われます。<br>時間内の点数を競う<b>60秒アタック</b>、だんだん厳しくなる中でどれだけ生き残れるかの<b>サバイバル</b>。どちらも<b>リアルタイム世界ランキング</b>に記録を残せます。<br><small>※上位に入ると、ストーリーで使えるアイテムがもらえます</small>'},
       {img: 'online', t: '③ オンライン対戦', b: '2人でオンライン対決！ キャラなしの<b>シンプル版</b>と、キャラを使う<b>キャラ版</b>があります。<br>キャラどうしを自動で戦わせる<b>オートバトル</b>も。遊ぶと<b>対戦メダル</b>が集まります。'},
       {img: 'guide', face: true, t: '最強を目指そう！', b: 'いろんなモードを使いこなして、<b>最強</b>を目指そう！<br>まずは<b>ストーリーモード</b>から。わたし、レインボーが案内するね！', last: true},
     ];
@@ -12043,7 +12078,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
           waitFor(() => !stillOn() || !(skList[k] && skList[k].ready)).then(() => { hide(); res(); }); });
         await waitFor(() => !stillOn(), 2200);
         if (stillOn()) pauseClock();
-        await say('すごい！ これが<b>技</b>だよ。時間でたまるから、ここぞというときに使おう！<br>あとは操作に慣れて、どんどんチャレンジしてみてね。<br><b>60秒アタック・タイムアタック・オンライン対戦</b>でもアイテムがゲットできるから、遊んでみてね！', null, 'がんばる！');
+        await say('すごい！ これが<b>技</b>だよ。時間でたまるから、ここぞというときに使おう！<br>あとは操作に慣れて、どんどんチャレンジしてみてね。<br><b>60秒アタック・サバイバル・オンライン対戦</b>でもアイテムがゲットできるから、遊んでみてね！', null, 'がんばる！');
         if (stillOn()) resumeClock();
         setStep('done');
       } finally { tour = false; autoOn = false; hide(); }

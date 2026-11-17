@@ -395,6 +395,7 @@ async function api(env, req, url) {
   const p = url.pathname, M = req.method;
   // Stripe の通知（署名を確かめてから、買ったものを渡す）。ログインなしで届く
   if (p === '/api/pay/webhook' && M === 'POST') return payWebhook(env, req);
+  if (p === '/api/sv/rate' && M === 'POST') { const b = await req.json().catch(() => ({})); const r = svRate(b.st); return r ? json(env, req, r) : fail(env, req, '記録の値が不正です'); }
   if (p === '/api/ping') return json(env, req, { ok: true, now: nowSec(), pay: !!env.STRIPE_SECRET_KEY, logins: Object.keys(PROVIDERS).filter(k => PROVIDERS[k].id(env)).concat(env.DEV_LOGIN === '1' ? ['dev'] : []) });
 
   // 毎日の利用者（端末ごとの乱数ID。名前やアカウントとはつながない）＋ 機能のオン・オフ
@@ -689,6 +690,27 @@ async function rankTop(env, req, url) {
     month: me ? await myRank(env, mode, 'month', me.id, t) : null,
   });
 }
+// ===== サバイバルのレート（2026-11-18 本人：壊した中身と生き残った時間を合わせた独自の計算・簡単には解けないもの）=====
+//   式と係数はサーバーだけに置く（ゲームのファイルを読んでも分からない）。人間に無理な数字ははじく
+const SV_STEPS = [[60, 1], [120, 2], [150, 3], [180, 4], [210, 5], [240, 6], [270, 7], [300, 8]];
+const svPress = t => { for (const [a, v] of SV_STEPS) if (t < a) return v; return 8 + Math.floor((t - 300) / 20) * 2 + 2; };
+const svGr = (v, cut) => ['S', 'A', 'B', 'C', 'D'][cut.findIndex(c => v >= c)] || 'E';
+function svRate(st) {
+  if (!st || typeof st !== 'object') return null;
+  const n = k => { const v = Number(st[k]); return Number.isFinite(v) && v >= 0 ? v : -1; };
+  const T = n('sec'), sc = n('sc'), bl = n('bl'), tu = n('tu'), sy = n('sy'), ch = n('ch'), cr = n('cr'), oc = n('oc'), pe = n('pe');
+  if ([T, sc, bl, tu, sy, ch, cr, oc, pe].some(v => v < 0)) return null;
+  if (T < 5 || T > 3600 || tu > T * 4 || sy > tu || ch > tu || cr > tu * 8 || oc > bl + 1 || pe > T / 2 + 1 || bl > T * 40) return null;
+  const col = Array.isArray(st.col) ? st.col.slice(0, 12).map(v => Math.max(0, Number(v) || 0)) : [];
+  const m = T / 60, dn = sc / 1000 / Math.max(0.5, m);
+  if (dn > 80) return null;
+  let P = 0; for (let t = 0; t < Math.floor(T); t++) P += svPress(t);
+  const k = tu || 1, cs = col.filter(v => v > 0), ca = cs.reduce((a, v) => a + v, 0) / Math.max(1, cs.length);
+  const bias = cs.length > 1 && ca ? Math.sqrt(cs.reduce((a, v) => a + (v - ca) ** 2, 0) / cs.length) / ca : 0;
+  const Q = Math.max(0.7, Math.min(1.6, 1 + 0.35 * (sy / k) + 0.25 * (ch / k) + 0.2 * Math.min(1, cr / k) + 0.12 * Math.log2(1 + oc / Math.max(0.5, m)) - 0.1 * (pe / Math.max(0.5, m)) - 0.15 * Math.min(1, bias)));
+  const rate = Math.round(9.7 * Math.pow(P, 0.92) * Math.pow(dn + 0.6, 0.78) * Math.pow(Q, 1.3) + 0.37 * Math.sqrt(sc) + 3 * Math.sqrt(Math.min(T, 600)));
+  return { rate, g: [svGr(T, [330, 270, 210, 150, 90]), svGr(dn, [14, 10, 7, 4.5, 2.5]), svGr(Q, [1.5, 1.35, 1.2, 1.05, 0.9])] };
+}
 async function rankPost(env, req, me) {
   const t = nowSec();
   const b = await req.json().catch(() => null); if (!b) return fail(env, req, 'JSONが読めません');
@@ -697,6 +719,10 @@ async function rankPost(env, req, me) {
     blocks: Math.floor(Number(b.blocks || 0)), dur: Math.floor(Number(b.dur || 0)),
     ver: String(b.ver || '').slice(0, 16), log: b.log ? String(b.log).slice(0, 20000) : null,
   };
+  if (row.mode === 'sv') {   // サバイバル：点数はサーバーでレートを計算しなおす
+    const r = svRate(b.st); if (!r) return fail(env, req, '記録の値が不正です');
+    row.score = r.rate; row.dur = Math.floor(Number(b.st.sec)); row.blocks = Math.floor(Number(b.st.bl)) || 1;
+  }
   const maxPer = Number(env.MAX_SCORE_PER_BLOCK || 1000), minSec = Number(env.MIN_SEC_PER_BLOCK || 0.12);
   if (!Number.isFinite(row.score) || row.score < 0 || row.score > 50000000) return fail(env, req, 'スコアの値が不正です');
   if (row.score > 0 && row.blocks === 0) return fail(env, req, 'ブロックを消さずに得点しています');
@@ -725,7 +751,7 @@ const MONTH_REWARDS = [
   { upTo: 100, label: '51〜100位', items: { gticket: 1, refresh30: 2, stampot: 1 } },
   { upTo: 0,   label: '参加賞',    items: { refresh30: 1, stampot: 1 } },          // 0 は「それ以下ぜんぶ」
 ];
-const REWARD_MODES = ['sixty', 'rank', 'ta'];
+const REWARD_MODES = ['sixty', 'rank', 'ta', 'sv'];
 function lastMonth(t) {
   const to = since('month', t), from = since('month', to - 1);
   const d = new Date((from + TZ) * 1000);
