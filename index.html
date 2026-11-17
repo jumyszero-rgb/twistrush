@@ -1649,7 +1649,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         <button class="mtile" id="easyBtn" data-tip="5段階の難しさで練習できる。記録なし・コンティニュー何度でも"><span class="mi"><img data-mimg="practice" alt=""></span><span class="ml">練習</span></button>
         <div class="mrow2 two">
           <button class="mtile low" id="forgeBtn" data-forge="1" data-tip="鍛冶屋：遠征で集めた素材で武器を作る。装備ガチャもここ"><span class="mi" style="font-size:26px">⚒</span><span class="ml">鍛冶屋</span></button>
-          <button class="mtile low" id="mktBtn" data-tip="ミケの店：いらない武器や素材をシルバーに換える。ほかのプレイヤーと預けて売り買いもできる"><span class="mi" style="font-size:26px">🐈</span><span class="ml">ミケの店</span></button>
+          <button class="mtile low" id="mktBtn" data-tip="ミケの店：いらない武器や素材をニャンコインに換える。ほかのプレイヤーと預けて売り買いもできる"><span class="mi" style="font-size:26px">🐈</span><span class="ml">ミケの店</span></button>
         </div>
         <div class="mrow2 three">
           <button class="mtile low" id="chalBtn" data-tip="毎週3つのお題：みんな同じ盤面・同じ条件で点数を競う。週間ランキングの順位でごほうび"><span class="mi" style="font-size:26px">🎯</span><span class="ml">チャレンジ</span></button>
@@ -6916,7 +6916,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.161';
+  const APP_VER = '0.9.162';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -7949,8 +7949,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     const soon = (w.expiring || [])[0];
     askYes('<b>ゴールドの内訳</b><br>合計 <b>' + w.total.toLocaleString() + '</b><br>' +
       '有償ゴールド（買ったもの） <b>' + w.paid.toLocaleString() + '</b>' + (soon ? '<br><small>いちばん近い期限：' + soon.n.toLocaleString() + '枚があと' + d(soon.at) + '</small>' : '') + '<br>' +
-      '無償ゴールド（もらったもの・お店で使える） <b>' + w.free.toLocaleString() + '</b><br>' +
-      '<small>ガチャや強化など、ゴールドで払うものは合計から払えます（期限の近い有償ゴールドから先に減ります）。有償ゴールドは買ってから' + (w.days || 180) + '日で消えます。<br>ミケの店でほかのプレイヤーの品を買うときだけは、無償ゴールド（＝お店で使えるゴールド）で払います。</small>');
+      '無償ゴールド（もらったもの） <b>' + w.free.toLocaleString() + '</b><br>' +
+      '<small>ゴールドで払うものは合計から払えます（期限の近い有償ゴールドから先に減ります）。有償ゴールドは買ってから' + (w.days || 180) + '日で消えます。</small>');
   }
   document.addEventListener('click', e => { if (e.target.closest('[data-goldw]')) goldInfo(); });
   function addCoins(n){ coins = Math.max(0, coins + n); save('coins', String(coins)); refreshCoins(); }
@@ -9600,29 +9600,34 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   const featNeed = k => { const n = (FEAT.find(x => x.k === k) || {}).need || ''; return typeof n === 'function' ? n() : n; };
   const featLockMsg = k => { const f = FEAT.find(x => x.k === k), n = featNeed(k); toast('🔒 ' + (f ? f.n : '') + (n ? 'は「' + n + '」で解放されます' : '：準備中')); };
   // ===== ミケの店（2026-11-17 本人の仕様・Notion「装備・素材・強化の仕様」8番）=====
-  //   ・ショップに売る：武器と素材をシルバーに換える（有料・ガチャのものも売れる）。値段は預けて販売のおよそ半分
-  //   ・預けて販売：ほかのプレイヤーが買うと無料ゴールド（手数料10%）。値段はレア度と強化度で自動。誰が買うかは決められない
+  //   ・お金はニャンコイン（本人：無償ゴールドでガチャが回せると課金しなくなる → 店だけのお金にする）
+  //     お金では買えない。ガチャ・強化・鍛冶屋には使えない。ミケの店の中だけ。シルバー・ゴールドの区別は店の中にはない
+  //   ・ミケに売る：武器と素材をその場でニャンコインに（ガチャ・パックのものも売れる）。預けたときの値段の半分（ドラクエやFFの売値と同じ考え）
+  //   ・預けて販売：ほかのプレイヤーが買うとニャンコイン（手数料10%）。値段はレア度と強化度で自動。誰が買うかは決められない
   //     並ぶのは預けてから24時間以内のどこか（店主の気まぐれ）。並んでから7日で売れ残りは戻る。レベル20から・1日5個まで
-  //   ・預けて販売で買うときは無料ゴールドだけ。有料・ガチャのもの（取引できない印）は預けられない
+  //   ・ガチャ・パック・ゴールドで買った素材（取引できない印）は預けられない
   //   ・店はいつでも開いている。夜（0〜6時）はミケがいねむりの絵になるだけ
-  const MK_LV = 20, MK_FEE = 0.1, MK_SV = 20;     // 1ゴールド＝40シルバー の半分の値段でシルバーにする
-  const MK_W_BASE = [15, 40, 150, 500, 1500];
-  // 値段（サーバーと同じ式）：武器＝グレードの基本×1.2^強化値（＋20まで）／素材＝種類とグレードで1個の値段×数
+  const MK_LV = 20, MK_FEE = 0.1;
+  const MK_W_BASE = [10, 30, 100, 400, 1500];
+  const NYAN = '🐾';
+  // 預けたときの値段（ニャンコイン・サーバーと同じ式）：武器＝グレードの基本×1.15^強化値（＋20まで）／素材＝種類とグレードで1個の値段×数
   function mkPrice(item, plus, qty){
     let m;
-    if ((m = /^w:(W\d\d)$/.exec(item))) { const w = WPN_BY[m[1]]; return w ? Math.round(MK_W_BASE[GT[w.g]] * Math.pow(1.2, Math.min(20, plus | 0))) : 0; }
+    if ((m = /^w:(W\d\d)$/.exec(item))) { const w = WPN_BY[m[1]]; return w ? Math.round(MK_W_BASE[GT[w.g]] * Math.pow(1.15, Math.min(20, plus | 0))) : 0; }
     let u = 0;
-    if ((m = /^m_([a-z]+)_([0-4])$/.exec(item)) && EX_MAT[item]) u = [4, 10, 30, 100, 300][+m[2]];
-    else if ((m = /^st_([a-z]+)_([0-2])$/.exec(item)) && EX_MAT[item]) u = [7, 20, 70][+m[2]];
-    else if ((m = /^enh_n_([0-4])$/.exec(item))) u = [7, 14, 28, 70, 175][+m[1]];
-    else if ((m = /^enh_b_([0-4])$/.exec(item))) u = [70, 140, 280, 700, 1750][+m[1]];
-    else if (/^lg_W\d\d$/.test(item) && EX_MAT[item]) u = 400;
+    if ((m = /^m_([a-z]+)_([0-4])$/.exec(item)) && EX_MAT[item]) u = [2, 6, 20, 60, 200][+m[2]];
+    else if ((m = /^st_([a-z]+)_([0-2])$/.exec(item)) && EX_MAT[item]) u = [2, 6, 20][+m[2]];
+    else if ((m = /^enh_n_([0-4])$/.exec(item))) u = [3, 6, 12, 30, 75][+m[1]];
+    else if ((m = /^enh_b_([0-4])$/.exec(item))) u = [30, 60, 120, 300, 750][+m[1]];
+    else if (/^lg_W\d\d$/.test(item) && EX_MAT[item]) u = 150;
     return u * (qty || 1);
   }
   const mkGet = pr => Math.floor(pr * (1 - MK_FEE));
+  const mkSellOf = (item, plus, qty) => { const u = mkPrice(item, plus, 1); return u ? Math.max(1, Math.floor(u / 2)) * qty : 0; };   // ミケに売る：半分
+  let nyan = null;   // ニャンコイン（サーバーにある）
+  const setNyan = r => { if (r && r.nyan != null) nyan = r.nyan; };
   const MK_GN = ['N', 'R', 'SR', 'MR', 'LR'];
   const mkIsW = item => item.startsWith('w:');
-  function mkGrade(item){ if (mkIsW(item)) { const w = WPN_BY[item.slice(2)]; return w ? GT[w.g] : 0; } const m = EX_MAT[item]; return m ? (m[2] === 's' ? m[3] : m[3]) : 0; }
   function mkName(item, plus, qty){
     if (mkIsW(item)) { const w = WPN_BY[item.slice(2)]; return w ? '<b>' + w.g + '</b> ' + w.n + plusTxt(plus | 0) : item; }
     return (EX_MAT[item] ? EX_MAT[item][0] : item) + (qty > 1 ? ' ×' + qty : '');
@@ -9633,14 +9638,15 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const MK_IMG = {cat: 'img/shop/cat.webp', happy: 'img/shop/cat_happy.webp', sleep: 'img/shop/cat_sleep.webp', sad: 'img/shop/cat_sad.webp'};
   const MK_SAY = {in1: 'いらっしゃい…ふぁ〜あ。何か売るかい？', in2: 'おや、来たね。棚、ゆっくり見ていきな', in3: 'ん〜…起きてるよ。ちゃんと起きてるって',
-    sell: 'まいど。シルバーと交換だよ', consign: '預かったよ。そのうち棚に並べとくね…たぶん今日中には', buy: 'まいどあり！いい買い物したねえ',
-    sold: 'お、売れたよ。お代はゴールドで渡しとくね', back: '売れ残っちゃった。返しておくよ', ng: 'それは預かれないなあ。ごめんよ',
+    sell: 'まいど。ニャンコインと交換だよ', consign: '預かったよ。そのうち棚に並べとくね…たぶん今日中には', buy: 'まいどあり！いい買い物したねえ',
+    sold: 'お、売れたよ。お代はニャンコインで渡しとくね', back: '売れ残っちゃった。返しておくよ', ng: 'それは預かれないなあ。ごめんよ',
     lv: '預けて売るのは、もう少し腕を上げてからだね', limit: '今日はもう店じまい。また明日おいで', lack: 'おや、お代が足りないみたいだよ', bye: 'またおいで〜'};
   const mkNight = () => { const h = new Date().getHours(); return h < 6; };
   const mkFace0 = () => mkNight() ? 'sleep' : 'cat';
   let mkSayT = null, mkTab = 'buy', mkCat = 'w', mkG = -1, mkShelf = null, mkMine = null, mkBusy = false, mkMsg = '';
+  const MK_NOVOICE = new Set(['sell', 'sold']);   // 声が「シルバー」「ゴールド」のまま → 録り直すまで声なし
   function mkSay(k, face, ms){
-    playSeFile('sv_cat_' + k, 1);
+    if (!MK_NOVOICE.has(k)) playSeFile('sv_cat_' + k, 1);
     const s = $('mkSay'); s.textContent = MK_SAY[k]; s.className = 'mksay';
     const c = $('mkCat'); c.src = MK_IMG[face || mkFace0()]; c.classList.remove('bob'); void c.offsetWidth; c.classList.add('bob');
     clearTimeout(mkSayT); mkSayT = setTimeout(() => { s.className = 'mksay hidden'; c.src = MK_IMG[mkFace0()]; }, ms || 3200);
@@ -9664,33 +9670,33 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     const left = [];
     for (const x of mkPend) {
       try {
-        if (x.op === 'put') { const r = await api('/api/market/put', {method: 'POST', body: JSON.stringify({item: x.item, plus: x.plus, qty: x.qty, ref: x.ref})}); if (!r.ok) mkGive('r' + x.ref, x.item, x.plus, x.qty); }
+        if (x.op === 'sell') { const r = await api('/api/market/sell', {method: 'POST', body: JSON.stringify({item: x.item, plus: x.plus, qty: x.qty, ref: x.ref})}); setNyan(r); if (!r.ok) mkGive('s' + x.ref, x.item, x.plus, x.qty); }
+        else if (x.op === 'put') { const r = await api('/api/market/put', {method: 'POST', body: JSON.stringify({item: x.item, plus: x.plus, qty: x.qty, ref: x.ref})}); if (!r.ok) mkGive('r' + x.ref, x.item, x.plus, x.qty); }
         else if (x.op === 'buy') { const r = await api('/api/market/buy', {method: 'POST', body: JSON.stringify({id: x.id})}); if (r.ok) mkGive(x.id, r.item, r.plus, r.qty); }
-      } catch (e) { if (e.status >= 400 && e.status < 500) { if (x.op === 'put') mkGive('r' + x.ref, x.item, x.plus, x.qty); } else left.push(x); }
+      } catch (e) { if (e.status >= 400 && e.status < 500) { if (x.op === 'put') mkGive('r' + x.ref, x.item, x.plus, x.qty); else if (x.op === 'sell') mkGive('s' + x.ref, x.item, x.plus, x.qty); } else left.push(x); }
     }
     mkPend = left; mkPendSave();
   }
   // 自分の預けた品：売れた・売れ残りは開いたときに受け取る
   async function mkLoadMine(auto){
     if (!acctToken) { mkMine = null; return; }
-    try { mkMine = await api('/api/market/mine'); } catch (e) { mkMine = null; return; }
+    try { mkMine = await api('/api/market/mine'); setNyan(mkMine); } catch (e) { mkMine = null; return; }
     if (!auto) return;
     let sold = 0, back = 0, gotG = 0;
     for (const it of (mkMine.items || []).filter(x => x.phase === 'sold' || x.phase === 'back')) {
       try {
         const r = await api('/api/market/take', {method: 'POST', body: JSON.stringify({id: it.id})});
-        if (r.sold) { sold++; gotG += r.get; msgLog('get', '🐈 ミケの店：' + mkName(it.item, it.plus, it.qty).replace(/<[^>]+>/g, '') + ' が売れました（ゴールド +' + r.get + '）'); }
+        if (r.sold) { sold++; gotG += r.get; msgLog('get', '🐈 ミケの店：' + mkName(it.item, it.plus, it.qty).replace(/<[^>]+>/g, '') + ' が売れました（ニャンコイン +' + r.get + '）'); }
         else if (r.back) { if (mkGive('b' + it.id, r.item, r.plus, r.qty)) back++; msgLog('get', '🐈 ミケの店：売れ残った ' + mkName(it.item, it.plus, it.qty).replace(/<[^>]+>/g, '') + ' が戻りました'); }
       } catch (_) {}
     }
-    if (sold || back) { try { mkMine = await api('/api/market/mine'); } catch (_) {} }
-    if (sold) { playSeFile('shop_coin', 1); mkMsg = '💰 預けた品が' + sold + '個売れました。ゴールド +' + gotG.toLocaleString() + '（手数料10%を引いた分）'; acctRefreshGold(); setTimeout(() => { if (mkOpen()) mkSay('sold', 'happy'); }, 1400); }
+    if (sold || back) { try { mkMine = await api('/api/market/mine'); setNyan(mkMine); } catch (_) {} }
+    if (sold) { playSeFile('shop_coin', 1); mkMsg = '💰 預けた品が' + sold + '個売れました。' + NYAN + 'ニャンコイン +' + gotG.toLocaleString() + '（手数料10%を引いた分）'; setTimeout(() => { if (mkOpen()) mkSay('sold', 'happy'); }, 1400); }
     else if (back) { mkMsg = '📦 売れ残った品が' + back + '個戻りました。'; setTimeout(() => { if (mkOpen()) mkSay('back', 'sad'); }, 1400); }
   }
-  async function acctRefreshGold(){ try { const w = await api('/api/wallet'); if (w && w.total != null) { gold = w.total; goldW = w; refreshCoins(); drawMkt(); } } catch (_) {} }
   async function mkLoadShelf(){
     mkShelf = 'load'; drawMkt();
-    try { const r = await api('/api/market/list?cat=' + mkCat + (mkG >= 0 ? '&g=' + mkG : '')); mkShelf = r.items || []; if (r.gold) { gold = r.gold.total; goldW = r.gold; refreshCoins(); } }
+    try { const r = await api('/api/market/list?cat=' + mkCat + (mkG >= 0 ? '&g=' + mkG : '')); mkShelf = r.items || []; setNyan(r); }
     catch (e) { mkShelf = 'err'; }
     drawMkt();
   }
@@ -9699,14 +9705,14 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   const mkMyM = () => Object.keys(EX_MAT).filter(k => own(k) > 0 && mkPrice(k, 0, 1) > 0).sort((a, b) => EX_MAT[b][3] - EX_MAT[a][3] || a.localeCompare(b));
   function drawMkt(){
     const b = $('mktBody'); if (!b) return;
-    const fr = acctToken && goldW ? goldW.free : null;
-    let h = '<div class="mkwal"><span>🪙 シルバー <b>' + coins.toLocaleString() + '</b></span>' + (fr != null ? '<span>🟡 お店で使えるゴールド <b>' + fr.toLocaleString() + '</b></span><span data-goldw="1" style="text-decoration:underline;opacity:.8">ゴールドの内訳</span>' : '') + '</div>';
+    const fr = acctToken ? nyan : null;
+    let h = '<div class="mkwal">' + (acctToken ? '<span>' + NYAN + ' ニャンコイン <b>' + (fr == null ? '…' : fr.toLocaleString()) + '</b></span><span style="opacity:.75">ミケの店だけで使えるお金</span>' : '') + '</div>';
     const nMine = mkMine && mkMine.items ? mkMine.items.length : 0;
     h += '<div class="fgtabs">' + [['buy', '買う'], ['sell', '売る'], ['put', '預ける'], ['mine', '預けた品' + (nMine ? '(' + nMine + ')' : '')]].map(([k, n]) => '<button data-mktab="' + k + '"' + (mkTab === k ? ' class="on"' : '') + '>' + n + '</button>').join('') + '</div>';
     if (mkMsg) h += '<div class="exmsg">' + mkMsg + '</div>';
-    const needLogin = '<p class="mknote">ほかのプレイヤーとの売り買いには<b>ログイン</b>が必要です（設定 → アカウント）。</p>';
+    const needLogin = '<p class="mknote">ミケの店を使うには<b>ログイン</b>が必要です（設定 → アカウント）。ニャンコインはサーバーに預かっています。</p>';
     if (mkTab === 'buy') {
-      h += '<p class="mknote">ほかのプレイヤーが預けた品が並んでいます。払えるのは<b>お店で使えるゴールド</b>だけです（ゲームでもらったゴールドと、預けた品が売れて入ったゴールド。お金で買ったゴールドは使えません）。誰が出したかは分かりません。棚に並ぶのはミケの気まぐれなので、ときどき見に来てください。</p>';
+      h += '<p class="mknote">ほかのプレイヤーが預けた品が並んでいます。払うのは<b>ニャンコイン</b>です（ミケに売ったり、預けた品が売れたりすると入ります。ミケの店の中だけで使えます）。誰が出したかは分かりません。棚に並ぶのはミケの気まぐれなので、ときどき見に来てください。</p>';
       if (!acctToken) h += needLogin;
       else {
         h += '<div class="mkchips">' + [['w', '⚔ 武器'], ['m', '📦 素材']].map(([k, n]) => '<button data-mkcat="' + k + '"' + (mkCat === k ? ' class="on"' : '') + '>' + n + '</button>').join('') + '</div>';
@@ -9714,31 +9720,33 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         if (mkShelf === 'load' || mkShelf == null) h += '<p class="mknote">棚を見ています…</p>';
         else if (mkShelf === 'err') h += '<p class="mknote">サーバーにつながりませんでした。</p>';
         else if (!mkShelf.length) h += '<p class="mknote">いまは何も並んでいないみたい。またあとで見に来てね。</p>';
-        else h += mkShelf.map(it => '<div class="mkrow">' + mkIcon(it.item, it.plus) + '<div class="mknm">' + mkName(it.item, it.plus, it.qty) + '<small>🟡 ' + it.price.toLocaleString() + ' ゴールド</small></div><div class="mkbt"><button data-mkbuy="' + it.id + '"' + (fr != null && fr < it.price ? ' class="sub"' : '') + '>買う</button></div></div>').join('');
+        else h += mkShelf.map(it => '<div class="mkrow">' + mkIcon(it.item, it.plus) + '<div class="mknm">' + mkName(it.item, it.plus, it.qty) + '<small>' + NYAN + ' ' + it.price.toLocaleString() + ' ニャンコイン</small></div><div class="mkbt"><button data-mkbuy="' + it.id + '"' + (fr != null && fr < it.price ? ' class="sub"' : '') + '>買う</button></div></div>').join('');
       }
     } else if (mkTab === 'sell') {
-      h += '<p class="mknote">いらない武器や素材を、ミケがその場で<b>シルバー</b>と交換します。ガチャやパックで手に入れたものも売れます（預けて売るときのおよそ半分の値段）。装備中の武器は外してから売ってください。</p>';
+      h += '<p class="mknote">いらない武器や素材を、ミケがその場で<b>ニャンコイン</b>と交換します。ガチャやパックで手に入れたものも売れます（預けて売るときの半分の値段）。装備中の武器は外してから売ってください。</p>';
+      if (!acctToken) h += needLogin; else {
       const ws = mkMyW(), ms = mkMyM();
       if (!ws.length && !ms.length) h += '<p class="mknote">売れるものがありません。</p>';
-      h += ws.map(g => { const it = 'w:' + g.k, sv = mkPrice(it, g.p, 1) * MK_SV; return '<div class="mkrow">' + mkIcon(it, g.p) + '<div class="mknm">' + mkName(it, g.p, 1) + '<small>🪙 ' + sv.toLocaleString() + ' シルバー</small></div><div class="mkbt"><button data-mksellw="' + g.g + '">売る</button></div></div>'; }).join('');
-      h += ms.map(k => { const n = own(k), sv = mkPrice(k, 0, 1) * MK_SV; return '<div class="mkrow">' + mkIcon(k) + '<div class="mknm">' + mkName(k, 0, 1) + '<small>1個 🪙 ' + sv.toLocaleString() + '　持っている ' + n + '個</small></div><div class="mkbt"><button data-mksellm="' + k + ':1">1個</button>' + (n > 1 ? '<button class="sub" data-mksellm="' + k + ':' + n + '">全部(' + n + ')</button>' : '') + '</div></div>'; }).join('');
+      h += ws.map(g => { const it = 'w:' + g.k, sv = mkSellOf(it, g.p, 1); return '<div class="mkrow">' + mkIcon(it, g.p) + '<div class="mknm">' + mkName(it, g.p, 1) + '<small>' + NYAN + ' ' + sv.toLocaleString() + ' ニャンコイン</small></div><div class="mkbt"><button data-mksellw="' + g.g + '">売る</button></div></div>'; }).join('');
+      h += ms.map(k => { const n = own(k), sv = mkSellOf(k, 0, 1), all = Math.min(99, n); return '<div class="mkrow">' + mkIcon(k) + '<div class="mknm">' + mkName(k, 0, 1) + '<small>1個 ' + NYAN + ' ' + sv.toLocaleString() + '　持っている ' + n + '個</small></div><div class="mkbt"><button data-mksellm="' + k + ':1">1個</button>' + (n > 1 ? '<button class="sub" data-mksellm="' + k + ':' + all + '">' + (n > 99 ? '99個' : '全部(' + n + ')') + '</button>' : '') + '</div></div>'; }).join('');
+      }
     } else if (mkTab === 'put') {
-      h += '<p class="mknote">預けた品は、ほかのプレイヤーが買うと<b>ゴールド</b>が入ります（手数料10%）。入ったゴールドは何にでも使え、お店の買い物にも使えます。値段はレア度と強化度で自動で決まります。棚に並ぶのは<b>預けてから24時間以内のどこか</b>（ミケの気まぐれ）。並んでから7日たっても売れなければ戻ってきます。<br>預けられるのは<b>レベル' + MK_LV + 'から・1日5個まで</b>。ガチャやパックで手に入れたもの、ゴールドで買った素材は預けられません。</p>';
+      h += '<p class="mknote">預けた品は、ほかのプレイヤーが買うと<b>ニャンコイン</b>が入ります（手数料10%）。値段はレア度と強化度で自動で決まります。棚に並ぶのは<b>預けてから24時間以内のどこか</b>（ミケの気まぐれ）。並んでから7日たっても売れなければ戻ってきます。<br>預けられるのは<b>レベル' + MK_LV + 'から・1日5個まで</b>。ガチャやパックで手に入れたもの、ゴールドで買った素材は預けられません。</p>';
       if (!acctToken) h += needLogin;
       else if (userLv() < MK_LV) h += '<p class="mknote">🔒 いまLV' + userLv() + '。LV' + MK_LV + 'になると預けられます。</p>';
       else {
         const today2 = mkMine ? mkMine.today : 0, per = mkMine ? mkMine.perDay : 5;
         h += '<p class="mknote">今日預けた数：<b>' + today2 + ' / ' + per + '</b></p>';
         const ws = mkMyW(), ms = mkMyM();
-        h += ws.map(g => { const it = 'w:' + g.k, pr = mkPrice(it, g.p, 1); return '<div class="mkrow">' + mkIcon(it, g.p) + '<div class="mknm">' + mkName(it, g.p, 1) + '<small>値段 ' + pr.toLocaleString() + ' → 売れたら 🟡' + mkGet(pr).toLocaleString() + '</small>' + (g.nt ? '<span class="mknt">取引できない（ガチャ・パック）</span>' : '') + '</div><div class="mkbt"><button data-mkputw="' + g.g + '"' + (g.nt ? ' disabled' : '') + '>預ける</button></div></div>'; }).join('');
-        h += ms.map(k => { const t = tradeN(k), pr = mkPrice(k, 0, 1); return '<div class="mkrow">' + mkIcon(k) + '<div class="mknm">' + mkName(k, 0, 1) + '<small>1個 ' + pr + ' → 売れたら 🟡' + mkGet(pr) + '　預けられる ' + t + '個' + (ntOf(k) ? '（ほか ' + ntOf(k) + '個は取引できない）' : '') + '</small></div><div class="mkbt">' + [1, 5, 10].filter(q => q === 1 || q <= t).map(q => '<button data-mkputm="' + k + ':' + q + '"' + (t < q ? ' disabled' : '') + (q > 1 ? ' class="sub"' : '') + '>' + q + '個</button>').join('') + '</div></div>'; }).join('');
+        h += ws.map(g => { const it = 'w:' + g.k, pr = mkPrice(it, g.p, 1); return '<div class="mkrow">' + mkIcon(it, g.p) + '<div class="mknm">' + mkName(it, g.p, 1) + '<small>値段 ' + NYAN + pr.toLocaleString() + ' → 売れたら ' + NYAN + mkGet(pr).toLocaleString() + '</small>' + (g.nt ? '<span class="mknt">取引できない（ガチャ・パック）</span>' : '') + '</div><div class="mkbt"><button data-mkputw="' + g.g + '"' + (g.nt ? ' disabled' : '') + '>預ける</button></div></div>'; }).join('');
+        h += ms.map(k => { const t = tradeN(k), pr = mkPrice(k, 0, 1); return '<div class="mkrow">' + mkIcon(k) + '<div class="mknm">' + mkName(k, 0, 1) + '<small>1個 ' + NYAN + pr + ' → 売れたら ' + NYAN + mkGet(pr) + '　預けられる ' + t + '個' + (ntOf(k) ? '（ほか ' + ntOf(k) + '個は取引できない）' : '') + '</small></div><div class="mkbt">' + [1, 5, 10].filter(q => q === 1 || q <= t).map(q => '<button data-mkputm="' + k + ':' + q + '"' + (t < q ? ' disabled' : '') + (q > 1 ? ' class="sub"' : '') + '>' + q + '個</button>').join('') + '</div></div>'; }).join('');
       }
     } else {
       if (!acctToken) h += needLogin;
       else if (!mkMine) h += '<p class="mknote">読み込んでいます…</p>';
       else if (!mkMine.items.length) h += '<p class="mknote">預けている品はありません。</p>';
       else h += mkMine.items.map(it => { const ph = {wait: ['', '棚に並ぶのを待っています（ミケの気まぐれ）'], on: ['on', '棚に並んでいます'], sold: ['sold', '売れました！'], back: ['back', '売れ残りました']}[it.phase] || ['', it.phase];
-        return '<div class="mkrow">' + mkIcon(it.item, it.plus) + '<div class="mknm">' + mkName(it.item, it.plus, it.qty) + '<small>売れたら 🟡' + it.get.toLocaleString() + '</small><span class="mkph ' + ph[0] + '">' + ph[1] + '</span></div><div class="mkbt">' + (it.phase === 'wait' || it.phase === 'on' ? '<button class="sub" data-mkcancel="' + it.id + '">取り消す</button>' : '<button data-mktake="' + it.id + '">受け取る</button>') + '</div></div>'; }).join('');
+        return '<div class="mkrow">' + mkIcon(it.item, it.plus) + '<div class="mknm">' + mkName(it.item, it.plus, it.qty) + '<small>売れたら ' + NYAN + it.get.toLocaleString() + '</small><span class="mkph ' + ph[0] + '">' + ph[1] + '</span></div><div class="mkbt">' + (it.phase === 'wait' || it.phase === 'on' ? '<button class="sub" data-mkcancel="' + it.id + '">取り消す</button>' : '<button data-mktake="' + it.id + '">受け取る</button>') + '</div></div>'; }).join('');
     }
     b.innerHTML = h;
   }
@@ -9760,28 +9768,38 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     const gg = e.target.closest('[data-mkg]'); if (gg) { mkG = +gg.dataset.mkg; mkLoadShelf(); return; }
     if (e.target.closest('[data-mkre]')) { mkLoadShelf(); return; }
     if (mkBusy) return;
-    // 買う（無料ゴールド）
+    // 買う（ニャンコイン）
     const by = e.target.closest('[data-mkbuy]'); if (by) { const it = (mkShelf || []).find(x => x.id === by.dataset.mkbuy); if (!it) return;
-      if (goldW && goldW.free < it.price) { mkSay('lack', 'sad'); mkMsg = 'お店で使えるゴールドが足りません（お金で買ったゴールドは、ほかのプレイヤーとの売り買いには使えません）。'; drawMkt(); return; }
-      askYes(mkName(it.item, it.plus, it.qty) + ' を<br>ゴールド <b>' + it.price.toLocaleString() + '</b> で買いますか？<br><small>お店で使えるゴールドから払います。</small>', async () => {
+      if (nyan != null && nyan < it.price) { mkSay('lack', 'sad'); mkMsg = 'ニャンコインが足りません。いらない物をミケに売ると増えます。'; drawMkt(); return; }
+      askYes(mkName(it.item, it.plus, it.qty) + ' を<br>' + NYAN + 'ニャンコイン <b>' + it.price.toLocaleString() + '</b> で買いますか？', async () => {
         mkBusy = true;
         try { const r = await api('/api/market/buy', {method: 'POST', body: JSON.stringify({id: it.id})});
-          if (r.gold) { gold = r.gold.total; goldW = r.gold; refreshCoins(); }
+          setNyan(r);
           if (r.ok) { mkGive(it.id, r.item, r.plus, r.qty); playSeFile('shop_coin', 1); mkSay('buy', 'happy'); mkMsg = '🛍 ' + mkName(r.item, r.plus, r.qty) + ' を買いました。' + (mkIsW(r.item) ? 'キャラの詳細 →「装備」で付けられます。' : ''); msgLog('get', '🐈 ミケの店で買った：' + mkName(r.item, r.plus, r.qty).replace(/<[^>]+>/g, '')); mkShelf = mkShelf.filter(x => x.id !== it.id); }
-          else if (r._status === 402) { mkSay('lack', 'sad'); mkMsg = 'お店で使えるゴールドが足りません。'; }
+          else if (r._status === 402) { mkSay('lack', 'sad'); mkMsg = 'ニャンコインが足りません。'; }
           else { mkMsg = 'ひと足ちがいで売れてしまいました。'; mkShelf = mkShelf.filter(x => x.id !== it.id); }
         } catch (er) { mkPend.push({op: 'buy', id: it.id}); mkPendSave(); mkMsg = 'サーバーにつながりませんでした。次に店を開いたときに確かめます。'; }
         mkBusy = false; drawMkt(); });
       return; }
-    // ショップに売る（シルバー）
-    const sw = e.target.closest('[data-mksellw]'); if (sw) { const g = gearOf(sw.dataset.mksellw); if (!g || gearUser(g.g)) return; const it = 'w:' + g.k, sv = mkPrice(it, g.p, 1) * MK_SV;
-      askYes(mkName(it, g.p, 1) + ' を<br>🪙 <b>' + sv.toLocaleString() + '</b> シルバーで売りますか？<br><small>売った武器は戻りません。</small>', () => {
-        const i = gear.indexOf(g); if (i < 0) return; gear.splice(i, 1); saveGear(); addCoins(sv); playSeFile('shop_coin', 1); mkSay('sell', 'happy'); mkMsg = '🪙 シルバー +' + sv.toLocaleString(); drawMkt(); });
-      return; }
-    const sm = e.target.closest('[data-mksellm]'); if (sm) { const [k, q0] = sm.dataset.mksellm.split(':'), q = Math.min(+q0, own(k)); if (!q) return; const sv = mkPrice(k, 0, 1) * MK_SV * q;
-      askYes(mkName(k, 0, q) + ' を<br>🪙 <b>' + sv.toLocaleString() + '</b> シルバーで売りますか？', () => {
-        if (own(k) < q) return; const t0 = tradeN(k); inv[k] = own(k) - q; if (invNt[k]) { invNt[k] = Math.min(own(k), Math.max(0, (invNt[k] | 0) - Math.max(0, q - t0))); saveNt(); } saveInv();
-        addCoins(sv); playSeFile('shop_coin', 1); mkSay('sell', 'happy'); mkMsg = '🪙 シルバー +' + sv.toLocaleString(); drawMkt(); });
+    // ミケに売る（ニャンコイン・サーバーで数える）
+    const sw = e.target.closest('[data-mksellw]'), sm = e.target.closest('[data-mksellm]');
+    if (sw || sm) { if (!acctToken) return;
+      let item, plus = 0, qty = 1, g = null;
+      if (sw) { g = gearOf(sw.dataset.mksellw); if (!g || gearUser(g.g)) return; item = 'w:' + g.k; plus = g.p | 0; }
+      else { const [k, q0] = sm.dataset.mksellm.split(':'); item = k; qty = Math.min(+q0, own(k), 99); if (!qty) return; }
+      const sv = mkSellOf(item, plus, qty);
+      askYes(mkName(item, plus, qty) + ' を<br>' + NYAN + 'ニャンコイン <b>' + sv.toLocaleString() + '</b> で売りますか？' + (g ? '<br><small>売った武器は戻りません。</small>' : ''), async () => {
+        mkBusy = true; const ref = mkRef();
+        if (g) { const i = gear.indexOf(g); if (i < 0) { mkBusy = false; return; } gear.splice(i, 1); saveGear(); }
+        else { if (own(item) < qty) { mkBusy = false; return; } const t0 = tradeN(item); inv[item] = own(item) - qty; if (invNt[item]) { invNt[item] = Math.min(own(item), Math.max(0, (invNt[item] | 0) - Math.max(0, qty - t0))); saveNt(); } saveInv(); }
+        try { const r = await api('/api/market/sell', {method: 'POST', body: JSON.stringify({item, plus, qty, ref})}); setNyan(r);
+          if (r.ok) { playSeFile('shop_coin', 1); mkSay('sell', 'happy'); mkMsg = NYAN + 'ニャンコイン +' + r.got.toLocaleString(); }
+          else { mkGive('', item, plus, qty); mkMsg = r.error || '売れませんでした。'; }
+        } catch (er) {
+          if (er.status >= 400 && er.status < 500) { mkGive('', item, plus, qty); mkSay(er.status === 429 ? 'limit' : 'ng', 'sad'); mkMsg = er.message || '売れませんでした。'; }
+          else { mkPend.push({op: 'sell', item, plus, qty, ref}); mkPendSave(); mkMsg = 'サーバーにつながりませんでした。次に店を開いたときに確かめます（売れなかったら品は戻ります）。'; }
+        }
+        mkBusy = false; drawMkt(); });
       return; }
     // 預ける
     const pw = e.target.closest('[data-mkputw]'), pm = e.target.closest('[data-mkputm]');
@@ -9792,7 +9810,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       if (pw) { g = gearOf(pw.dataset.mkputw); if (!g || gearUser(g.g)) return; if (g.nt) { mkSay('ng', 'sad'); return; } item = 'w:' + g.k; plus = g.p | 0; }
       else { const [k, q] = pm.dataset.mkputm.split(':'); item = k; qty = +q; if (tradeN(k) < qty) { mkSay('ng', 'sad'); return; } }
       const pr = mkPrice(item, plus, qty);
-      askYes(mkName(item, plus, qty) + ' を預けますか？<br>値段 <b>' + pr.toLocaleString() + '</b>（売れたらゴールド <b>' + mkGet(pr).toLocaleString() + '</b>）<br><small>棚に並ぶのは24時間以内のどこか。並んでから7日で売れ残りは戻ります。棚に並ぶ前なら取り消せます。</small>', async () => {
+      askYes(mkName(item, plus, qty) + ' を預けますか？<br>値段 <b>' + pr.toLocaleString() + '</b>（売れたらニャンコイン <b>' + mkGet(pr).toLocaleString() + '</b>）<br><small>棚に並ぶのは24時間以内のどこか。並んでから7日で売れ残りは戻ります。棚に並ぶ前なら取り消せます。</small>', async () => {
         mkBusy = true; const ref = mkRef();
         if (g) { const i = gear.indexOf(g); if (i < 0) { mkBusy = false; return; } gear.splice(i, 1); saveGear(); } else { inv[item] = own(item) - qty; saveInv(); }
         try { const r = await api('/api/market/put', {method: 'POST', body: JSON.stringify({item, plus, qty, ref})});
@@ -9810,7 +9828,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       const go = async () => { mkBusy = true;
         try { const r = await api('/api/market/take', {method: 'POST', body: JSON.stringify({id, cancel: cc ? 1 : 0})});
           if (r.back) { mkGive('b' + id, r.item, r.plus, r.qty); mkMsg = '📦 ' + mkName(r.item, r.plus, r.qty) + ' が戻りました。'; if (!cc) mkSay('back', 'sad'); }
-          else if (r.sold) { playSeFile('shop_coin', 1); mkSay('sold', 'happy'); mkMsg = '💰 ゴールド +' + r.get.toLocaleString(); acctRefreshGold(); }
+          else if (r.sold) { setNyan(r); playSeFile('shop_coin', 1); mkSay('sold', 'happy'); mkMsg = '💰 ' + NYAN + 'ニャンコイン +' + r.get.toLocaleString(); }
           else mkMsg = r.error || '';
         } catch (er) { mkMsg = er.message || 'サーバーにつながりませんでした。'; }
         await mkLoadMine(false); mkBusy = false; drawMkt(); };

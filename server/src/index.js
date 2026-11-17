@@ -59,7 +59,9 @@ const SCHEMA = [
   // ミケの店（プレイヤーどうしの預け販売）2026-11-17
   "CREATE TABLE IF NOT EXISTS market ( id TEXT PRIMARY KEY, seller TEXT NOT NULL, item TEXT NOT NULL, plus INTEGER NOT NULL DEFAULT 0, qty INTEGER NOT NULL DEFAULT 1, price INTEGER NOT NULL, created_at INTEGER NOT NULL, show_at INTEGER NOT NULL, expires_at INTEGER NOT NULL, status TEXT NOT NULL DEFAULT 'on', buyer TEXT, sold_at INTEGER )",
   "CREATE INDEX IF NOT EXISTS idx_market_shelf ON market(status, show_at)",
-  "CREATE INDEX IF NOT EXISTS idx_market_seller ON market(seller, created_at)"
+  "CREATE INDEX IF NOT EXISTS idx_market_seller ON market(seller, created_at)",
+  // ニャンコイン（ミケの店だけのお金・お金では買えない）2026-11-17
+  "CREATE TABLE IF NOT EXISTS nyan ( account_id TEXT PRIMARY KEY, balance INTEGER NOT NULL DEFAULT 0 )"
   ];
 
 // ---------- 小さな道具 ----------
@@ -271,42 +273,65 @@ async function addGold(env, id, source, amount, reason, ref) {
 // ===== ミケの店：プレイヤーどうしの預け販売（2026-11-17 本人の仕様）=====
 //   ・値段はレア度と強化度（素材は種類と数）で自動。出す人は決められない（ゲームと同じ式）
 //   ・誰が買うかは決められない。並ぶのは預けてから24時間以内のどこか（店主の気まぐれ）。並んでから7日で売れ残りは返す
-//   ・手数料10%。売れたお金は無料ゴールド。買うのも無料ゴールドだけ（有料ゴールドはプレイヤーどうしの取引に使わない）
+//   ・お金はニャンコイン（2026-11-17 本人：無償ゴールドでガチャが回せると課金しなくなるので、店だけのお金に分ける）
+//     ミケに売る＝預けたときの値段の半分のニャンコインが入る／預けた品が売れる＝手数料10%を引いた分が入る／買う＝ニャンコインで払う
+//     ニャンコインはお金では買えず、ガチャ・強化・鍛冶屋には使えない
 //   ・1日に預けられるのは5個まで（取り消しても数える）。有料のもの・レベル20未満はゲームの側で止める
-const MK_PER_DAY = 5, MK_FEE = 0.1, MK_SHELF_DAYS = 7, MK_ACTIVE_MAX = 30;
+const MK_PER_DAY = 5, MK_FEE = 0.1, MK_SHELF_DAYS = 7, MK_ACTIVE_MAX = 30, MK_SELL_DAY = 100;
+const MK_NYAN_T = 1794912351;   // ニャンコインに変えた時刻：これより前に預けたもの（ゴールドの値段）は売れ残りとして戻す
 const MK_WPN_G = n => n <= 12 ? 0 : n <= 24 ? 1 : n <= 36 ? 2 : n <= 44 ? 3 : 4;   // W01〜W50 のグレード（N・R・SR・MR・LR）
-const MK_W_BASE = [15, 40, 150, 500, 1500];
+const MK_W_BASE = [10, 30, 100, 400, 1500];
 const MK_FAM = ['metal', 'wood', 'beast', 'mech', 'polish', 'hide', 'cloth', 'gem', 'craft'];
 const MK_ATTR = ['fire', 'water', 'earth', 'wind', 'thunder', 'none', 'dark', 'light'];
-function mkPrice(item, plus, qty) {
+function mkPrice(item, plus, qty) {   // 預けたときの値段（ニャンコイン）。ゲームと同じ式
   let m;
-  if ((m = /^w:W(\d\d)$/.exec(item))) { const n = +m[1]; if (n < 1 || n > 50 || qty !== 1) return 0; return Math.round(MK_W_BASE[MK_WPN_G(n)] * Math.pow(1.2, Math.min(20, plus))); }
+  if ((m = /^w:W(\d\d)$/.exec(item))) { const n = +m[1]; if (n < 1 || n > 50 || qty !== 1) return 0; return Math.round(MK_W_BASE[MK_WPN_G(n)] * Math.pow(1.15, Math.min(20, plus))); }
   if (plus) return 0;
   let u = 0;
-  if ((m = /^m_([a-z]+)_([0-4])$/.exec(item)) && MK_FAM.includes(m[1])) u = [4, 10, 30, 100, 300][+m[2]];
-  else if ((m = /^st_([a-z]+)_([0-2])$/.exec(item)) && MK_ATTR.includes(m[1])) u = [7, 20, 70][+m[2]];
-  else if ((m = /^enh_n_([0-4])$/.exec(item))) u = [7, 14, 28, 70, 175][+m[1]];
-  else if ((m = /^enh_b_([0-4])$/.exec(item))) u = [70, 140, 280, 700, 1750][+m[1]];
-  else if ((m = /^lg_W(\d\d)$/.exec(item)) && +m[1] >= 37 && +m[1] <= 50) u = 400;
+  if ((m = /^m_([a-z]+)_([0-4])$/.exec(item)) && MK_FAM.includes(m[1])) u = [2, 6, 20, 60, 200][+m[2]];
+  else if ((m = /^st_([a-z]+)_([0-2])$/.exec(item)) && MK_ATTR.includes(m[1])) u = [2, 6, 20][+m[2]];
+  else if ((m = /^enh_n_([0-4])$/.exec(item))) u = [3, 6, 12, 30, 75][+m[1]];
+  else if ((m = /^enh_b_([0-4])$/.exec(item))) u = [30, 60, 120, 300, 750][+m[1]];
+  else if ((m = /^lg_W(\d\d)$/.exec(item)) && +m[1] >= 37 && +m[1] <= 50) u = 150;
   return u * qty;
 }
+const mkSellOf = (item, plus, qty) => { const u = mkPrice(item, plus, 1); return u ? Math.max(1, Math.floor(u / 2)) * qty : 0; };   // ミケに売る：半分（1個あたり最低1）
+async function nyanOf(env, id) { const r = await env.DB.prepare('SELECT balance FROM nyan WHERE account_id = ?').bind(id).first(); return r ? r.balance : 0; }
+async function nyanAdd(env, id, n, reason, ref) {   // 同じ ref は1回だけ
+  const t = nowSec();
+  const ins = await env.DB.prepare('INSERT OR IGNORE INTO ledger (account_id, source, delta, reason, ref, created_at) VALUES (?, ?, ?, ?, ?, ?)').bind(id, 'nyan', n, reason, ref, t).run();
+  if (!ins.meta.changes) return false;
+  await env.DB.prepare('INSERT INTO nyan (account_id, balance) VALUES (?, ?) ON CONFLICT(account_id) DO UPDATE SET balance = balance + excluded.balance').bind(id, n).run();
+  return true;
+}
 const mkDayStart = t => Math.floor((t + TZ) / 86400) * 86400 - TZ;
-const mkPhase = (r, t) => r.status === 'sold' ? 'sold' : r.status !== 'on' ? r.status : r.expires_at <= t ? 'back' : r.show_at > t ? 'wait' : 'on';
+const mkPhase = (r, t) => r.status === 'sold' ? 'sold' : r.status !== 'on' ? r.status : (r.expires_at <= t || r.created_at < MK_NYAN_T) ? 'back' : r.show_at > t ? 'wait' : 'on';
 async function market(env, req, url, me) {
   const p = url.pathname, M = req.method, t = nowSec();
   if (p === '/api/market/list' && M === 'GET') {   // 棚：並んでいるものを、ばらばらの順で
     const cat = url.searchParams.get('cat') === 'm' ? 'm' : 'w', g = url.searchParams.get('g');
-    const { results } = await env.DB.prepare("SELECT id, item, plus, qty, price FROM market WHERE status = 'on' AND show_at <= ? AND expires_at > ? AND seller <> ? AND item " + (cat === 'w' ? "LIKE 'w:%'" : "NOT LIKE 'w:%'") + " ORDER BY RANDOM() LIMIT 300").bind(t, t, me.id).all();
+    const { results } = await env.DB.prepare("SELECT id, item, plus, qty, price FROM market WHERE status = 'on' AND show_at <= ? AND expires_at > ? AND created_at >= ? AND seller <> ? AND item " + (cat === 'w' ? "LIKE 'w:%'" : "NOT LIKE 'w:%'") + " ORDER BY RANDOM() LIMIT 300").bind(t, t, MK_NYAN_T, me.id).all();
     let rows = results || [];
     if (g != null && /^[0-4]$/.test(g)) rows = rows.filter(r => mkGrade(r.item) === +g);
-    return json(env, req, { items: rows.slice(0, 40), gold: await walletOf(env, me.id) });
+    return json(env, req, { items: rows.slice(0, 40), nyan: await nyanOf(env, me.id) });
   }
   if (p === '/api/market/mine' && M === 'GET') {
     const { results } = await env.DB.prepare("SELECT id, item, plus, qty, price, status, show_at, expires_at, sold_at FROM market WHERE seller = ? AND status IN ('on', 'sold') ORDER BY created_at DESC LIMIT 60").bind(me.id).all();
     const c = await env.DB.prepare('SELECT COUNT(*) AS c FROM market WHERE seller = ? AND created_at >= ?').bind(me.id, mkDayStart(t)).first();
-    return json(env, req, { items: (results || []).map(r => ({ id: r.id, item: r.item, plus: r.plus, qty: r.qty, price: r.price, get: Math.floor(r.price * (1 - MK_FEE)), phase: mkPhase(r, t) })), today: c ? c.c : 0, perDay: MK_PER_DAY });
+    return json(env, req, { items: (results || []).map(r => ({ id: r.id, item: r.item, plus: r.plus, qty: r.qty, price: r.price, get: Math.floor(r.price * (1 - MK_FEE)), phase: mkPhase(r, t) })), today: c ? c.c : 0, perDay: MK_PER_DAY, nyan: await nyanOf(env, me.id) });
   }
   const b = await req.json().catch(() => ({}));
+  if (p === '/api/market/sell' && M === 'POST') {   // ミケに売る（その場でニャンコイン）
+    const item = String(b.item || ''), plus = Math.floor(Number(b.plus) || 0), qty = Math.floor(Number(b.qty) || 1), ref = String(b.ref || '');
+    if (!/^[A-Za-z0-9_-]{8,40}$/.test(ref)) return fail(env, req, 'ref が不正です');
+    if (!(plus >= 0 && plus <= 999 && qty >= 1 && qty <= 99)) return fail(env, req, '数が不正です');
+    const n = mkSellOf(item, plus, qty);
+    if (!n) return fail(env, req, 'この品は売れません');
+    const c = await env.DB.prepare("SELECT COUNT(*) AS c FROM ledger WHERE account_id = ? AND source = 'nyan' AND reason = 'mike:sell' AND created_at >= ?").bind(me.id, mkDayStart(t)).first();
+    if (c && c.c >= MK_SELL_DAY) return json(env, req, { error: '今日はもう売れません', need: 'limit' }, 429);
+    const ok = await nyanAdd(env, me.id, n, 'mike:sell', 'sell-' + ref);
+    return json(env, req, { ok: true, again: !ok, got: n, nyan: await nyanOf(env, me.id) });
+  }
   if (p === '/api/market/put' && M === 'POST') {   // 預ける
     const item = String(b.item || ''), plus = Math.floor(Number(b.plus) || 0), qty = Math.floor(Number(b.qty) || 1), ref = String(b.ref || '');
     if (!/^[A-Za-z0-9_-]{8,40}$/.test(ref)) return fail(env, req, 'ref が不正です');
@@ -324,23 +349,22 @@ async function market(env, req, url, me) {
     await env.DB.prepare('INSERT INTO market (id, seller, item, plus, qty, price, created_at, show_at, expires_at, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').bind(id, me.id, item, plus, qty, price, t, show, show + MK_SHELF_DAYS * 86400, 'on').run();
     return json(env, req, { ok: true, id, price, get: Math.floor(price * (1 - MK_FEE)) });
   }
-  if (p === '/api/market/buy' && M === 'POST') {   // 買う（無料ゴールドだけ）
+  if (p === '/api/market/buy' && M === 'POST') {   // 買う（ニャンコイン）
     const id = String(b.id || '');
     const r = await env.DB.prepare('SELECT * FROM market WHERE id = ?').bind(id).first();
-    if (r && r.buyer === me.id && (r.status === 'sold' || r.status === 'done')) return json(env, req, { ok: true, again: true, item: r.item, plus: r.plus, qty: r.qty, price: r.price, gold: await walletOf(env, me.id) });   // 返事が届かなかった買い物のやり直し
+    if (r && r.buyer === me.id && (r.status === 'sold' || r.status === 'done')) return json(env, req, { ok: true, again: true, item: r.item, plus: r.plus, qty: r.qty, price: r.price, nyan: await nyanOf(env, me.id) });   // 返事が届かなかった買い物のやり直し
     if (!r || mkPhase(r, t) !== 'on' || r.seller === me.id) return json(env, req, { error: 'もう売れてしまいました', gone: true }, 409);
-    const w = await walletOf(env, me.id);
-    if (w.free < r.price) return json(env, req, { error: 'お店で使えるゴールドが足りません', gold: w }, 402);
+    if ((await nyanOf(env, me.id)) < r.price) return json(env, req, { error: 'ニャンコインが足りません', nyan: await nyanOf(env, me.id) }, 402);
     const up = await env.DB.prepare("UPDATE market SET status = 'sold', buyer = ?, sold_at = ? WHERE id = ? AND status = 'on' AND seller <> ?").bind(me.id, t, id, me.id).run();
     if (!up.meta.changes) return json(env, req, { error: 'もう売れてしまいました', gone: true }, 409);
-    const pay = await env.DB.prepare("UPDATE wallet SET balance = balance - ? WHERE account_id = ? AND source = 'free' AND balance >= ?").bind(r.price, me.id, r.price).run();
+    const pay = await env.DB.prepare('UPDATE nyan SET balance = balance - ? WHERE account_id = ? AND balance >= ?').bind(r.price, me.id, r.price).run();
     if (!pay.meta.changes) {
       await env.DB.prepare("UPDATE market SET status = 'on', buyer = NULL, sold_at = NULL WHERE id = ?").bind(id).run();
-      return json(env, req, { error: 'お店で使えるゴールドが足りません', gold: await walletOf(env, me.id) }, 402);
+      return json(env, req, { error: 'ニャンコインが足りません', nyan: await nyanOf(env, me.id) }, 402);
     }
-    await env.DB.prepare('INSERT OR IGNORE INTO ledger (account_id, source, delta, reason, ref, created_at) VALUES (?, ?, ?, ?, ?, ?)').bind(me.id, 'free', -r.price, 'spend:market', 'mkb-' + id, t).run();
-    await addGold(env, r.seller, 'free', Math.floor(r.price * (1 - MK_FEE)), 'market:sold', 'mks-' + id);
-    return json(env, req, { ok: true, item: r.item, plus: r.plus, qty: r.qty, price: r.price, gold: await walletOf(env, me.id) });
+    await env.DB.prepare('INSERT OR IGNORE INTO ledger (account_id, source, delta, reason, ref, created_at) VALUES (?, ?, ?, ?, ?, ?)').bind(me.id, 'nyan', -r.price, 'market:buy', 'mkb-' + id, t).run();
+    await nyanAdd(env, r.seller, Math.floor(r.price * (1 - MK_FEE)), 'market:sold', 'mks-' + id);
+    return json(env, req, { ok: true, item: r.item, plus: r.plus, qty: r.qty, price: r.price, nyan: await nyanOf(env, me.id) });
   }
   if (p === '/api/market/take' && M === 'POST') {   // 自分の預けた品：売れた知らせを受け取る／売れ残り・取り消しで品を戻す
     const id = String(b.id || '');
@@ -348,7 +372,7 @@ async function market(env, req, url, me) {
     if (!r) return fail(env, req, '見つかりません', 404);
     const ph = mkPhase(r, t);
     if (r.status === 'back' || r.status === 'done') return json(env, req, { error: '受け取り済みです', gone: true }, 409);
-    if (ph === 'sold') { await env.DB.prepare("UPDATE market SET status = 'done' WHERE id = ? AND status = 'sold'").bind(id).run(); return json(env, req, { ok: true, sold: true, get: Math.floor(r.price * (1 - MK_FEE)), item: r.item, plus: r.plus, qty: r.qty }); }
+    if (ph === 'sold') { await env.DB.prepare("UPDATE market SET status = 'done' WHERE id = ? AND status = 'sold'").bind(id).run(); return json(env, req, { ok: true, sold: true, get: r.created_at < MK_NYAN_T ? 0 : Math.floor(r.price * (1 - MK_FEE)), item: r.item, plus: r.plus, qty: r.qty, nyan: await nyanOf(env, me.id) }); }
     if (ph === 'back' || (b.cancel && (ph === 'wait' || ph === 'on'))) {
       const up = await env.DB.prepare("UPDATE market SET status = 'back' WHERE id = ? AND status = 'on'").bind(id).run();
       if (!up.meta.changes) return json(env, req, { error: 'もう売れてしまいました', gone: true }, 409);
