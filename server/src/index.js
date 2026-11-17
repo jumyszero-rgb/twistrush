@@ -330,13 +330,13 @@ async function market(env, req, url, me) {
     if (r && r.buyer === me.id && (r.status === 'sold' || r.status === 'done')) return json(env, req, { ok: true, again: true, item: r.item, plus: r.plus, qty: r.qty, price: r.price, gold: await walletOf(env, me.id) });   // 返事が届かなかった買い物のやり直し
     if (!r || mkPhase(r, t) !== 'on' || r.seller === me.id) return json(env, req, { error: 'もう売れてしまいました', gone: true }, 409);
     const w = await walletOf(env, me.id);
-    if (w.free < r.price) return json(env, req, { error: '無料ゴールドが足りません', gold: w }, 402);
+    if (w.free < r.price) return json(env, req, { error: 'お店で使えるゴールドが足りません', gold: w }, 402);
     const up = await env.DB.prepare("UPDATE market SET status = 'sold', buyer = ?, sold_at = ? WHERE id = ? AND status = 'on' AND seller <> ?").bind(me.id, t, id, me.id).run();
     if (!up.meta.changes) return json(env, req, { error: 'もう売れてしまいました', gone: true }, 409);
     const pay = await env.DB.prepare("UPDATE wallet SET balance = balance - ? WHERE account_id = ? AND source = 'free' AND balance >= ?").bind(r.price, me.id, r.price).run();
     if (!pay.meta.changes) {
       await env.DB.prepare("UPDATE market SET status = 'on', buyer = NULL, sold_at = NULL WHERE id = ?").bind(id).run();
-      return json(env, req, { error: '無料ゴールドが足りません', gold: await walletOf(env, me.id) }, 402);
+      return json(env, req, { error: 'お店で使えるゴールドが足りません', gold: await walletOf(env, me.id) }, 402);
     }
     await env.DB.prepare('INSERT OR IGNORE INTO ledger (account_id, source, delta, reason, ref, created_at) VALUES (?, ?, ?, ?, ?, ?)').bind(me.id, 'free', -r.price, 'spend:market', 'mkb-' + id, t).run();
     await addGold(env, r.seller, 'free', Math.floor(r.price * (1 - MK_FEE)), 'market:sold', 'mks-' + id);

@@ -6916,7 +6916,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.160';
+  const APP_VER = '0.9.161';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -7944,13 +7944,13 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   // ゴールドの内訳（2026-11-17 本人：無料ゴールドと有料ゴールドの表示はどこかに出したほうがよい）
   let goldW = null;
   function goldInfo(){
-    if (!acctToken || !goldW) { askYes('🟡 ゴールド <b>' + (gold || 0).toLocaleString() + '</b><br><small>ログインすると、有料ゴールド（買ったもの）と無料ゴールド（もらったもの）を分けて見られます。</small>'); return; }
+    if (!acctToken || !goldW) { askYes('🟡 ゴールド <b>' + (gold || 0).toLocaleString() + '</b><br><small>ログインすると、有償ゴールド（買ったもの）と無償ゴールド（もらったもの）を分けて見られます。</small>'); return; }
     const w = goldW, d = s2 => { const n = Math.max(0, Math.ceil((s2 - Date.now() / 1000) / 86400)); return n + '日'; };
     const soon = (w.expiring || [])[0];
     askYes('<b>ゴールドの内訳</b><br>合計 <b>' + w.total.toLocaleString() + '</b><br>' +
-      '有料ゴールド（買ったもの） <b>' + w.paid.toLocaleString() + '</b>' + (soon ? '<br><small>いちばん近い期限：' + soon.n.toLocaleString() + '枚があと' + d(soon.at) + '</small>' : '') + '<br>' +
-      '無料ゴールド（もらったもの） <b>' + w.free.toLocaleString() + '</b><br>' +
-      '<small>有料ゴールドは買ってから' + (w.days || 180) + '日で消えます。使うときは、期限の近い有料ゴールドから先に減ります。ミケの店の預け販売で買うときは、無料ゴールドだけ使えます。</small>');
+      '有償ゴールド（買ったもの） <b>' + w.paid.toLocaleString() + '</b>' + (soon ? '<br><small>いちばん近い期限：' + soon.n.toLocaleString() + '枚があと' + d(soon.at) + '</small>' : '') + '<br>' +
+      '無償ゴールド（もらったもの・お店で使える） <b>' + w.free.toLocaleString() + '</b><br>' +
+      '<small>ガチャや強化など、ゴールドで払うものは合計から払えます（期限の近い有償ゴールドから先に減ります）。有償ゴールドは買ってから' + (w.days || 180) + '日で消えます。<br>ミケの店でほかのプレイヤーの品を買うときだけは、無償ゴールド（＝お店で使えるゴールド）で払います。</small>');
   }
   document.addEventListener('click', e => { if (e.target.closest('[data-goldw]')) goldInfo(); });
   function addCoins(n){ coins = Math.max(0, coins + n); save('coins', String(coins)); refreshCoins(); }
@@ -9679,12 +9679,12 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     for (const it of (mkMine.items || []).filter(x => x.phase === 'sold' || x.phase === 'back')) {
       try {
         const r = await api('/api/market/take', {method: 'POST', body: JSON.stringify({id: it.id})});
-        if (r.sold) { sold++; gotG += r.get; msgLog('get', '🐈 ミケの店：' + mkName(it.item, it.plus, it.qty).replace(/<[^>]+>/g, '') + ' が売れました（無料ゴールド +' + r.get + '）'); }
+        if (r.sold) { sold++; gotG += r.get; msgLog('get', '🐈 ミケの店：' + mkName(it.item, it.plus, it.qty).replace(/<[^>]+>/g, '') + ' が売れました（ゴールド +' + r.get + '）'); }
         else if (r.back) { if (mkGive('b' + it.id, r.item, r.plus, r.qty)) back++; msgLog('get', '🐈 ミケの店：売れ残った ' + mkName(it.item, it.plus, it.qty).replace(/<[^>]+>/g, '') + ' が戻りました'); }
       } catch (_) {}
     }
     if (sold || back) { try { mkMine = await api('/api/market/mine'); } catch (_) {} }
-    if (sold) { playSeFile('shop_coin', 1); mkMsg = '💰 預けた品が' + sold + '個売れました。無料ゴールド +' + gotG.toLocaleString() + '（手数料10%を引いた分）'; acctRefreshGold(); setTimeout(() => { if (mkOpen()) mkSay('sold', 'happy'); }, 1400); }
+    if (sold) { playSeFile('shop_coin', 1); mkMsg = '💰 預けた品が' + sold + '個売れました。ゴールド +' + gotG.toLocaleString() + '（手数料10%を引いた分）'; acctRefreshGold(); setTimeout(() => { if (mkOpen()) mkSay('sold', 'happy'); }, 1400); }
     else if (back) { mkMsg = '📦 売れ残った品が' + back + '個戻りました。'; setTimeout(() => { if (mkOpen()) mkSay('back', 'sad'); }, 1400); }
   }
   async function acctRefreshGold(){ try { const w = await api('/api/wallet'); if (w && w.total != null) { gold = w.total; goldW = w; refreshCoins(); drawMkt(); } } catch (_) {} }
@@ -9700,13 +9700,13 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   function drawMkt(){
     const b = $('mktBody'); if (!b) return;
     const fr = acctToken && goldW ? goldW.free : null;
-    let h = '<div class="mkwal"><span>🪙 シルバー <b>' + coins.toLocaleString() + '</b></span>' + (fr != null ? '<span>🟡 無料ゴールド <b>' + fr.toLocaleString() + '</b></span><span data-goldw="1" style="text-decoration:underline;opacity:.8">ゴールドの内訳</span>' : '') + '</div>';
+    let h = '<div class="mkwal"><span>🪙 シルバー <b>' + coins.toLocaleString() + '</b></span>' + (fr != null ? '<span>🟡 お店で使えるゴールド <b>' + fr.toLocaleString() + '</b></span><span data-goldw="1" style="text-decoration:underline;opacity:.8">ゴールドの内訳</span>' : '') + '</div>';
     const nMine = mkMine && mkMine.items ? mkMine.items.length : 0;
     h += '<div class="fgtabs">' + [['buy', '買う'], ['sell', '売る'], ['put', '預ける'], ['mine', '預けた品' + (nMine ? '(' + nMine + ')' : '')]].map(([k, n]) => '<button data-mktab="' + k + '"' + (mkTab === k ? ' class="on"' : '') + '>' + n + '</button>').join('') + '</div>';
     if (mkMsg) h += '<div class="exmsg">' + mkMsg + '</div>';
     const needLogin = '<p class="mknote">ほかのプレイヤーとの売り買いには<b>ログイン</b>が必要です（設定 → アカウント）。</p>';
     if (mkTab === 'buy') {
-      h += '<p class="mknote">ほかのプレイヤーが預けた品が並んでいます。払うのは<b>無料ゴールド</b>だけ。誰が出したかは分かりません。棚に並ぶのはミケの気まぐれなので、ときどき見に来てください。</p>';
+      h += '<p class="mknote">ほかのプレイヤーが預けた品が並んでいます。払えるのは<b>お店で使えるゴールド</b>だけです（ゲームでもらったゴールドと、預けた品が売れて入ったゴールド。お金で買ったゴールドは使えません）。誰が出したかは分かりません。棚に並ぶのはミケの気まぐれなので、ときどき見に来てください。</p>';
       if (!acctToken) h += needLogin;
       else {
         h += '<div class="mkchips">' + [['w', '⚔ 武器'], ['m', '📦 素材']].map(([k, n]) => '<button data-mkcat="' + k + '"' + (mkCat === k ? ' class="on"' : '') + '>' + n + '</button>').join('') + '</div>';
@@ -9714,7 +9714,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         if (mkShelf === 'load' || mkShelf == null) h += '<p class="mknote">棚を見ています…</p>';
         else if (mkShelf === 'err') h += '<p class="mknote">サーバーにつながりませんでした。</p>';
         else if (!mkShelf.length) h += '<p class="mknote">いまは何も並んでいないみたい。またあとで見に来てね。</p>';
-        else h += mkShelf.map(it => '<div class="mkrow">' + mkIcon(it.item, it.plus) + '<div class="mknm">' + mkName(it.item, it.plus, it.qty) + '<small>🟡 ' + it.price.toLocaleString() + ' 無料ゴールド</small></div><div class="mkbt"><button data-mkbuy="' + it.id + '"' + (fr != null && fr < it.price ? ' class="sub"' : '') + '>買う</button></div></div>').join('');
+        else h += mkShelf.map(it => '<div class="mkrow">' + mkIcon(it.item, it.plus) + '<div class="mknm">' + mkName(it.item, it.plus, it.qty) + '<small>🟡 ' + it.price.toLocaleString() + ' ゴールド</small></div><div class="mkbt"><button data-mkbuy="' + it.id + '"' + (fr != null && fr < it.price ? ' class="sub"' : '') + '>買う</button></div></div>').join('');
       }
     } else if (mkTab === 'sell') {
       h += '<p class="mknote">いらない武器や素材を、ミケがその場で<b>シルバー</b>と交換します。ガチャやパックで手に入れたものも売れます（預けて売るときのおよそ半分の値段）。装備中の武器は外してから売ってください。</p>';
@@ -9723,7 +9723,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       h += ws.map(g => { const it = 'w:' + g.k, sv = mkPrice(it, g.p, 1) * MK_SV; return '<div class="mkrow">' + mkIcon(it, g.p) + '<div class="mknm">' + mkName(it, g.p, 1) + '<small>🪙 ' + sv.toLocaleString() + ' シルバー</small></div><div class="mkbt"><button data-mksellw="' + g.g + '">売る</button></div></div>'; }).join('');
       h += ms.map(k => { const n = own(k), sv = mkPrice(k, 0, 1) * MK_SV; return '<div class="mkrow">' + mkIcon(k) + '<div class="mknm">' + mkName(k, 0, 1) + '<small>1個 🪙 ' + sv.toLocaleString() + '　持っている ' + n + '個</small></div><div class="mkbt"><button data-mksellm="' + k + ':1">1個</button>' + (n > 1 ? '<button class="sub" data-mksellm="' + k + ':' + n + '">全部(' + n + ')</button>' : '') + '</div></div>'; }).join('');
     } else if (mkTab === 'put') {
-      h += '<p class="mknote">預けた品は、ほかのプレイヤーが買うと<b>無料ゴールド</b>になります（手数料10%）。値段はレア度と強化度で自動で決まります。棚に並ぶのは<b>預けてから24時間以内のどこか</b>（ミケの気まぐれ）。並んでから7日たっても売れなければ戻ってきます。<br>預けられるのは<b>レベル' + MK_LV + 'から・1日5個まで</b>。ガチャやパックで手に入れたもの、ゴールドで買った素材は預けられません。</p>';
+      h += '<p class="mknote">預けた品は、ほかのプレイヤーが買うと<b>ゴールド</b>が入ります（手数料10%）。入ったゴールドは何にでも使え、お店の買い物にも使えます。値段はレア度と強化度で自動で決まります。棚に並ぶのは<b>預けてから24時間以内のどこか</b>（ミケの気まぐれ）。並んでから7日たっても売れなければ戻ってきます。<br>預けられるのは<b>レベル' + MK_LV + 'から・1日5個まで</b>。ガチャやパックで手に入れたもの、ゴールドで買った素材は預けられません。</p>';
       if (!acctToken) h += needLogin;
       else if (userLv() < MK_LV) h += '<p class="mknote">🔒 いまLV' + userLv() + '。LV' + MK_LV + 'になると預けられます。</p>';
       else {
@@ -9762,13 +9762,13 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (mkBusy) return;
     // 買う（無料ゴールド）
     const by = e.target.closest('[data-mkbuy]'); if (by) { const it = (mkShelf || []).find(x => x.id === by.dataset.mkbuy); if (!it) return;
-      if (goldW && goldW.free < it.price) { mkSay('lack', 'sad'); mkMsg = '無料ゴールドが足りません（有料ゴールドはプレイヤーどうしの売り買いには使えません）。'; drawMkt(); return; }
-      askYes(mkName(it.item, it.plus, it.qty) + ' を<br>無料ゴールド <b>' + it.price.toLocaleString() + '</b> で買いますか？', async () => {
+      if (goldW && goldW.free < it.price) { mkSay('lack', 'sad'); mkMsg = 'お店で使えるゴールドが足りません（お金で買ったゴールドは、ほかのプレイヤーとの売り買いには使えません）。'; drawMkt(); return; }
+      askYes(mkName(it.item, it.plus, it.qty) + ' を<br>ゴールド <b>' + it.price.toLocaleString() + '</b> で買いますか？<br><small>お店で使えるゴールドから払います。</small>', async () => {
         mkBusy = true;
         try { const r = await api('/api/market/buy', {method: 'POST', body: JSON.stringify({id: it.id})});
           if (r.gold) { gold = r.gold.total; goldW = r.gold; refreshCoins(); }
           if (r.ok) { mkGive(it.id, r.item, r.plus, r.qty); playSeFile('shop_coin', 1); mkSay('buy', 'happy'); mkMsg = '🛍 ' + mkName(r.item, r.plus, r.qty) + ' を買いました。' + (mkIsW(r.item) ? 'キャラの詳細 →「装備」で付けられます。' : ''); msgLog('get', '🐈 ミケの店で買った：' + mkName(r.item, r.plus, r.qty).replace(/<[^>]+>/g, '')); mkShelf = mkShelf.filter(x => x.id !== it.id); }
-          else if (r._status === 402) { mkSay('lack', 'sad'); mkMsg = '無料ゴールドが足りません。'; }
+          else if (r._status === 402) { mkSay('lack', 'sad'); mkMsg = 'お店で使えるゴールドが足りません。'; }
           else { mkMsg = 'ひと足ちがいで売れてしまいました。'; mkShelf = mkShelf.filter(x => x.id !== it.id); }
         } catch (er) { mkPend.push({op: 'buy', id: it.id}); mkPendSave(); mkMsg = 'サーバーにつながりませんでした。次に店を開いたときに確かめます。'; }
         mkBusy = false; drawMkt(); });
@@ -9792,7 +9792,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       if (pw) { g = gearOf(pw.dataset.mkputw); if (!g || gearUser(g.g)) return; if (g.nt) { mkSay('ng', 'sad'); return; } item = 'w:' + g.k; plus = g.p | 0; }
       else { const [k, q] = pm.dataset.mkputm.split(':'); item = k; qty = +q; if (tradeN(k) < qty) { mkSay('ng', 'sad'); return; } }
       const pr = mkPrice(item, plus, qty);
-      askYes(mkName(item, plus, qty) + ' を預けますか？<br>値段 <b>' + pr.toLocaleString() + '</b>（売れたら無料ゴールド <b>' + mkGet(pr).toLocaleString() + '</b>）<br><small>棚に並ぶのは24時間以内のどこか。並んでから7日で売れ残りは戻ります。棚に並ぶ前なら取り消せます。</small>', async () => {
+      askYes(mkName(item, plus, qty) + ' を預けますか？<br>値段 <b>' + pr.toLocaleString() + '</b>（売れたらゴールド <b>' + mkGet(pr).toLocaleString() + '</b>）<br><small>棚に並ぶのは24時間以内のどこか。並んでから7日で売れ残りは戻ります。棚に並ぶ前なら取り消せます。</small>', async () => {
         mkBusy = true; const ref = mkRef();
         if (g) { const i = gear.indexOf(g); if (i < 0) { mkBusy = false; return; } gear.splice(i, 1); saveGear(); } else { inv[item] = own(item) - qty; saveInv(); }
         try { const r = await api('/api/market/put', {method: 'POST', body: JSON.stringify({item, plus, qty, ref})});
@@ -9810,7 +9810,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       const go = async () => { mkBusy = true;
         try { const r = await api('/api/market/take', {method: 'POST', body: JSON.stringify({id, cancel: cc ? 1 : 0})});
           if (r.back) { mkGive('b' + id, r.item, r.plus, r.qty); mkMsg = '📦 ' + mkName(r.item, r.plus, r.qty) + ' が戻りました。'; if (!cc) mkSay('back', 'sad'); }
-          else if (r.sold) { playSeFile('shop_coin', 1); mkSay('sold', 'happy'); mkMsg = '💰 無料ゴールド +' + r.get.toLocaleString(); acctRefreshGold(); }
+          else if (r.sold) { playSeFile('shop_coin', 1); mkSay('sold', 'happy'); mkMsg = '💰 ゴールド +' + r.get.toLocaleString(); acctRefreshGold(); }
           else mkMsg = r.error || '';
         } catch (er) { mkMsg = er.message || 'サーバーにつながりませんでした。'; }
         await mkLoadMine(false); mkBusy = false; drawMkt(); };
