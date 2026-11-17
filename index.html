@@ -1779,6 +1779,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
           <table class="how-table">
             <tr><th>オクタの数</th><td>3個</td><td>4個</td><td>5個</td><td>6個</td></tr>
             <tr><th>全色</th><td>−3</td><td>−6</td><td>−10</td><td>−15</td></tr>
+            <tr><th>サバイバル</th><td>−30%</td><td>−50%</td><td>−70%</td><td>全部</td></tr>
           </table>
           <p>オクタブロックの出る確率は、いちばん高いカラーHPで変わります。0〜9で3%、10〜19で7%、20以上で12%です。</p>
         </section>
@@ -3995,8 +3996,17 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     hitObs([...clearSet].map(k => [(k / N) | 0, k % N]), dec);   // となりのおじゃま（氷・石）を割る（お題の数には入れない）
     // ★は一発逆転：並べた数で全色を大きく減らす（3個=3、4個=6、5個=10、6個=15）
     let slow = 0;
-    for (const g of clearGroups) if (g.t === GOLD) { golds += CFG.STAR_BONUS[Math.min(6, g.cells.length)] || 0; slow += (CFG.STAR_SLOW[Math.min(6, g.cells.length)] || 0) * CFG.STAR_SLOW_MULT; }
-    if (golds) {
+    // 2026-11-18 本人：サバイバルは後半ほどたまる量が増えて、決まった数を減らすオクタが効かない → サバイバルだけ、今のカラーHPの割合で減らす
+    //   3個＝30%／4個＝50%／5個＝70%／6個＝全部（2つ以上そろえたら重ねがけ）
+    const OCTA_PCT = {3: 0.3, 4: 0.5, 5: 0.7, 6: 1};
+    let keep = 1;
+    for (const g of clearGroups) if (g.t === GOLD) { const n = Math.min(6, g.cells.length); golds += CFG.STAR_BONUS[n] || 0; keep *= 1 - (OCTA_PCT[n] || 0); slow += (CFG.STAR_SLOW[n] || 0) * CFG.STAR_SLOW_MULT; }
+    if (golds && gameMode === 'rank') {
+      const pct = Math.round((1 - keep) * 100);
+      for (let i = 0; i < TYPES; i++) dec[i] += Math.ceil(stacks[i] * (1 - keep));
+      pops.push({text: 'オクタ 全色 −' + pct + '%', style: 'special', r: 2.5, c: 2.5, row: 0, n: 1, t: t0 + 150, big: true});
+      toast('一発逆転！ 全色のカラーHP −' + pct + '%');
+    } else if (golds) {
       for (let i = 0; i < TYPES; i++) dec[i] += golds;
       pops.push({text: 'オクタ 全色 −' + golds, style: 'special', r: 2.5, c: 2.5, row: 0, n: 1, t: t0 + 150, big: true});
       toast('一発逆転！ 全色 −' + golds);
@@ -6967,7 +6977,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.170';
+  const APP_VER = '0.9.171';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
