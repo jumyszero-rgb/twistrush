@@ -3942,7 +3942,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     }
     if (pst) {                                       // SKILL PROFILE：60秒・エンドレスのくせを数える
       const tn = now();
-      if (chain === 1) { pst.turns++; pst.wait += Math.max(0, tn - pst.lastT) / 1000; if (lines >= 2) pst.sync++; }
+      if (chain === 1) { pst.turns++; pst.wait += Math.min(8, Math.max(0, tn - pst.lastT) / 1000); if (lines >= 2) pst.sync++;   // 待ち時間は1回8秒まで（考えこみ・よそ見で平均がくずれないように）
+        pst.mar += Math.max(0, 1 - (tn - lapStart) / (lapSec() * 1000)); pst.marN++; }   // 回避率：消したとき、外周の1周があとどれだけ残っていたか
       else if (chain === 2) pst.chainT++;
       pst.pts += pendingGain; pst.clears++;
       gs.forEach(g => { if (g.t !== GOLD) { pst.len[Math.min(6, g.cells.length)]++; pst.col[g.t] = (pst.col[g.t] || 0) + g.cells.length; } else pst.gold++; });
@@ -4674,7 +4675,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       }
       if (gameMode === 'story') { voiceForce = null; enemySay('えぃ！'); }   // ストーリーの必殺技・奥義は敵のタイマーで別に使ってくる
       else enemySay(spName || 'えぃ！');   // ボスは必殺技の名前を叫ぶ
-      if (pst) pst.pen++;                                                   // SKILL PROFILE：1周消せなかった回数（回避率）
+      if (pst) { pst.pen++; pst.marN++; }                                   // SKILL PROFILE：1周消せなかった＝残り0として数える（回避率）
       stacks = stacks.map(v => Math.min(CFG.STACK_MAX, v + CFG.PENALTY));   // 全色に+PENALTY
       spawnBolt(CFG.PENALTY * TYPES, !!spHas);                                       // 大きめの火の玉
       updateGauges();
@@ -5264,7 +5265,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     phase = 'idle'; rotAnim = null; fallDist = null; flashes = []; pops = []; feed = []; broken = 0; relief = 0; speedFlash = 0; warnNext = 0; lastGoldTier = 0; overFx = null; clearTimeout(overTimer);
     document.querySelectorAll('.stk.dead').forEach(d => d.classList.remove('dead')); canvas.style.transform = '';
     const t = now(); lapStart = t; lastStackTick = t; penaltyFlash = 0; runStart = t;
-    pst = (gameMode === 'sixty' || gameMode === 'rank') ? {len: {3: 0, 4: 0, 5: 0, 6: 0}, col: [], gold: 0, turns: 0, sync: 0, chainT: 0, pts: 0, clears: 0, wait: 0, pen: 0, lastT: t} : null;
+    pst = (gameMode === 'sixty' || gameMode === 'rank') ? {len: {3: 0, 4: 0, 5: 0, 6: 0}, col: [], gold: 0, turns: 0, sync: 0, chainT: 0, pts: 0, clears: 0, wait: 0, pen: 0, mar: 0, marN: 0, lastT: t} : null;
     $('over').querySelector('h1').textContent = 'RESULT';
     running = true; refreshZone();
     bgmOn = true; bgmMode = null; bgmUnlock(); primeVoice(); bgmPlay(gameMode === 'sixty' || gameMode === 'chal' ? 'panic' : 'calm');
@@ -6916,7 +6917,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.164';
+  const APP_VER = '0.9.165';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -7702,7 +7703,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   const skRuns = () => loadJ('skprof', null) || [];
   function skProfAdd(sec){
     if (!pst || sec < 10) return;
-    const r = {m: gameMode === 'sixty' ? 's' : 'e', sc: score | 0, sec: Math.round(sec), len: pst.len, col: pst.col, gold: pst.gold, turns: pst.turns, sync: pst.sync, chainT: pst.chainT, pts: pst.pts, clears: pst.clears, wait: Math.round(pst.wait * 10) / 10, pen: pst.pen};
+    const r = {m: gameMode === 'sixty' ? 's' : 'e', sc: score | 0, sec: Math.round(sec), len: pst.len, col: pst.col, gold: pst.gold, turns: pst.turns, sync: pst.sync, chainT: pst.chainT, pts: pst.pts, clears: pst.clears, wait: Math.round(pst.wait * 10) / 10, pen: pst.pen, mar: Math.round(pst.mar * 100) / 100, marN: pst.marN};
     const a = skRuns(); a.push(r); save('skprof', JSON.stringify(a.slice(-SKP_N)));
     const before = load('skrank', ''), now0 = skRank();
     if (now0 && before && now0.k !== before) setTimeout(() => toast('SKILL RANK：' + before + ' → ' + now0.k + '（' + now0.n + '）'), 1500);
@@ -7726,7 +7727,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       stamina: 0,
       cells: L[3] * 3 + L[4] * 4 + L[5] * 5 + L[6] * 6 + sum('gold') * 3, secs: sum('sec'),
       penMin: (() => { const p = a.filter(y => y.m === 'e' && y.pen != null), sec = p.reduce((x, y) => x + y.sec, 0); return sec ? p.reduce((x, y) => x + y.pen, 0) / (sec / 60) : null; })(),
-      penSec: a.filter(y => y.m === 'e' && y.pen != null).reduce((x, y) => x + y.sec, 0)};
+      penSec: a.filter(y => y.m === 'e' && y.pen != null).reduce((x, y) => x + y.sec, 0),
+      marN: sum('marN'), mar: sum('marN') ? sum('mar') / sum('marN') : null, near: 0};
   }
   function skRank(){ const st = skStats(); if (!st.nS) return null; let r = SKR[0]; SKR.forEach(x => { if (st.val >= x.min) r = x; }); return r; }
   function skType(st){
@@ -7749,9 +7751,11 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       {k: 'STA',  n: 'スタミナ', p: st.nE ? cl01((st.endl - 1) / 5) : 0, raw: st.nE ? 'タイムアタック 安定値 ' + skMS(st.endl) : 'タイムアタック未プレイ', d: 'タイムアタックで長く生き残る力（3分でC、5分でA）', na: !st.nE},
       {k: 'POW',  n: '破壊力', p: cl01((cpt - 3) / 12), raw: '1ターン ' + cpt.toFixed(1) + '個', d: '1回でこわすブロックの数'},
       {k: 'ATK',  n: '攻撃力', p: cl01(st.ppt / 1400), raw: '1ターン ' + Math.round(st.ppt).toLocaleString() + '点', d: '1回くずしたときの点数'},
-      {k: 'EVA',  n: '回避率', p: st.penMin != null ? cl01(1 - st.penMin / 0.8) * cl01(st.penSec / 900) : 0, raw: st.penMin != null ? 'タイムアタック 1周逃し 1分に ' + st.penMin.toFixed(1) + '回' : 'タイムアタックを遊ぶと計測', d: 'タイムアタックで、光の1周以内に消してペナルティを避ける力', na: st.penMin == null},
-      {k: 'REA',  n: '反応', p: st.turns ? cl01((3.2 - st.wait) / 2.7) * cl01(st.turns / 150) : 0, raw: '次まで ' + st.wait.toFixed(1) + '秒', d: '消えてから次をそろえるまでの速さ'},
-      {k: 'SPA',  n: '空間認識', p: cl01((st.sync - 0.1) / 0.6) * cl01(st.turns / 150), raw: '同時消し ' + pc(st.sync), d: '盤面を広く見て、何列も同時にそろえる力'},
+      // 2026-11-17 本人：回避999・反応8・空間認識949は目もりがおかしい → 本人の数字が真ん中（0.37前後）に来るように直す
+      //   回避率：1周逃しの回数だと、なれた人はほぼ0回で全員999になる → 消したときに外周の1周があとどれだけ残っていたか（平均）で見る
+      {k: 'EVA',  n: '回避率', p: st.mar != null ? cl01((st.mar - 0.3) / 0.6) * cl01(st.marN / 150) : 0, raw: st.mar != null ? '消したとき 1周の残り 平均' + pc(st.mar) : '60秒アタック・タイムアタックを遊ぶと計測', d: '外周の光が1周する前に、余裕をもって消す力（ギリギリが多いと下がる）', na: st.mar == null},
+      {k: 'REA',  n: '反応', p: st.turns ? cl01((4.5 - st.wait) / 3.5) * cl01(st.turns / 150) : 0, raw: '次まで ' + st.wait.toFixed(1) + '秒', d: '消えてから次をそろえるまでの速さ'},
+      {k: 'SPA',  n: '空間認識', p: cl01((st.sync - 0.5) / 0.45) * cl01(st.turns / 150), raw: '同時消し ' + pc(st.sync), d: '盤面を広く見て、何列も同時にそろえる力'},
       {k: 'DEX',  n: '器用さ', p: cl01(lr / 0.6), raw: '4つ ' + pc(st.r4) + '・5つ ' + pc(st.r5) + '・6つ ' + pc(st.r6), d: '長い列（4つ以上）をそろえる技術'},
       {k: 'LUK',  n: '運', p: cl01(st.chain / 0.9), raw: '連鎖 ' + pc(st.chain), d: '落ちてきたブロックで続けて消える運'},
     ];
