@@ -1781,7 +1781,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
             <li>盤面の周りを回る光が1周するまでに消せないと、<b>全色のカラーHPが増えます</b>。</li>
             <li>ストーリーでは、そろって点滅している間は周りの光が止まります（消えるのを待っている間に1周してしまうことはありません）。</li>
             <li>カラーHPは一定時間ごとにも全色+1され、進むほど増える数が大きくなります。</li>
-            <li>ブロックを消すほど光の1周が短くなります（SPEED UP）。オクタブロックで戻せる量には上限があるので、いつかは追いつかれます。</li>
+            <li>光の1周はだんだん短くなります（SPEED UP）。タイムアタックは時間がたつほど、ほかのモードはブロックを消すほど短くなります。オクタブロックで少し戻せますが、戻せる量には上限があるので、いつかは追いつかれます。</li>
           </ul>
         </section>
         <section>
@@ -2865,7 +2865,12 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   // ★や広告で戻せるのは、進んだ分の一定割合まで（戻し続けて永久に遊べないようにする）
   const diffBlocks = () => Math.max(0, broken - Math.min(relief, broken * CFG.RELIEF_CAP));
   const secTxt = v => String(Math.round(v * 10) / 10);   // 秒の表示（小数の計算のずれで 9.1000000001 のように長く出ないように）
-  const lapSec = () => Math.max(CFG.LAP_MIN, CFG.LAP_SEC - Math.floor(diffBlocks() / CFG.LAP_STEP_BLOCKS) * CFG.LAP_STEP_SEC);
+  // タイムアタックは時間で速くする（2026-11-18 本人：壊した数で速くすると、早く壊せる上手い人ほど早く速くなっておかしい）
+  //   30秒ごとに1周が0.5秒短くなる。★は時間を巻き戻す（戻せるのは、たった時間の一定割合まで）
+  const TA_LAP_EVERY = 30, TA_SLOW_PER_BLOCK = TA_LAP_EVERY / 120;   // ★の巻き戻し量（ブロック数）を秒にする：前の120個＝1段＝30秒
+  let reliefT = 0, lapShown = 0;
+  const taT = () => { const el = Math.max(0, (now() - runStart) / 1000); return Math.max(0, el - Math.min(reliefT, el * CFG.RELIEF_CAP)); };
+  const lapSec = () => Math.max(CFG.LAP_MIN, CFG.LAP_SEC - Math.floor(gameMode === 'rank' ? taT() / TA_LAP_EVERY : diffBlocks() / CFG.LAP_STEP_BLOCKS) * CFG.LAP_STEP_SEC);
   // SPEED UP の段数（0〜）。段が上がるほど★が出やすくなる
   const speedLv = () => Math.round((CFG.LAP_SEC - lapSec()) / CFG.LAP_STEP_SEC);
   // ★の出やすさは、いちばん高いカラーHPで決める（曲の切り替えと同じ境目）
@@ -2883,7 +2888,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const stackInc = () => {
     const b = Math.min(CFG.STACK_INC_MAX, 1 + Math.floor(diffBlocks() / CFG.STACK_STEP_BLOCKS));
-    return gameMode === 'rank' ? Math.max(b, endlessTimeInc()) : b;
+    return gameMode === 'rank' ? endlessTimeInc() : b;   // タイムアタックは時間だけで決める（壊した数では増やさない）
   };
   let endlessIncShown = 1;
   let size = 0, cell = 0, gm = 0, dpr = 1;
@@ -3997,9 +4002,9 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     // 壊したブロック数に応じて難しくする
     const prevLap = lapSec(), prevInc = stackInc();
     broken += clearSet.size;
-    if (slow) relief = Math.min(broken, relief + slow);   // ★を消すとスピードが少し戻る
-    if (lapSec() > prevLap || stackInc() < prevInc) speedDown(t0, 300);
-    else if (lapSec() < prevLap) {
+    if (slow) { relief = Math.min(broken, relief + slow); if (gameMode === 'rank') reliefT += slow * TA_SLOW_PER_BLOCK; }   // ★を消すとスピードが少し戻る（タイムアタックは時間で戻す）
+    if (lapSec() > prevLap || stackInc() < prevInc) { speedDown(t0, 300); lapShown = lapSec(); }
+    else if (lapSec() < prevLap && gameMode !== 'rank') {
       // 盤面の真ん中に大きく出す（音だけだと気づかないため）
       pops.push({text: 'SPEED UP!', style: 'speed', r: 2.2, c: 2.5, row: 0, n: 1, t: t0 + 300, big: true});
       toast('1周 ' + secTxt(lapSec()) + '秒');
@@ -4662,6 +4667,9 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       if (gameMode === 'rank' && inc > endlessIncShown) { endlessIncShown = inc;
         pops.push({text: 'PRESSURE UP! ×' + inc, style: 'speed', r: 2.2, c: 2.5, row: 0, n: 1, t: t + 100, big: true}); speedFlash = t; sndSpeed(); }
       addStackAll(inc); }
+    if (running && gameMode === 'rank') { const L = lapSec();   // タイムアタック：時間で1周が短くなった
+      if (L < lapShown) { pops.push({text: 'SPEED UP!', style: 'speed', r: 2.2, c: 2.5, row: 0, n: 1, t: t + 100, big: true}); toast('1周 ' + secTxt(L) + '秒'); speedFlash = t; sndSpeed(); }
+      lapShown = L; }
     if (running && t - lapStart >= lapSec() * spdMul() * 1000) {
       lapStart = t; penaltyFlash = t; sndPenalty(); toast(statOn() ? '全色 −' + Math.round(CFG.PENALTY * unitPts()).toLocaleString() : '全色 +' + CFG.PENALTY);   // ストーリー・キャラ対戦は実際に減るHPで見せる
       misPen++;                                   // お題「ペナルティ0回」用
@@ -5264,7 +5272,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     stacks = Array(TYPES).fill(0); score = 0; chain = 0; confirmUntil = 0; comboShowUntil = 0;
     phase = 'idle'; rotAnim = null; fallDist = null; flashes = []; pops = []; feed = []; broken = 0; relief = 0; speedFlash = 0; warnNext = 0; lastGoldTier = 0; overFx = null; clearTimeout(overTimer);
     document.querySelectorAll('.stk.dead').forEach(d => d.classList.remove('dead')); canvas.style.transform = '';
-    const t = now(); lapStart = t; lastStackTick = t; penaltyFlash = 0; runStart = t;
+    const t = now(); lapStart = t; lastStackTick = t; penaltyFlash = 0; runStart = t; reliefT = 0; lapShown = lapSec();
     pst = (gameMode === 'sixty' || gameMode === 'rank') ? {len: {3: 0, 4: 0, 5: 0, 6: 0}, col: [], gold: 0, turns: 0, sync: 0, chainT: 0, pts: 0, clears: 0, wait: 0, pen: 0, mar: 0, marN: 0, lastT: t} : null;
     $('over').querySelector('h1').textContent = 'RESULT';
     running = true; refreshZone();
@@ -5561,7 +5569,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     // 広告で続けたときは、カラーHPを全部0に戻す。スピードはそのまま（後半でもすぐ終わらないように）
     const was = stacks.slice();
     stacks = stacks.map(() => 0);
-    relief = Math.min(broken, relief + CFG.CONT_SLOW);   // スピードも少し落とす
+    relief = Math.min(broken, relief + CFG.CONT_SLOW); if (gameMode === 'rank') reliefT += CFG.CONT_SLOW * TA_SLOW_PER_BLOCK;   // スピードも少し落とす
     newBoard();
     cur = {r: 2, c: 2}; vis = {r: 2, c: 2}; dragFrac = {r:0, c:0}; curFrom = null;
     overFx = null; canvas.style.transform = '';
@@ -6917,7 +6925,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.165';
+  const APP_VER = '0.9.166';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
