@@ -462,7 +462,7 @@ body.on-menu .battlemain{opacity:0;}
   .fgtabs{display:flex;gap:6px;margin:6px 0;} .fgtabs button{flex:1;padding:7px 0;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#f6f0ff;font-weight:900;}
   .fgtabs button.on{background:#ffd24a;color:#3a1a00;} .fgsub{font-size:12px;margin:4px 0;} .fgsub small{opacity:.75;}
   .fgrc{list-style:none;margin:4px 0;padding:0;font-size:12px;display:grid;grid-template-columns:1fr 1fr;gap:2px 8px;} .fgrc li.ok{color:#7ff0a8;} .fgrc li.ng{color:#ff9db0;}
-  .fgkind button{flex:1;} .fghint{margin:6px 0 2px;padding:6px 8px;border-radius:10px;background:rgba(255,210,74,.12);font-size:11.5px;line-height:1.5;} .fghint b{display:block;font-size:11px;opacity:.85;} .fghint span{display:block;} .eqfx{margin-top:4px;font-size:12px;font-weight:700;color:#b07a00;} @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .eqfx{color:#ffd24a;} } :root[data-theme="dark"] .eqfx{color:#ffd24a;}
+  .mksort span{font-size:11px;opacity:.75;align-self:center;margin-right:2px;} .hfold{margin:6px 0;font-size:12px;line-height:1.55;} .hfold>summary{display:inline-block;cursor:pointer;list-style:none;padding:3px 12px;border-radius:999px;border:1px solid rgba(255,210,74,.6);background:rgba(255,210,74,.14);font-weight:700;font-size:12px;user-select:none;} .hfold>summary::-webkit-details-marker{display:none;} .hfold[open]>summary{background:rgba(255,210,74,.32);} .hfbody{margin-top:6px;padding:8px 10px;border-radius:10px;background:rgba(0,0,0,.18);} .fgkind button{flex:1;} .fghint{margin:6px 0 2px;padding:6px 8px;border-radius:10px;background:rgba(255,210,74,.12);font-size:11.5px;line-height:1.5;} .fghint b{display:block;font-size:11px;opacity:.85;} .fghint span{display:block;} .eqfx{margin-top:4px;font-size:12px;font-weight:700;color:#b07a00;} @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .eqfx{color:#ffd24a;} } :root[data-theme="dark"] .eqfx{color:#ffd24a;}
   .eqslot{background:rgba(0,0,0,.06);border-radius:10px;padding:8px;font-size:13px;} .eqslot.on{background:rgba(255,210,74,.18);} .eqslot button{margin-top:6px;padding:4px 14px;border-radius:8px;border:1px solid #c9a;background:#fff;}
   .eqitem{display:block;width:100%;text-align:left;margin:4px 0;padding:7px 9px;border-radius:10px;border:1px solid rgba(0,0,0,.15);background:#fff;font-family:inherit;}
   .eqitem small{display:block;font-size:11px;opacity:.75;} .eqitem em{font-style:normal;font-size:10.5px;color:#d0506a;} .eqitem.on{outline:2px solid #ffb400;}
@@ -3031,6 +3031,21 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (!seLoading[name]) seLoading[name] = fetch(LOCAL_ART ? f[1] : blobU(f[0])).then(r => r.arrayBuffer()).then(b => a.decodeAudioData(b)).then(buf => { seBuf[name] = buf; return buf; }).catch(() => null);
     seLoading[name].then(buf => { if (buf) go(buf); });
     return true;
+  }
+  // ===== 説明の折りたたみ（2026-11-18 本人：説明は「❔ 説明」ボタンで開く。開いたかどうかは覚えておく）=====
+  let helpOpen = new Set();
+  try { helpOpen = new Set(JSON.parse(localStorage.getItem('twistrush.help_open') || '[]')); } catch (_) {}
+  const helpFold = (k, html, label) => '<details class="hfold" data-hk="' + k + '"' + (helpOpen.has(k) ? ' open' : '') + '><summary>❔ ' + (label || '説明') + '</summary><div class="hfbody">' + html + '</div></details>';
+  document.addEventListener('toggle', e => { const d = e.target; if (!d || !d.matches || !d.matches('details.hfold')) return;
+    if (d.open) helpOpen.add(d.dataset.hk); else helpOpen.delete(d.dataset.hk);
+    try { localStorage.setItem('twistrush.help_open', JSON.stringify([...helpOpen])); } catch (_) {} }, true);
+  // 遠征に出発：ザッザッザッ！（2026-11-18 本人。sfx/ex_go.mp3 が届いたらそちらを鳴らす）
+  function sndMarch(){
+    const t = T();
+    for (let i = 0; i < 3; i++) { const s = t + i * 0.24, last = i === 2;
+      noise(s, last ? 0.16 : 0.12, 'bandpass', 1500, 500, last ? 0.42 : 0.32, 0.8);      // ザッ（砂利をふむ音）
+      noise(s + 0.01, 0.06, 'highpass', 3500, 0, 0.10, 0.7);
+      tone(110, s, 0.09, 'sine', last ? 0.20 : 0.14, 60); }                               // ドッ（足音の低いところ）
   }
   // 鐘のように長く残る音（キラーン・ピカーン用）
   function bell(f, t, dur, vol){
@@ -7032,7 +7047,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.192';
+  const APP_VER = '0.9.193';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -9287,7 +9302,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
             '<div class="exgo"><span>達成率 <b style="color:' + exCol(j.rate) + ';font-size:16px">' + exPct(j.rate) + '</b>（条件 ' + j.ok + ' / ' + j.all + (j.pf < 1 ? '・戦力 ' + exPct(j.pf) : '') + '）<br><small>報酬 ×' + j.rate.toFixed(2).replace(/0$/, '') + '</small></span><button data-go="' + st.id + '"' + (exData.active.length >= exSlots() ? ' disabled' : '') + '>出発</button></div>')) +
         '</div>';
     });
-    h += '<p class="sknote">遠征中のキャラは、帰ってくるまでストーリー・キャラ対戦・アリーナで使えません。達成率＝満たした条件の割合 × 戦力の割合（チームの戦闘力が目安にとどかないと下がります）。グレードが上がるほど目安が上がり、報酬もふえます。100%で報酬がそのまま、50%なら報酬も半分になります。遠征枠はユーザーLV20・30・40で1つずつ増えます。素材（武器・防具・アクセ）は出るかどうか、何が何個出るかがランダムです。★が高いほど良い素材が出やすく、★4・★5ではとてもまれに伝説素材や武器そのものが見つかります。</p></section>';
+    h += helpFold('expd', '遠征中のキャラは、帰ってくるまでストーリー・キャラ対戦・アリーナで使えません。達成率＝満たした条件の割合 × 戦力の割合（チームの戦闘力が目安にとどかないと下がります）。グレードが上がるほど目安が上がり、報酬もふえます。100%で報酬がそのまま、50%なら報酬も半分になります。遠征枠はユーザーLV20・30・40で1つずつ増えます。素材（武器・防具・アクセ）は出るかどうか、何が何個出るかがランダムです。★が高いほど良い素材が出やすく、★4・★5ではとてもまれに伝説素材や装備そのものが見つかります。') + '</section>';
     const body = $('expdBody'); body.innerHTML = h;
     fillFaces(body);
   }
@@ -9300,7 +9315,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     const j = exJudge(st, m), now = Date.now(), hh = exHOf(st);
     exData.active.push({id, name: st.n + (st.g ? '（' + EX_GR[st.g].n + '）' : ''), s: st.s, g: st.g, team: t, uids: m.map(u => u.u), start: now, end: now + hh * 3600000, rate: j.rate, bonus: st.bonus || [], h: hh, tm: exTm(st, hh) * st.boost});
     exData.done = {[dk]: (exData.done[dk] || []).concat(id)};
-    exSave(); toast('「' + st.n + '」へ出発しました（' + hh + '時間）'); try { qAdd('exgo'); } catch (_) {} drawExpd(); drawExpdBadge();
+    exSave(); try { sndMarch(); } catch (_) {} toast('「' + st.n + '」へ出発しました（' + hh + '時間）'); try { qAdd('exgo'); } catch (_) {} drawExpd(); drawExpdBadge();
   }
   function exGet(i){
     const a = exData.active[i]; if (!a || exLeft(a) > 0) return;
@@ -9725,7 +9740,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (forgeG === 'UP') {
       const mine = gear.filter(g => EQ_BY[g.k]).sort((a, b) => GT[EQ_BY[b.k].g] - GT[EQ_BY[a.k].g] || (b.p | 0) - (a.p | 0));
       h += '<div class="exhrs enhpay">' + [['sv', '⚪ シルバーで払う'], ['gd', '🟡 ゴールドで払う']].map(([k, n]) => '<button data-enhpay="' + k + '" class="' + (k === enhPay ? 'on' : '') + '">' + n + '</button>').join('') + '</div>';
-      h += '<p class="sknote" style="margin-top:4px">持っている武器・防具・アクセを強くします（上限なし）。強くなるほど輝きます。上がるのはステータスです。<br>強化石は武器と同じグレード（N〜LR）のものしか使えません。<br>🔷 強化石：強くなるほど成功しにくくなります。失敗しても下がりません<br>✨ 祝福の強化石：かならず成功<br>強化石はとても貴重。遠征やボス戦で、ごくまれに見つかることがあるらしい…</p>';
+      h += helpFold('enh', '持っている武器・防具・アクセを強くします（上限なし）。強くなるほど輝きます。上がるのはステータスです。<br>強化石は装備と同じグレード（N〜LR）のものしか使えません。<br>🔷 強化石：強くなるほど成功しにくくなります。失敗しても下がりません<br>✨ 祝福の強化石：かならず成功<br>強化石はとても貴重。遠征やボス戦で、ごくまれに見つかることがあるらしい…');
       if (!mine.length) h += '<section><p>まだ装備を持っていません。「N」〜「LR」のタブで作るか、🎰の装備ガチャで手に入れてください。</p></section>';
       mine.forEach(g => { const w = EQ_BY[g.k], p = g.p | 0, us = gearUser(g.g), mx = p >= ENH_MAX;
         const c = enhCost(w, p), pay = enhPay === 'gd' ? gold >= c.gd : coins >= c.sv;
@@ -9752,7 +9767,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         (matShort(rc).cost > 0 && matShort(rc).ok ? '<button class="fgbuy" data-buymat="' + w.id + '">足りない素材をゴールド ' + matShort(rc).cost + ' で買う</button>' : '') +
         '<div class="exgo"><span>所持 ' + own(w.id) + '</span><button data-craft="' + w.id + '"' + (ok ? '' : ' class="ng"') + '>作る</button></div></div>';
     });
-    h += '<p class="sknote">素材は遠征で手に入ります。キャラと同じ属性の装備を付けると、その装備のステータスが1.2倍になります。作った装備は、キャラの詳細 →「装備」で付けます（アクセはLV10で1つ目、LV30で2つ目の枠がひらきます）。</p>';
+    h += helpFold('forge', '素材は遠征で手に入ります。キャラと同じ属性の装備を付けると、その装備のステータスが1.2倍になります。作った装備は、キャラの詳細 →「装備」で付けます（アクセはLV10で1つ目、LV30で2つ目の枠がひらきます）。');
     const b = $('forgeBody'); b.innerHTML = h;
   }
   // ===== 素材のヒント（2026-11-18 本人：鍛冶屋で「〇〇で出てると噂だ」くらいに教える。確率や数は出さない）=====
@@ -10049,7 +10064,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   //     お金では買えない。ガチャ・強化・鍛冶屋には使えない。ミケの店の中だけ。シルバー・ゴールドの区別は店の中にはない
   //   ・ミケに売る：武器と素材をその場でニャンコインに（ガチャ・パックのものも売れる）。預けたときの値段の半分（ドラクエやFFの売値と同じ考え）
   //   ・預けて販売：ほかのプレイヤーが買うとニャンコイン（手数料10%）。値段はレア度と強化度で自動。誰が買うかは決められない
-  //     並ぶのは預けてから24時間以内のどこか（店主の気まぐれ）。並んでから7日で売れ残りは戻る。レベル20から・1日5個まで
+  //     並ぶのは預けてから1分〜1時間のどこか（店主の気まぐれ。2026-11-18 本人：24時間から変更）。並んでから7日で売れ残りは戻る。レベル20から・1日5個まで
   //   ・ガチャ・パック・ゴールドで買った素材（取引できない印）は預けられない
   //   ・店はいつでも開いている。夜（0〜6時）はミケがいねむりの絵になるだけ
   const MK_LV = 20, MK_FEE = 0.1;
@@ -10088,6 +10103,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     lv: '預けて売るのは、もう少し腕を上げてからだね', limit: '今日はもう店じまい。また明日おいで', lack: 'おや、お代が足りないみたいだよ', bye: 'またおいで〜'};
   const mkNight = () => { const h = new Date().getHours(); return h < 6; };
   const mkFace0 = () => mkNight() ? 'sleep' : 'cat';
+  let mkSort = load('mk_sort', 'rnd'); if (!['rnd', 'lo', 'hi', 'gr'].includes(mkSort)) mkSort = 'rnd';
   let mkSayT = null, mkTab = 'buy', mkCat = 'w', mkG = -1, mkShelf = null, mkMine = null, mkBusy = false, mkMsg = '';
   const MK_NOVOICE = new Set();   // 声を出さないせりふ（sell・sold は 2026-11-17 にニャンコインで録り直し済み）
   function mkSay(k, face, ms){
@@ -10147,6 +10163,18 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   // 売れるもの：装備していない武器と、値段のつく素材
   const mkMyW = () => gear.filter(g => EQ_BY[g.k] && !gearUser(g.g)).sort((a, b) => GT[EQ_BY[b.k].g] - GT[EQ_BY[a.k].g] || (b.p | 0) - (a.p | 0));
+  // 並べかえ（2026-11-18 本人）：おすすめ（ばらばら）／安い順／高い順／グレード順
+  const MK_SORTS = [['rnd', 'おすすめ'], ['lo', '安い順'], ['hi', '高い順'], ['gr', 'グレード順']];
+  const mkGr = item => { if (mkIsW(item)) { const e = EQ_BY[item.slice(2)]; return e ? GT[e.g] : 0; } return EX_MAT[item] ? EX_MAT[item][3] : 0; };
+  function mkSorted(list, itemOf, priceOf){
+    if (mkSort === 'rnd') return list;
+    const L = list.slice();
+    if (mkSort === 'lo') L.sort((a, b) => priceOf(a) - priceOf(b));
+    else if (mkSort === 'hi') L.sort((a, b) => priceOf(b) - priceOf(a));
+    else L.sort((a, b) => mkGr(itemOf(b)) - mkGr(itemOf(a)) || priceOf(b) - priceOf(a));
+    return L;
+  }
+  const mkSortBar = () => '<div class="mkchips mksort"><span>並べかえ</span>' + MK_SORTS.map(([k, n]) => '<button data-mksort="' + k + '"' + (mkSort === k ? ' class="on"' : '') + '>' + n + '</button>').join('') + '</div>';
   const mkMyM = () => Object.keys(EX_MAT).filter(k => own(k) > 0 && mkPrice(k, 0, 1) > 0).sort((a, b) => EX_MAT[b][3] - EX_MAT[a][3] || a.localeCompare(b));
   function drawMkt(){
     const b = $('mktBody'); if (!b) return;
@@ -10157,7 +10185,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (mkMsg) h += '<div class="exmsg">' + mkMsg + '</div>';
     const needLogin = '<p class="mknote">ミケの店を使うには<b>ログイン</b>が必要です（設定 → アカウント）。ニャンコインはサーバーに預かっています。</p>';
     if (mkTab === 'buy') {
-      h += '<p class="mknote">ほかのプレイヤーが預けた品が並んでいます。払うのは<b>ニャンコイン</b>です（ミケに売ったり、預けた品が売れたりすると入ります。ミケの店の中だけで使えます）。誰が出したかは分かりません。棚に並ぶのはミケの気まぐれなので、ときどき見に来てください。</p>';
+      h += helpFold('mkbuy', 'ほかのプレイヤーが預けた品が並んでいます。払うのは<b>ニャンコイン</b>です（ミケに売ったり、預けた品が売れたりすると入ります。ミケの店の中だけで使えます）。誰が出したかは分かりません。棚に並ぶのはミケの気まぐれなので、ときどき見に来てください。');
       if (!acctToken) h += needLogin;
       else {
         h += '<div class="mkchips">' + [['w', '⚔ 装備'], ['m', '📦 素材']].map(([k, n]) => '<button data-mkcat="' + k + '"' + (mkCat === k ? ' class="on"' : '') + '>' + n + '</button>').join('') + '</div>';
@@ -10165,26 +10193,27 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         if (mkShelf === 'load' || mkShelf == null) h += '<p class="mknote">棚を見ています…</p>';
         else if (mkShelf === 'err') h += '<p class="mknote">サーバーにつながりませんでした。</p>';
         else if (!mkShelf.length) h += '<p class="mknote">いまは何も並んでいないみたい。またあとで見に来てね。</p>';
-        else h += mkShelf.map(it => '<div class="mkrow">' + mkIcon(it.item, it.plus) + '<div class="mknm">' + mkName(it.item, it.plus, it.qty) + '<small>' + NYAN + ' ' + it.price.toLocaleString() + ' ニャンコイン</small></div><div class="mkbt">' + (it.mine ? '<span class="mkph">あなたの品</span>' : '<button data-mkbuy="' + it.id + '"' + (fr != null && fr < it.price ? ' class="sub"' : '') + '>買う</button>') + '</div></div>').join('');
+        else h += mkSortBar() + mkSorted(mkShelf, x => x.item, x => x.price).map(it => '<div class="mkrow">' + mkIcon(it.item, it.plus) + '<div class="mknm">' + mkName(it.item, it.plus, it.qty) + '<small>' + NYAN + ' ' + it.price.toLocaleString() + ' ニャンコイン</small></div><div class="mkbt">' + (it.mine ? '<span class="mkph">あなたの品</span>' : '<button data-mkbuy="' + it.id + '"' + (fr != null && fr < it.price ? ' class="sub"' : '') + '>買う</button>') + '</div></div>').join('');
       }
     } else if (mkTab === 'sell') {
-      h += '<p class="mknote">いらない装備や素材を、ミケがその場で<b>ニャンコイン</b>と交換します。ガチャやパックで手に入れたものも売れます（預けて売るときの半分の値段）。装備中のものは外してから売ってください。</p>';
+      h += helpFold('mksell', 'いらない装備や素材を、ミケがその場で<b>ニャンコイン</b>と交換します。ガチャやパックで手に入れたものも売れます（預けて売るときの半分の値段）。装備中のものは外してから売ってください。');
       if (!acctToken) h += needLogin; else {
       const ws = mkMyW(), ms = mkMyM();
-      if (!ws.length && !ms.length) h += '<p class="mknote">売れるものがありません。</p>';
-      h += ws.map(g => { const it = 'w:' + g.k, sv = mkSellOf(it, g.p, 1); return '<div class="mkrow">' + mkIcon(it, g.p) + '<div class="mknm">' + mkName(it, g.p, 1) + '<small>' + NYAN + ' ' + sv.toLocaleString() + ' ニャンコイン</small></div><div class="mkbt"><button data-mksellw="' + g.g + '">売る</button></div></div>'; }).join('');
-      h += ms.map(k => { const n = own(k), sv = mkSellOf(k, 0, 1), all = Math.min(99, n); return '<div class="mkrow">' + mkIcon(k) + '<div class="mknm">' + mkName(k, 0, 1) + '<small>1個 ' + NYAN + ' ' + sv.toLocaleString() + '　持っている ' + n + '個</small></div><div class="mkbt"><button data-mksellm="' + k + ':1">1個</button>' + (n > 1 ? '<button class="sub" data-mksellm="' + k + ':' + all + '">' + (n > 99 ? '99個' : '全部(' + n + ')') + '</button>' : '') + '</div></div>'; }).join('');
+      if (!ws.length && !ms.length) h += '<p class="mknote">売れるものがありません。</p>'; else h += mkSortBar();
+      h += mkSorted(ws, g => 'w:' + g.k, g => mkPrice('w:' + g.k, g.p, 1)).map(g => { const it = 'w:' + g.k, sv = mkSellOf(it, g.p, 1); return '<div class="mkrow">' + mkIcon(it, g.p) + '<div class="mknm">' + mkName(it, g.p, 1) + '<small>' + NYAN + ' ' + sv.toLocaleString() + ' ニャンコイン</small></div><div class="mkbt"><button data-mksellw="' + g.g + '">売る</button></div></div>'; }).join('');
+      h += mkSorted(ms, k => k, k => mkPrice(k, 0, 1)).map(k => { const n = own(k), sv = mkSellOf(k, 0, 1), all = Math.min(99, n); return '<div class="mkrow">' + mkIcon(k) + '<div class="mknm">' + mkName(k, 0, 1) + '<small>1個 ' + NYAN + ' ' + sv.toLocaleString() + '　持っている ' + n + '個</small></div><div class="mkbt"><button data-mksellm="' + k + ':1">1個</button>' + (n > 1 ? '<button class="sub" data-mksellm="' + k + ':' + all + '">' + (n > 99 ? '99個' : '全部(' + n + ')') + '</button>' : '') + '</div></div>'; }).join('');
       }
     } else if (mkTab === 'put') {
-      h += '<p class="mknote">預けた品は、ほかのプレイヤーが買うと<b>ニャンコイン</b>が入ります（手数料10%）。値段はレア度と強化度で自動で決まります。棚に並ぶのは<b>預けてから24時間以内のどこか</b>（ミケの気まぐれ）。並んでから7日たっても売れなければ戻ってきます。<br>預けられるのは<b>レベル' + MK_LV + 'から・1日5個まで</b>。ガチャやパックで手に入れたもの、ゴールドで買った素材は預けられません。</p>';
+      h += helpFold('mkput', '預けた品は、ほかのプレイヤーが買うと<b>ニャンコイン</b>が入ります（手数料10%）。値段はレア度と強化度で自動で決まります。棚に並ぶのは<b>預けてから1時間以内のどこか</b>（ミケの気まぐれ）。並んでから7日たっても売れなければ戻ってきます。<br>預けられるのは<b>レベル' + MK_LV + 'から・1日5個まで</b>。ガチャやパックで手に入れたもの、ゴールドで買った素材は預けられません。');
       if (!acctToken) h += needLogin;
       else if (userLv() < MK_LV) h += '<p class="mknote">🔒 いまLV' + userLv() + '。LV' + MK_LV + 'になると預けられます。</p>';
       else {
         const today2 = mkMine ? mkMine.today : 0, per = mkMine ? mkMine.perDay : 5;
         h += '<p class="mknote">今日預けた数：<b>' + today2 + ' / ' + per + '</b></p>';
         const ws = mkMyW(), ms = mkMyM();
-        h += ws.map(g => { const it = 'w:' + g.k, pr = mkPrice(it, g.p, 1); return '<div class="mkrow">' + mkIcon(it, g.p) + '<div class="mknm">' + mkName(it, g.p, 1) + '<small>値段 ' + NYAN + pr.toLocaleString() + ' → 売れたら ' + NYAN + mkGet(pr).toLocaleString() + '</small>' + (g.nt ? '<span class="mknt">取引できない（ガチャ・パック）</span>' : '') + '</div><div class="mkbt"><button data-mkputw="' + g.g + '"' + (g.nt ? ' disabled' : '') + '>預ける</button></div></div>'; }).join('');
-        h += ms.map(k => { const t = tradeN(k), pr = mkPrice(k, 0, 1); return '<div class="mkrow">' + mkIcon(k) + '<div class="mknm">' + mkName(k, 0, 1) + '<small>1個 ' + NYAN + pr + ' → 売れたら ' + NYAN + mkGet(pr) + '　預けられる ' + t + '個' + (ntOf(k) ? '（ほか ' + ntOf(k) + '個は取引できない）' : '') + '</small></div><div class="mkbt">' + [1, 5, 10].filter(q => q === 1 || q <= t).map(q => '<button data-mkputm="' + k + ':' + q + '"' + (t < q ? ' disabled' : '') + (q > 1 ? ' class="sub"' : '') + '>' + q + '個</button>').join('') + '</div></div>'; }).join('');
+        if (ws.length || ms.length) h += mkSortBar();
+        h += mkSorted(ws, g => 'w:' + g.k, g => mkPrice('w:' + g.k, g.p, 1)).map(g => { const it = 'w:' + g.k, pr = mkPrice(it, g.p, 1); return '<div class="mkrow">' + mkIcon(it, g.p) + '<div class="mknm">' + mkName(it, g.p, 1) + '<small>値段 ' + NYAN + pr.toLocaleString() + ' → 売れたら ' + NYAN + mkGet(pr).toLocaleString() + '</small>' + (g.nt ? '<span class="mknt">取引できない（ガチャ・パック）</span>' : '') + '</div><div class="mkbt"><button data-mkputw="' + g.g + '"' + (g.nt ? ' disabled' : '') + '>預ける</button></div></div>'; }).join('');
+        h += mkSorted(ms, k => k, k => mkPrice(k, 0, 1)).map(k => { const t = tradeN(k), pr = mkPrice(k, 0, 1); return '<div class="mkrow">' + mkIcon(k) + '<div class="mknm">' + mkName(k, 0, 1) + '<small>1個 ' + NYAN + pr + ' → 売れたら ' + NYAN + mkGet(pr) + '　預けられる ' + t + '個' + (ntOf(k) ? '（ほか ' + ntOf(k) + '個は取引できない）' : '') + '</small></div><div class="mkbt">' + [1, 5, 10].filter(q => q === 1 || q <= t).map(q => '<button data-mkputm="' + k + ':' + q + '"' + (t < q ? ' disabled' : '') + (q > 1 ? ' class="sub"' : '') + '>' + q + '個</button>').join('') + '</div></div>'; }).join('');
       }
     } else {
       if (!acctToken) h += needLogin;
@@ -10211,6 +10240,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     const tb = e.target.closest('[data-mktab]'); if (tb) { mkTab = tb.dataset.mktab; mkMsg = ''; if (mkTab === 'buy' && acctToken && !Array.isArray(mkShelf)) mkLoadShelf(); if ((mkTab === 'mine' || mkTab === 'put') && acctToken) { await mkLoadMine(false); } drawMkt(); return; }
     const ct = e.target.closest('[data-mkcat]'); if (ct) { mkCat = ct.dataset.mkcat; mkLoadShelf(); return; }
     const gg = e.target.closest('[data-mkg]'); if (gg) { mkG = +gg.dataset.mkg; mkLoadShelf(); return; }
+    const so = e.target.closest('[data-mksort]'); if (so) { mkSort = so.dataset.mksort; save('mk_sort', mkSort); drawMkt(); return; }
     if (e.target.closest('[data-mkre]')) { mkLoadShelf(); return; }
     if (mkBusy) return;
     // 買う（ニャンコイン）
@@ -10255,7 +10285,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       if (pw) { g = gearOf(pw.dataset.mkputw); if (!g || gearUser(g.g)) return; if (g.nt) { mkSay('ng', 'sad'); return; } item = 'w:' + g.k; plus = g.p | 0; }
       else { const [k, q] = pm.dataset.mkputm.split(':'); item = k; qty = +q; if (tradeN(k) < qty) { mkSay('ng', 'sad'); return; } }
       const pr = mkPrice(item, plus, qty);
-      askYes(mkName(item, plus, qty) + ' を預けますか？<br>値段 <b>' + pr.toLocaleString() + '</b>（売れたらニャンコイン <b>' + mkGet(pr).toLocaleString() + '</b>）<br><small>棚に並ぶのは24時間以内のどこか。並んでから7日で売れ残りは戻ります。棚に並ぶ前なら取り消せます。</small>', async () => {
+      askYes(mkName(item, plus, qty) + ' を預けますか？<br>値段 <b>' + pr.toLocaleString() + '</b>（売れたらニャンコイン <b>' + mkGet(pr).toLocaleString() + '</b>）<br><small>棚に並ぶのは1時間以内のどこか。並んでから7日で売れ残りは戻ります。棚に並ぶ前なら取り消せます。</small>', async () => {
         mkBusy = true; const ref = mkRef();
         if (g) { const i = gear.indexOf(g); if (i < 0) { mkBusy = false; return; } gear.splice(i, 1); saveGear(); } else { inv[item] = own(item) - qty; saveInv(); }
         try { const r = await api('/api/market/put', {method: 'POST', body: JSON.stringify({item, plus, qty, ref})});
@@ -10676,7 +10706,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       t.forEach((uid, k) => { h += slotHTML(uid, k, boxSlot === k); });
       h += '</div><div class="tsum">' + ST_NAME.map((n, k) => n + ' <b>' + sum[k] + '</b>').join('　') + '</div>' +
            '<div class="tacts"><button data-tact="best">おすすめ</button><button data-tact="grow" class="grow">育成おすすめ</button><button data-tact="clear" class="gray"' + (t.some(Boolean) ? '' : ' disabled') + '>空にする</button></div>' +
-           '<p class="thint"><b>枠をタップ</b>＝下の一覧から選んで入れる（入れかえ）　<b>ダブルタップ</b>＝外す　<b>長押し</b>＝詳細<br>持ちキャラ：<b>タップ</b>＝詳細　<b>ダブルタップ</b>＝ロック・解除　<b>長押し</b>＝かんたんステータス<br>①（メイン）は必殺技と奥義の両方。サブは枠の下の「必殺技」「奥義」から1つ選びます。<br>' + (boxPut ? '入れる枠を押してください（' + ALLC[ciOf(unitOf(boxPut))].name + '）' : boxSlot >= 0 ? '下の一覧から、入れるキャラを選んでください' + (boxSlot >= 0 && t[boxSlot] ? '（<button data-clear="1">外す</button>）' : '') : '') + '</p></section>';
+           helpFold('team', '<b>枠をタップ</b>＝下の一覧から選んで入れる（入れかえ）　<b>ダブルタップ</b>＝外す　<b>長押し</b>＝詳細<br>持ちキャラ：<b>タップ</b>＝詳細　<b>ダブルタップ</b>＝ロック・解除　<b>長押し</b>＝かんたんステータス<br>①（メイン）は必殺技と奥義の両方。サブは枠の下の「必殺技」「奥義」から1つ選びます。', '操作の説明') + '<p class="thint">' + (boxPut ? '入れる枠を押してください（' + ALLC[ciOf(unitOf(boxPut))].name + '）' : boxSlot >= 0 ? '下の一覧から、入れるキャラを選んでください' + (boxSlot >= 0 && t[boxSlot] ? '（<button data-clear="1">外す</button>）' : '') : '') + '</p></section>';
       const all = sortUnits();
       const list0 = all.filter(u => (boxFG === 'all' || CHAR_STAT[u.id].grade === boxFG) && (boxFT === 'all' || CHAR_STAT[u.id].type === boxFT));
       const pn = Math.max(1, Math.ceil(list0.length / BOX_PER)); if (boxPage >= pn) boxPage = pn - 1; if (boxPage < 0) boxPage = 0;
@@ -10724,7 +10754,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       body.innerHTML = '<section><h3>アイテム（ストーリーに2つまで持っていける）</h3><div class="loadout" id="boxLoad"></div></section>' +
         '<section><h3>ポット（アイテムガチャ・秘密のショップで手に入る）</h3><div class="potlist">' +
         LB_POT_G.concat(['N', 'R']).map(g => '<div class="potrow"><img src="' + potImg(g) + '" alt=""><b>' + potName(g) + '</b><span>所持 ' + own(potKey(g)) + '</span></div>').join('') +
-        '</div><p class="thint">限界突破ポット：キャラの詳細 →「限界突破」で、同じグレードのキャラに使います。<br>経験値ポット：キャラの詳細 →「LVアップ」で、どのキャラにも使えます（小 +' + XP_POT.N.toLocaleString() + '・大 +' + XP_POT.R.toLocaleString() + '）。</p></section>';
+        '</div>' + helpFold('pots', '限界突破ポット：キャラの詳細 →「限界突破」で、同じグレードのキャラに使います。<br>経験値ポット：キャラの詳細 →「LVアップ」で、どのキャラにも使えます（小 +' + XP_POT.N.toLocaleString() + '・大 +' + XP_POT.R.toLocaleString() + '）。') + '</section>';
       const catO = {u: -1, w: 0, a: 1, x: 2, s: 3, l: 4, e: 5, '': 6};
       const mats = Object.keys(EX_MAT).filter(k => own(k) > 0).sort((x, y) => (catO[EX_MAT[x][2]] - catO[EX_MAT[y][2]]) || (EX_MAT[x][3] - EX_MAT[y][3]) || x.localeCompare(y));
       body.insertAdjacentHTML('beforeend', '<section><h3>素材（遠征で手に入る。鍛冶屋で武器を作る）</h3>' + (mats.length ? '<div class="potlist">' + mats.map(k => '<div class="potrow"><span style="font-size:24px;width:34px;text-align:center">' + EX_MAT[k][1] + '</span><b>' + EX_MAT[k][0] + '<small style="display:block;font-size:10px;opacity:.7">' + (EX_MAT_CAT[EX_MAT[k][2]] ? EX_MAT_CAT[EX_MAT[k][2]] + (EX_MAT[k][2] === 'w' || EX_MAT[k][2] === 'a' || EX_MAT[k][2] === 'x' ? '・' + POT_G[EX_MAT[k][3]] : '') : '') + '</small></b><span>所持 ' + own(k) + '</span></div>').join('') + '</div>' : '<p class="thint">まだありません。遠征に行くと手に入ります。</p>') + '</section>');
