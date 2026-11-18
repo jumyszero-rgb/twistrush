@@ -462,7 +462,7 @@ body.on-menu .battlemain{opacity:0;}
   .fgtabs{display:flex;gap:6px;margin:6px 0;} .fgtabs button{flex:1;padding:7px 0;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#f6f0ff;font-weight:900;}
   .fgtabs button.on{background:#ffd24a;color:#3a1a00;} .fgsub{font-size:12px;margin:4px 0;} .fgsub small{opacity:.75;}
   .fgrc{list-style:none;margin:4px 0;padding:0;font-size:12px;display:grid;grid-template-columns:1fr 1fr;gap:2px 8px;} .fgrc li.ok{color:#7ff0a8;} .fgrc li.ng{color:#ff9db0;}
-  .mksort span{font-size:11px;opacity:.75;align-self:center;margin-right:2px;} .hfold{margin:6px 0;font-size:12px;line-height:1.55;} .hfold>summary{display:inline-block;cursor:pointer;list-style:none;padding:3px 12px;border-radius:999px;border:1px solid rgba(255,210,74,.6);background:rgba(255,210,74,.14);font-weight:700;font-size:12px;user-select:none;} .hfold>summary::-webkit-details-marker{display:none;} .hfold[open]>summary{background:rgba(255,210,74,.32);} .hfbody{margin-top:6px;padding:8px 10px;border-radius:10px;background:rgba(0,0,0,.18);} .fgkind button{flex:1;} .fghint{margin:6px 0 2px;padding:6px 8px;border-radius:10px;background:rgba(255,210,74,.12);font-size:11.5px;line-height:1.5;} .fghint b{display:block;font-size:11px;opacity:.85;} .fghint span{display:block;} .eqfx{margin-top:4px;font-size:12px;font-weight:700;color:#b07a00;} @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .eqfx{color:#ffd24a;} } :root[data-theme="dark"] .eqfx{color:#ffd24a;}
+  .rsq-x2{display:inline-block;margin-left:6px;padding:0 6px;border-radius:8px;background:#ff4f7b;color:#fff;font-size:13px;font-weight:900;vertical-align:middle;} .rsq-ad small{display:block;font-size:11px;font-weight:600;opacity:.85;} .mksort span{font-size:11px;opacity:.75;align-self:center;margin-right:2px;} .hfold{margin:6px 0;font-size:12px;line-height:1.55;} .hfold>summary{display:inline-block;cursor:pointer;list-style:none;padding:3px 12px;border-radius:999px;border:1px solid rgba(255,210,74,.6);background:rgba(255,210,74,.14);font-weight:700;font-size:12px;user-select:none;} .hfold>summary::-webkit-details-marker{display:none;} .hfold[open]>summary{background:rgba(255,210,74,.32);} .hfbody{margin-top:6px;padding:8px 10px;border-radius:10px;background:rgba(0,0,0,.18);} .fgkind button{flex:1;} .fghint{margin:6px 0 2px;padding:6px 8px;border-radius:10px;background:rgba(255,210,74,.12);font-size:11.5px;line-height:1.5;} .fghint b{display:block;font-size:11px;opacity:.85;} .fghint span{display:block;} .eqfx{margin-top:4px;font-size:12px;font-weight:700;color:#b07a00;} @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .eqfx{color:#ffd24a;} } :root[data-theme="dark"] .eqfx{color:#ffd24a;}
   .eqslot{background:rgba(0,0,0,.06);border-radius:10px;padding:8px;font-size:13px;} .eqslot.on{background:rgba(255,210,74,.18);} .eqslot button{margin-top:6px;padding:4px 14px;border-radius:8px;border:1px solid #c9a;background:#fff;}
   .eqitem{display:block;width:100%;text-align:left;margin:4px 0;padding:7px 9px;border-radius:10px;border:1px solid rgba(0,0,0,.15);background:#fff;font-family:inherit;}
   .eqitem small{display:block;font-size:11px;opacity:.75;} .eqitem em{font-style:normal;font-size:10.5px;color:#d0506a;} .eqitem.on{outline:2px solid #ffb400;}
@@ -7048,7 +7048,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.194';
+  const APP_VER = '0.9.195';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -8956,8 +8956,13 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     d.addEventListener('click', e => {
       const ad = e.target.closest('[data-rsqad]');
       if (ad) { if (ad.disabled) return; ad.disabled = true;
+        // 2026-11-18 本人：広告を見終わったら、シルバー・経験値・報酬をもう一度わたして、画面の数字も2倍にして見せる
         playAd(() => { if (r.coins > 0) addCoins(r.coins); (r.vlist || []).forEach(([k, n]) => giveItem(k, n)); if ((r.vlist || []).length) saveInv();
-          ad.textContent = '✔ ごほうび2倍！'; ad.classList.add('done'); msgLog('get', '📺 ごほうび2倍：' + (r.coins > 0 ? 'コイン +' + r.coins : '') + (r.vlist || []).map(([k, n]) => '・' + (ITEMS[k] ? ITEMS[k].name : EX_MAT[k] ? EX_MAT[k][0] : k) + '×' + n).join('')); toast('🎁 ごほうび2倍！' + (r.coins > 0 ? ' コイン +' + r.coins : '')); });
+          const eg = r.exp && r.exp.gain ? r.exp.gain : 0, ups2 = eg ? expAgain(eg) : [];
+          ad.textContent = '✔ ごほうび2倍！'; ad.classList.add('done');
+          msgLog('get', '📺 ごほうび2倍：' + [r.coins > 0 ? 'シルバー +' + r.coins : '', eg ? '経験値 +' + eg : ''].filter(Boolean).join('・') + (r.vlist || []).map(([k, n]) => '・' + (ITEMS[k] ? ITEMS[k].name : EX_MAT[k] ? EX_MAT[k][0] : k) + '×' + n).join(''));
+          toast('🎁 ごほうび2倍！' + (r.coins > 0 ? ' シルバー +' + r.coins : '') + (eg ? ' 経験値 +' + eg : ''));
+          if (d.__x2) d.__x2(ups2); });
         return; }
       const b = e.target.closest('[data-rsq]');
       if (b) { const id = {map: 'stageBtn', retry: 'retryBtn', title: 'titleBtn'}[b.dataset.rsq]; close(); autoRep = null; document.querySelectorAll('.autorep').forEach(x => x.remove()); if (id === 'stageBtn') mapEvtNext = true; if (id) $(id).click(); return; }
@@ -9030,25 +9035,48 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       const ex = r.exp || {gain: 0, list: []};
       const dial = v => { const s = String(Math.max(0, v | 0)); return '<span class="rsq-dial"><span class="pl">+</span>' + s.split('').map(() => '<span class="dg"><span>' + '0123456789'.repeat(3).split('').map(x => '<i>' + x + '</i>').join('') + '</span></span>').join('') + '</span>'; };
       const p = pane('<div class="rsq-ttl" style="font-size:30px">REWARD</div><div class="rsq-rows">' +
-        '<div class="rsq-row">' + coinTag() + 'コイン ' + dial(r.coins) + '</div>' +
+        '<div class="rsq-row">' + coinTag() + 'シルバー ' + dial(r.coins) + '</div>' +
         '<div class="rsq-row">EXP ' + dial(ex.gain) + '</div>' + (r.extra || []).map(t => '<div class="rsq-row rsq-ex">🎉 ' + t + '</div>').join('') +
-        (r.vlist || []).map(([k, n]) => '<div class="rsq-row rsq-ex">🎁 ' + (ITEMS[k] ? ITEMS[k].name : EX_MAT[k] ? EX_MAT[k][1] + EX_MAT[k][0] : k) + ' ×' + n + '</div>').join('') + '</div>' +
-        (r.adx && !r.skip ? '<button class="rsq-ad" data-rsqad="1">📺 広告を見て ごほうび2倍</button>' : '') +
+        (r.vlist || []).map(([k, n]) => '<div class="rsq-row rsq-ex rsq-vl">🎁 ' + (ITEMS[k] ? ITEMS[k].name : EX_MAT[k] ? EX_MAT[k][1] + EX_MAT[k][0] : k) + ' <em>×' + n + '</em></div>').join('') + '</div>' +
+        (r.adx && !r.skip ? '<button class="rsq-ad" data-rsqad="1">📺 広告を見て ごほうび2倍<small>シルバー・経験値・報酬がぜんぶ2倍</small></button>' : '') +
         (ex.list.length ? '<div class="rsq-team">' + ex.list.map(() => '<div class="rsq-mem"><span class="lvb"></span><div class="ic"></div><div class="lv"></div><div class="bar"><i></i></div></div>').join('') + '</div>' : '') +
         (r.skip ? '<div class="resbtns rsq-btns"><button class="rbtn next" data-rsq="close"><i>🗺</i><span>マップへ</span></button></div>'   // スキップはマップの上で出しているので、閉じるだけ
         : '<div class="resbtns rsq-btns"><button class="rbtn next" data-rsq="map"><i>🗺</i><span>マップへ</span></button><button class="rbtn" data-rsq="retry"><i>↻</i><span>もう一度</span></button><button class="rbtn" data-rsq="title"><i>⌂</i><span>タイトル</span></button></div>'));
       // ダイヤル
       const vals = [r.coins, ex.gain]; let longest = 0;
-      p.querySelectorAll('.rsq-dial').forEach((dl, j) => {
-        const s = String(Math.max(0, vals[j] | 0)), cols = dl.querySelectorAll('.dg > span');
+      const spinDial = (dl, v, j) => { let L = 0;
+        const s = String(Math.max(0, v | 0)), cols = dl.querySelectorAll('.dg > span');
         cols.forEach((col, k) => {
-          const dgt = +s[k], dur = 900 + 260 * k + 300 * j; longest = Math.max(longest, dur);
+          const dgt = +s[k], dur = 900 + 260 * k + 300 * j; L = Math.max(L, dur);
           col.style.transform = 'translateY(0)';
           requestAnimationFrame(() => requestAnimationFrame(() => { col.style.transition = 'transform ' + dur + 'ms cubic-bezier(.15,.7,.25,1)'; col.style.transform = 'translateY(' + (-(20 + dgt) * 42) + 'px)'; }));
         });
-      });
-      let tk = 0; const tick = setInterval(() => { if (!d.isConnected || (tk += 70) > longest) { clearInterval(tick); return; } try { tone(1800 + Math.random() * 400, T(), 0.03, 'square', 0.025); } catch(_) {} }, 70);
-      later(() => { try { bell(1568, T(), 0.5, 0.06); bell(2093, T() + 0.06, 0.6, 0.05); } catch(_) {} }, longest);
+        return L; };
+      const dialSnd = L => { let tk = 0; const tick = setInterval(() => { if (!d.isConnected || (tk += 70) > L) { clearInterval(tick); return; } try { tone(1800 + Math.random() * 400, T(), 0.03, 'square', 0.025); } catch(_) {} }, 70);
+        later(() => { try { bell(1568, T(), 0.5, 0.06); bell(2093, T() + 0.06, 0.6, 0.05); } catch(_) {} }, L); };
+      p.querySelectorAll('.rsq-dial').forEach((dl, j) => { longest = Math.max(longest, spinDial(dl, vals[j], j)); });
+      dialSnd(longest);
+      // 広告で2倍：シルバー・経験値のダイヤルを2倍の数まで回しなおし、報酬に ×2 をつけ、チームの経験値バーを伸ばす
+      d.__x2 = ups2 => {
+        let L2 = 0;
+        p.querySelectorAll('.rsq-dial').forEach((dl, j) => { const v2 = vals[j] * 2, w = document.createElement('span'); w.innerHTML = dial(v2); const nd = w.firstChild; dl.replaceWith(nd);
+          nd.insertAdjacentHTML('afterend', '<b class="rsq-x2">×2</b>'); L2 = Math.max(L2, spinDial(nd, v2, j)); });
+        p.querySelectorAll('.rsq-row.rsq-vl').forEach((row, k) => { const it = (r.vlist || [])[k]; if (!it) return; const em = row.querySelector('em'); if (em) em.textContent = '×' + it[1] * 2; row.insertAdjacentHTML('beforeend', '<b class="rsq-x2">×2</b>'); });
+        p.querySelectorAll('.rsq-x2').forEach(x => { try { x.animate([{transform: 'scale(2.4)', opacity: 0}, {transform: 'scale(1)', opacity: 1}], {duration: 450, easing: 'ease-out'}); } catch(_) {} });
+        dialSnd(L2);
+        const mems2 = p.querySelectorAll('.rsq-mem');
+        ex.list.forEach((m, k) => { const u2 = ups2[k], el = mems2[k]; if (!u2 || !el) return;
+          const lvEl = el.querySelector('.lv'), bar = el.querySelector('.bar i'), badge = el.querySelector('.lvb');
+          const frac = (lv, e) => lv >= m.cap ? 1 : Math.max(0, Math.min(1, e / expNeed(lv)));
+          let t = L2 + 200 + k * 120;
+          if (u2.lv1 > u2.lv0) {
+            later(() => { bar.classList.add('go'); bar.style.width = '100%'; }, t); t += 380;
+            later(() => { bar.classList.remove('go'); bar.style.width = '0%'; lvEl.innerHTML = 'LV' + u2.lv1 + (u2.lv1 >= m.cap ? ' <span class="mx">MAX</span>' : '');
+              badge.textContent = 'LV' + m.lv0 + '→LV' + u2.lv1; el.classList.remove('up'); void el.offsetWidth; el.classList.add('up'); try { sndLevelUp(true); } catch(_) {} }, t); t += 60;
+          }
+          later(() => { bar.classList.add('go'); bar.style.width = (frac(u2.lv1, u2.e1) * 100) + '%'; }, t + 20);
+        });
+      };
       // チームのレベルアップ
       const mems = p.querySelectorAll('.rsq-mem');
       ex.list.forEach((m, k) => {
@@ -9094,6 +9122,16 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     saveUnits();
     lastExpInfo = {gain, list: info.list.map(m => ({ci: m.ci, lv0: m.lv0, e0: m.e0, cap: m.cap, lv1: m.lv1, e1: m.e1}))};
     return ' 経験値 +' + gain + (ups.length ? '（レベルアップ：' + ups.join('・') + '）' : '') + '。';
+  }
+
+  // 広告2倍：同じチームに経験値をもう一度。メンバーごとに {lv0, e0, lv1, e1}（teamExp と同じ並び）
+  function expAgain(gain){
+    const out = [];
+    teamMembers().forEach(u => { const cap = capOf(u), lv0 = u.lv, e0 = u.exp; let lv = u.lv, exp = u.exp + gain;
+      while (lv < cap && exp >= expNeed(lv)) { exp -= expNeed(lv); lv++; }
+      if (lv >= cap) exp = Math.min(exp, expNeed(lv) - 1);
+      u.lv = lv; u.exp = exp; out.push({lv0, e0, lv1: lv, e1: exp}); });
+    saveUnits(); return out;
   }
 
   // ===== EXPEDITION（遠征）2026-11-14 =====
