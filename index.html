@@ -7017,7 +7017,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.185';
+  const APP_VER = '0.9.186';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -8320,7 +8320,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   function drawLoadout(){
     const box = $('loadout'); if (!box) return;
     loadout = loadout.filter(k => own(k) > 0);
-    box.innerHTML = '<div class="lh"><span>持っていくアイテム（' + LOAD_MAX + 'つまで）</span><button id="loadShop">ショップ</button></div>' +
+    box.innerHTML = '<div class="lh"><span>持っていくアイテム（' + LOAD_MAX + '種類まで・各1個。ピンチのとき自動で使う）</span><button id="loadShop">ショップ</button></div>' +
       '<div class="grid">' + ITEM_KEYS.map(k => '<div class="lslot' + (loadout.includes(k) ? ' on' : '') + (own(k) ? '' : ' zero') + '" data-k="' + k + '" role="button" aria-label="' + ITEMS[k].name + '">' +
         '<img src="' + itemImg(k) + '" alt=""><b>' + own(k) + '</b>' + (ITEMS[k].pct ? '<i>' + Math.round(ITEMS[k].pct * 100) + '%</i>' : '') + '</div>').join('') + '</div>' +
       '<div class="lt">' + (loadTip || (loadout.length ? '持っていく：' + loadout.map(k => ITEMS[k].name).join('・') : 'アイテムを押すと選べます。使ったときだけ1個減ります。')) + '</div>';
@@ -9089,6 +9089,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     {id: 1, lv: 1, n: '大豆島の鳥類討伐', s: 1, h: 8, core: {k: 'attrMin', a: 'fire', n: 2}, pool: [{k: 'lvAll', n: 10}, {k: 'typeMin', ty: 'atk', n: 1}, {k: 'heal', n: 1}, {k: 'typeMin', ty: 'spd', n: 1}]},
     {id: 2, lv: 20, n: '火山島 マカニ村防衛戦', s: 2, h: 12, core: {k: 'attrMin', a: 'water', n: 2}, pool: [{k: 'typeMin', ty: 'def', n: 1}, {k: 'heal', n: 1}, {k: 'lvAll', n: 15}, {k: 'attrNone', a: 'wind'}, {k: 'gradeMin', n: 1}]},
     {id: 3, lv: 40, n: '海底大渦 竜種討伐', s: 4, h: 24, core: {k: 'attrMin', a: 'thunder', n: 2}, pool: [{k: 'lvAll', n: 30}, {k: 'gradeMin', n: 2}, {k: 'typeMin', ty: 'spd', n: 1}, {k: 'heal', n: 1}, {k: 'attrNone', a: 'fire'}, {k: 'powMin', n: 2200}]},
+    // 2026-11-18 本人：はじめのレベルでもできる簡単な遠征を1つ（ノーマルの敵はLV1のチームでも100%近く・条件もやさしい）
+    {id: 11, lv: 1, n: '村はずれの畑のお手伝い', s: 1, h: 6, ep: 450, nc: 1, core: {k: 'lvAll', n: 1}, pool: [{k: 'lvAll', n: 2}, {k: 'lvAll', n: 3}]},
     {id: 4, lv: 10, n: '迷いの森の薬草採り', s: 1, h: 8, core: {k: 'heal', n: 2}, pool: [{k: 'attrMin', a: 'wind', n: 1}, {k: 'lvAll', n: 8}, {k: 'typeMin', ty: 'hp', n: 1}, {k: 'attrNone', a: 'dark'}]},
     {id: 5, lv: 20, n: '古代遺跡の宝探し', s: 2, h: 12, core: {k: 'attrMin', a: 'light', n: 1}, pool: [{k: 'typeMin', ty: 'spd', n: 2}, {k: 'lvAll', n: 15}, {k: 'octa', n: 1}, {k: 'gradeMin', n: 1}], bonus: [['gticket', 1, 0.3]]},
     {id: 6, lv: 10, n: '雪原の行商キャラバン護衛', s: 2, h: 8, core: {k: 'typeMin', ty: 'def', n: 2}, pool: [{k: 'diffAttr'}, {k: 'lvAll', n: 12}, {k: 'heal', n: 1}, {k: 'attrMin', a: 'fire', n: 1}], bonus: [['silver', 200, 1]]},
@@ -9196,7 +9198,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   function exView(st){
     const g = exGOf(st), s = Math.min(10, st.s + EX_GR[g].add), boost = 1;
-    const cnds = [st.core].concat(st.poolS.slice(0, EX_NCND[s] - 1)).map(c => exCndUp(c, g)).map(c => Object.assign({k: c.k}, EX_CND[c.k](c)));
+    const cnds = [st.core].concat(st.poolS.slice(0, (st.nc && !g ? st.nc : EX_NCND[s]) - 1))   // nc：ノーマルの条件の数を決めてある遠征（はじめ向け）.map(c => exCndUp(c, g)).map(c => Object.assign({k: c.k}, EX_CND[c.k](c)));
     return Object.assign({}, st, {s, s0: st.s, g, boost, cnds});
   }
   let exData = loadJ('expd', null);
@@ -9216,7 +9218,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   //   達成率＝条件を満たした割合 × 戦力の割合
   const exReqLv = st => exGLv(st, st.g) + 5;
   // 2026-11-18 本人：簡単に100%にならなくてよい（達成率が低くても経験値とアイテムは少しもらえる）→ 敵は推奨LVより10上のチームくらい。推奨LVで約75%、100%にはさらに10LVほど
-  const exReqPow = st => Math.round((344 + 78 * (exReqLv(st) + 10)) / 50) * 50;
+  const exReqPow = st => st.ep && !st.g ? st.ep : Math.round((344 + 78 * (exReqLv(st) + 10)) / 50) * 50;   // ep：ノーマルの敵の戦力を決めてある遠征（はじめ向け）
   const exTeamPow = m => statPow(m.reduce((s, u) => { unitStats(u).forEach((v, k) => s[k] += v); return s; }, [0, 0, 0, 0]));
   function exJudge(st, m){
     const ok = st.cnds.filter(c => c.ok(m)).length, cr = ok / st.cnds.length;
@@ -9232,7 +9234,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   //   倍率は遠征先のもとの時間（8・12・24）を1として計算：6時間＝0.6／8時間＝0.75／12時間＝1／24時間＝1.8（の比）
   const EX_HOURS = [6, 12, 24], EX_TF = {6: 0.6, 8: 0.75, 12: 1, 24: 1.8};
   const exTm = (st, h) => EX_TF[h] / EX_TF[st.h];
-  const exHOf = st => exPickH[st.id] || (st.h >= 24 ? 24 : 12);
+  const exHOf = st => exPickH[st.id] || (st.h >= 24 ? 24 : st.h <= 6 ? 6 : 12);
   const exCnt = p => Math.floor(p) + (Math.random() < p - Math.floor(p) ? 1 : 0);   // 1をこえた確率は「個数」にする
   function drawExpd(){
     fixTeam();
@@ -10870,13 +10872,13 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     d.onclick = e => { const b = e.target.closest('[data-a]'); if (!b) return; d.style.display = 'none'; if (b.dataset.a === 'yes') yes(); };
   }
   // 並べかえ：入手順・レベル・グレード・各ステータス・キャラ
-  const SORTS = [['new', '入手順'], ['lv', 'レベル'], ['star', '★'], ['grade', 'グレード'], ['st0', '体力'], ['st1', '攻撃'], ['st2', '防御'], ['st3', 'スピード'], ['chara', 'キャラ']];
+  const SORTS = [['new', '入手順'], ['lv', 'レベル'], ['star', '★'], ['grade', 'グレード'], ['attr', '属性'], ['st0', '体力'], ['st1', '攻撃'], ['st2', '防御'], ['st3', 'スピード'], ['chara', 'キャラ']];   // 属性：2026-11-18 本人
   const GRADE_RANK = {N: 1, R: 2, SR: 3, MR: 4, LR: 5};
   let boxSort = load('boxsort2', 'grade') || 'grade', boxAsc = load('boxasc', '0') === '1';   // 最初はグレード順（同じグレードはレベル順）
   function sortUnits(){
     const idx = new Map(units.map((u, i) => [u.u, i]));
     const key = u => boxSort === 'new' ? idx.get(u.u) : boxSort === 'lv' ? u.lv : boxSort === 'star' ? (u.star || 0) : boxSort === 'grade' ? GRADE_RANK[CHAR_STAT[u.id].grade] || 0
-      : boxSort === 'chara' ? -ciOf(u) : unitStats(u)[+boxSort[2]];
+      : boxSort === 'chara' ? -ciOf(u) : boxSort === 'attr' ? -Object.keys(ATTR).indexOf(attrOf(u.id)) : unitStats(u)[+boxSort[2]];
     return units.slice().sort((a, b) => ((key(b) - key(a)) * (boxAsc ? -1 : 1)) || (b.lv - a.lv) || (ciOf(a) - ciOf(b)));
   }
   // ===== おすすめ配置 =====
