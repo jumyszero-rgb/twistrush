@@ -477,6 +477,16 @@ body.on-menu .battlemain{opacity:0;}
   .adbar{height:5px;background:#333;} .adbar i{display:block;height:100%;width:0;background:#ffc83d;}
   .adfoot{display:flex;justify-content:space-between;padding:7px 10px;background:#111;color:#bbb;font-size:11px;}
   .addone{position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.6);color:#7dffb0;font-size:26px;font-weight:900;}
+  .supbtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;} .supbtns .btn{flex:1;min-width:150px;text-align:center;text-decoration:none;}
+  #report{position:fixed;inset:0;z-index:9550;border-radius:0;background:rgba(10,4,24,.88);display:flex;align-items:center;justify-content:center;padding:14px;} #report.hidden{display:none;}
+  .repbox{width:min(100%,460px);max-height:calc(var(--fullh,100vh) - 28px);overflow:auto;background:#241640;border:2px solid #b89bff;border-radius:18px;padding:14px 14px 12px;color:#f6f0ff;text-align:left;}
+  .repbox h2{font-size:18px;margin:0 0 6px;} .repfaq{font-size:12px;margin:0 0 8px;opacity:.9;} .repfaq a{color:#9fd0ff;}
+  .repcats{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;} .repcats button{border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.06);color:#fff;border-radius:999px;padding:5px 10px;font-size:13px;font-weight:700;}
+  .repcats button.on{background:#ffd24a;color:#3a2000;border-color:#ffd24a;}
+  #repBody{width:100%;box-sizing:border-box;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.3);color:#fff;font-size:14px;padding:8px;resize:vertical;}
+  .repmail{display:block;margin-top:8px;font-size:12px;} .repmail input{display:block;width:100%;box-sizing:border-box;margin-top:4px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.3);color:#fff;font-size:14px;padding:8px;}
+  .repnote{font-size:11.5px;line-height:1.5;opacity:.85;margin:8px 0;} .repmeta{font-size:11px;opacity:.8;} .repmeta pre{white-space:pre-wrap;word-break:break-all;margin:4px 0 0;font-size:10.5px;}
+  .repbtns{display:flex;gap:8px;margin-top:10px;} .repbtns .btn{flex:1;}
   .rsq-x2{display:inline-block;margin-left:6px;padding:0 6px;border-radius:8px;background:#ff4f7b;color:#fff;font-size:13px;font-weight:900;vertical-align:middle;} .rsq-ad small{display:block;font-size:11px;font-weight:600;opacity:.85;} .mksort span{font-size:11px;opacity:.75;align-self:center;margin-right:2px;} .hfold{margin:6px 0;font-size:12px;line-height:1.55;} .hfold>summary{display:inline-block;cursor:pointer;list-style:none;padding:3px 12px;border-radius:999px;border:1px solid rgba(255,210,74,.6);background:rgba(255,210,74,.14);font-weight:700;font-size:12px;user-select:none;} .hfold>summary::-webkit-details-marker{display:none;} .hfold[open]>summary{background:rgba(255,210,74,.32);} .hfbody{margin-top:6px;padding:8px 10px;border-radius:10px;background:rgba(0,0,0,.18);} .fgkind button{flex:1;} .fghint{margin:6px 0 2px;padding:6px 8px;border-radius:10px;background:rgba(255,210,74,.12);font-size:11.5px;line-height:1.5;} .fghint b{display:block;font-size:11px;opacity:.85;} .fghint span{display:block;} .eqfx{margin-top:4px;font-size:12px;font-weight:700;color:#b07a00;} @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .eqfx{color:#ffd24a;} } :root[data-theme="dark"] .eqfx{color:#ffd24a;}
   .eqslot{background:rgba(0,0,0,.06);border-radius:10px;padding:8px;font-size:13px;} .eqslot.on{background:rgba(255,210,74,.18);} .eqslot button{margin-top:6px;padding:4px 14px;border-radius:8px;border:1px solid #c9a;background:#fff;}
   .eqitem{display:block;width:100%;text-align:left;margin:4px 0;padding:7px 9px;border-radius:10px;border:1px solid rgba(0,0,0,.15);background:#fff;font-family:inherit;}
@@ -1619,7 +1629,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   <img src="img/qr.png" width="220" height="220" alt="twistrush.com" style="background:#fff;border-radius:12px;">
   <p style="margin:14px 0 26px;font-size:18px;font-weight:bold;">twistrush.com</p>
   <button onclick="document.getElementById('pcGuard').style.display='none';try{sessionStorage.setItem('pcok','1')}catch(e){}" style="border:1px solid #888;background:transparent;color:#bbb;border-radius:8px;padding:8px 16px;font-size:12px;">このまま遊ぶ</button>
-  <nav style="margin-top:26px;display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;font-size:13px;"><a style="color:#bcaee0" href="/guide.html">遊び方</a><a style="color:#bcaee0" href="/terms.html">利用規約</a><a style="color:#bcaee0" href="/privacy.html">プライバシーポリシー</a><a style="color:#bcaee0" href="/law.html">特定商取引法に基づく表記</a><a style="color:#bcaee0" href="/payment.html">ゴールドコインについて</a><a style="color:#bcaee0" href="/contact.html">お問い合わせ</a></nav>
+  <nav style="margin-top:26px;display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;font-size:13px;"><a style="color:#bcaee0" href="/guide.html">遊び方</a><a style="color:#bcaee0" href="/faq.html">よくある質問</a><a style="color:#bcaee0" href="/terms.html">利用規約</a><a style="color:#bcaee0" href="/privacy.html">プライバシーポリシー</a><a style="color:#bcaee0" href="/law.html">特定商取引法に基づく表記</a><a style="color:#bcaee0" href="/payment.html">ゴールドコインについて</a><a style="color:#bcaee0" href="/contact.html">お問い合わせ</a></nav>
 </div>
 <script>
 (function(){
@@ -1683,7 +1693,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         </div>
         <div class="mtip hidden" id="menuTip"></div>
         <p class="mhint">長押しで説明が出ます</p>
-        <nav class="mlegal"><a href="/guide.html">遊び方</a><a href="/terms.html">利用規約</a><a href="/privacy.html">プライバシーポリシー</a><a href="/law.html">特定商取引法に基づく表記</a><a href="/payment.html">ゴールドコインについて</a><a href="/contact.html">お問い合わせ</a></nav>
+        <nav class="mlegal"><a href="/guide.html">遊び方</a><a href="/faq.html">よくある質問</a><a href="/terms.html">利用規約</a><a href="/privacy.html">プライバシーポリシー</a><a href="/law.html">特定商取引法に基づく表記</a><a href="/payment.html">ゴールドコインについて</a><a href="/contact.html">お問い合わせ</a></nav>
       </div>
     </div>
 
@@ -1973,6 +1983,11 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
           <button class="btn" id="tutAgain" style="margin-top:8px">はじめての案内をもう一度見る</button>
         </section>
         <section>
+          <h3>サポート</h3>
+          <p>困ったときは、まず「よくある質問」を見てください。解決しないときや不具合を見つけたときは、ここから送れます。</p>
+          <div class="supbtns"><a class="btn gray" href="/faq.html" target="_blank" rel="noopener">❓ よくある質問（Q&amp;A）</a><button class="btn" id="repOpen">📮 不具合報告・お問い合わせ</button></div>
+        </section>
+        <section>
           <h3>アカウント</h3>
           <p id="acctState">ログインしていません（ゲスト）。ログインしなくても遊べます。</p>
           <p class="acctnote">ログインすると、データがクラウドに保存され、機種変更やWeb・アプリの行き来で引き継げます。ゴールドコインの購入・オンライン対戦・ランキングへの参加にはログインが必要です。</p>
@@ -2122,6 +2137,20 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       <button class="btn gray" id="dailyGet">そのままもらう</button>
     </div>
     <!-- 広告（プロトタイプではダミー） -->
+    <div class="overlay hidden" id="report" role="dialog" aria-label="不具合報告・お問い合わせ">
+      <div class="repbox">
+        <h2>📮 不具合報告・お問い合わせ</h2>
+        <p class="repfaq">送る前に <a href="/faq.html" target="_blank" rel="noopener">よくある質問（Q&amp;A）</a> も見てください。すぐ解決することがあります。</p>
+        <div class="repcats" id="repCats">
+          <button data-rcat="bug" class="on">🐞 不具合</button><button data-rcat="pay">💳 購入</button><button data-rcat="account">👤 アカウント</button><button data-rcat="idea">💡 要望</button><button data-rcat="other">✉ その他</button>
+        </div>
+        <textarea id="repBody" maxlength="2000" rows="6" placeholder="どの画面で、何をしたら、どうなったか を書いてください&#10;例：ストーリー 3-2 のボスで奥義を使ったら、画面が止まった"></textarea>
+        <label class="repmail"><span id="repMailLbl">お返事が必要なときのメールアドレス（なくても送れます）</span><input id="repMail" type="email" maxlength="120" placeholder="example@mail.com" autocomplete="email"></label>
+        <p class="repnote" id="repNote"></p>
+        <details class="repmeta"><summary>いっしょに送る情報</summary><pre id="repMeta"></pre></details>
+        <div class="repbtns"><button class="btn gray" id="repClose">やめる</button><button class="btn" id="repSend">送る</button></div>
+      </div>
+    </div>
     <div class="overlay hidden" id="ad">
       <div class="adplayer">
         <div class="adtop"><span class="adtag">広告</span><span class="adrw">🎁 報酬まであと <b id="adCount">5</b> 秒</span><span class="adx" id="adX">✕</span></div>
@@ -7077,7 +7106,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.200';
+  const APP_VER = '0.9.201';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -12823,6 +12852,31 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     window.__tutStep = () => step;
     window.__tutRestart = () => { setStep('intro'); page = 0; };
     $('tutAgain').addEventListener('click', () => { $('settings').classList.add('hidden'); setStep('intro'); page = 0; });
+    // ===== 不具合報告・お問い合わせ（2026-11-19 本人）：サーバーの reports に保存。端末やバージョンは自動でつける =====
+    let repCat = 'bug', repBusy = false;
+    const REP_NOTE = {bug: 'いただいた不具合は、まとめて直して「お知らせ」でお伝えします。個別のお返事はできないことがあります。',
+      pay: '購入のお問い合わせには、かならずお返事します。買った日時と商品を書いて、メールアドレスも入れてください。',
+      account: 'アカウントのお問い合わせには、かならずお返事します。メールアドレスを入れてください。',
+      idea: 'ご要望ありがとうございます。すべてにお返事はできませんが、ぜんぶ読んでいます。', other: 'お返事が必要なときは、メールアドレスを入れてください。'};
+    const repMeta = () => ({ver: APP_VER, ua: navigator.userAgent.slice(0, 200), screen: innerWidth + 'x' + innerHeight + '@' + (devicePixelRatio || 1),
+      lang: navigator.language || '', login: acctToken ? 'yes' : 'no', name: load('rank_name', '') || '', time: new Date().toISOString(), ctrl: (typeof handMode !== 'undefined' ? handMode : '')});
+    const repDraw = () => { document.querySelectorAll('#repCats [data-rcat]').forEach(b => b.classList.toggle('on', b.dataset.rcat === repCat)); $('repNote').textContent = REP_NOTE[repCat];
+      $('repMailLbl').textContent = repCat === 'pay' || repCat === 'account' ? 'お返事に使うメールアドレス（入れてください）' : 'お返事が必要なときのメールアドレス（なくても送れます）';
+      const m = repMeta(); $('repMeta').textContent = 'バージョン ' + m.ver + '\n画面 ' + m.screen + '\nログイン ' + (m.login === 'yes' ? 'している' : 'していない（ゲスト）') + '\n' + m.ua; };
+    $('repOpen').addEventListener('click', () => { const el = $('report'); if (el.parentElement !== document.body) document.body.appendChild(el); el.classList.remove('hidden'); repDraw(); });
+    $('repClose').addEventListener('click', () => $('report').classList.add('hidden'));
+    $('repCats').addEventListener('click', e => { const b = e.target.closest('[data-rcat]'); if (!b) return; repCat = b.dataset.rcat; repDraw(); });
+    $('repSend').addEventListener('click', async () => {
+      if (repBusy) return;
+      const body = $('repBody').value.trim(), email = $('repMail').value.trim();
+      if (body.length < 5) { toast('内容をもう少しくわしく書いてください'); return; }
+      if ((repCat === 'pay' || repCat === 'account') && !email) { toast('お返事のためにメールアドレスを入れてください'); return; }
+      repBusy = true; $('repSend').textContent = '送っています…';
+      try { await api('/api/report', {method: 'POST', body: JSON.stringify({cat: repCat, body, email, meta: repMeta()}), tok: acctToken || guestTok || ''});
+        $('repBody').value = ''; $('report').classList.add('hidden'); toast('📮 送りました。ありがとうございます！');
+      } catch (er) { toast((er && er.message) || '送れませんでした。通信を確かめてください'); }
+      repBusy = false; $('repSend').textContent = '送る';
+    });
   })();
   // ===== スマホを横にしたとき：画面は縦のまま。「縦に戻してね」を出して、遊んでいる最中なら一時停止する =====
   // （ブラウザでは画面の向きを固定できないため。インストール版のAndroidはマニフェストで縦に固定される）

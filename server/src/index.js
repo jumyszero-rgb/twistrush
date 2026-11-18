@@ -61,7 +61,11 @@ const SCHEMA = [
   "CREATE INDEX IF NOT EXISTS idx_market_shelf ON market(status, show_at)",
   "CREATE INDEX IF NOT EXISTS idx_market_seller ON market(seller, created_at)",
   // ニャンコイン（ミケの店だけのお金・お金では買えない）2026-11-17
-  "CREATE TABLE IF NOT EXISTS nyan ( account_id TEXT PRIMARY KEY, balance INTEGER NOT NULL DEFAULT 0 )"
+  "CREATE TABLE IF NOT EXISTS nyan ( account_id TEXT PRIMARY KEY, balance INTEGER NOT NULL DEFAULT 0 )",
+  // 不具合報告・お問い合わせ（ゲームの中のフォームから）2026-11-19。見るときは Cloudflare の D1 で SELECT * FROM reports ORDER BY created_at DESC
+  "CREATE TABLE IF NOT EXISTS reports ( id INTEGER PRIMARY KEY AUTOINCREMENT, account_id TEXT NOT NULL DEFAULT '', name TEXT NOT NULL DEFAULT '', cat TEXT NOT NULL, body TEXT NOT NULL, email TEXT NOT NULL DEFAULT '', meta TEXT NOT NULL DEFAULT '', ip TEXT NOT NULL DEFAULT '', status TEXT NOT NULL DEFAULT 'new', created_at INTEGER NOT NULL )",
+  "CREATE INDEX IF NOT EXISTS idx_reports ON reports(created_at)",
+  "CREATE INDEX IF NOT EXISTS idx_reports_ip ON reports(ip, created_at)"
   ];
 
 // ---------- 小さな道具 ----------
@@ -408,6 +412,21 @@ async function api(env, req, url) {
     return json(env, req, await flagsOf(env));
   }
   if (p === '/api/flags' && M === 'GET') return json(env, req, await flagsOf(env));
+  // 不具合報告・お問い合わせ（ログインしていなくても送れる。1日に送れる数に上限）
+  if (p === '/api/report' && M === 'POST') {
+    const b = await req.json().catch(() => ({})), m = await who(env, req);
+    const t = nowSec(), ip = (req.headers.get('CF-Connecting-IP') || 'local').slice(0, 64);
+    const cat = ['bug', 'pay', 'account', 'idea', 'other'].includes(b.cat) ? b.cat : 'other';
+    const body = String(b.body || '').trim().slice(0, 2000), email = String(b.email || '').trim().slice(0, 120);
+    if (body.length < 5) return fail(env, req, '内容をもう少しくわしく書いてください');
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail(env, req, 'メールアドレスの形がちがいます');
+    const c = await env.DB.prepare('SELECT COUNT(*) AS c FROM reports WHERE ip = ? AND created_at > ?').bind(ip, t - 86400).first();
+    if (c && c.c >= 5) return fail(env, req, '今日はもう送れません。明日また送ってください', 429);
+    const meta = JSON.stringify(b.meta && typeof b.meta === 'object' ? b.meta : {}).slice(0, 2000);
+    await env.DB.prepare('INSERT INTO reports (account_id, name, cat, body, email, meta, ip, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
+      .bind(m ? m.id : '', m ? String(m.name || '') : '', cat, body, email, meta, ip, t).run();
+    return json(env, req, { ok: true });
+  }
   // キャラの人気投票：結果はだれでも見られる（ログインしていれば自分の票も）
   if (p === '/api/vote' && M === 'GET') { const m = await who(env, req); return json(env, req, await voteHome(env, m && m.id)); }
   // ランキング一覧はだれでも見られる

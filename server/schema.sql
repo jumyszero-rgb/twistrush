@@ -195,3 +195,8 @@ CREATE INDEX IF NOT EXISTS idx_market_seller ON market(seller, created_at);
 
 -- ニャンコイン（ミケの店だけのお金）2026-11-17
 CREATE TABLE IF NOT EXISTS nyan ( account_id TEXT PRIMARY KEY, balance INTEGER NOT NULL DEFAULT 0 );
+
+-- 不具合報告・お問い合わせ（2026-11-19）
+CREATE TABLE IF NOT EXISTS reports ( id INTEGER PRIMARY KEY AUTOINCREMENT, account_id TEXT NOT NULL DEFAULT '', name TEXT NOT NULL DEFAULT '', cat TEXT NOT NULL, body TEXT NOT NULL, email TEXT NOT NULL DEFAULT '', meta TEXT NOT NULL DEFAULT '', ip TEXT NOT NULL DEFAULT '', status TEXT NOT NULL DEFAULT 'new', created_at INTEGER NOT NULL );
+CREATE INDEX IF NOT EXISTS idx_reports ON reports(created_at);
+CREATE INDEX IF NOT EXISTS idx_reports_ip ON reports(ip, created_at);
