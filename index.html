@@ -4695,6 +4695,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       if (gameMode === 'rank' && inc > endlessIncShown) { endlessIncShown = inc;
         pops.push({text: 'PRESSURE UP! ×' + inc, style: 'speed', r: 2.2, c: 2.5, row: 0, n: 1, t: t + 100, big: true}); speedFlash = t; sndSpeed(); }
       addStackAll(inc); }
+    if (running && gameMode === 'story' && runItems.length) autoItems(t);
     if (running && gameMode === 'rank') { const L = lapSec();   // サバイバル：時間で1周が短くなった
       if (L < lapShown) { pops.push({text: 'SPEED UP!', style: 'speed', r: 2.2, c: 2.5, row: 0, n: 1, t: t + 100, big: true}); toast('1周 ' + secTxt(L) + '秒'); speedFlash = t; sndSpeed(); }
       lapShown = L; }
@@ -7016,7 +7017,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.184';
+  const APP_VER = '0.9.185';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -7624,15 +7625,15 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   // アイテム（ストーリー専用）
   const ITEMS = {
     charm:   {name: 'お守り',           price: 200, desc: '負けそうになったとき1回だけ、自動でカラーHPを全部0にして続けられる'},
-    refresh30:  {name: 'リフレッシュ30',  price: 50,  desc: '押すと全色のカラーHPが30%回復する（たまった分が30%減る）', pct: 0.3, img: 'refresh'},
-    refresh50:  {name: 'リフレッシュ50',  price: 80,  desc: '押すと全色のカラーHPが50%回復する', pct: 0.5, img: 'refresh'},
-    refresh80:  {name: 'リフレッシュ80',  price: 120, desc: '押すと全色のカラーHPが80%回復する', pct: 0.8, img: 'refresh'},
-    refresh100: {name: 'リフレッシュ100', price: 150, desc: '押すと全色のカラーHPが全回復する', pct: 1.0, img: 'refresh'},
-    slow:    {name: 'スピードダウン',   price: 100, desc: '20秒間、外周の光とカラーHPの増え方が半分の速さになる'},
-    bomb:    {name: 'カラーボム',       price: 100, desc: 'タップした色のブロックを盤面から全部消す（オクタブロックは消えない）。消した数だけカラーHPが減り、相手にもダメージ'},
-    star3:   {name: 'オクタ変換 3個', price: 100, desc: 'ふつうのブロック3個をランダムにオクタブロックへ変える（もとからあるオクタはそのまま）', n: 3},
-    star6:   {name: 'オクタ変換 6個', price: 200, desc: 'ふつうのブロック6個をランダムにオクタブロックへ変える', n: 6},
-    star9:   {name: 'オクタ変換 9個', price: 350, desc: 'ふつうのブロック9個をランダムにオクタブロックへ変える', n: 9},
+    refresh30:  {name: 'リフレッシュ30',  price: 50,  desc: 'ピンチのとき自動で、全色のカラーHPが30%回復する（たまった分が30%減る）', pct: 0.3, img: 'refresh'},
+    refresh50:  {name: 'リフレッシュ50',  price: 80,  desc: 'ピンチのとき自動で、全色のカラーHPが50%回復する', pct: 0.5, img: 'refresh'},
+    refresh80:  {name: 'リフレッシュ80',  price: 120, desc: 'ピンチのとき自動で、全色のカラーHPが80%回復する', pct: 0.8, img: 'refresh'},
+    refresh100: {name: 'リフレッシュ100', price: 150, desc: 'ピンチのとき自動で、全色のカラーHPが全回復する', pct: 1.0, img: 'refresh'},
+    slow:    {name: 'スピードダウン',   price: 100, desc: 'カラーHPがたまってきたら自動で、20秒間、外周の光とカラーHPの増え方が半分の速さになる'},
+    bomb:    {name: 'カラーボム',       price: 100, desc: 'ピンチのとき自動で、いちばんたまっている色のブロックを盤面から全部消す（オクタブロックは消えない）。消した数だけカラーHPが減り、相手にもダメージ'},
+    star3:   {name: 'オクタ変換 3個', price: 100, desc: 'カラーHPがたまってきたら自動で、ふつうのブロック3個をランダムにオクタブロックへ変える（もとからあるオクタはそのまま）', n: 3},
+    star6:   {name: 'オクタ変換 6個', price: 200, desc: 'カラーHPがたまってきたら自動で、ふつうのブロック6個をランダムにオクタブロックへ変える', n: 6},
+    star9:   {name: 'オクタ変換 9個', price: 350, desc: 'カラーHPがたまってきたら自動で、ふつうのブロック9個をランダムにオクタブロックへ変える', n: 9},
   };
   const ITEM_KEYS = Object.keys(ITEMS);
   // ポット：アイテムガチャとゴールドの秘密のショップだけで手に入る（メダル交換・ランキングの賞品には入らない）
@@ -8350,7 +8351,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   function drawItemBar(){
     const bar = $('itemBar'), was = bar.classList.contains('hidden');
-    bar.classList.toggle('hidden', !runItems.length);
+    bar.classList.toggle('hidden', true);   // 2026-11-18 本人：下のアイコンが多くて小さく押せない → 戦闘のアイテムは全部自動で使う（ボタンは出さない）
     bar.innerHTML = runItems.map(k => {
       const used = usedItems.has(k) || own(k) <= 0;
       const cls = 'ibtn' + (used ? ' used' : '') + (k === 'slow' && slowUntil ? ' act' : '') + (k === 'bomb' && bombPick ? ' pick' : '');
@@ -8408,6 +8409,26 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       return;
     }
   }
+  // ===== 戦闘のアイテムは自動で使う（2026-11-18 本人）=====
+  //   いちばん高いカラーHPがしきい値をこえたら、そのアイテムを1回だけ使う。続けて使うときは2.5秒あける
+  //   オクタ変換＝15・スピードダウン＝18・カラーボム＝21（いちばんたまっている色を消す）・リフレッシュ30＝22・50＝24・80と100＝26・お守り＝負けそうなとき（前から）
+  const AUTO_TH = {star3: 15, star6: 15, star9: 15, slow: 18, bomb: 21, refresh30: 22, refresh50: 24, refresh80: 26, refresh100: 26};
+  let autoLast = 0;
+  function autoItems(t){
+    if (phase !== 'idle' || confirmUntil || bombPick || t - autoLast < 2500) return;
+    const mx = Math.max(...stacks);
+    for (const k of runItems) {
+      if (usedItems.has(k) || own(k) <= 0 || AUTO_TH[k] == null || mx < AUTO_TH[k]) continue;
+      autoLast = t;
+      if (k === 'bomb') {   // いちばんたまっている色で、盤面にあるもの
+        const have = new Set(); for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) { const v = grid[r][c]; if (v != null && v !== GOLD && v !== HEART && v !== GHEART) have.add(v); }
+        const order = stacks.map((v, i) => [v, i]).sort((a, b) => b[0] - a[0]).map(x => x[1]).filter(i => have.has(i));
+        if (!order.length) continue;
+        toast('アイテム自動：' + ITEMS[k].name); bombColor(order[0]); return;
+      }
+      toast('アイテム自動：' + ITEMS[k].name); useItem(k); return;
+    }
+  }
   // カラーボム：色を選んだら、その色を全部「消える」状態にする（あとは通常の消去・落下・連鎖の流れ）
   function bombTap(e){
     const [x, y] = xy(e);
@@ -8416,6 +8437,9 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     const v = grid[r][c];
     if (v == null || v === GOLD || v === HEART || v === GHEART) { toast('ふつうのブロックをタップしてください'); return; }
     bombPick = false; document.body.classList.remove('bombpick'); resumeClock();
+    bombColor(v);
+  }
+  function bombColor(v){
     const cells = [];
     for (let rr = 0; rr < N; rr++) for (let cc = 0; cc < N; cc++) if (grid[rr][cc] === v) cells.push([rr, cc]);
     confirmUntil = 0; chain = 1;
