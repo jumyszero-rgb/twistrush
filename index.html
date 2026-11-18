@@ -487,6 +487,16 @@ body.on-menu .battlemain{opacity:0;}
   .repmail{display:block;margin-top:8px;font-size:12px;} .repmail input{display:block;width:100%;box-sizing:border-box;margin-top:4px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.3);color:#fff;font-size:14px;padding:8px;}
   .repnote{font-size:11.5px;line-height:1.5;opacity:.85;margin:8px 0;} .repmeta{font-size:11px;opacity:.8;} .repmeta pre{white-space:pre-wrap;word-break:break-all;margin:4px 0 0;font-size:10.5px;}
   .repbtns{display:flex;gap:8px;margin-top:10px;} .repbtns .btn{flex:1;}
+  .exrec{display:block;width:100%;margin-top:6px;border:1px solid rgba(255,210,74,.6);background:rgba(255,210,74,.14);color:#ffe9a8;border-radius:10px;padding:7px;font-weight:800;font-size:13px;}
+  .exrec-ov{position:fixed;inset:0;z-index:9500;background:rgba(10,4,24,.85);display:flex;align-items:center;justify-content:center;padding:14px;animation:upfade .2s ease-out;}
+  .exrbox{width:min(100%,420px);background:#241640;border:2px solid #b89bff;border-radius:18px;padding:14px;color:#f6f0ff;text-align:center;}
+  .exrbox h3{margin:0 0 2px;font-size:18px;} .exrst{margin:0 0 10px;font-size:12px;opacity:.85;} .exrlbl{font-size:12px;font-weight:800;opacity:.85;margin-top:4px;}
+  .exrrow{display:flex;justify-content:center;gap:6px;margin:4px 0;transition:transform .45s ease, opacity .45s ease;} .exrf{position:relative;width:58px;height:58px;} .exrf>canvas,.exrf>img,.exrf>div:first-child{width:58px!important;height:58px!important;} .exrf small{position:absolute;left:0;right:0;bottom:-2px;font-size:10px;font-weight:900;text-shadow:0 1px 2px #000;}
+  .exrrow.new .exrf{box-shadow:0 0 0 2px #ffd24a,0 0 12px rgba(255,210,74,.6);border-radius:12px;}
+  .exrgrp{transition:transform .5s cubic-bezier(.2,.8,.3,1.1), opacity .35s ease;} .exrgrp.out,.exrarrow.out{opacity:0;transform:translateY(-16px) scale(.92);} .exrarrow{transition:opacity .3s;}
+  .exrnone{width:58px;height:58px;border-radius:12px;border:1px dashed rgba(255,255,255,.3);display:grid;place-items:center;font-size:11px;opacity:.6;}
+  .exrinfo{font-size:12.5px;} .exrarrow{color:#ffd24a;font-size:16px;margin:2px 0;} .exrnote{font-size:11px;opacity:.75;margin:10px 0 4px;}
+  .exrq{font-weight:800;margin:8px 0;} .exrbtns{display:flex;gap:8px;} .exrbtns .btn{flex:1;}
   .rsq-x2{display:inline-block;margin-left:6px;padding:0 6px;border-radius:8px;background:#ff4f7b;color:#fff;font-size:13px;font-weight:900;vertical-align:middle;} .rsq-ad small{display:block;font-size:11px;font-weight:600;opacity:.85;} .mksort span{font-size:11px;opacity:.75;align-self:center;margin-right:2px;} .hfold{margin:6px 0;font-size:12px;line-height:1.55;} .hfold>summary{display:inline-block;cursor:pointer;list-style:none;padding:3px 12px;border-radius:999px;border:1px solid rgba(255,210,74,.6);background:rgba(255,210,74,.14);font-weight:700;font-size:12px;user-select:none;} .hfold>summary::-webkit-details-marker{display:none;} .hfold[open]>summary{background:rgba(255,210,74,.32);} .hfbody{margin-top:6px;padding:8px 10px;border-radius:10px;background:rgba(0,0,0,.18);} .fgkind button{flex:1;} .fghint{margin:6px 0 2px;padding:6px 8px;border-radius:10px;background:rgba(255,210,74,.12);font-size:11.5px;line-height:1.5;} .fghint b{display:block;font-size:11px;opacity:.85;} .fghint span{display:block;} .eqfx{margin-top:4px;font-size:12px;font-weight:700;color:#b07a00;} @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .eqfx{color:#ffd24a;} } :root[data-theme="dark"] .eqfx{color:#ffd24a;}
   .eqslot{background:rgba(0,0,0,.06);border-radius:10px;padding:8px;font-size:13px;} .eqslot.on{background:rgba(255,210,74,.18);} .eqslot button{margin-top:6px;padding:4px 14px;border-radius:8px;border:1px solid #c9a;background:#fff;}
   .eqitem{display:block;width:100%;text-align:left;margin:4px 0;padding:7px 9px;border-radius:10px;border:1px solid rgba(0,0,0,.15);background:#fff;font-family:inherit;}
@@ -7106,7 +7116,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.201';
+  const APP_VER = '0.9.202';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -9396,7 +9406,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         '<div class="exrw">報酬：経験値 ひとり' + Math.round(EX_EXP[st.s] * st.boost * exTm(st, exHOf(st))).toLocaleString() + '・シルバー' + Math.round((EX_SILVER[st.s] + ((st.bonus || []).find(x => x[0] === 'silver') || [0, 0])[1]) * st.boost * exTm(st, exHOf(st))) + '・' + EX_ITEMS[st.s].concat((st.bonus || []).filter(x => x[0] !== 'silver')).map(x => EX_ITEM_NAME(x[0]) + (x[2] < 1 ? '（ときどき）' : '')).join('・') + '<br>素材：' + (EX_MATS[st.id] || []).map(c => EX_MAT_CAT[c]).join('・') + '（ときどき・中身はランダム）・🔷強化石' + (ENH_DROP_B[st.s] ? '・✨祝福の強化石（まれ）' : '') + '</div>' +
         (went ? '<div class="exnote">今日はもう行きました</div>' :
           '<div class="exteam">' + [0, 1, 2, 3].map(k => '<button data-ext="' + st.id + ':' + k + '" class="' + (k === t ? 'on' : '') + (exTeamBusy(k) ? ' busy' : '') + '">チーム' + (k + 1) + (exTeamBusy(k) ? '<small>遠征中</small>' : '') + '</button>').join('') + '</div>' +
-          '<div class="exmini">' + m.map(u => '<span class="cface" data-ci="' + ciOf(u) + '"></span>').join('') + '<button class="exedit" data-exedit="' + t + '">👥 編成</button></div>' +
+          '<div class="exmini">' + m.map(u => '<span class="cface" data-ci="' + ciOf(u) + '"></span>').join('') + '<button class="exedit" data-exedit="' + t + '">👥 編成</button></div>' + (busy ? '' : '<button class="exrec" data-exrec="' + st.id + '">✨ この遠征のおすすめチームにする</button>') +
           (m.length < 4 ? '<div class="exnote">このチームは' + m.length + '人です。4人そろえてください</div>' : busy ? '<div class="exnote">このチームのキャラは遠征中です</div>' :
             '<div class="exgo"><span>達成率 <b style="color:' + exCol(j.rate) + ';font-size:16px">' + exPct(j.rate) + '</b>（条件 ' + j.ok + ' / ' + j.all + (j.pf < 1 ? '・戦力 ' + exPct(j.pf) : '') + '）<br><small>報酬 ×' + j.rate.toFixed(2).replace(/0$/, '') + '</small></span><button data-go="' + st.id + '"' + (exData.active.length >= exSlots() ? ' disabled' : '') + '>出発</button></div>')) +
         '</div>';
@@ -9404,6 +9414,66 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     h += helpFold('expd', '遠征中のキャラは、帰ってくるまでストーリー・キャラ対戦・アリーナで使えません。達成率＝満たした条件の割合 × 戦力の割合（チームの戦闘力が目安にとどかないと下がります）。グレードが上がるほど目安が上がり、報酬もふえます。100%で報酬がそのまま、50%なら報酬も半分になります。遠征枠はユーザーLV20・30・40で1つずつ増えます。素材（武器・防具・アクセ）は出るかどうか、何が何個出るかがランダムです。★が高いほど良い素材が出やすく、★4・★5ではとてもまれに伝説素材や装備そのものが見つかります。') + '</section>';
     const body = $('expdBody'); body.innerHTML = h;
     fillFaces(body);
+  }
+  // ===== おすすめチーム（2026-11-19 本人）=====
+  //   選んでいる遠征先に、いちばん合うチームを自動で作り、選んでいるチーム枠と入れかえられる。ほかのチームに入っているキャラと、遠征中のキャラは使わない
+  //   いちばん合う＝達成率がいちばん高い（同じなら満たす条件が多い→戦闘力が高い）。メインの枠には奥義を持つキャラを入れる
+  function exRecommend(st, t){
+    const other = new Set([].concat(...teams.filter((_, k) => k !== t)).filter(Boolean)), busy = exBusyUids();
+    const pool = units.filter(u => !other.has(u.u) && !busy.has(u.u));
+    if (pool.length < 4) return null;
+    const pw = new Map(pool.map(u => [u.u, statPow(unitStats(u))]));
+    const anyMain = pool.some(u => canMainId(u.id));
+    const score = m => { const j = exJudge(st, m); return (anyMain && !m.some(u => canMainId(u.id)) ? -1e9 : 0) + j.rate * 1e6 + j.ok * 1e4 + j.pw / 100; };
+    const byPow = pool.slice().sort((a, b) => pw.get(b.u) - pw.get(a.u));
+    // スタート候補：戦闘力の上から4人／条件ごとに満たしやすいキャラを先に入れたもの
+    const starts = [byPow.slice(0, 4)];
+    st.cnds.forEach(c => { const fit = byPow.filter(u => c.ok([u, u, u, u])); if (fit.length) { const m = fit.slice(0, 4); for (const u of byPow) { if (m.length >= 4) break; if (!m.includes(u)) m.push(u); } starts.push(m); } });
+    let best = null, bestS = -Infinity;
+    starts.forEach(m0 => {
+      let m = m0.slice(), sc = score(m);
+      for (let pass = 0; pass < 6; pass++) {      // 1人ずつ入れかえて良くなるなら入れかえる（よくならなくなるまで）
+        let up = false;
+        for (let k = 0; k < 4; k++) for (const u of pool) { if (m.includes(u)) continue; const m2 = m.slice(); m2[k] = u; const s2 = score(m2); if (s2 > sc + 1e-9) { m = m2; sc = s2; up = true; } }
+        if (!up) break;
+      }
+      if (sc > bestS) { bestS = sc; best = m; }
+    });
+    // ならび：メインに入れられて戦闘力の高いキャラを①に
+    best.sort((a, b) => (canMainId(b.id) - canMainId(a.id)) || pw.get(b.u) - pw.get(a.u));
+    return best;
+  }
+  function exRecOpen(id){
+    const st0 = exToday().find(x => x.id === id); if (!st0) return;
+    const st = exView(st0), t = exPickTeam[id] != null ? exPickTeam[id] : teamNo;
+    if (exTeamBusy(t)) { toast('このチームのキャラは遠征中です'); return; }
+    const cur = exMembers(t), rec = exRecommend(st, t);
+    if (!rec) { toast('使えるキャラが4人いません（ほかのチームに入っているキャラと遠征中のキャラは使いません）'); return; }
+    const jc = cur.length === 4 ? exJudge(st, cur) : null, jr = exJudge(st, rec);
+    const same = cur.length === 4 && rec.every(u => cur.includes(u));
+    const row = (m, j, cls) => '<div class="exrrow ' + cls + '">' + [0, 1, 2, 3].map(k => m[k] ? '<div class="exrf" data-ci="' + ciOf(m[k]) + '"><small>LV' + m[k].lv + '</small></div>' : '<span class="exrnone">空き</span>').join('') + '</div>' +
+      (j ? '<div class="exrinfo">達成率 <b style="color:' + exCol(j.rate) + '">' + exPct(j.rate) + '</b>（条件 ' + j.ok + ' / ' + j.all + '・戦力 ' + exPct(j.pf) + '）</div>' : '<div class="exrinfo">4人そろっていません</div>');
+    const d = document.createElement('div'); d.id = 'exRec'; d.className = 'exrec-ov';
+    d.innerHTML = '<div class="exrbox"><h3>✨ おすすめチーム</h3><p class="exrst">' + st.n + (st.g ? '（' + EX_GR[st.g].n + '）' : '') + '・チーム' + (t + 1) + '</p>' +
+      '<div class="exrgrp old"><div class="exrlbl">いまのチーム</div>' + row(cur, jc, 'old') + '</div><div class="exrarrow">▼</div>' +
+      '<div class="exrgrp new"><div class="exrlbl">おすすめチーム</div>' + row(rec, jr, 'new') + '</div>' +
+      '<p class="exrnote">ほかのチームに入っているキャラと、遠征中のキャラは、おすすめに出ません。</p>' +
+      (same ? '<p class="exrq">いまのチームが、いちばんおすすめです</p><div class="exrbtns"><button class="btn gray" data-exrno="1">もどる</button></div>'
+        : '<p class="exrq">チーム' + (t + 1) + 'を入れかえますか？</p><div class="exrbtns"><button class="btn gray" data-exrno="1">いいえ</button><button class="btn" data-exryes="1">はい</button></div>') + '</div>';
+    document.body.appendChild(d); d.querySelectorAll('.exrf').forEach(el => el.insertBefore(charIcon(+el.dataset.ci, 58), el.firstChild));
+    d.addEventListener('click', e => {
+      if (e.target.closest('[data-exrno]') || e.target === d) { d.remove(); return; }
+      if (!e.target.closest('[data-exryes]')) return;
+      teams[t] = rec.map(u => u.u); fixTeam(); exPickTeam[id] = t;
+      // 入れかえの見た目：いまのチームが消えて、おすすめが上に移る
+      const go = d.querySelector('.exrgrp.old'), gn = d.querySelector('.exrgrp.new');
+      go.classList.add('out'); d.querySelector('.exrarrow').classList.add('out');
+      gn.style.transform = 'translateY(' + (go.offsetTop - gn.offsetTop) + 'px) scale(1.05)'; gn.querySelector('.exrlbl').textContent = 'チーム' + (t + 1) + '（入れかえ後）';
+      d.querySelector('.exrbtns').style.visibility = 'hidden';
+      try { bell(1319, T(), 0.4, 0.05); bell(1760, T() + 0.1, 0.5, 0.05); } catch (_) {}
+      setTimeout(() => { d.querySelector('.exrq').textContent = '✔ チーム' + (t + 1) + 'を入れかえました'; }, 450);
+      setTimeout(() => { d.remove(); drawExpd(); toast('チーム' + (t + 1) + 'をおすすめチームにしました'); }, 1300);
+    });
   }
   function exGo(id){
     const st0 = exToday().find(s => s.id === id); if (!st0 || userLv() < st0.lv) return;
@@ -9550,6 +9620,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   // 遠征画面からチーム編成へ：そのチームを開いて編成。ボックスを閉じたら、もとの使用中チームに戻して遠征画面へ
   let exEditPrev = null;
   $('expdBody').addEventListener('click', e => {
+    const rc = e.target.closest('[data-exrec]'); if (rc) { exRecOpen(+rc.dataset.exrec); return; }
     const ed = e.target.closest('[data-exedit]'); if (ed) { exEditPrev = teamNo; teamNo = +ed.dataset.exedit; save('teamno', String(teamNo)); openBox('char'); return; }
     const t = e.target.closest('[data-ext]'); if (t) { const [id, k] = t.dataset.ext.split(':').map(Number); exPickTeam[id] = k; drawExpd(); return; }
     const gb = e.target.closest('[data-exg]'); if (gb) { const [id, g] = gb.dataset.exg.split(':').map(Number); exPickG[id] = g; drawExpd(); return; }
