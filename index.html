@@ -462,6 +462,21 @@ body.on-menu .battlemain{opacity:0;}
   .fgtabs{display:flex;gap:6px;margin:6px 0;} .fgtabs button{flex:1;padding:7px 0;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#f6f0ff;font-weight:900;}
   .fgtabs button.on{background:#ffd24a;color:#3a1a00;} .fgsub{font-size:12px;margin:4px 0;} .fgsub small{opacity:.75;}
   .fgrc{list-style:none;margin:4px 0;padding:0;font-size:12px;display:grid;grid-template-columns:1fr 1fr;gap:2px 8px;} .fgrc li.ok{color:#7ff0a8;} .fgrc li.ng{color:#ff9db0;}
+  #ad{position:fixed;inset:0;border-radius:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,.92);z-index:9600;} #ad.hidden{display:none;} .addone.hidden{display:none;} .adplayer{position:relative;width:min(94vw,520px);border-radius:14px;overflow:hidden;background:#000;box-shadow:0 10px 40px rgba(0,0,0,.6);}
+  .adtop{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#111;color:#fff;font-size:12px;} .adtag{background:#ffc83d;color:#000;font-weight:900;border-radius:4px;padding:1px 6px;}
+  .adrw{flex:1;} .adrw b{font-size:15px;color:#ffd24a;} .adx{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:#333;color:#666;font-size:12px;}
+  .adx.on{background:#fff;color:#000;}
+  .adscreen{position:relative;aspect-ratio:16/9;overflow:hidden;display:grid;place-items:center;}
+  .adbg{position:absolute;inset:0;background:linear-gradient(120deg,#ff5f8f,#ffc83d,#5fd0ff,#b77bff,#ff5f8f);background-size:400% 400%;animation:adGrad 6s linear infinite;}
+  @keyframes adGrad{0%{background-position:0% 50%}100%{background-position:100% 50%}}
+  .adb{position:absolute;border-radius:50%;background:rgba(255,255,255,.35);animation:adFloat 3.2s ease-in-out infinite;} .adb.a1{width:22%;aspect-ratio:1;left:8%;top:18%;}
+  .adb.a2{width:14%;aspect-ratio:1;right:12%;top:12%;animation-delay:-1.1s;} .adb.a3{width:18%;aspect-ratio:1;right:22%;bottom:8%;animation-delay:-2s;}
+  @keyframes adFloat{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-14px) scale(1.12)}}
+  .adcopy{position:relative;text-align:center;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.45);} .adcopy b{display:block;font-size:20px;font-weight:900;} .adcopy small{font-size:11px;opacity:.9;}
+  .adplay{position:absolute;left:10px;bottom:8px;color:#fff;font-size:14px;opacity:.85;}
+  .adbar{height:5px;background:#333;} .adbar i{display:block;height:100%;width:0;background:#ffc83d;}
+  .adfoot{display:flex;justify-content:space-between;padding:7px 10px;background:#111;color:#bbb;font-size:11px;}
+  .addone{position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.6);color:#7dffb0;font-size:26px;font-weight:900;}
   .rsq-x2{display:inline-block;margin-left:6px;padding:0 6px;border-radius:8px;background:#ff4f7b;color:#fff;font-size:13px;font-weight:900;vertical-align:middle;} .rsq-ad small{display:block;font-size:11px;font-weight:600;opacity:.85;} .mksort span{font-size:11px;opacity:.75;align-self:center;margin-right:2px;} .hfold{margin:6px 0;font-size:12px;line-height:1.55;} .hfold>summary{display:inline-block;cursor:pointer;list-style:none;padding:3px 12px;border-radius:999px;border:1px solid rgba(255,210,74,.6);background:rgba(255,210,74,.14);font-weight:700;font-size:12px;user-select:none;} .hfold>summary::-webkit-details-marker{display:none;} .hfold[open]>summary{background:rgba(255,210,74,.32);} .hfbody{margin-top:6px;padding:8px 10px;border-radius:10px;background:rgba(0,0,0,.18);} .fgkind button{flex:1;} .fghint{margin:6px 0 2px;padding:6px 8px;border-radius:10px;background:rgba(255,210,74,.12);font-size:11.5px;line-height:1.5;} .fghint b{display:block;font-size:11px;opacity:.85;} .fghint span{display:block;} .eqfx{margin-top:4px;font-size:12px;font-weight:700;color:#b07a00;} @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .eqfx{color:#ffd24a;} } :root[data-theme="dark"] .eqfx{color:#ffd24a;}
   .eqslot{background:rgba(0,0,0,.06);border-radius:10px;padding:8px;font-size:13px;} .eqslot.on{background:rgba(255,210,74,.18);} .eqslot button{margin-top:6px;padding:4px 14px;border-radius:8px;border:1px solid #c9a;background:#fff;}
   .eqitem{display:block;width:100%;text-align:left;margin:4px 0;padding:7px 9px;border-radius:10px;border:1px solid rgba(0,0,0,.15);background:#fff;font-family:inherit;}
@@ -2108,9 +2123,15 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     </div>
     <!-- 広告（プロトタイプではダミー） -->
     <div class="overlay hidden" id="ad">
-      <p class="ad-label">広告（テスト表示）</p>
-      <div class="big" id="adCount">5</div>
-      <p>本番ではここに動画広告が流れます</p>
+      <div class="adplayer">
+        <div class="adtop"><span class="adtag">広告</span><span class="adrw">🎁 報酬まであと <b id="adCount">5</b> 秒</span><span class="adx" id="adX">✕</span></div>
+        <div class="adscreen"><div class="adbg"></div><i class="adb a1"></i><i class="adb a2"></i><i class="adb a3"></i>
+          <div class="adcopy"><b>ここに動画広告が流れます</b><small>テスト表示（本番ではリワード広告）</small></div>
+          <div class="adplay">▶</div></div>
+        <div class="adbar"><i id="adBar"></i></div>
+        <div class="adfoot"><span>最後まで見ると報酬がもらえます</span><span class="adsnd">🔇</span></div>
+        <div class="addone hidden" id="adDone">✔ 報酬ゲット！</div>
+      </div>
     </div>
     <div id="swipeZone" class="hidden" aria-hidden="true"><b>↑</b><span>右回り</span><i></i><span>左回り</span><b>↓</b></div>
 
@@ -5635,23 +5656,31 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       toast('🎁 ごほうび2倍！' + (c > 0 ? ' コイン +' + c : ''));
     }), () => {});
   }
+  // 広告が流れているように見せる（2026-11-18 本人）：上に「報酬まであと○秒」、下に進むバー。終わったら「報酬ゲット！」を少し見せて閉じる
+  //   本番はAdMobのリワード広告に差し替え。いまは CFG.AD_SEC 秒のテスト表示
+  let adRunT = null;
+  function adRun(done){
+    const el = $('ad'), sec = CFG.AD_SEC, t0 = performance.now();
+    if (el.parentElement !== document.body) document.body.appendChild(el);   // ほかの画面（きょうのプレゼントなど）より上に出す
+    clearInterval(adRunT); el.classList.remove('hidden');
+    $('adDone').classList.add('hidden'); $('adX').classList.remove('on'); $('adCount').textContent = sec; $('adBar').style.width = '0%';
+    adRunT = setInterval(() => {
+      const el2 = (performance.now() - t0) / 1000, left = Math.max(0, Math.ceil(sec - el2));
+      $('adCount').textContent = left; $('adBar').style.width = Math.min(100, el2 / sec * 100) + '%';
+      if (el2 >= sec) { clearInterval(adRunT); $('adX').classList.add('on'); $('adDone').classList.remove('hidden'); try { sndReady(); } catch (_) {}
+        setTimeout(() => { el.classList.add('hidden'); el.style.zIndex = ''; done(); }, 700); }
+    }, 100);
+  }
   function playAd(done){
     if (noAds()) { done(); return; }
-    const el = $('ad'); el.style.zIndex = 9700; el.classList.remove('hidden');
-    let n = CFG.AD_SEC; $('adCount').textContent = n;
-    const tm = setInterval(() => { n--; $('adCount').textContent = Math.max(0, n); if (n <= 0) { clearInterval(tm); el.classList.add('hidden'); el.style.zIndex = ''; done(); } }, 1000);
+    $('ad').style.zIndex = 9700; adRun(done);
   }
   // 広告（プロトタイプはダミーのカウントダウン。本番はAdMobのリワード広告に差し替え）
   function watchAd(){
     if (noAds()) { if (gameMode === 'story' && curVar === 0) contLeft = Math.max(0, contLeft - 1); $('cont').classList.add('hidden'); resumeGame(); return; }   // 広告削除を買った人は、すぐ続ける
     if (gameMode === 'story' && curVar === 0) contLeft = Math.max(0, contLeft - 1);   // 氷・石は広告コンティニュー何回でも
-    $('cont').classList.add('hidden'); $('ad').classList.remove('hidden');
-    let n = CFG.AD_SEC; $('adCount').textContent = n;
-    clearInterval(adTimer);
-    adTimer = setInterval(() => {
-      n--; $('adCount').textContent = Math.max(0, n);
-      if (n <= 0) { clearInterval(adTimer); $('ad').classList.add('hidden'); resumeGame(); }
-    }, 1000);
+    $('cont').classList.add('hidden');
+    clearInterval(adTimer); adRun(() => resumeGame());
   }
   // ★6個ぶん（全色 −15）を適用して、スコアを保ったまま再開
   function resumeGame(){
@@ -7048,7 +7077,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.198';
+  const APP_VER = '0.9.199';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
