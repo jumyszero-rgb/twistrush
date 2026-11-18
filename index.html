@@ -1436,6 +1436,8 @@ body.on-menu .battlemain{opacity:0;}
   #resSeq .rsq-sub{font-size:14px;color:#d8ccf0;font-weight:700;}
   #resSeq .rsq-score{font-size:46px;font-weight:900;line-height:1.1;}
   #resSeq .resstars{margin-top:6px;max-width:360px;color:#fff;}
+  /* 2026-11-18：明るい表示の端末だと、結果画面のお題の文字が暗い色になって見えなかった → 結果画面では白にする */
+  #resSeq .resstars .rs-list{color:rgba(255,255,255,.62);} #resSeq .resstars .rs-list .on{color:#fff;}
   #resSeq .rsq-tap{position:absolute;bottom:calc(16px + env(safe-area-inset-bottom,0px));left:0;right:0;color:#bfb3dd;font-size:12px;opacity:0;animation:upfade .3s ease-out 1.2s forwards;}
   #resSeq .rg-N{--gc:#d6d6d6;--rc:rgba(230,230,230,.18);--gc2:rgba(210,210,210,.35);}
   #resSeq .rg-R{--gc:#4fa8ff;--rc:rgba(120,190,255,.3);--gc2:rgba(80,160,255,.55);}
@@ -6977,7 +6979,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.174';
+  const APP_VER = '0.9.175';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -12120,10 +12122,18 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         const inTour = tour; setStep('done'); tour = false; hide();
         if (inTour) { autoOn = false; try { if (running) resumeClock(); } catch(_) {} }   // 戦い方の説明の途中なら、止めていた時間を動かす
       }); };
+    const seen = el => {   // 画面で本当に見えているか（透明・非表示・親が隠れているときは見えていない）
+      try { if (el.checkVisibility) return el.checkVisibility({opacityProperty: true, visibilityProperty: true}); } catch (_) {}
+      for (let e = el; e && e !== document.body; e = e.parentElement) { const cs = getComputedStyle(e); if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity < 0.05) return false; }
+      return true;
+    };
     function place(){
       requestAnimationFrame(place);
       if (!cur) return;
       const W = innerWidth, H = innerHeight, el = cur.target && cur.target();
+      // 2026-11-18 本人：ガチャの10連で「スキップ」が出る前から、その場所が光っていた → 見えていないボタンは指さない（出てくるまで案内ごと隠す）
+      if (cur.target && !(el && seen(el))) { L.style.visibility = 'hidden'; return; }
+      L.style.visibility = '';
       let r = el && el.getBoundingClientRect ? el.getBoundingClientRect() : null;
       if (r && (r.width < 4 || r.height < 4 || r.bottom < 0 || r.top > H)) r = null;
       if (r) {
@@ -12193,6 +12203,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         if (vis('box') && units.length && !freeTenLeft()) { setStep('team'); return tick(); }   // ガチャ画面の「ボックス」から開いた
         if (units.length && !freeTenLeft() && !gRev && !vis('gacha')) { setStep('box'); return tick(); }
         if (!vis('gacha')) return show({target: () => $('gachaBtn'), text: 'ストーリーモードには<b>キャラクター</b>が必要だよ。<br>初回無料の<b>10連ガチャ</b>を用意したから、まずは<b>ガチャ</b>を回そう！'});
+        if (gBusy && !gRev) { hide(); return; }   // 2026-11-18：ガチャが回っている間は案内を出さない（前は、まだ仲間が出る前に「11人手に入れたよ・ボックスを押して」が出ていた）
         if (gRev) return show({target: () => $('gacha').querySelector('[data-g="skip"]') || $('gacha').querySelector('[data-g="next"]'), text: '仲間が来たよ！<br>「スキップ」でまとめて見られるよ。'});
         if (freeTenLeft()) return show({target: () => $('gacha').querySelector('[data-g="free"]'), text: '<b>「初回限定 無料10連」</b>を押そう！<br>11人の仲間が来るよ（SR以上が1人かならず！）'});
         return show({target: () => $('gachaBox'), text: '<b>11人のキャラクター</b>を手に入れたよ！<br>次は<b>チーム</b>を組もう。「ボックス」を押してね。'});
@@ -12325,7 +12336,11 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   var later = 0; try { later = +localStorage.getItem('twistrush.pwaLater') || 0; } catch (e) {}
   if (Date.now() < later) return;
   var bar = document.getElementById('pwaBar'), txt = document.getElementById('pwaText'), go = document.getElementById('pwaGo'), deferred = null;
-  function show(){ var dl = document.getElementById('daily'); if (document.getElementById('tapStart') || (dl && !dl.classList.contains('hidden')) || !document.body.classList.contains('on-menu')) { setTimeout(show, 1500); return; } bar.style.display = 'flex'; }
+  // 2026-11-18：はじめての案内が終わるまでは出さない（小さい画面で、ガチャの「無料10連」ボタンの上にかぶっていた）
+  var tutDone = function(){ var t = ''; try { t = localStorage.getItem('twistrush.tut') || ''; } catch (e) {} return t === 'done'; };
+  // 出したあとも、ガチャなどの画面を開いている間は隠す（ボタンにかぶらないように）
+  setInterval(function(){ if (bar.style.display === 'none') return; var ov = document.querySelector('.overlay:not(.hidden)'); bar.style.visibility = (ov || !document.body.classList.contains('on-menu')) ? 'hidden' : ''; }, 500);
+  function show(){ var dl = document.getElementById('daily'); if (!tutDone() || document.getElementById('tapStart') || (dl && !dl.classList.contains('hidden')) || !document.body.classList.contains('on-menu')) { setTimeout(show, 1500); return; } bar.style.display = 'flex'; }
   function hide(days){ bar.style.display = 'none'; try { localStorage.setItem('twistrush.pwaLater', String(Date.now() + days * 864e5)); } catch (e) {} }
   document.getElementById('pwaX').onclick = function(){ hide(7); };
   if (ios) {
