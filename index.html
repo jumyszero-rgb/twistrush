@@ -1758,11 +1758,11 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         </section>
         <section>
           <h3>操作</h3>
+          <p>操作は2種類あり、設定の「操作」で切りかえられます。</p>
           <ul>
-            <li><b>枠の移動</b>：盤面をドラッグ（盤面の外をドラッグしても動きます）</li>
-            <li><b>回転</b>：画面の端の縦帯を上へなぞると右回り、下へなぞると左回り（帯をタップしても右回り）</li>
+            <li><b>タップ＆フリック</b>（最初の設定）：盤面の回したい場所をタップすると枠がそこへ移動。指をはなさずに上へなぞると右回り、下へなぞると左回り（なぞり続けると続けて回ります）</li>
+            <li><b>ドラッグ＆スワイプ</b>：盤面をドラッグで枠の移動（盤面の外でもOK）。画面の端の縦帯を上へなぞると右回り、下へなぞると左回り（帯をタップしても右回り）。縦帯は右端と左端を選べます</li>
           </ul>
-          <p>縦帯は右端と左端を選べます。画面下の「スワイプ：右端／左端」を押すと、その場で切り替わります。片手でも両手でも遊べます。</p>
         </section>
         <section>
           <h3>sync・COMBO・Special</h3>
@@ -2007,7 +2007,11 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         </section>
         <section>
           <h3>操作</h3>
-          <p>盤面をドラッグで枠の移動。画面の端に出る縦帯を上へなぞると右回り、下へなぞると左回り（帯のタップは右回り）。片手でも両手でも遊べます。</p>
+          <div class="modesel" data-key="ctrl">
+            <button data-v="touch-flick">タップ＆フリック</button><button data-v="touch-swipe">ドラッグ＆スワイプ</button>
+          </div>
+          <p><b>タップ＆フリック</b>：盤面の回したい場所をタップすると、枠がそこへ移動します。指をはなさずに上へなぞると右回り、下へなぞると左回り。指を大きく動かさなくてよい操作です。</p>
+          <p><b>ドラッグ＆スワイプ</b>：盤面をドラッグで枠の移動。画面の端に出る縦帯を上へなぞると右回り、下へなぞると左回り（帯のタップは右回り）。</p>
         </section>
         <section>
           <h3>ストーリーの記録</h3>
@@ -2186,6 +2190,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     DOUBLE_DIST: 1.2,          // 2回目がこの範囲（セル何個ぶん）より遠ければ、別のワンタップ
     DRAG_START: 0.4,           // セルの何割動かしたらドラッグとみなすか
     DRAG_GAIN: 2,              // 指の移動の何倍、枠が動くか
+    FLICK_DIST: 0.32,          // タップ＆フリック：セルの何割なぞったら回すか
     ATK_CHARGE: 260,           // 相手がためてから撃つまで
     WIN_SHOW_AT: 6000,         // 勝ったとき、相手の負け姿を見せてから結果画面を出すまで（全キャラ共通）
     WIN_FADE_AT: 4000,         // 負け姿が消え始めるまで＝4秒まるごと表示（全キャラ共通）
@@ -2846,6 +2851,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   const HINTS = {
     'touch-tap':   () => '盤面：ドラッグ＝枠の移動／どこをタップしても右回り／ダブルタップ＝左回り',
     'touch-swipe': () => '盤面：ドラッグ＝枠の移動／画面' + (swipeSide === 'left' ? '左' : '右') + '端の帯を上へなぞる＝右回り、下へなぞる＝左回り',
+    'touch-flick': () => '盤面：回したい場所をタップ＝枠がそこへ移動／そのまま上へなぞる＝右回り、下へなぞる＝左回り',
   };
   const HINT_TAIL = '<br>1列そろうと2秒で確定。その間にほかの列もそろえるとコンボ';
 
@@ -4749,6 +4755,14 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     // 指の位置と枠の中心のずれを覚えておく（どこをつかんでも枠が指から離れない）
     const cx = gm + (cur.c + 1) * cell, cy = gm + (cur.r + 1) * cell;
     if (down) return;                                          // 2本目の指は無視（1本目のドラッグを続ける）
+    if (rotateMode === 'flick') {                               // タップ＆フリック：さわった場所へ枠を移す（枠の中心がいちばん近い交点に来る）
+      if (heartTap(x, y)) return;
+      const ix = Math.min(N - 1, Math.max(1, Math.round((x - gm) / cell))), iy = Math.min(N - 1, Math.max(1, Math.round((y - gm) / cell)));
+      moveCursor(iy - 1, ix - 1);
+      down = {x, y, by: y, pid: e.pointerId, flick: true}; dragging = false; pointerIsDown = true;
+      try { canvas.setPointerCapture(e.pointerId); } catch(_) {}
+      return;
+    }
     down = {x, y, cx0: cx, cy0: cy, inside: inCursor(x, y), pid: e.pointerId};   // 押した時点の枠の中心を基準にする
     dragging = false; pointerIsDown = true;
     try { canvas.setPointerCapture(e.pointerId); } catch(_) {}
@@ -4757,6 +4771,12 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   canvas.addEventListener('pointermove', e => {
     if (!down || !running || e.pointerId !== down.pid) return;
     const [x, y] = xy(e);
+    if (down.flick) {                                           // 上へなぞる＝右回り、下へなぞる＝左回り（なぞり続ければ続けて回る）
+      const dy = y - down.by, th = cell * (down.n ? 1 : CFG.FLICK_DIST);   // 1回目は少しで回る。続けて回すには、さらにセル1つぶんなぞる（回りすぎ防止）
+      if (dy <= -th) { rotate(1); down.by = y; down.n = (down.n || 0) + 1; }
+      else if (dy >= th) { rotate(-1); down.by = y; down.n = (down.n || 0) + 1; }
+      return;
+    }
     if (!dragging) {
       if (Math.hypot(x - down.x, y - down.y) < cell * CFG.DRAG_START) return;
       dragging = true; flushTap();
@@ -4776,6 +4796,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (down) { const [ux, uy] = xy(e); down.upY = uy; down.upX = ux; }
     if (!down) return;
     const d = down; down = null; pointerIsDown = false; dragFrac = {r:0, c:0};
+    if (d.flick) return;                          // タップ＆フリック：タップだけなら枠の移動だけ
     if (dragging) { dragging = false; return; }   // ドラッグは枠の移動だけ
     if (!running) return;                        // タップは盤面のどこでもOK（枠の中でなくても回る）
     if (heartTap(d.x, d.y)) return;                // ハートはタップで使う
@@ -4801,7 +4822,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     let od = null;
     const skip = el => !el || (el.closest && el.closest('button, .modesel, #swipeZone, .overlay, .vspanel, .stacks'));
     document.addEventListener('pointerdown', e => {
-      if (!running || autoOn || e.target === canvas || skip(e.target) || od) return;
+      if (!running || autoOn || rotateMode === 'flick' || e.target === canvas || skip(e.target) || od) return;
       const cx = gm + (cur.c + 1) * cell, cy = gm + (cur.r + 1) * cell;
       od = {x: e.clientX, y: e.clientY, cx0: cx, cy0: cy, on: false, pid: e.pointerId};
     });
@@ -6979,7 +7000,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.175';
+  const APP_VER = '0.9.176';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -12164,9 +12185,14 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         await waitFor(() => !stillOn() || phase === 'idle', 4000); if (!stillOn()) return;
         pauseClock();
         await say('戦い方を説明するね！<br>敵のHPを0にしたら勝ち。ブロックを消すと攻撃できるよ。', null, 'うん！');
+        if (rotateMode === 'flick') {   // タップ＆フリック（2026-11-18）
+          await say('盤面の<b>回したい場所をタップ</b>すると、<b>2×2の枠</b>がそこへ動くよ。', () => $('game'));
+          await say('タップした指を<b>そのまま上へなぞる</b>と右回り、<b>下へなぞる</b>と左回り！<br>なぞり続けると続けて回るよ。', () => $('game'));
+        } else {
         await say('<b>盤面の左側をドラッグ</b>すると、<b>2×2の枠</b>が動くよ。', () => $('game'));
         const sz = $('swipeZone');
         await say('<b>右の帯を上下にスワイプ</b>すると、枠の中のブロックが<b>回転</b>するよ。<br>上へで右回り、下へで左回り！', () => (sz && !sz.classList.contains('hidden') ? sz : $('game')));
+        }
         await say('じゃあ、実際にやってみるね！<br><b>同じ色を縦か横に3つ以上</b>そろえると消えるよ。よく見ててね！', null, '見てみる');
         if (!stillOn()) return;
         resumeClock(); const s0 = score; autoOn = true;
@@ -12286,13 +12312,13 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   $('setBack').addEventListener('click', closeSettings);
   $('setClose').addEventListener('click', closeSettings);
   // 操作は3種類：ドラッグ＆タップ／ドラッグ＆スワイプ／キーパッド
-  const CTRL_LABEL = {'touch-tap': '操作：ドラッグ＆タップ', 'touch-swipe': '操作：ドラッグ＆スワイプ'};
-  const CTRL_ORDER = ['touch-tap', 'touch-swipe'];
+  const CTRL_LABEL = {'touch-tap': '操作：ドラッグ＆タップ', 'touch-swipe': '操作：ドラッグ＆スワイプ', 'touch-flick': '操作：タップ＆フリック'};
+  const CTRL_ORDER = ['touch-tap', 'touch-swipe', 'touch-flick'];
   let inputMode = 'touch', ctrlMode = 'touch-tap';
   function setCtrl(m){
     ctrlMode = CTRL_LABEL[m] ? m : 'touch-tap';
     inputMode = 'touch';
-    rotateMode = ctrlMode === 'touch-swipe' ? 'swipe' : 'tap';
+    rotateMode = ctrlMode === 'touch-swipe' ? 'swipe' : ctrlMode === 'touch-flick' ? 'flick' : 'tap';
     $('hint').innerHTML = HINTS[ctrlMode]() + HINT_TAIL;
     refreshZone();
     resize();                                          // 盤面の大きさを取り直す
@@ -12313,7 +12339,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   buildGauges();
   setTheme(load('theme', 'auto'));
   setSwipeSide(load('side', 'right'));
-  setCtrl('touch-swipe');                            // 操作はスワイプだけ（タップ式はやめた）
+  // 操作は2つから選ぶ（タップ式はやめた）。2026-11-18 本人：指が滑らずうまく操作できない → タップ＆フリックを足して、いまはこちらを最初の設定に
+  setCtrl(load('ctrl', 'touch-flick') === 'touch-swipe' ? 'touch-swipe' : 'touch-flick');
   resize();
   requestAnimationFrame(render);
 })();
