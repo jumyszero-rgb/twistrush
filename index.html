@@ -462,7 +462,7 @@ body.on-menu .battlemain{opacity:0;}
   .fgtabs{display:flex;gap:6px;margin:6px 0;} .fgtabs button{flex:1;padding:7px 0;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#f6f0ff;font-weight:900;}
   .fgtabs button.on{background:#ffd24a;color:#3a1a00;} .fgsub{font-size:12px;margin:4px 0;} .fgsub small{opacity:.75;}
   .fgrc{list-style:none;margin:4px 0;padding:0;font-size:12px;display:grid;grid-template-columns:1fr 1fr;gap:2px 8px;} .fgrc li.ok{color:#7ff0a8;} .fgrc li.ng{color:#ff9db0;}
-  .fgkind button{flex:1;} .eqfx{margin-top:4px;font-size:12px;font-weight:700;color:#b07a00;} @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .eqfx{color:#ffd24a;} } :root[data-theme="dark"] .eqfx{color:#ffd24a;}
+  .fgkind button{flex:1;} .fghint{margin:6px 0 2px;padding:6px 8px;border-radius:10px;background:rgba(255,210,74,.12);font-size:11.5px;line-height:1.5;} .fghint b{display:block;font-size:11px;opacity:.85;} .fghint span{display:block;} .eqfx{margin-top:4px;font-size:12px;font-weight:700;color:#b07a00;} @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .eqfx{color:#ffd24a;} } :root[data-theme="dark"] .eqfx{color:#ffd24a;}
   .eqslot{background:rgba(0,0,0,.06);border-radius:10px;padding:8px;font-size:13px;} .eqslot.on{background:rgba(255,210,74,.18);} .eqslot button{margin-top:6px;padding:4px 14px;border-radius:8px;border:1px solid #c9a;background:#fff;}
   .eqitem{display:block;width:100%;text-align:left;margin:4px 0;padding:7px 9px;border-radius:10px;border:1px solid rgba(0,0,0,.15);background:#fff;font-family:inherit;}
   .eqitem small{display:block;font-size:11px;opacity:.75;} .eqitem em{font-style:normal;font-size:10.5px;color:#d0506a;} .eqitem.on{outline:2px solid #ffb400;}
@@ -7029,7 +7029,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.189';
+  const APP_VER = '0.9.190';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -9740,13 +9740,33 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       h += '<div class="excard fgcard"><div class="exhd">' + wpnPic(w) + '<b>' + w.n + '</b><span class="exh">' + w.g + '</span></div>' +
         '<div class="fgsub">' + w.t + '　' + attrBadge0(w.a) + ' ' + ATTR[w.a].n + '属性　<b>' + wpnLine(w) + '</b>' + (eqFxLine(w) ? '<br><small style="color:#ffd24a">' + eqFxLine(w) + '</small>' : '') + (w.fx ? '<br><small>ほかの効果：' + w.fx + '（今後対応）</small>' : '') + '</div>' +
         '<ul class="fgrc">' + rc.map(([k, n]) => { const hv = inv[k] || 0; return '<li class="' + (hv >= n ? 'ok' : 'ng') + '">' + EX_MAT[k][1] + ' ' + EX_MAT[k][0] + ' <b>' + hv + '/' + n + '</b></li>'; }).join('') +
-        '<li class="' + (coins >= cost ? 'ok' : 'ng') + '">🪙 シルバー <b>' + cost.toLocaleString() + '</b></li></ul>' +
+        '<li class="' + (coins >= cost ? 'ok' : 'ng') + '">🪙 シルバー <b>' + cost.toLocaleString() + '</b></li></ul>' + matHints(rc) +
         (matShort(rc).cost > 0 && matShort(rc).ok ? '<button class="fgbuy" data-buymat="' + w.id + '">足りない素材をゴールド ' + matShort(rc).cost + ' で買う</button>' : '') +
         '<div class="exgo"><span>所持 ' + own(w.id) + '</span><button data-craft="' + w.id + '"' + (ok ? '' : ' class="ng"') + '>作る</button></div></div>';
     });
     h += '<p class="sknote">素材は遠征で手に入ります。キャラと同じ属性の装備を付けると、その装備のステータスが1.2倍になります。作った装備は、キャラの詳細 →「装備」で付けます（アクセはLV10で1つ目、LV30で2つ目の枠がひらきます）。</p>';
     const b = $('forgeBody'); b.innerHTML = h;
   }
+  // ===== 素材のヒント（2026-11-18 本人：鍛冶屋で「〇〇で出てると噂だ」くらいに教える。確率や数は出さない）=====
+  const HINT_END = ['で見つかると噂だよ', 'で出たって話を聞いたよ', 'あたりにあるらしい', 'で拾ったって冒険者が言ってた'];
+  function matWhere(k){
+    const m = EX_MAT[k]; if (!m) return [];
+    if (m[2] === 's') { const a = k.split('_')[1], lv = +k.split('_')[2], L = EX_STAGES.filter(st => EX_STAGE_ATTR[st.id] === a);
+      return L.length ? L.map(st => [st, 0]) : EX_STAGES.slice(0, 2).map(st => [st, 0]); }
+    if (m[2] === 'l') return [];
+    const t = m[3], L = [];
+    EX_STAGES.forEach(st => { if (!(EX_MATS[st.id] || []).includes(m[2])) return;
+      for (let g = 0; g < EX_GR.length; g++) { const s2 = Math.min(10, st.s + EX_GR[g].add); if ((EX_TIER_W[s2] || [])[t] >= 10) { L.push([st, g]); break; } } });
+    return L.sort((a, b) => a[1] - b[1] || a[0].lv - b[0].lv).slice(0, 2);
+  }
+  function matHint(k){
+    const m = EX_MAT[k]; if (!m) return '';
+    let h = 0; for (const ch of k) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+    if (m[2] === 'l') return m[0] + '…むずかしい遠征の奥の奥で、ごくまれに見つかるって伝説があるよ';
+    const w = matWhere(k); if (!w.length) return '';
+    return m[0] + '…' + w.map(([st, g]) => '「' + st.n + '」' + (g ? '（' + EX_GR[g].n + '以上）' : '')).join('や') + HINT_END[h % HINT_END.length];
+  }
+  const matHints = rc => { const L = rc.filter(([k, n]) => (inv[k] || 0) < n).map(([k]) => matHint(k)).filter(Boolean); return L.length ? '<div class="fghint"><b>💬 ハナのうわさ話</b>' + L.map(x => '<span>' + x + '</span>').join('') + '</div>' : ''; };
   // 足りない素材をゴールドで買う（伝説素材とLRの素材は売らない）。1個の値段：N 5／R 15／SR 40／MR 150、属性石 かけら10・石30・宝珠100
   const MAT_GOLD = [5, 15, 40, 150], STONE_GOLD = [10, 30, 100], ENH_GOLD = {enh_n: [10, 20, 40, 100, 250], enh_b: [100, 200, 400, 1000, 2500]};
   function matShort(rc){
