@@ -462,7 +462,7 @@ body.on-menu .battlemain{opacity:0;}
   .fgtabs{display:flex;gap:6px;margin:6px 0;} .fgtabs button{flex:1;padding:7px 0;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#f6f0ff;font-weight:900;}
   .fgtabs button.on{background:#ffd24a;color:#3a1a00;} .fgsub{font-size:12px;margin:4px 0;} .fgsub small{opacity:.75;}
   .fgrc{list-style:none;margin:4px 0;padding:0;font-size:12px;display:grid;grid-template-columns:1fr 1fr;gap:2px 8px;} .fgrc li.ok{color:#7ff0a8;} .fgrc li.ng{color:#ff9db0;}
-  .eqfx{margin-top:4px;font-size:12px;font-weight:700;color:#b07a00;} @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .eqfx{color:#ffd24a;} } :root[data-theme="dark"] .eqfx{color:#ffd24a;}
+  .fgkind button{flex:1;} .eqfx{margin-top:4px;font-size:12px;font-weight:700;color:#b07a00;} @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .eqfx{color:#ffd24a;} } :root[data-theme="dark"] .eqfx{color:#ffd24a;}
   .eqslot{background:rgba(0,0,0,.06);border-radius:10px;padding:8px;font-size:13px;} .eqslot.on{background:rgba(255,210,74,.18);} .eqslot button{margin-top:6px;padding:4px 14px;border-radius:8px;border:1px solid #c9a;background:#fff;}
   .eqitem{display:block;width:100%;text-align:left;margin:4px 0;padding:7px 9px;border-radius:10px;border:1px solid rgba(0,0,0,.15);background:#fff;font-family:inherit;}
   .eqitem small{display:block;font-size:11px;opacity:.75;} .eqitem em{font-style:normal;font-size:10.5px;color:#d0506a;} .eqitem.on{outline:2px solid #ffb400;}
@@ -2896,7 +2896,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   const goldTier = () => { const m = Math.max(...stacks); return m >= CFG.WARN_AT ? 2 : (m >= CFG.WARN_AT / 2 ? 1 : 0); };
   // サバイバルは時間で圧力が上がるので、オクタ（★）を多めに出す（約1.5倍：5%／11%／18%）
   const GOLD_TA = [0.05, 0.11, 0.18];
-  const goldRate = () => (gameMode === 'rank' ? GOLD_TA[goldTier()] : [CFG.GOLD_RATE, CFG.GOLD_RATE_MID, CFG.GOLD_RATE_HIGH][goldTier()]);
+  let eqT = {}, eqGuardUsed = false, eqRegenAt = 0;   // 防具・アクセの効果（ストーリーの戦いのはじめにまとめる）
+  const goldRate = () => (gameMode === 'story' && eqT.octa ? eqT.octa / 100 : 0) + (gameMode === 'rank' ? GOLD_TA[goldTier()] : [CFG.GOLD_RATE, CFG.GOLD_RATE_MID, CFG.GOLD_RATE_HIGH][goldTier()]);
   // エンドレスだけ：時間でも圧力を上げる（2026-11-13）。ふつうの人で3分前後、上手い人で5分前後に終わるように
   //   たまる量（1回あたり）：〜1分 1／〜2分 2／〜2分半 3／〜3分 4／〜3分半 5／〜4分 6／〜4分半 7／〜5分 8／そのあと20秒ごとに+2
   const ENDLESS_STEPS = [[60, 1], [120, 2], [150, 3], [180, 4], [210, 5], [240, 6], [270, 7], [300, 8]];
@@ -4516,7 +4517,9 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     spawnSay(n); playAnim('me', 'atk');          // 自分の攻撃はセリフと動きで見せる
     if (isZako()) zakoFx('hit');                   // 暴走ブロックは当たると揺れる
     let dealt = 0;
-    const crit = wCrit[1] && now() < wCrit[1] && Math.random() < wCrit[0], cm = crit ? 1.5 : 1;   // 武器の効果：クリティカルは1.5倍
+    const crR = (wCrit[1] && now() < wCrit[1] ? wCrit[0] : 0) + (eqT.crit || 0) / 100, crit = crR > 0 && Math.random() < crR;   // 武器・防具・アクセの効果：クリティカルは1.5倍（＋クリティカルダメージ）
+    const nCol = dec ? dec.filter(x => x).length : 0;
+    const cm = (crit ? 1.5 + (eqT.critDmg || 0) / 100 : 1) * (nCol >= 2 && eqT.sync ? 1 + eqT.sync / 100 : 1) * (eqT.low && Math.max(...stacks) >= CFG.STACK_MAX / 2 ? 1 + eqT.low / 100 : 1);
     const pr = wPierce[1] && now() < wPierce[1] ? wPierce[0] : 0;
     cpus.forEach(c => {
       if (!c.alive) return;
@@ -5423,6 +5426,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if ($('resGet')) $('resGet').classList.add('hidden');
     if (!running) return;
     if (tryCharm()) return;                       // お守りを持っていれば、負けずに続ける
+    if (eqGuard()) return;                        // 防具「不死鳥の衣」：1回だけ負けを防ぐ
     if (gameMode === 'online') onlSend({t: 'lose'});   // オンライン対戦：負けを知らせる
     itemsStop();
     running = false; confirmUntil = 0; refreshZone(); hideFighters();   // 終わったら立ち絵を消す
@@ -7025,7 +7029,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.188';
+  const APP_VER = '0.9.189';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -8751,7 +8755,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       return b + add;
     });
   }
-  const unitStats = u => { const b = statsOf(ciOf(u), u.lv); try { const w = wpnBonus(u); return b.map((v, k) => v + w[k]); } catch(_) { return b; } };
+  const unitStats = u => { const b = statsOf(ciOf(u), u.lv); try { const w = gearBonus(u), pc = eqPctOf(eqItemsOf(u)); return b.map((v, k) => Math.round((v + w[k]) * (1 + pc[k] / 100))); } catch(_) { return b; } };
   // ---- チーム（1人目がメイン）。4つまで保存して切りかえられる ----
   let teams = loadJ('teams', null), teamNo = +load('teamno', '0') || 0;
   if (!Array.isArray(teams) || teams.length !== 4) teams = [0, 1, 2, 3].map(() => [null, null, null, null]);   // 最初は空。自分で選んで入れる
@@ -8870,7 +8874,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   const unitPts = () => Math.max(1, runMy[0]);                          // カラーHPの1目もり＝体力合計（HP＝体力×30）
   const hpMaxPts = () => unitPts() * CFG.STACK_MAX;
   // 受けるダメージ：敵の攻撃1回あたりの目もり数
-  function incoming(n){ if (!statOn()) return n; const pts = n * runEn[1] * corr(runEn[1], myDef()) * runAttr.inn; return pts / unitPts() / (gameMode === 'story' ? FIGHT_T : 1); }
+  function incoming(n){ if (!statOn()) return n; const pts = n * runEn[1] * corr(runEn[1], myDef()) * runAttr.inn * (1 - (eqT.cut || 0) / 100); return pts / unitPts() / (gameMode === 'story' ? FIGHT_T : 1); }
   // 与えるダメージ：敵のHPの1目もり＝敵の体力（同じステータスならブロック1個で1目もり）
   function outgoing(d){ if (!statOn()) return d * atkMul(); return d * myAtk() * corr(myAtk(), runEn[2]) * runAttr.out / Math.max(1, runEn[0]); }
   const enUnitPts = () => statOn() ? Math.max(1, runEn[0]) : 1;
@@ -9136,12 +9140,16 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   const stoneName = (a, lv) => STONE_N[a] + ['のかけら', '石', 'の宝珠'][lv];
   const LEGEND = {W37: '竜殺しの証', W38: '月の雫', W39: '禁書の一頁', W40: '主神のルーン', W41: '嵐の核', W42: '海神の鱗', W43: '巨人の骨', W44: '魔王の火種',
     W45: '八岐の鱗', W46: '火神の弦', W47: '終焉の砂時計', W48: '雷神の欠片', W49: '龍王の宝玉', W50: 'はじまりの光',
-    A28: '不死鳥の尾羽', A29: '神鉄の欠片', A30: '星屑の糸', X28: '虹の涙', X29: '時の砂', X30: '魔王の契約書'};
+    A19: '不死鳥の尾羽', A20: '神鉄の欠片', X19: '虹の涙', X20: '時の砂'};
+  // 2026-11-18：防具・アクセを20種にしたので番号が変わった（前の番号の伝説素材は新しい番号に移す。使わなくなった2つは表示だけ）
+  const LEGEND_OLD = {A30: '星屑の糸', X30: '魔王の契約書'}, LEGEND_MOVE = {A28: 'A19', A29: 'A20', X28: 'X19', X29: 'X20'};
   // EX_MAT[キー] = [名前, 絵, 種類（w/a/x/s=属性石/l=伝説/''=前の版）, グレード 0〜4]
   const EX_MAT = {};
   Object.keys(MAT_FAM).forEach(f => MAT_FAM[f].l.forEach((n, t) => EX_MAT['m_' + f + '_' + t] = [n, MAT_FAM[f].i, MAT_FAM[f].c, t]));
   Object.keys(STONE_N).forEach(a => [0, 1, 2].forEach(lv => EX_MAT['st_' + a + '_' + lv] = [stoneName(a, lv), '🔶', 's', [1, 2, 4][lv]]));
   Object.keys(LEGEND).forEach(k => EX_MAT['lg_' + k] = [LEGEND[k], '🌟', 'l', 4]);
+  Object.keys(LEGEND_OLD).forEach(k => EX_MAT['lg_' + k] = [LEGEND_OLD[k] + '（旧）', '🌟', 'l', 4]);
+  Object.keys(LEGEND_MOVE).forEach(k => { if (inv['lg_' + k]) { const nk = 'lg_' + LEGEND_MOVE[k]; inv[nk] = (inv[nk] || 0) + inv['lg_' + k]; delete inv['lg_' + k]; saveInv(); } });
   // 前の版で配った素材（表示だけ残す）
   [['mat_iron', '鉄鉱石（旧）'], ['mat_silver', '銀鉱石（旧）'], ['mat_mithril', 'ミスリル（旧）'], ['mat_orichal', 'オリハルコン（旧）'], ['mat_adaman', 'アダマンタイト（旧）'],
    ['mat_hide', '魔獣の革（旧）'], ['mat_cloth', '聖なる布（旧）'], ['mat_scale', '竜のうろこ（旧）'], ['mat_robe', '天使の羽衣（旧）'], ['mat_phoenix', '不死鳥の羽（旧）'],
@@ -9302,13 +9310,14 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (mul > 0) {
       const sv = Math.round((EX_SILVER[a.s] + ((a.bonus.find(x => x[0] === 'silver') || [0, 0])[1])) * mul * tm); addCoins(sv); got.push('シルバー ' + sv); svGot = sv;
       EX_ITEMS[a.s].concat(a.bonus.filter(x => x[0] !== 'silver')).forEach(([k, n, p]) => { const c = exCnt(p * mul * tm); if (c > 0) { giveItem(k, n * c); got.push(EX_ITEM_NAME(k) + ' ×' + n * c); } });
-      (EX_MATS[a.id] || []).forEach(c => { for (let i = exCnt(EX_MAT_P * mul * tm * (passOn() ? 1.2 : 1)); i > 0; i--) { const [k, q] = exRollMat(c, a.s, EX_STAGE_ATTR[a.id]); giveItem(k, q); got.push(EX_MAT[k][1] + EX_MAT[k][0] + ' ×' + q); } });
+      const matUp = 1 + (eqTeamFx(a.uids.map(unitOf).filter(Boolean)).mat || 0) / 100;   // アクセ「遠征の素材が出る率」
+      (EX_MATS[a.id] || []).forEach(c => { for (let i = exCnt(EX_MAT_P * mul * tm * matUp * (passOn() ? 1.2 : 1)); i > 0; i--) { const [k, q] = exRollMat(c, a.s, EX_STAGE_ATTR[a.id]); giveItem(k, q); got.push(EX_MAT[k][1] + EX_MAT[k][0] + ' ×' + q); } });
       { const n = exCnt(ENH_DROP[a.s] * mul * tm); for (let i = 0; i < n; i++) { const k = 'enh_n_' + exTier(Math.min(5, a.s)); giveItem(k, 1); got.push('🔷 ' + EX_MAT[k][0] + ' ×1'); } }   // グレードは★で決まる（高いグレードはまれ）
       if (Math.random() < ENH_DROP_B[a.s] * mul * tm) { const k = 'enh_b_' + exTier(Math.min(5, a.s)); giveItem(k, 1); got.push('✨ ' + EX_MAT[k][0] + ' ×1！'); }
       if (Math.random() < EVO_DROP[a.s] * mul * tm) { giveItem('evo_c', 1); got.push('💠 進化素材「進化の結晶」×1'); }
       if (Math.random() < EVO_DROP2[a.s] * mul * tm) { giveItem('evo_g', 1); got.push('🔮 進化素材「進化の宝玉」×1'); }
       if (Math.random() < EX_LEGEND_P[a.s] * mul * tm) { const ks = Object.keys(LEGEND), k = 'lg_' + ks[Math.floor(Math.random() * ks.length)]; giveItem(k, 1); got.push('🌟 伝説素材「' + EX_MAT[k][0] + '」×1！'); }
-      if (Math.random() < EX_GEAR_P[a.s] * mul * tm) { const t = exTier(a.s), ws = WPN.filter(w => GT[w.g] === t), w = ws[Math.floor(Math.random() * ws.length)]; if (w) { gearAdd(w.id); got.push('⚔ 武器「' + w.n + '」（' + w.g + '）を見つけた！'); } }
+      if (Math.random() < EX_GEAR_P[a.s] * mul * tm) { const t = exTier(a.s), ws = EQ_ALL.filter(w => GT[w.g] === t), w = ws[Math.floor(Math.random() * ws.length)]; if (w) { gearAdd(w.id); got.push(EQ_ICON[w.s] + ' ' + EQ_KIND[w.s] + '「' + w.n + '」（' + w.g + '）を見つけた！'); } }
     }
     exData.active.splice(i, 1); exSave();
     msgLog('get', '🧭 遠征「' + a.name + '」（達成率 ' + exPct(mul) + '）：経験値 ひとり +' + gain.toLocaleString() + (got.length ? '・' + got.join('・') : ''));
@@ -9466,6 +9475,97 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     ['W50', "創世銃ジェネシス", 'LR', '銃', 'light', [0, 38, 0, 26], "オクタを消すと全色カラーHP−2・クリティカル率+10%"]
   ].map(([id, n, g, t, a, st, fx]) => ({id, n, g, t, a, st, fx}));
   const WPN_BY = Object.fromEntries(WPN.map(w => [w.id, w]));
+  WPN.forEach(w => { w.s = 'w'; });
+  // ===== 防具・アクセ（2026-11-18 本人：各20種）=====
+  //   ステータスは Notion「防具・アクセ一覧」の案、効果は「装備のステータスと効果」の考え方。防具はキャラに1つ、アクセは2つまで（LV10で1つ目・LV30で2つ目）
+  //   同じ属性ならステータス1.2倍（武器と同じ）。並びは [HP, 攻撃, 防御, スピード]
+  const ARM = [
+    ['A01', '布の服', 'N', 'ドレス', 'none', [3, 1, 1, 2]],
+    ['A02', '旅人のマント', 'N', '装束', 'wind', [1, 1, 1, 5]],
+    ['A03', '革の胸当て', 'N', '軽鎧', 'earth', [2, 0, 4, 3]],
+    ['A04', '見習いのローブ', 'N', 'ローブ', 'light', [3, 1, 2, 1]],
+    ['A05', '鉄の鎧', 'N', '重鎧', 'none', [2, 0, 6, 0]],
+    ['A06', '騎士の鎧', 'R', '重鎧', 'light', [5, 0, 13, 0]],
+    ['A07', 'レンジャーの軽鎧', 'R', '軽鎧', 'wind', [4, 0, 6, 4]],
+    ['A08', '魔術師のローブ', 'R', 'ローブ', 'water', [7, 3, 4, 2]],
+    ['A09', '忍びの装束', 'R', '装束', 'dark', [3, 2, 3, 10]],
+    ['A10', '踊り子の衣装', 'R', 'ドレス', 'thunder', [7, 2, 4, 5]],
+    ['A11', '紅蓮の鎧', 'SR', '重鎧', 'fire', [8, 0, 20, 0]],
+    ['A12', '蒼海の羽衣', 'SR', 'ドレス', 'water', [13, 3, 6, 9]],
+    ['A13', '翠風の軽鎧', 'SR', '軽鎧', 'wind', [6, 0, 11, 8]],
+    ['A14', '聖光のローブ', 'SR', 'ローブ', 'light', [14, 6, 8, 3]],
+    ['A15', '冥闇の外套', 'SR', '装束', 'dark', [4, 2, 4, 15]],
+    ['A16', '竜鱗の鎧', 'MR', '重鎧', 'fire', [15, 0, 34, 0]],
+    ['A17', '天使の羽衣', 'MR', 'ドレス', 'light', [15, 4, 8, 12]],
+    ['A18', '影王の装束', 'MR', '装束', 'dark', [7, 5, 7, 30]],
+    ['A19', '不死鳥の衣', 'LR', 'ドレス', 'fire', [22, 6, 11, 17]],
+    ['A20', '神鉄の聖鎧', 'LR', '重鎧', 'light', [19, 0, 45, 0]],
+  ].map(([id, n, g, t, a, st]) => ({id, n, g, t, a, st, fx: '', s: 'a'}));
+  const ACC = [
+    ['X01', '木の実の首飾り', 'N', '首飾り', 'earth', [3, 0, 0, 0]],
+    ['X02', '銅の指輪', 'N', '指輪', 'none', [0, 2, 0, 0]],
+    ['X03', '鳥の羽の耳飾り', 'N', '耳飾り', 'wind', [0, 0, 0, 3]],
+    ['X04', '貝がらの腕輪', 'N', '腕輪', 'water', [0, 0, 2, 0]],
+    ['X05', '四つ葉のお守り', 'N', 'お守り', 'none', [0, 0, 0, 0]],
+    ['X06', '銀の指輪', 'R', '指輪', 'none', [0, 5, 0, 0]],
+    ['X07', '真珠の首飾り', 'R', '首飾り', 'water', [8, 0, 0, 0]],
+    ['X08', '雷の腕輪', 'R', '腕輪', 'thunder', [0, 0, 0, 6]],
+    ['X09', '狩人の腕輪', 'R', '腕輪', 'wind', [0, 0, 0, 0]],
+    ['X10', '影のチョーカー', 'R', '首飾り', 'dark', [0, 0, 0, 0]],
+    ['X11', '星のサファイアの指輪', 'SR', '指輪', 'water', [0, 6, 0, 0]],
+    ['X12', '紅蓮の腕輪', 'SR', '腕輪', 'fire', [0, 0, 0, 0]],
+    ['X13', '翠風の耳飾り', 'SR', '耳飾り', 'wind', [0, 0, 0, 0]],
+    ['X14', '大地の護符', 'SR', 'お守り', 'earth', [0, 0, 0, 0]],
+    ['X15', '冥闇の指輪', 'SR', '指輪', 'dark', [0, 0, 0, 0]],
+    ['X16', '精霊王の指輪', 'MR', '指輪', 'none', [0, 0, 0, 0]],
+    ['X17', '竜の瞳の首飾り', 'MR', '首飾り', 'fire', [0, 0, 0, 0]],
+    ['X18', '三日月の耳飾り', 'MR', '耳飾り', 'light', [0, 0, 0, 0]],
+    ['X19', '虹の結晶のティアラ', 'LR', '髪飾り', 'none', [0, 0, 0, 0]],
+    ['X20', '時の砂時計', 'LR', 'お守り', 'thunder', [0, 0, 0, 0]],
+  ].map(([id, n, g, t, a, st]) => ({id, n, g, t, a, st, fx: '', s: 'x'}));
+  const EQ_ALL = WPN.concat(ARM, ACC), EQ_BY = Object.fromEntries(EQ_ALL.map(e => [e.id, e]));
+  const EQ_KIND = {w: '武器', a: '防具', x: 'アクセ'}, EQ_ICON = {w: '⚔', a: '🛡', x: '💍'};
+  // 効果（ストーリーで効く）。cut＝受けるダメージ−%／heart＝ハートの回復量+%／regen＝10秒ごとに全色%回復／chgSp・chgOg＝技のチャージ−%
+  //   crit＝クリティカル率+%／critDmg＝クリティカルダメージ+%／sync＝2色以上いっしょに消したダメージ+%／low＝ピンチ（カラーHPが半分をこえた）で攻撃+%
+  //   octa＝オクタの出る率+%／mat＝遠征の素材が出る率+%／atkP・spdP・allP＝ステータス+%（いつでも）／guard＝1回だけ負けを防ぐ
+  //   res＝毒・出血・スタンを防ぐ（敵の毒・出血・スタンは今後のバージョンアップ。それまでは表示だけ）／og＝奥義のときの一時的な効果（2026-11-18 本人：奥義のときに発動）
+  const EQ_FX = {
+    A11: {cut: 5, og: {def: 15, s: 8}},
+    A12: {heart: 10, regen: 2},
+    A13: {chgSp: 5, res: {bleed: 30}},
+    A14: {cut: 5, og: {heal: 5}},
+    A15: {crit: 5, res: {poison: 30}},
+    A16: {cut: 10, og: {def: 25, s: 10}, res: {stun: 50}},
+    A17: {regen: 3, og: {heal: 10}},
+    A18: {crit: 10, chgSp: 5, res: {bleed: 50}},
+    A19: {guard: 1, og: {all: 15, s: 12}},
+    A20: {cut: 20, og: {def: 30, s: 15}, res: {stun: 100, poison: 100, bleed: 100}},
+    X05: {mat: 2}, X07: {heart: 5}, X09: {sync: 5}, X10: {crit: 3}, X11: {chgSp: 5}, X12: {atkP: 8}, X13: {spdP: 10}, X14: {cut: 7},
+    X15: {low: 15}, X16: {allP: 5}, X17: {critDmg: 30}, X18: {chgOg: 10}, X19: {allP: 10, octa: 2}, X20: {chgSp: 20, chgOg: 20},
+  };
+  const RES_N = {stun: 'スタン', poison: '毒', bleed: '出血'};
+  function eqFxLines(e){
+    const f = e && EQ_FX[e.id]; if (!f) return [];
+    const L = [];
+    if (f.allP) L.push('全ステータス+' + f.allP + '%'); if (f.atkP) L.push('攻撃+' + f.atkP + '%'); if (f.spdP) L.push('スピード+' + f.spdP + '%');
+    if (f.cut) L.push('受けるダメージ−' + f.cut + '%'); if (f.heart) L.push('ハートの回復量+' + f.heart + '%'); if (f.regen) L.push('10秒ごとに全色のカラーHPを' + f.regen + '%回復');
+    if (f.chgSp && f.chgOg) L.push('必殺技・奥義のチャージ−' + f.chgSp + '%'); else { if (f.chgSp) L.push('必殺技のチャージ−' + f.chgSp + '%'); if (f.chgOg) L.push('奥義のチャージ−' + f.chgOg + '%'); }
+    if (f.crit) L.push('クリティカル率+' + f.crit + '%'); if (f.critDmg) L.push('クリティカルダメージ+' + f.critDmg + '%'); if (f.sync) L.push('2色以上いっしょに消したときのダメージ+' + f.sync + '%');
+    if (f.low) L.push('ピンチ（カラーHPが半分をこえた）とき攻撃+' + f.low + '%'); if (f.octa) L.push('オクタブロックの出る率+' + f.octa + '%'); if (f.mat) L.push('遠征の素材が出る率+' + f.mat + '%');
+    if (f.guard) L.push('1回だけ、負けそうなときカラーHPを全回復');
+    if (f.og) L.push('奥義のとき：' + (f.og.def ? f.og.s + '秒間 防御+' + f.og.def + '%' : f.og.all ? f.og.s + '秒間 全ステータス+' + f.og.all + '%' : '全色のカラーHPを' + f.og.heal + '%回復'));
+    if (f.res) L.push(Object.keys(f.res).map(k => RES_N[k] + (f.res[k] >= 100 ? '無効' : '防御' + f.res[k] + '%')).join('・') + '（敵の毒・出血・スタンは今後追加）');
+    return L;
+  }
+  const eqFxLine = e => e.s === 'w' ? wfxLine(e) : eqFxLines(e).join('・');
+  // ステータスの%アップ（武器・防具・アクセぜんぶ。いつでも効く）
+  function eqPctOf(list){ const p = [0, 0, 0, 0]; list.forEach(e => { const f = EQ_FX[e.id]; if (!f) return; const a = f.allP || 0; p[0] += a; p[1] += a + (f.atkP || 0); p[2] += a; p[3] += a + (f.spdP || 0); }); return p; }
+  // チームでまとめた効果（ストーリーの戦いで使う）。上限をつける
+  function eqTeamFx(us){
+    const T = {}; us.forEach(u => eqItemsOf(u).forEach(e => { const f = EQ_FX[e.id]; if (!f) return; Object.keys(f).forEach(k => { if (typeof f[k] === 'number') T[k] = (T[k] || 0) + f[k]; }); }));
+    ['cut', 'chgSp', 'chgOg'].forEach(k => { if (T[k]) T[k] = Math.min(50, T[k]); }); if (T.crit) T.crit = Math.min(60, T.crit); if (T.regen) T.regen = Math.min(10, T.regen);
+    return T;
+  }
   const WPN_MAIN = {'剣': 'metal', '槍': 'metal', '短剣': 'metal', '斧': 'metal', 'ハンマー': 'metal', '銃': 'metal', '拳': 'metal', '弓': 'wood', '杖': 'wood', '刀': 'metal'};
   // 2026-11-18 本人：剣はにぎりが皮＝皮革、槍は柄が木＝木材（作るときの仕上げ剤とあわせて3種類に）
   const WPN_SUB = {'剣': 'hide', '槍': 'wood', '杖': 'polish', '短剣': 'beast', '斧': 'wood', 'ハンマー': 'wood', '弓': 'beast', '銃': 'mech', '拳': 'beast', '刀': 'hide'};
@@ -9505,6 +9605,19 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     { const k = 'm_polish_' + t, n = [1, 2, 3, 4, 5][t], e = r.find(x => x[0] === k); if (e) e[1] += n; else r.push([k, n]); }   // 2026-11-17 本人：作るときは仕上げ剤が要る（装備のグレードで種類が変わる。もともと仕上げを使う武器は数を足す）
     return r;
   }
+  // 防具・アクセの素材（2026-11-18）：種類で主な素材・2つ目の素材が決まる。見た目で材質がちがうものは個別に
+  const ARM_MAT = {'重鎧': ['metal', 'hide'], '軽鎧': ['hide', 'metal'], 'ローブ': ['cloth', 'gem'], 'ドレス': ['cloth', 'craft'], '装束': ['cloth', 'hide'],
+    '首飾り': ['gem', 'craft'], '指輪': ['craft', 'gem'], '耳飾り': ['gem', 'craft'], '腕輪': ['craft', 'gem'], 'お守り': ['cloth', 'gem'], '髪飾り': ['craft', 'gem']};
+  const ARM_MAT1 = {A17: ['cloth', 'beast'], A19: ['cloth', 'beast'], X01: ['wood', 'craft'], X03: ['beast', 'craft'], X04: ['gem', 'cloth'], X09: ['hide', 'beast'], X10: ['cloth', 'gem']};
+  function eqRecipe(e){
+    if (e.s === 'w') return wpnRecipe(e);
+    const t = GT[e.g], q = WPN_Q[t], mm = ARM_MAT1[e.id] || ARM_MAT[e.t], r = [['m_' + mm[0] + '_' + t, q[0]]];
+    if (q[1]) r.push(['m_' + mm[1] + '_' + t, q[1]]);
+    if (q[2]) r.push(['st_' + e.a + '_' + (t >= 3 ? 2 : 1), q[2]]);
+    if (LEGEND[e.id]) r.push(['lg_' + e.id, 1]);
+    { const k = 'm_polish_' + t, n = [1, 2, 3, 4, 5][t], x = r.find(y => y[0] === k); if (x) x[1] += n; else r.push([k, n]); }
+    return r;
+  }
   let gear = loadJ('gear', null); if (!Array.isArray(gear)) gear = [];
   const saveGear = () => save('gear', JSON.stringify(gear));
   function gearAdd(k, x){ const g = Object.assign({g: 'g' + Date.now().toString(36) + Math.floor(Math.random() * 1e6).toString(36), k}, x || {}); gear.push(g); saveGear(); return g; }
@@ -9518,7 +9631,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   const gearOf = gid => gear.find(x => x.g === gid) || null;
   // 武器の絵（2026-11-16〜・届いたものから）。img/wpn/W○○.webp
   const WPN_PIC = new Set(WPN.map(w => w.id));   // 2026-11-16：50枚そろった
-  const wpnPic = (w, cls, p) => WPN_PIC.has(w.id) ? '<img class="wpic ' + (cls || '') + ' g' + w.g + enhGlow(p) + '" src="img/wpn/' + w.id + '.webp" alt="" loading="lazy">' : '<span class="wpic ' + (cls || '') + ' g' + w.g + ' none">' + ({'剣': '🗡', '槍': '🔱', '短剣': '🔪', '斧': '🪓', 'ハンマー': '🔨', '銃': '🔫', '拳': '🥊', '弓': '🏹', '杖': '🪄', '刀': '⚔'}[w.t] || '⚔') + '</span>';
+  const EQ_DIR = {w: 'wpn', a: 'arm', x: 'acc'};
+  const wpnPic = (w, cls, p) => (w.s !== 'w' || WPN_PIC.has(w.id)) ? '<img class="wpic ' + (cls || '') + ' g' + w.g + enhGlow(p) + '" src="img/' + EQ_DIR[w.s || 'w'] + '/' + w.id + '.webp" alt="" loading="lazy">' : WPN_PIC.has(w.id) ? '<img class="wpic ' + (cls || '') + ' g' + w.g + enhGlow(p) + '" src="img/wpn/' + w.id + '.webp" alt="" loading="lazy">' : '<span class="wpic ' + (cls || '') + ' g' + w.g + ' none">' + ({'剣': '🗡', '槍': '🔱', '短剣': '🔪', '斧': '🪓', 'ハンマー': '🔨', '銃': '🔫', '拳': '🥊', '弓': '🏹', '杖': '🪄', '刀': '⚔'}[w.t] || '⚔') + '</span>';
   const wpnOfUnit = u => { const g = u && u.wp ? gearOf(u.wp) : null; return g ? WPN_BY[g.k] : null; };
   // ===== 武器の種類ごとの効果（2026-11-18 本人）：奥義を使ったときに発動。Nはなし・Rは軽め・SRから本番 =====
   const WFX_G = {R: 0, SR: 1, MR: 2, LR: 3};
@@ -9563,7 +9677,19 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     return '';
   }
   const wfxLine = w => { const f = wpnFx(w); return f ? '奥義のとき：' + wfxText(f) : ''; };
-  const gearUser = gid => units.find(u => u.wp === gid) || null;
+  const gearUser = gid => units.find(u => u.wp === gid || u.ar === gid || (u.ac || []).includes(gid)) || null;
+  const accN = u => u.lv >= 30 ? 2 : u.lv >= 10 ? 1 : 0;
+  const armOfUnit = u => { const g = u && u.ar ? gearOf(u.ar) : null; return g && EQ_BY[g.k] ? EQ_BY[g.k] : null; };
+  // 付けているもの（武器・防具・ひらいている枠のアクセ）：[{e: 装備, g: 持ち物}]
+  function eqGearsOf(u){
+    const L = []; if (!u) return L;
+    [u.wp, u.ar].concat((u.ac || []).slice(0, accN(u))).forEach(gid => { const g = gid ? gearOf(gid) : null; if (g && EQ_BY[g.k]) L.push({e: EQ_BY[g.k], g}); });
+    return L;
+  }
+  const eqItemsOf = u => eqGearsOf(u).map(x => x.e);
+  function unequip(gid){ units.forEach(u => { if (u.wp === gid) delete u.wp; if (u.ar === gid) delete u.ar; if (u.ac) { u.ac = u.ac.map(x => x === gid ? null : x); if (!u.ac.some(Boolean)) delete u.ac; } }); }
+  // 武器・防具・アクセのステータスを足したもの（同じ属性は1.2倍）
+  function gearBonus(u){ const s = [0, 0, 0, 0]; eqGearsOf(u).forEach(({e, g}) => { const m = attrOf(u.id) === e.a ? 1.2 : 1; wpnStOf(e, g.p).forEach((v, k) => { s[k] += Math.round(v * m); }); }); return s; }
   // ===== 武器の強化（2026-11-16）：＋0〜＋10。1つ上がるごとに武器のステータス＋8%（＋10で×1.8）=====
   //   2026-11-16 本人：強化石（ふつう）＝成功率50%・失敗するとランクダウン（−1）／祝福の強化石＝成功率100%。成功で武器の輝きが変わる
   //   使う数：N・R＝1／SR＝2／MR・LR＝3個。ほかにシルバー。成功のうち10%は大成功（一気に＋2）
@@ -9584,16 +9710,16 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   function wpnBonus(u){ const w = wpnOfUnit(u); if (!w) return [0, 0, 0, 0]; const g = gearOf(u.wp), m = attrOf(u.id) === w.a ? 1.2 : 1; return wpnStOf(w, g && g.p).map(v => Math.round(v * m)); }
   const wpnLine = w => [['HP', 0], ['攻', 1], ['防', 2], ['速', 3]].filter(([, k]) => w.st[k]).map(([n, k]) => n + '+' + w.st[k]).join(' ');
   // ----- 鍛冶屋 -----
-  let forgeG = 'N', forgeMsg = '';
+  let forgeG = 'N', forgeMsg = '', forgeK = 'w';
   function drawForge(){
-    const list = WPN.filter(w => w.g === forgeG), own = k => gear.filter(x => x.k === k).length;
-    let h = (forgeMsg ? '<div class="exmsg">' + forgeMsg + '</div>' : '') + '<div class="fgtabs">' + ['N', 'R', 'SR', 'MR', 'LR', 'UP', 'GACHA'].map(g => '<button data-fg="' + g + '" class="' + (g === forgeG ? 'on' : '') + '">' + (g === 'GACHA' ? '🎰' : g === 'UP' ? '強化' : g) + '</button>').join('') + '</div>';
+    const list = EQ_ALL.filter(w => w.s === forgeK && w.g === forgeG), own = k => gear.filter(x => x.k === k).length;
+    let h = (forgeMsg ? '<div class="exmsg">' + forgeMsg + '</div>' : '') + (forgeG === 'UP' || forgeG === 'GACHA' ? '' : '<div class="fgtabs fgkind">' + ['w', 'a', 'x'].map(k => '<button data-fgk="' + k + '" class="' + (k === forgeK ? 'on' : '') + '">' + EQ_ICON[k] + ' ' + EQ_KIND[k] + '</button>').join('') + '</div>') + '<div class="fgtabs">' + ['N', 'R', 'SR', 'MR', 'LR', 'UP', 'GACHA'].map(g => '<button data-fg="' + g + '" class="' + (g === forgeG ? 'on' : '') + '">' + (g === 'GACHA' ? '🎰' : g === 'UP' ? '強化' : g) + '</button>').join('') + '</div>';
     if (forgeG === 'UP') {
-      const mine = gear.filter(g => WPN_BY[g.k]).sort((a, b) => GT[WPN_BY[b.k].g] - GT[WPN_BY[a.k].g] || (b.p | 0) - (a.p | 0));
+      const mine = gear.filter(g => EQ_BY[g.k]).sort((a, b) => GT[EQ_BY[b.k].g] - GT[EQ_BY[a.k].g] || (b.p | 0) - (a.p | 0));
       h += '<div class="exhrs enhpay">' + [['sv', '⚪ シルバーで払う'], ['gd', '🟡 ゴールドで払う']].map(([k, n]) => '<button data-enhpay="' + k + '" class="' + (k === enhPay ? 'on' : '') + '">' + n + '</button>').join('') + '</div>';
-      h += '<p class="sknote" style="margin-top:4px">持っている武器を強くします（上限なし）。強くなるほど武器が輝きます。<br>強化石は武器と同じグレード（N〜LR）のものしか使えません。<br>🔷 強化石：強くなるほど成功しにくくなります。失敗しても下がりません<br>✨ 祝福の強化石：かならず成功<br>強化石はとても貴重。遠征やボス戦で、ごくまれに見つかることがあるらしい…</p>';
-      if (!mine.length) h += '<section><p>まだ武器を持っていません。「N」〜「LR」のタブで作るか、🎰の装備ガチャで手に入れてください。</p></section>';
-      mine.forEach(g => { const w = WPN_BY[g.k], p = g.p | 0, us = gearUser(g.g), mx = p >= ENH_MAX;
+      h += '<p class="sknote" style="margin-top:4px">持っている武器・防具・アクセを強くします（上限なし）。強くなるほど輝きます。上がるのはステータスです。<br>強化石は武器と同じグレード（N〜LR）のものしか使えません。<br>🔷 強化石：強くなるほど成功しにくくなります。失敗しても下がりません<br>✨ 祝福の強化石：かならず成功<br>強化石はとても貴重。遠征やボス戦で、ごくまれに見つかることがあるらしい…</p>';
+      if (!mine.length) h += '<section><p>まだ装備を持っていません。「N」〜「LR」のタブで作るか、🎰の装備ガチャで手に入れてください。</p></section>';
+      mine.forEach(g => { const w = EQ_BY[g.k], p = g.p | 0, us = gearUser(g.g), mx = p >= ENH_MAX;
         const c = enhCost(w, p), pay = enhPay === 'gd' ? gold >= c.gd : coins >= c.sv;
         h += '<div class="excard fgcard"><div class="exhd">' + wpnPic(w, '', p) + '<b>' + w.n + plusTxt(p) + '</b><span class="exh">' + w.g + '</span></div>' +
           '<div class="fgsub">' + (us ? fullName(ALLC[ciOf(us)]) + 'が装備中　' : '') + '<b>' + wpnLineP(w, p) + '</b><br>→ ＋' + (p + 1) + '：<b style="color:#ffd24a">' + wpnLineP(w, p + 1) + '</b></div>' +
@@ -9605,20 +9731,20 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       $('forgeBody').innerHTML = h; return;
     }
     if (forgeG === 'GACHA') {
-      h += '<div class="excard"><div class="exhd"><b>装備ガチャ</b><span class="exh">ゴールド</span></div><p class="fgsub">武器がそのまま出るガチャ。出る確率：' + Object.keys(GEAR_RATE).map(g => g + ' ' + GEAR_RATE[g] + '%').join('・') + '</p>' +
+      h += '<div class="excard"><div class="exhd"><b>装備ガチャ</b><span class="exh">ゴールド</span></div><p class="fgsub">武器・防具・アクセがそのまま出るガチャ。出る確率：' + Object.keys(GEAR_RATE).map(g => g + ' ' + GEAR_RATE[g] + '%').join('・') + '</p>' +
         '<div class="exgo"><button data-ggacha="1">1回 ゴールド' + GEAR_COST[0] + '</button><button data-ggacha="11">10連（11個） ゴールド' + GEAR_COST[1].toLocaleString() + '</button></div></div>';
       $('forgeBody').innerHTML = h; return;
     }
     list.forEach(w => {
-      const rc = wpnRecipe(w), cost = WPN_COST[GT[w.g]], ok = rc.every(([k, n]) => (inv[k] || 0) >= n) && coins >= cost;
+      const rc = eqRecipe(w), cost = WPN_COST[GT[w.g]], ok = rc.every(([k, n]) => (inv[k] || 0) >= n) && coins >= cost;
       h += '<div class="excard fgcard"><div class="exhd">' + wpnPic(w) + '<b>' + w.n + '</b><span class="exh">' + w.g + '</span></div>' +
-        '<div class="fgsub">' + w.t + '　' + attrBadge0(w.a) + ' ' + ATTR[w.a].n + '属性　<b>' + wpnLine(w) + '</b>' + (wfxLine(w) ? '<br><small style="color:#ffd24a">' + wfxLine(w) + '</small>' : '') + (w.fx ? '<br><small>ほかの効果：' + w.fx + '（今後対応）</small>' : '') + '</div>' +
+        '<div class="fgsub">' + w.t + '　' + attrBadge0(w.a) + ' ' + ATTR[w.a].n + '属性　<b>' + wpnLine(w) + '</b>' + (eqFxLine(w) ? '<br><small style="color:#ffd24a">' + eqFxLine(w) + '</small>' : '') + (w.fx ? '<br><small>ほかの効果：' + w.fx + '（今後対応）</small>' : '') + '</div>' +
         '<ul class="fgrc">' + rc.map(([k, n]) => { const hv = inv[k] || 0; return '<li class="' + (hv >= n ? 'ok' : 'ng') + '">' + EX_MAT[k][1] + ' ' + EX_MAT[k][0] + ' <b>' + hv + '/' + n + '</b></li>'; }).join('') +
         '<li class="' + (coins >= cost ? 'ok' : 'ng') + '">🪙 シルバー <b>' + cost.toLocaleString() + '</b></li></ul>' +
         (matShort(rc).cost > 0 && matShort(rc).ok ? '<button class="fgbuy" data-buymat="' + w.id + '">足りない素材をゴールド ' + matShort(rc).cost + ' で買う</button>' : '') +
         '<div class="exgo"><span>所持 ' + own(w.id) + '</span><button data-craft="' + w.id + '"' + (ok ? '' : ' class="ng"') + '>作る</button></div></div>';
     });
-    h += '<p class="sknote">素材は遠征で手に入ります。キャラと同じ属性の武器を持つと、武器のステータスが1.2倍になります。作った武器は、キャラの詳細 →「装備」で付けます。</p>';
+    h += '<p class="sknote">素材は遠征で手に入ります。キャラと同じ属性の装備を付けると、その装備のステータスが1.2倍になります。作った装備は、キャラの詳細 →「装備」で付けます（アクセはLV10で1つ目、LV30で2つ目の枠がひらきます）。</p>';
     const b = $('forgeBody'); b.innerHTML = h;
   }
   // 足りない素材をゴールドで買う（伝説素材とLRの素材は売らない）。1個の値段：N 5／R 15／SR 40／MR 150、属性石 かけら10・石30・宝珠100
@@ -9674,23 +9800,24 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   $('forgeBack').addEventListener('click', () => { playSeFile('sv_hana_bye', 1); $('forge').classList.add('hidden'); clearTimeout(fgFar); clearTimeout(fgSayT); try { bgmOn = true; bgmMode = null; titleBgm(); } catch (_) {} try { if (!$('box').classList.contains('hidden')) drawBox(); } catch(_) {} });
   $('forgeBtn').addEventListener('click', () => openForge());   // 2026-11-15：鍛冶屋はタイトルから直接（ボックスのアイテムから外した）
   $('forgeBody').addEventListener('click', async e => {
+    const fk = e.target.closest('[data-fgk]'); if (fk) { forgeK = fk.dataset.fgk; forgeMsg = ''; drawForge(); return; }
     const t = e.target.closest('[data-fg]'); if (t) { forgeG = t.dataset.fg; forgeMsg = ''; drawForge(); return; }
-    const bm = e.target.closest('[data-buymat]'); if (bm) { const w = WPN_BY[bm.dataset.buymat], sh = matShort(wpnRecipe(w)); if (!sh.ok || !sh.cost) return;
+    const bm = e.target.closest('[data-buymat]'); if (bm) { const w = EQ_BY[bm.dataset.buymat], sh = matShort(eqRecipe(w)); if (!sh.ok || !sh.cost) return;
       payAsk('足りない素材（' + sh.list.map(([k, n]) => EX_MAT[k][0] + '×' + n).join('・') + '）をゴールド ' + sh.cost + ' で買いますか？', async () => { if (!(await spendGold(sh.cost, 'mat'))) return; sh.list.forEach(([k, n]) => giveNt(k, n)); refreshCoins(); forgeMsg = '素材を買いました。'; drawForge(); }); return; }
     const gg = e.target.closest('[data-ggacha]'); if (gg) { const n = +gg.dataset.ggacha, cost = GEAR_COST[n > 1 ? 1 : 0];
       payAsk('ゴールド ' + cost.toLocaleString() + ' で装備ガチャを' + (n > 1 ? '10連' : '1回') + '引きますか？', async () => { if (!(await spendGold(cost, 'geargacha'))) return; refreshCoins();
         const got = []; for (let i = 0; i < n; i++) { const r = Math.random() * 100; let acc = 0, g = 'N'; for (const k of ['LR', 'MR', 'SR', 'R', 'N']) { acc += GEAR_RATE[k]; if (r < acc) { g = k; break; } }
           if (n > 1 && i === n - 1 && !got.some(w => GT[w.g] >= 2) && GT[g] < 2) g = 'SR';
-          const ws = WPN.filter(w => w.g === g), w = ws[Math.floor(Math.random() * ws.length)]; gearAdd(w.id, {nt: 1}); got.push(w); }
+          const ws = EQ_ALL.filter(w => w.g === g), w = ws[Math.floor(Math.random() * ws.length)]; gearAdd(w.id, {nt: 1}); got.push(w); }
         const great = got.some(w => GT[w.g] >= 2);
         fgForge(great, () => { forgeMsg = '🎰 装備ガチャ：' + got.map(w => '<b>' + w.g + '</b> ' + w.n).join('・'); drawForge();
           if (great) { fgSay('すごい！最高の一本だ！', 'hana', 'hana_surprise', 'dwarf_happy', 3200); setTimeout(() => { if (!$('forge').classList.contains('hidden')) fgSay('……わしの最高傑作じゃ', 'dwarf', 'hana_happy', 'dwarf_happy'); }, 3300); }
           else fgSay('できたー！いい出来だよ！', 'hana', 'hana_happy', 'dwarf'); }); }); return; }
     const ep = e.target.closest('[data-enhpay]'); if (ep) { enhPay = ep.dataset.enhpay; save('enh_pay', enhPay); drawForge(); return; }
-    const be = e.target.closest('[data-buyenh]'); if (be) { const [gid, ek] = be.dataset.buyenh.split(':'), g = gearOf(gid); if (!g) return; const cc = enhCost(WPN_BY[g.k], g.p | 0, ek), sh = matShort([cc.rc[0]]); if (!sh.ok || !sh.cost) return;
+    const be = e.target.closest('[data-buyenh]'); if (be) { const [gid, ek] = be.dataset.buyenh.split(':'), g = gearOf(gid); if (!g) return; const cc = enhCost(EQ_BY[g.k], g.p | 0, ek), sh = matShort([cc.rc[0]]); if (!sh.ok || !sh.cost) return;
       payAsk('足りない素材（' + sh.list.map(([k, n]) => EX_MAT[k][0] + '×' + n).join('・') + '）をゴールド ' + sh.cost + ' で買いますか？', async () => { if (!(await spendGold(sh.cost, 'mat'))) return; sh.list.forEach(([k, n]) => giveNt(k, n)); saveInv(); refreshCoins(); drawForge(); }); return; }
     const en = e.target.closest('[data-enh]'); if (en) { if (fgBusy) return;
-      const [gid, ek] = en.dataset.enh.split(':'), g = gearOf(gid); if (!g) return; const w = WPN_BY[g.k], p = g.p | 0;
+      const [gid, ek] = en.dataset.enh.split(':'), g = gearOf(gid); if (!g) return; const w = EQ_BY[g.k], p = g.p | 0;
       const c = enhCost(w, p, ek);
       if (!c.rc.every(([k, n]) => (inv[k] || 0) >= n)) { fgSay('うーん、素材が足りないみたい', 'hana', 'hana_sad', 'dwarf_angry'); return; }
       if (enhPay === 'gd') { if (gold < c.gd) { toast('ゴールドが足りません'); return; } if (!(await spendGold(c.gd, 'enh'))) return; refreshCoins(); }
@@ -9705,7 +9832,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         drawForge(); }, !win);
       return; }
     const c = e.target.closest('[data-craft]'); if (!c || fgBusy) return;
-    const w = WPN_BY[c.dataset.craft], rc = wpnRecipe(w), cost = WPN_COST[GT[w.g]];
+    const w = EQ_BY[c.dataset.craft], rc = eqRecipe(w), cost = WPN_COST[GT[w.g]];
     if (!rc.every(([k, n]) => (inv[k] || 0) >= n) || coins < cost) { fgSay(coins < cost && rc.every(([k, n]) => (inv[k] || 0) >= n) ? 'シルバーが足りないみたい…' : 'うーん、素材が足りないみたい', 'hana', 'hana_sad', 'dwarf_angry'); return; }
     rc.forEach(([k, n]) => useMat(k, n)); saveInv(); addCoins(-cost); gearAdd(w.id);
     fgForge(GT[w.g] >= 3, () => { forgeMsg = '⚒ <b>' + w.n + '</b> ができました！ キャラの詳細 →「装備」で付けられます。'; drawForge();
@@ -9903,13 +10030,13 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   // 預けたときの値段（ニャンコイン・サーバーと同じ式）：武器＝グレードの基本×1.2^強化値（＋20まで）／素材＝種類とグレードで1個の値段×数
   function mkPrice(item, plus, qty){
     let m;
-    if ((m = /^w:(W\d\d)$/.exec(item))) { const w = WPN_BY[m[1]]; return w ? Math.round(MK_W_BASE[GT[w.g]] * Math.pow(1.2, Math.min(20, plus | 0))) : 0; }
+    if ((m = /^w:([WAX]\d\d)$/.exec(item))) { const w = EQ_BY[m[1]]; return w ? Math.round(MK_W_BASE[GT[w.g]] * Math.pow(1.2, Math.min(20, plus | 0))) : 0; }
     let u = 0;
     if ((m = /^m_([a-z]+)_([0-4])$/.exec(item)) && EX_MAT[item]) u = [4, 10, 30, 100, 300][+m[2]];
     else if ((m = /^st_([a-z]+)_([0-2])$/.exec(item)) && EX_MAT[item]) u = [7, 20, 70][+m[2]];
     else if ((m = /^enh_n_([0-4])$/.exec(item))) u = [7, 14, 28, 70, 175][+m[1]];
     else if ((m = /^enh_b_([0-4])$/.exec(item))) u = [70, 140, 280, 700, 1750][+m[1]];
-    else if (/^lg_W\d\d$/.test(item) && EX_MAT[item]) u = 400;
+    else if (/^lg_[WAX]\d\d$/.test(item) && LEGEND[item.slice(3)]) u = 400;
     return u * (qty || 1);
   }
   const mkGet = pr => Math.floor(pr * (1 - MK_FEE));
@@ -9919,11 +10046,11 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   const MK_GN = ['N', 'R', 'SR', 'MR', 'LR'];
   const mkIsW = item => item.startsWith('w:');
   function mkName(item, plus, qty){
-    if (mkIsW(item)) { const w = WPN_BY[item.slice(2)]; return w ? '<b>' + w.g + '</b> ' + w.n + plusTxt(plus | 0) : item; }
+    if (mkIsW(item)) { const w = EQ_BY[item.slice(2)]; return w ? '<b>' + w.g + '</b> ' + w.n + plusTxt(plus | 0) : item; }
     return (EX_MAT[item] ? EX_MAT[item][0] : item) + (qty > 1 ? ' ×' + qty : '');
   }
   function mkIcon(item, plus){
-    if (mkIsW(item)) { const w = WPN_BY[item.slice(2)]; return '<span class="mkic">' + (w ? wpnPic(w, '', plus | 0) : '⚔') + '</span>'; }
+    if (mkIsW(item)) { const w = EQ_BY[item.slice(2)]; return '<span class="mkic">' + (w ? wpnPic(w, '', plus | 0) : '⚔') + '</span>'; }
     return '<span class="mkic">' + (EX_MAT[item] ? EX_MAT[item][1] : '📦') + '</span>';
   }
   const MK_IMG = {cat: 'img/shop/cat.webp', happy: 'img/shop/cat_happy.webp', sleep: 'img/shop/cat_sleep.webp', sad: 'img/shop/cat_sad.webp'};
@@ -9947,7 +10074,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   let mkGot = loadJ('mk_got', []) || [];
   function mkGive(id, item, plus, qty){
     if (id && mkGot.includes(id)) return false;
-    if (mkIsW(item)) { if (WPN_BY[item.slice(2)]) gearAdd(item.slice(2), plus ? {p: plus} : {}); }
+    if (mkIsW(item)) { if (EQ_BY[item.slice(2)]) gearAdd(item.slice(2), plus ? {p: plus} : {}); }
     else if (EX_MAT[item]) { giveItem(item, qty); saveInv(); }
     if (id) { mkGot.push(id); mkGot = mkGot.slice(-300); save('mk_got', JSON.stringify(mkGot)); }
     return true;
@@ -9991,7 +10118,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     drawMkt();
   }
   // 売れるもの：装備していない武器と、値段のつく素材
-  const mkMyW = () => gear.filter(g => WPN_BY[g.k] && !gearUser(g.g)).sort((a, b) => GT[WPN_BY[b.k].g] - GT[WPN_BY[a.k].g] || (b.p | 0) - (a.p | 0));
+  const mkMyW = () => gear.filter(g => EQ_BY[g.k] && !gearUser(g.g)).sort((a, b) => GT[EQ_BY[b.k].g] - GT[EQ_BY[a.k].g] || (b.p | 0) - (a.p | 0));
   const mkMyM = () => Object.keys(EX_MAT).filter(k => own(k) > 0 && mkPrice(k, 0, 1) > 0).sort((a, b) => EX_MAT[b][3] - EX_MAT[a][3] || a.localeCompare(b));
   function drawMkt(){
     const b = $('mktBody'); if (!b) return;
@@ -10005,7 +10132,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       h += '<p class="mknote">ほかのプレイヤーが預けた品が並んでいます。払うのは<b>ニャンコイン</b>です（ミケに売ったり、預けた品が売れたりすると入ります。ミケの店の中だけで使えます）。誰が出したかは分かりません。棚に並ぶのはミケの気まぐれなので、ときどき見に来てください。</p>';
       if (!acctToken) h += needLogin;
       else {
-        h += '<div class="mkchips">' + [['w', '⚔ 武器'], ['m', '📦 素材']].map(([k, n]) => '<button data-mkcat="' + k + '"' + (mkCat === k ? ' class="on"' : '') + '>' + n + '</button>').join('') + '</div>';
+        h += '<div class="mkchips">' + [['w', '⚔ 装備'], ['m', '📦 素材']].map(([k, n]) => '<button data-mkcat="' + k + '"' + (mkCat === k ? ' class="on"' : '') + '>' + n + '</button>').join('') + '</div>';
         h += '<div class="mkchips">' + [[-1, 'すべて']].concat(MK_GN.map((g, i) => [i, g])).map(([k, n]) => '<button data-mkg="' + k + '"' + (mkG === k ? ' class="on"' : '') + '>' + n + '</button>').join('') + '<button data-mkre="1">↻ 棚を見なおす</button></div>';
         if (mkShelf === 'load' || mkShelf == null) h += '<p class="mknote">棚を見ています…</p>';
         else if (mkShelf === 'err') h += '<p class="mknote">サーバーにつながりませんでした。</p>';
@@ -10013,7 +10140,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         else h += mkShelf.map(it => '<div class="mkrow">' + mkIcon(it.item, it.plus) + '<div class="mknm">' + mkName(it.item, it.plus, it.qty) + '<small>' + NYAN + ' ' + it.price.toLocaleString() + ' ニャンコイン</small></div><div class="mkbt"><button data-mkbuy="' + it.id + '"' + (fr != null && fr < it.price ? ' class="sub"' : '') + '>買う</button></div></div>').join('');
       }
     } else if (mkTab === 'sell') {
-      h += '<p class="mknote">いらない武器や素材を、ミケがその場で<b>ニャンコイン</b>と交換します。ガチャやパックで手に入れたものも売れます（預けて売るときの半分の値段）。装備中の武器は外してから売ってください。</p>';
+      h += '<p class="mknote">いらない装備や素材を、ミケがその場で<b>ニャンコイン</b>と交換します。ガチャやパックで手に入れたものも売れます（預けて売るときの半分の値段）。装備中のものは外してから売ってください。</p>';
       if (!acctToken) h += needLogin; else {
       const ws = mkMyW(), ms = mkMyM();
       if (!ws.length && !ms.length) h += '<p class="mknote">売れるものがありません。</p>';
@@ -10634,10 +10761,19 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   $('boxBody').addEventListener('click', e => { const b = e.target.closest('[data-pv]'); if (!b) return; e.stopPropagation(); playPv(b.dataset.pv); });
   $('boxBody').addEventListener('click', e => {
     const f = e.target.closest('[data-forge]'); if (f) { e.stopPropagation(); openForge(); return; }
-    const q = e.target.closest('[data-eq]'); if (!q) return; e.stopPropagation();
+    const q = e.target.closest('[data-eq],[data-eqa],[data-eqx]'); if (!q) return; e.stopPropagation();
     const u = unitOf(boxDetail); if (!u) return;
-    if (q.dataset.eq === 'off') { delete u.wp; }
-    else { const prev = gearUser(q.dataset.eq); if (prev && prev.u !== u.u) delete prev.wp; u.wp = q.dataset.eq; }
+    if (q.dataset.eq) { if (q.dataset.eq === 'off') delete u.wp; else { unequip(q.dataset.eq); u.wp = q.dataset.eq; } }
+    else if (q.dataset.eqa) { if (q.dataset.eqa === 'off') delete u.ar; else { unequip(q.dataset.eqa); u.ar = q.dataset.eqa; } }
+    else {
+      const v = q.dataset.eqx, n = accN(u);
+      if (v.startsWith('off:')) { const i = +v.slice(4); if (u.ac) { u.ac[i] = null; if (!u.ac.some(Boolean)) delete u.ac; } }
+      else if ((u.ac || []).includes(v)) { unequip(v); }                                   // 付けているものをもう一度押す＝外す
+      else { const ac = (u.ac || [null, null]).slice(0, 2); while (ac.length < 2) ac.push(null); let i = -1; for (let k = 0; k < n; k++) if (!ac[k]) { i = k; break; }
+        if (n === 0) { toast('アクセはLV10からつけられます'); return; }
+        if (i < 0) { toast('アクセの枠がいっぱいです。外してから付けてください'); return; }
+        unequip(v); const ac2 = (u.ac || [null, null]).slice(0, 2); while (ac2.length < 2) ac2.push(null); ac2[i] = v; u.ac = ac2; }
+    }
     saveUnits(); drawBox();
   });
   function drawDetail(u){
@@ -10663,14 +10799,23 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     } else if (detTab === 'evo') {
       h += evoHTML(u);
     } else if (detTab === 'equip') {
-      const w = wpnOfUnit(u), wb = wpnBonus(u), acc = u.lv >= 30 ? 2 : u.lv >= 10 ? 1 : 0;
-      h += '<div class="dsec"><h4>武器</h4>' + (w ? '<div class="eqslot on">' + wpnPic(w, 'big', (gearOf(u.wp) || {}).p | 0) + '<b>' + w.n + plusTxt((gearOf(u.wp) || {}).p | 0) + '</b> <small>' + w.g + '・' + w.t + '・' + ATTR[w.a].n + '属性' + (attrOf(c.id) === w.a ? '（同じ属性 ×1.2）' : '') + '</small><div>' + ST_NAME.map((n, k) => wb[k] ? n + '+' + wb[k] : '').filter(Boolean).join('　') + '</div>' + (wfxLine(w) ? '<div class="eqfx">' + wfxLine(w) + (canMainId(c.id) ? '' : '<br><small>このキャラは奥義がないので発動しません</small>') + '</div>' : '') + '<button data-eq="off">外す</button></div>' : '<div class="eqslot">なし</div>') + '</div>' +
-        '<div class="dsec"><h4>防具</h4><div class="eqslot">準備中（今後追加）</div></div>' +
-        '<div class="dsec"><h4>アクセ（' + acc + ' / 2枠）</h4><div class="eqslot">' + (acc ? '準備中（今後追加）' : 'LV10で1つ目、LV30で2つ目の枠がひらきます') + '</div></div>';
-      const mine = gear.filter(g => WPN_BY[g.k]).sort((a, b) => GT[WPN_BY[b.k].g] - GT[WPN_BY[a.k].g]);
-      h += '<div class="dsec"><h4>持っている武器</h4>' + (mine.length ? mine.map(g => { const ww = WPN_BY[g.k], us = gearUser(g.g);
-        return '<button class="eqitem' + (u.wp === g.g ? ' on' : '') + '" data-eq="' + g.g + '">' + wpnPic(ww, '', g.p | 0) + '<b>' + ww.n + plusTxt(g.p | 0) + '</b><small>' + ww.g + '・' + ww.t + '・' + ATTR[ww.a].n + (ww.a === attrOf(c.id) ? '★' : '') + '　' + wpnLineP(ww, g.p | 0) + (wfxLine(ww) ? '<br>' + wfxLine(ww) : '') + '</small>' + (us ? '<em>' + (us.u === u.u ? '装備中' : fullName(ALLC[ciOf(us)]) + 'が装備中') + '</em>' : '') + '</button>'; }).join('') : '<p>まだ武器がありません。</p>') +
-        '<button class="eqforge" data-forge="1">⚒ 鍛冶屋で武器を作る</button></div>';
+      const acc = accN(u), eqSt = (e, g) => { const m = attrOf(c.id) === e.a ? 1.2 : 1; return wpnStOf(e, g.p | 0).map(v => Math.round(v * m)); };
+      const stTxt = (e, g) => ST_NAME.map((n, k) => { const v = eqSt(e, g)[k]; return v ? n + '+' + v : ''; }).filter(Boolean).join('　');
+      const slot = (gid, offAttr) => { const g = gid ? gearOf(gid) : null, e = g ? EQ_BY[g.k] : null; if (!e) return '<div class="eqslot">なし</div>';
+        const fx = eqFxLine(e);
+        return '<div class="eqslot on">' + wpnPic(e, 'big', g.p | 0) + '<b>' + e.n + plusTxt(g.p | 0) + '</b> <small>' + e.g + '・' + e.t + '・' + ATTR[e.a].n + '属性' + (attrOf(c.id) === e.a ? '（同じ属性 ×1.2）' : '') + '</small><div>' + stTxt(e, g) + '</div>' +
+          (fx ? '<div class="eqfx">' + fx + (e.s === 'w' && !canMainId(c.id) ? '<br><small>このキャラは奥義がないので発動しません</small>' : '') + '</div>' : '') + '<button ' + offAttr + '>外す</button></div>'; };
+      const ogArm = armOfUnit(u) && EQ_FX[armOfUnit(u).id] && EQ_FX[armOfUnit(u).id].og && !canMainId(c.id);
+      h += '<div class="dsec"><h4>武器</h4>' + slot(u.wp, 'data-eq="off"') + '</div>' +
+        '<div class="dsec"><h4>防具</h4>' + slot(u.ar, 'data-eqa="off"') + (ogArm ? '<p class="dnote">このキャラは奥義がないので、「奥義のとき」の効果は発動しません</p>' : '') + '</div>' +
+        '<div class="dsec"><h4>アクセ（' + acc + ' / 2枠）</h4>' + (acc ? [0, 1].slice(0, acc).map(i => slot((u.ac || [])[i], 'data-eqx="off:' + i + '"')).join('') : '<div class="eqslot">LV10で1つ目、LV30で2つ目の枠がひらきます</div>') + (acc === 1 ? '<p class="dnote">2つ目の枠はLV30でひらきます</p>' : '') + '</div>';
+      const listOf = (s2, attr, cur) => { const mine = gear.filter(g => EQ_BY[g.k] && EQ_BY[g.k].s === s2).sort((a, b) => GT[EQ_BY[b.k].g] - GT[EQ_BY[a.k].g] || (b.p | 0) - (a.p | 0));
+        return mine.length ? mine.map(g => { const ww = EQ_BY[g.k], us = gearUser(g.g), on = cur(g.g), fx = eqFxLine(ww);
+          return '<button class="eqitem' + (on ? ' on' : '') + '" ' + attr + '="' + g.g + '">' + wpnPic(ww, '', g.p | 0) + '<b>' + ww.n + plusTxt(g.p | 0) + '</b><small>' + ww.g + '・' + ww.t + '・' + ATTR[ww.a].n + (ww.a === attrOf(c.id) ? '★' : '') + '　' + wpnLineP(ww, g.p | 0) + (fx ? '<br>' + fx : '') + '</small>' + (us ? '<em>' + (us.u === u.u ? '装備中' : fullName(ALLC[ciOf(us)]) + 'が装備中') + '</em>' : '') + '</button>'; }).join('') : '<p>まだ持っていません。</p>'; };
+      h += '<div class="dsec"><h4>持っている武器</h4>' + listOf('w', 'data-eq', gid => u.wp === gid) + '</div>' +
+        '<div class="dsec"><h4>持っている防具</h4>' + listOf('a', 'data-eqa', gid => u.ar === gid) + '</div>' +
+        '<div class="dsec"><h4>持っているアクセ</h4><p class="dnote">押すと空いている枠に付けます。付けているものをもう一度押すと外れます。</p>' + listOf('x', 'data-eqx', gid => (u.ac || []).includes(gid)) +
+        '<button class="eqforge" data-forge="1">⚒ 鍛冶屋で装備を作る</button></div>';
     } else if (detTab === 'feed') {
       const mats0 = units.filter(x => x.u !== u.u && !x.lock && !teams.some(t => t.includes(x.u)) && !exBusyUids().has(x.u));
       const nLock = units.filter(x => x.u !== u.u && x.lock).length;
@@ -11294,7 +11439,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const skBaseSec = (id, kind) => Math.round(SK_MS[kind] * skPowMul(id, kind) / 1000);
   function skMs(s2){
-    const base = SK_MS[s2.kind] * skPowMul(s2.id, s2.kind);
+    const base = SK_MS[s2.kind] * skPowMul(s2.id, s2.kind) * (1 - ((s2.kind === 'sp' ? eqT.chgSp : eqT.chgOg) || 0) / 100);
     if (!statOn() || !s2.spd) return Math.round(base);
     const en = Math.max(1, runEn[3] / 4), me = s2.spd * bm('spd');
     return Math.round(base * clampF((me + en) / (2 * me), 0.5, 1.5));
@@ -11332,7 +11477,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     t.forEach((uid, k) => {
       const u = unitOf(uid); if (!u || !SKILLS[u.id]) return;
       const kinds = !SKILLS[u.id].ougi ? ['sp'] : k === 0 ? ['sp', 'ougi'] : [sk[k] === 'ougi' ? 'ougi' : 'sp'];
-      kinds.forEach(kind => skList.push({id: u.id, ci: ciOf(u), kind, main: k === 0, charge: 0, ready: false, star: u.star || 0, smax: starMaxOf(u), spd: unitStats(u)[3], w: wpnOfUnit(u)}));
+      kinds.forEach(kind => skList.push({id: u.id, ci: ciOf(u), kind, main: k === 0, charge: 0, ready: false, star: u.star || 0, smax: starMaxOf(u), spd: unitStats(u)[3], w: wpnOfUnit(u), ar: armOfUnit(u)}));
     });
   }
   // 敵の技のたまり具合。ボスは必殺技と奥義、ザコは必殺技だけ
@@ -11387,6 +11532,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     atkUntil = 0; defUntil = 0; zbuf = {atk: [1, 0], def: [1, 0], spd: [1, 0]};
     ebuf = [1, 0]; tslow = [0, 0]; tstop = 0; octaPend = 0; regens = [];
     wdots = []; wPierce = [0, 0]; wCrit = [0, 0]; wDrain = [0, 0];
+    eqT = gameMode === 'story' ? eqTeamFx(curTeam().map(unitOf).filter(Boolean)) : {}; eqGuardUsed = false; eqRegenAt = now() + 10000;
     drawSkillBar(true);
   }
   function skillTick(t){
@@ -11424,6 +11570,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       wdots.forEach(g => { while (g.next <= t && g.next <= g.end) { dotHit(g.per, g.nm); g.next += 1000; } });
       wdots = wdots.filter(g => g.next <= g.end);
     }
+    if (eqT.regen && running && !pausedAt && t >= eqRegenAt) { eqRegenAt = t + 10000; if (stacks.some(v => v > 0)) healPct(eqT.regen / 100, 'tick'); }
     if (wPierce[1] && t >= wPierce[1]) { wPierce = [0, 0]; toast('貫通おわり'); }
     if (wCrit[1] && t >= wCrit[1]) { wCrit = [0, 0]; toast('クリティカル率アップおわり'); }
     if (wDrain[1] && t >= wDrain[1]) { wDrain = [0, 0]; toast('HPドレインおわり'); }
@@ -11551,7 +11698,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     const kind = heartStock[i]; if (!kind) return;
     heartStock.splice(i, 1);
     const hk = HEART_KIND[kind];
-    healPct(hk.p, 'big'); sndSpeed();
+    healPct(Math.min(1, hk.p * (1 + (eqT.heart || 0) / 100)), 'big'); sndSpeed();
     drawHearts(true);
   }
   function drawHearts(force){
@@ -11916,6 +12063,17 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     }
     if (msg) lines.push(pre + msg);
   }
+  // 防具の「奥義のとき」の効果
+  function armFire(s2, lines){
+    if (gameMode !== 'story' || !s2.ar) return;
+    const f = EQ_FX[s2.ar.id] && EQ_FX[s2.ar.id].og; if (!f) return;
+    const T = now(), up = (k, p, sec) => { const m = 1 + p / 100; if (!(zbuf[k][1] && T < zbuf[k][1] && zbuf[k][0] > m)) zbuf[k] = [m, T + sec * 1000]; };
+    let msg = '';
+    if (f.def) { up('def', f.def, f.s); msg = '防御+' + f.def + '%（' + f.s + '秒）'; }
+    else if (f.all) { ['atk', 'def', 'spd'].forEach(k => up(k, f.all, f.s)); msg = '全ステータス+' + f.all + '%（' + f.s + '秒）'; }
+    else if (f.heal) { healPct(f.heal / 100, 'big'); msg = '全色 ' + f.heal + '%回復'; }
+    if (msg) lines.push('🛡 ' + s2.ar.n + '：' + msg);
+  }
   // 敵の指定した色に、最大HPの p のダメージ
   function hitColors(cols, p, pre){
     if (!vsOn) return;
@@ -12049,7 +12207,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     const hi = true;                                  // カットインは全キャラ顔つき（必殺技＝黒、奥義＝ゴールド）
     const snap = skSnap(); fxExtra = []; skUsing = s2;
     SKILLS[s2.id][s2.kind](s2);
-    const lines = skDiff(snap); if (s2.kind === 'ougi') wpnFire(s2, lines);
+    const lines = skDiff(snap); if (s2.kind === 'ougi') { wpnFire(s2, lines); armFire(s2, lines); }
     cutIn(s2, name, lines, hi);                // 技名と、何が起きたかを一緒に、画面の上の方に出す
     // 変えたオクタやかき混ぜた盤面で並びができたら、ふつうにそろえたときと同じく確定へ
     if (phase === 'idle' && !confirmUntil && findGroups().length) { rushHit(); confirmUntil = t + CFG.CONFIRM_MS; sndReady(); }
@@ -12117,7 +12275,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (!inB(r, c) || (grid[r][c] !== HEART && grid[r][c] !== GHEART)) return false;
     const gh = grid[r][c] === GHEART;
     grid[r][c] = randType(false);
-    healPct(gh ? 0.50 : 0.10); sndSpeed();
+    healPct((gh ? 0.50 : 0.10) * (1 + (eqT.heart || 0) / 100)); sndSpeed();
     pops.push({text: gh ? 'ゴールドハート！ 全色 50%回復' : 'ハート！ 全色 10%回復', style: 'sync', r: r, c: c, row: 0, n: 1, t: now()});
     if (!confirmUntil && findGroups().length) { rushHit(); confirmUntil = now() + CFG.CONFIRM_MS; sndReady(); }
     return true;
@@ -12140,6 +12298,17 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     else { slowUntil = 0; document.body.classList.remove('slowmo'); drawItemBar(); toast('スピードダウンおわり'); }
   }
   // お守り：持っていって、まだ使っていなければ、負ける瞬間に自動で発動
+  function eqGuard(){
+    if (gameMode !== 'story' || !eqT.guard || eqGuardUsed) return false;
+    eqGuardUsed = true;
+    const was = stacks.slice(); stacks = stacks.map(() => 0);
+    const t = now(); lapStart = t; lastStackTick = t;
+    updateGauges(); was.forEach((v, i) => { if (v) popMinus(i, v); });
+    pops.push({text: '不死鳥の加護！', style: 'special', r: 2.2, c: 2.5, row: 0, n: 2, t, big: true});
+    pops.push({text: 'カラーHP全回復！', style: 'combo', r: 2.2, c: 2.5, row: 1, n: 2, t: t + 200, long: true});
+    sndSpeed();
+    return true;
+  }
   function tryCharm(){
     if (gameMode !== 'story' || !runItems.includes('charm') || usedItems.has('charm') || own('charm') <= 0) return false;
     const was = stacks.slice();

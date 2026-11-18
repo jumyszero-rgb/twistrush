@@ -280,19 +280,22 @@ async function addGold(env, id, source, amount, reason, ref) {
 const MK_PER_DAY = 5, MK_FEE = 0.1, MK_SHELF_DAYS = 7, MK_ACTIVE_MAX = 30, MK_SELL_DAY = 100;
 const MK_NYAN_T = 1794912351;   // ニャンコインに変えた時刻：これより前に預けたもの（ゴールドの値段）は売れ残りとして戻す
 const MK_WPN_G = n => n <= 12 ? 0 : n <= 24 ? 1 : n <= 36 ? 2 : n <= 44 ? 3 : 4;   // W01〜W50 のグレード（N・R・SR・MR・LR）
+const MK_ARM_G = n => n <= 5 ? 0 : n <= 10 ? 1 : n <= 15 ? 2 : n <= 18 ? 3 : 4;   // 防具 A01〜A20・アクセ X01〜X20（2026-11-18）
+const MK_EQ_G = (t, n) => t === 'W' ? (n >= 1 && n <= 50 ? MK_WPN_G(n) : -1) : (n >= 1 && n <= 20 ? MK_ARM_G(n) : -1);
+const MK_LG_OK = k => /^lg_W(3[7-9]|4\d|50)$/.test(k) || /^lg_[AX](19|20)$/.test(k);
 const MK_W_BASE = [15, 40, 150, 500, 1500];
 const MK_FAM = ['metal', 'wood', 'beast', 'mech', 'polish', 'hide', 'cloth', 'gem', 'craft'];
 const MK_ATTR = ['fire', 'water', 'earth', 'wind', 'thunder', 'none', 'dark', 'light'];
 function mkPrice(item, plus, qty) {   // 預けたときの値段（ニャンコイン）。ゲームと同じ式
   let m;
-  if ((m = /^w:W(\d\d)$/.exec(item))) { const n = +m[1]; if (n < 1 || n > 50 || qty !== 1) return 0; return Math.round(MK_W_BASE[MK_WPN_G(n)] * Math.pow(1.2, Math.min(20, plus))); }
+  if ((m = /^w:([WAX])(\d\d)$/.exec(item))) { const g = MK_EQ_G(m[1], +m[2]); if (g < 0 || qty !== 1) return 0; return Math.round(MK_W_BASE[g] * Math.pow(1.2, Math.min(20, plus))); }
   if (plus) return 0;
   let u = 0;
   if ((m = /^m_([a-z]+)_([0-4])$/.exec(item)) && MK_FAM.includes(m[1])) u = [4, 10, 30, 100, 300][+m[2]];
   else if ((m = /^st_([a-z]+)_([0-2])$/.exec(item)) && MK_ATTR.includes(m[1])) u = [7, 20, 70][+m[2]];
   else if ((m = /^enh_n_([0-4])$/.exec(item))) u = [7, 14, 28, 70, 175][+m[1]];
   else if ((m = /^enh_b_([0-4])$/.exec(item))) u = [70, 140, 280, 700, 1750][+m[1]];
-  else if ((m = /^lg_W(\d\d)$/.exec(item)) && +m[1] >= 37 && +m[1] <= 50) u = 400;
+  else if (MK_LG_OK(item)) u = 400;
   return u * qty;
 }
 const mkSellOf = (item, plus, qty) => { const u = mkPrice(item, plus, 1); return u ? Math.max(1, Math.floor(u / 2)) * qty : 0; };   // ミケに売る：半分（1個あたり最低1）
@@ -384,7 +387,7 @@ async function market(env, req, url, me) {
 }
 function mkGrade(item) {
   let m;
-  if ((m = /^w:W(\d\d)$/.exec(item))) return MK_WPN_G(+m[1]);
+  if ((m = /^w:([WAX])(\d\d)$/.exec(item))) return Math.max(0, MK_EQ_G(m[1], +m[2]));
   if ((m = /_([0-4])$/.exec(item)) && !/^st_/.test(item)) return +m[1];
   if ((m = /^st_[a-z]+_([0-2])$/.exec(item))) return [1, 2, 4][+m[1]];
   if (/^lg_/.test(item)) return 4;
