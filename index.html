@@ -1803,7 +1803,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         <section>
           <h3>コンティニュー</h3>
           <p>ゲームオーバーのあと、<b>広告を見るとカラーHPを全部0にして</b>続きから再開できます。スコアはそのままで、スピードも少し戻ります。</p>
-          <p>ストーリーは1ステージ3回まで、サバイバルは1回まで、練習は何度でも使えます。3回使い切ったあとは、アイテムの「お守り」で続けられます。</p>
+          <p>ストーリーは1ステージ3回まで、サバイバルは1回まで、練習は何度でも使えます。月パスを買っている人は、広告なしで続けられます。</p>
         </section>
         <section>
           <h3>オートとスキップ（ストーリー）</h3>
@@ -5588,8 +5588,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (afterShown) return; afterShown = true;
     if (gameMode === 'online') { onlShowResult(); return; }   // オンライン対戦：コンティニューなし
     if (gameMode === 'sixty' || gameMode === 'chal') { $('over').classList.remove('hidden'); return; }   // 60秒アタック・チャレンジはコンティニューなし
-    if (gameMode === 'story') {                          // ストーリー：広告は1ステージ3回まで。使い切ったらお守りだけ
-      const ch = own('charm');
+    if (gameMode === 'story') {                          // ストーリー：広告は1ステージ3回まで
+      const ch = 0;   // お守りは 2026-11-18 になくした
       if (curVar > 0) contLeft = Math.max(contLeft, 1);
       $('contRule').textContent = curVar > 0 ? '広告を見れば何度でも続けられます' : contLeft > 0 ? 'このステージはあと' + contLeft + '回' : 'このステージの広告コンティニューは使い切りました';
       $('contAd').classList.toggle('hidden', contLeft <= 0);
@@ -7048,7 +7048,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.196';
+  const APP_VER = '0.9.197';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -7655,7 +7655,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   const coinTag = () => '<img src="' + gImg('coin_silver') + '" alt="シルバーコイン">';   // ふだんのコイン＝シルバー（ゴールドと見分けるため銀色の絵）
   // アイテム（ストーリー専用）
   const ITEMS = {
-    charm:   {name: 'お守り',           price: 200, desc: '負けそうになったとき1回だけ、自動でカラーHPを全部0にして続けられる'},
+    // お守り（コンティニューの代わりになるシルバーのアイテム）は 2026-11-18 本人の指示でなくした。持っていた分はシルバーで返す
     refresh30:  {name: 'リフレッシュ30',  price: 50,  desc: 'ピンチのとき自動で、全色のカラーHPが30%回復する（たまった分が30%減る）', pct: 0.3, img: 'refresh'},
     refresh50:  {name: 'リフレッシュ50',  price: 80,  desc: 'ピンチのとき自動で、全色のカラーHPが50%回復する', pct: 0.5, img: 'refresh'},
     refresh80:  {name: 'リフレッシュ80',  price: 120, desc: 'ピンチのとき自動で、全色のカラーHPが80%回復する', pct: 0.8, img: 'refresh'},
@@ -7719,15 +7719,15 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     {price: '¥3,000', name: 'ゴールドコイン 3,200枚', coin: 3200, sku: 'gold3200'},
     {price: '¥5,000', name: 'ゴールドコイン 5,500枚', coin: 5500, sku: 'gold5500'},
     {price: '¥10,000', name: 'ゴールドコイン 11,500枚', coin: 11500, sku: 'gold11500'},
-    {price: '¥980', sku: 'pass', name: '月パス（毎月自動更新）', desc: '毎日：ガチャチケット×2・スタミナポット×1／30日ずっと：遠征の経験値+20%・遠征で素材が出る率+20%', pass: true},
+    {price: '¥980', sku: 'pass', name: '月パス（毎月自動更新）', desc: '毎日：ガチャチケット×2・スタミナポット×1／30日ずっと：<b>広告なし</b>（コンティニュー・ごほうび2倍・毎日プレゼントの2倍が広告なしで使える）・遠征の経験値+20%・遠征で素材が出る率+20%', pass: true},
     {price: '¥480', sku: 'first', name: '初回限定パック', desc: '最初の1回だけ：SR以上確定チケット×2・ガチャチケット×10・スタミナポット×3', first: true},
-    {price: '¥600', sku: 'noads', name: '広告削除', desc: 'コンティニューと毎日プレゼントの2倍を、広告なしで使える'},
   ];
   const today = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
   const loadJ = (k, def) => { try { const v = JSON.parse(load(k, '')); return v == null ? def : v; } catch(e) { return def; } };
   let coins = Math.max(0, +load('coins', '0') || 0);
   let inv = loadJ('inv', {});
   if (inv.refresh) { inv.refresh100 = (inv.refresh100 | 0) + (inv.refresh | 0); delete inv.refresh; }
+  if (inv.charm) { coins += 200 * (inv.charm | 0); save('coins', String(coins)); delete inv.charm; save('inv', JSON.stringify(inv)); setTimeout(() => { try { toast('「お守り」はなくなりました。持っていた分はシルバーでお返ししました'); } catch (_) {} }, 3000); }
   let loadout = (loadJ('loadout', []) || []).map(k => k === 'refresh' ? 'refresh100' : k).filter(k => ITEMS[k]).slice(0, LOAD_MAX);
   const own = k => Math.max(0, inv[k] | 0);
   function saveInv(){ save('inv', JSON.stringify(inv)); }
@@ -8203,7 +8203,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   //   買うにはログイン（Googleなど）が必要。押すと Stripe の支払いページへ → 戻ってきたら反映（?pay=ok）
   //   ゴールドはサーバーの財布へ。初回パックのアイテムは「受け取り待ち」をこの端末で受け取る。月パス・広告削除はサーバーの記録に合わせる
   let payOn = false, payBusy = false;
-  const noAds = () => load('noads', '') === '1';
+  // 2026-11-18 本人：広告削除（買い切り）は売るのをやめ、月パスの特典「広告なし」にした。前に買った人はそのまま広告なし
+  const noAds = () => passOn() || load('noads', '') === '1';
   function drawPayPacks(){
     const fb = load('first_srv', '') === '1', na = noAds(), auto = load('pass_auto', '') === '1';   // 初回パックは、サーバーの記録で判断（テストで受け取った分は数えない）
     $('shopPacks').innerHTML = PACKS.filter(p => !(p.first && fb)).map(p => {

@@ -845,7 +845,7 @@ const PAY_SKU = {
   gold5500:  { name: 'ゴールドコイン 5,500枚',  yen: 5000,  gold: 5500 },
   gold11500: { name: 'ゴールドコイン 11,500枚', yen: 10000, gold: 11500 },
   first:     { name: '初回限定パック', yen: 480, once: 'first', items: { gticket_hi: 2, gticket: 10, stampot: 3 } },
-  noads:     { name: '広告削除', yen: 600, once: 'noads' },
+  // noads（広告削除・買い切り）は 2026-11-18 に販売終了。月パスの特典「広告なし」に（前に買った人の記録 ents.noads はそのまま）
   pass:      { name: '月パス（毎月自動更新）', yen: 980, sub: true },
 };
 const PASS_DAYS = 30;
