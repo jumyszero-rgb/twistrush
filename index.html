@@ -5986,6 +5986,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     try {
       const r = await svAsk(x.st); x.rate = r.rate; x.g = r.g;
       const o = svStore(x.st, x.t, r);
+      try { const before = load('skrank', ''), now0 = skRank(); if (now0 && before && now0.k !== before) setTimeout(() => toast('SKILL RANK：' + before + ' → ' + now0.k + '（' + now0.n + '）'), 1500); if (now0) save('skrank', now0.k); } catch (_) {}
       $('finalNote').innerHTML = (why || '') + 'TIME ' + taFmt(x.st.sec) + '・破壊 ' + x.st.sc.toLocaleString() + '点<br><b style="font-size:1.25em">SURVIVAL RATE ' + svFmt(r) + '</b>（生存' + r.g[0] + '・破壊' + r.g[1] + '・技' + r.g[2] + '）<br>' +
         (o.nw ? '自己ベスト更新！' : '自己ベスト ' + o.best.v.toLocaleString());
     } catch (e) {
@@ -7015,7 +7016,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.180';
+  const APP_VER = '0.9.181';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -7775,7 +7776,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     return '<div class="begbox"><h3>🎁 はじめてミッション</h3><p>達成すると、その場でごほうびがもらえます。全部達成で ' + rwTxt(BEG_ALL) + '！</p>' +
       BEG.map(m => '<div class="begrow' + (d[m.k] ? ' done' : '') + '"><span>' + (d[m.k] ? '✓ ' : '・') + m.t + '</span><em>' + rwTxt(m.r) + '</em></div>').join('') + '</div>';
   }
-  // ===== SKILL RANK と SKILL PROFILE（2026-11-13）：60秒アタック・エンドレスの点数とくせから、腕前とタイプを出す =====
+  // ===== SKILL RANK と SKILL PROFILE（2026-11-13）：60秒アタック・サバイバルの点数とくせから、腕前とタイプを出す =====
   const SKR = [   // SKILL SCORE（直近5回のうち、いちばん良い回と悪い回を除いた真ん中3回の平均）の境目。表示は英語とランクだけ
     {min: 0,    k: 'D',  n: 'ROOKIE'},
     {min: 5000,  k: 'C',  n: 'PLAYER'},
@@ -7811,14 +7812,18 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     const a = skRuns(), s5 = loadJ('sk60', null) || [], es = a.filter(x => x.m === 'e').slice(-5);
     const sixty = skTrim(s5.slice(-5));                                                  // 60秒の安定値＝1分あたり
     const endl = skTrim(es.map(y => y.sec / 60));                                        // エンドレスの生き残った時間（分・安定値）
-    const val = sixty;                                                                    // SKILL RANK は60秒アタックだけで決める（エンドレスはスタミナで見る）
+    // 2026-11-18 本人：SKILL RANK は60秒アタックとサバイバルを半分ずつ合わせて決める（速さ＋粘り）
+    //   サバイバルレートを60秒の点数の大きさにそろえる：20000×√(レート÷90000)（9万＝20000・4.5万＝約14100・1.6万＝約8400）
+    const svR = hist().filter(y => y.m === 'rank' && y.v != null).slice(-5).map(y => y.v), nV = svR.length;
+    const surv = nV ? 20000 * Math.sqrt(skTrim(svR) / 90000) : 0;
+    const val = s5.length && nV ? (sixty + surv) / 2 : s5.length ? sixty : surv;   // 片方しか遊んでいないときは、遊んだほうだけで決める
     const sum = k => a.reduce((x, y) => x + (y[k] || 0), 0);
     const L = {3: 0, 4: 0, 5: 0, 6: 0}; a.forEach(y => Object.keys(L).forEach(k => L[k] += (y.len && y.len[k]) || 0));
     const lines = L[3] + L[4] + L[5] + L[6], turns = sum('turns');
     const col = []; a.forEach(y => (y.col || []).forEach((v, i) => col[i] = (col[i] || 0) + (v || 0)));
     const cs = col.filter(v => v != null), cTot = cs.reduce((x, y) => x + y, 0), cAvg = cTot / Math.max(1, cs.length);
     const bias = cTot && cs.length > 1 ? Math.round(Math.sqrt(cs.reduce((x, v) => x + (v - cAvg) ** 2, 0) / cs.length) / cAvg * 100) : 0;   // ばらつき（%）
-    return {n: a.length, sixty, endl, val, nS: s5.length, nE: es.length, lines, turns, L,
+    return {n: a.length, sixty, endl, val, surv, nV, nS: s5.length, nE: es.length, lines, turns, L,
       r4: lines ? L[4] / lines : 0, r5: lines ? L[5] / lines : 0, r6: lines ? L[6] / lines : 0,
       sync: turns ? sum('sync') / turns : 0, chain: turns ? sum('chainT') / turns : 0,
       ppt: turns ? sum('pts') / turns : 0, wait: turns ? sum('wait') / turns : 0, bias,
@@ -7828,7 +7833,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       penSec: a.filter(y => y.m === 'e' && y.pen != null).reduce((x, y) => x + y.sec, 0),
       marN: sum('marN'), mar: sum('marN') ? sum('mar') / sum('marN') : null, near: 0};
   }
-  function skRank(){ const st = skStats(); if (!st.nS) return null; let r = SKR[0]; SKR.forEach(x => { if (st.val >= x.min) r = x; }); return r; }
+  function skRank(){ const st = skStats(); if (!st.nS && !st.nV) return null; let r = SKR[0]; SKR.forEach(x => { if (st.val >= x.min) r = x; }); return r; }
   function skType(st){
     if (!st.nS || !st.nE) return {t: 'タイプはまだ不明', d: 'サバイバルも遊ぶと、瞬発型か持久型かが分かります'};
     const dash = cl01(st.sixty / 20000), sta = cl01((st.endl - 1) / 5);
@@ -7882,8 +7887,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     const pc = v => Math.round(v * 100) + '%';
     const bar = (label, val, txt, max, tip) => '<div class="skrow"><div class="skl">' + label + '<small>' + tip + '</small></div><div class="skb"><i style="width:' + Math.max(2, Math.min(100, val / max * 100)) + '%"></i></div><b>' + txt + '</b></div>';
     $('skprofBody').innerHTML = '<section class="skhead">' +
-      (rk ? '<div class="skrank r-' + rk.k + '"><b>' + rk.k + '</b><span>' + rk.n + '</span></div>' : '<div class="skrank"><b>?</b><span>NO RANK</span><small>60秒アタックを遊ぶと決まります</small></div>') +
-      '<div class="skval">SKILL SCORE <b>' + Math.round(st.val).toLocaleString() + '</b><small>60秒アタック 安定値 ' + Math.round(st.sixty).toLocaleString() + '（直近' + st.nS + '回）</small></div>' +
+      (rk ? '<div class="skrank r-' + rk.k + '"><b>' + rk.k + '</b><span>' + rk.n + '</span></div>' : '<div class="skrank"><b>?</b><span>NO RANK</span><small>60秒アタックかサバイバルを遊ぶと決まります</small></div>') +
+      '<div class="skval">SKILL SCORE <b>' + Math.round(st.val).toLocaleString() + '</b><small>60秒アタック ' + (st.nS ? Math.round(st.sixty).toLocaleString() + '（直近' + st.nS + '回）' : '—') + '　サバイバル ' + (st.nV ? Math.round(st.surv).toLocaleString() + '（直近' + st.nV + '回）' : '—') + '<br>2つを半分ずつ合わせた値です</small></div>' +
       '<div class="sktype"><b>' + ty.t + '</b><small>' + ty.d + '</small></div>' +
       '<div class="sknext">' + (() => { const i = rk ? SKR.indexOf(rk) : -1, nx = SKR[i + 1]; return nx ? '次の ' + nx.k + '（' + nx.n + '）まで あと <b>' + Math.max(0, Math.ceil(nx.min - st.val)).toLocaleString() + '</b>' : '最高ランクです！'; })() + '</div></section>' +
       '<section><h3>STATUS <small>（60秒アタック・サバイバルの直近' + st.n + '回）</small></h3>' +
