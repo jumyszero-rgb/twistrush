@@ -2896,7 +2896,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   const goldTier = () => { const m = Math.max(...stacks); return m >= CFG.WARN_AT ? 2 : (m >= CFG.WARN_AT / 2 ? 1 : 0); };
   // サバイバルは時間で圧力が上がるので、オクタ（★）を多めに出す（約1.5倍：5%／11%／18%）
   const GOLD_TA = [0.05, 0.11, 0.18];
-  let eqT = {}, eqGuardUsed = false, eqRegenAt = 0;   // 防具・アクセの効果（ストーリーの戦いのはじめにまとめる）
+  let eqT = {}, eqGuardUsed = false, eqRegenAt = 0, eqRowAt = 0, ogDmgUntil = 0;   // 防具・アクセの効果（ストーリーの戦いのはじめにまとめる）
   const goldRate = () => (gameMode === 'story' && eqT.octa ? eqT.octa / 100 : 0) + (gameMode === 'rank' ? GOLD_TA[goldTier()] : [CFG.GOLD_RATE, CFG.GOLD_RATE_MID, CFG.GOLD_RATE_HIGH][goldTier()]);
   // エンドレスだけ：時間でも圧力を上げる（2026-11-13）。ふつうの人で3分前後、上手い人で5分前後に終わるように
   //   たまる量（1回あたり）：〜1分 1／〜2分 2／〜2分半 3／〜3分 4／〜3分半 5／〜4分 6／〜4分半 7／〜5分 8／そのあと20秒ごとに+2
@@ -4019,7 +4019,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       pops.push({text: 'オクタ 全色 −' + pct + '%', style: 'special', r: 2.5, c: 2.5, row: 0, n: 1, t: t0 + 150, big: true});
       toast('一発逆転！ 全色のカラーHP −' + pct + '%');
     } else if (golds) {
-      for (let i = 0; i < TYPES; i++) dec[i] += golds;
+      for (let i = 0; i < TYPES; i++) dec[i] += golds + (gameMode === 'story' && eqT.octaHeal ? eqT.octaHeal : 0);   // 武器「創世銃ジェネシス」：オクタを消すと全色さらに−2
       pops.push({text: 'オクタ 全色 −' + golds, style: 'special', r: 2.5, c: 2.5, row: 0, n: 1, t: t0 + 150, big: true});
       toast('一発逆転！ 全色 −' + golds);
     }
@@ -4519,7 +4519,9 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     let dealt = 0;
     const crR = (wCrit[1] && now() < wCrit[1] ? wCrit[0] : 0) + (eqT.crit || 0) / 100, crit = crR > 0 && Math.random() < crR;   // 武器・防具・アクセの効果：クリティカルは1.5倍（＋クリティカルダメージ）
     const nCol = dec ? dec.filter(x => x).length : 0;
-    const cm = (crit ? 1.5 + (eqT.critDmg || 0) / 100 : 1) * (nCol >= 2 && eqT.sync ? 1 + eqT.sync / 100 : 1) * (eqT.low && Math.max(...stacks) >= CFG.STACK_MAX / 2 ? 1 + eqT.low / 100 : 1);
+    const cm = (crit ? 1.5 + (eqT.critDmg || 0) / 100 : 1) * (nCol >= 2 && eqT.sync ? 1 + eqT.sync / 100 : 1) * (eqT.low && Math.max(...stacks) >= CFG.STACK_MAX / 2 ? 1 + eqT.low / 100 : 1)
+      * (1 + (eqT.dmgP || 0) / 100) * (chain >= 4 && eqT.chain4 ? 1 + eqT.chain4 / 100 : 1) * (chain >= 2 && eqT.chainP ? 1 + eqT.chainP / 100 : 1)
+      * (eqT.dragon && /竜|龍|ドラゴン|ドレイク|ワイバーン/.test((cpus[0] && cpus[0].name) || '') ? 1 + eqT.dragon / 100 : 1) * (ogDmgUntil && now() < ogDmgUntil ? 1.25 : 1) * (eqT.darkMul || 1);
     const pr = wPierce[1] && now() < wPierce[1] ? wPierce[0] : 0;
     cpus.forEach(c => {
       if (!c.alive) return;
@@ -4535,6 +4537,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     });
     if (statOn() && dealt > 0) floatDmg(dealt * enUnitPts(), crit ? 'direct' : '', crit ? 'CRITICAL ' : '');
     if (dealt > 0 && wDrain[1] && now() < wDrain[1]) drainHeal(dealt * (statOn() ? enUnitPts() / unitPts() : 1) * wDrain[0]);
+    if (dealt > 0 && gameMode === 'story') eqOnHit(dec);
     if (gameMode === 'story' && dealt > 0) feed.push({calc: '', pts: '−' + Math.round(dealt * enUnitPts()).toLocaleString(), t: now()});   // ストーリー：盤面の右には点数の代わりに与えたダメージ
     drawVsPanel();
   }
@@ -7029,7 +7032,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.190';
+  const APP_VER = '0.9.191';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -8755,7 +8758,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       return b + add;
     });
   }
-  const unitStats = u => { const b = statsOf(ciOf(u), u.lv); try { const w = gearBonus(u), pc = eqPctOf(eqItemsOf(u)); return b.map((v, k) => Math.round((v + w[k]) * (1 + pc[k] / 100))); } catch(_) { return b; } };
+  const unitStats = u => { const b = statsOf(ciOf(u), u.lv); try { const w = gearBonus(u), pc = eqPctOf(eqItemsOf(u), u); return b.map((v, k) => Math.round((v + w[k]) * (1 + pc[k] / 100))); } catch(_) { return b; } };
   // ---- チーム（1人目がメイン）。4つまで保存して切りかえられる ----
   let teams = loadJ('teams', null), teamNo = +load('teamno', '0') || 0;
   if (!Array.isArray(teams) || teams.length !== 4) teams = [0, 1, 2, 3].map(() => [null, null, null, null]);   // 最初は空。自分で選んで入れる
@@ -9421,7 +9424,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   setInterval(() => { drawExpdBadge(); if (!$('expd').classList.contains('hidden') && exData.active.length) drawExpd(); }, 30000);
 
   // ===== 武器（2026-11-14）：鍛冶屋で素材から作り、キャラに1つ装備する =====
-  //   キャラと同じ属性の武器はステータス1.2倍。種類ごとの効果は奥義のときに発動（wpnFx）。武器ごとの特殊効果はあとで対応（いまは表示だけ）
+  //   キャラと同じ属性の武器はステータス1.2倍。種類ごとの効果は奥義のときに発動（wpnFx）。武器ごとの特殊効果は EQ_FX（2026-11-18 本人：解除してよい）
   const WPN = [
     ['W01', "木の剣", 'N', '剣', 'none', [1, 4, 1, 1], ""],
     ['W02', "銅の剣", 'N', '剣', 'none', [1, 4, 1, 2], ""],
@@ -9447,13 +9450,13 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     ['W22', "雷鳴の槍", 'R', '槍', 'thunder', [1, 7, 2, 4], ""],
     ['W23', "氷柱のレイピア", 'R', '剣', 'water', [2, 9, 2, 3], ""],
     ['W24', "影ぬいの小太刀", 'R', '刀', 'dark', [0, 7, 0, 11], ""],
-    ['W25', "炎の魔剣フランベルジュ", 'SR', '剣', 'fire', [2, 14, 4, 5], "通常攻撃にやけどダメージ（3秒）"],
-    ['W26', "氷結の槍グラキエス", 'SR', '槍', 'water', [3, 14, 4, 7], "敵のスピード−10%（5秒）"],
+    ['W25', "炎の魔剣フランベルジュ", 'SR', '剣', 'fire', [2, 14, 4, 5], "ブロックを消すと敵がやけど（3秒）"],
+    ['W26', "氷結の槍グラキエス", 'SR', '槍', 'water', [3, 14, 4, 7], "ブロックを消すと敵のスピード−10%（5秒）"],
     ['W27', "疾風弓シルフィード", 'SR', '弓', 'wind', [0, 15, 0, 16], "必殺技のチャージ−5%"],
     ['W28', "夜叉の双短剣", 'SR', '短剣', 'dark', [0, 10, 0, 15], "クリティカル率+5%"],
     ['W29', "星詠みの杖", 'SR', '杖', 'light', [10, 11, 4, 3], "ハートの回復量+10%"],
     ['W30', "大地の戦斧ガイアブレイカー", 'SR', '斧', 'earth', [6, 22, 3, 0], "防御を無視して+5%ダメージ"],
-    ['W31', "雷撃銃ボルトライフル", 'SR', '銃', 'thunder', [0, 15, 0, 10], "4連以上で追加ダメージ+10%"],
+    ['W31', "雷撃銃ボルトライフル", 'SR', '銃', 'thunder', [0, 15, 0, 10], "4連鎖以上でダメージ+10%"],
     ['W32', "岩砕きの大槌", 'SR', 'ハンマー', 'earth', [4, 17, 7, 0], "オクタの出る率+1%"],
     ['W33', "獅子王の爪", 'SR', '拳', 'fire', [5, 14, 3, 9], "連鎖ダメージ+10%"],
     ['W34', "聖騎士のランス", 'SR', '槍', 'light', [2, 13, 4, 6], "受けるダメージ−5%"],
@@ -9462,11 +9465,11 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     ['W37', "竜殺しの大剣バルムンク", 'MR', '剣', 'fire', [4, 21, 6, 8], "竜の敵へのダメージ+30%・クリティカル率+5%"],
     ['W38', "月光の弓アルテミス", 'MR', '弓', 'light', [0, 22, 0, 22], "必殺技のチャージ−10%・ハート+1（奥義時）"],
     ['W39', "大魔導の杖アルカナ", 'MR', '杖', 'dark', [17, 20, 7, 5], "奥義のチャージ−10%・オクタ+2（奥義時）"],
-    ['W40', "神槍グングニル", 'MR', '槍', 'thunder', [4, 19, 6, 10], "必殺技が必ずクリティカル"],
+    ['W40', "神槍グングニル", 'MR', '槍', 'thunder', [4, 19, 6, 10], "必殺技のあと5秒間、かならずクリティカル"],
     ['W41', "嵐の双剣ストームファング", 'MR', '短剣', 'wind', [0, 18, 0, 26], "スピード型のとき攻撃+15%"],
     ['W42', "海神の三叉槍トリアイナ", 'MR', '槍', 'water', [5, 25, 7, 12], "カラーHPの増え方−10%"],
-    ['W43', "巨人の鉄槌ギガントハンマー", 'MR', 'ハンマー', 'earth', [6, 23, 10, 0], "5連以上でブロックを1列追加で消す"],
-    ['W44', "魔導砲カタストロフ", 'MR', '銃', 'fire', [0, 26, 0, 18], "奥義ダメージ+25%"],
+    ['W43', "巨人の鉄槌ギガントハンマー", 'MR', 'ハンマー', 'earth', [6, 23, 10, 0], "5連鎖目で、さらに1列ぶんのダメージ"],
+    ['W44', "魔導砲カタストロフ", 'MR', '銃', 'fire', [0, 26, 0, 18], "奥義のあと5秒間、ダメージ+25%"],
     ['W45', "天羽々斬（あめのはばきり）", 'LR', '刀', 'light', [7, 40, 11, 14], "攻撃+20%・奥義のチャージ−15%"],
     ['W46', "神弓ガーンデーヴァ", 'LR', '弓', 'wind', [0, 28, 0, 28], "同時消しダメージ+25%・必殺技のチャージ−15%"],
     ['W47', "終焉の魔杖ラグナロク", 'LR', '杖', 'dark', [22, 26, 10, 6], "奥義でカラーHPを全色−5・闇属性の味方の攻撃+10%"],
@@ -9540,6 +9543,11 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     A18: {crit: 10, chgSp: 5, res: {bleed: 50}},
     A19: {guard: 1, og: {all: 15, s: 12}},
     A20: {cut: 20, og: {def: 30, s: 15}, res: {stun: 100, poison: 100, bleed: 100}},
+    // 武器ごとの特殊効果（SR以上。2026-11-18 本人：表示だけだったものを解除）
+    W25: {burn: 1}, W26: {hitSlow: 10}, W27: {chgSp: 5}, W28: {crit: 5}, W29: {heart: 10}, W30: {dmgP: 5}, W31: {chain4: 10}, W32: {octa: 1}, W33: {chainP: 10},
+    W34: {cut: 5}, W35: {sync: 10}, W36: {low: 15}, W37: {dragon: 30, crit: 5}, W38: {chgSp: 10, ogHeart: 1}, W39: {chgOg: 10, ogOcta: 2}, W40: {spCrit: 5},
+    W41: {typeSpd: 15}, W42: {cut: 10}, W43: {chain5: 1}, W44: {ogDmg: 25}, W45: {atkP: 20, chgOg: 15}, W46: {sync: 25, chgSp: 15}, W47: {ogFlat: 5, darkAtk: 10},
+    W48: {row10: 1}, W49: {cut: 15, chainP: 20}, W50: {octaHeal: 2, crit: 10},
     X05: {mat: 2}, X07: {heart: 5}, X09: {sync: 5}, X10: {crit: 3}, X11: {chgSp: 5}, X12: {atkP: 8}, X13: {spdP: 10}, X14: {cut: 7},
     X15: {low: 15}, X16: {allP: 5}, X17: {critDmg: 30}, X18: {chgOg: 10}, X19: {allP: 10, octa: 2}, X20: {chgSp: 20, chgOg: 20},
   };
@@ -9557,9 +9565,9 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (f.res) L.push(Object.keys(f.res).map(k => RES_N[k] + (f.res[k] >= 100 ? '無効' : '防御' + f.res[k] + '%')).join('・') + '（敵の毒・出血・スタンは今後追加）');
     return L;
   }
-  const eqFxLine = e => e.s === 'w' ? wfxLine(e) : eqFxLines(e).join('・');
+  const eqFxLine = e => e.s === 'w' ? [wfxLine(e), e.fx].filter(Boolean).join('・') : eqFxLines(e).join('・');
   // ステータスの%アップ（武器・防具・アクセぜんぶ。いつでも効く）
-  function eqPctOf(list){ const p = [0, 0, 0, 0]; list.forEach(e => { const f = EQ_FX[e.id]; if (!f) return; const a = f.allP || 0; p[0] += a; p[1] += a + (f.atkP || 0); p[2] += a; p[3] += a + (f.spdP || 0); }); return p; }
+  function eqPctOf(list, u){ const p = [0, 0, 0, 0]; list.forEach(e => { const f = EQ_FX[e.id]; if (!f) return; const a = f.allP || 0; p[0] += a; p[1] += a + (f.atkP || 0) + (f.typeSpd && u && CHAR_STAT[u.id] && CHAR_STAT[u.id].type === 'spd' ? f.typeSpd : 0); p[2] += a; p[3] += a + (f.spdP || 0); }); return p; }
   // チームでまとめた効果（ストーリーの戦いで使う）。上限をつける
   function eqTeamFx(us){
     const T = {}; us.forEach(u => eqItemsOf(u).forEach(e => { const f = EQ_FX[e.id]; if (!f) return; Object.keys(f).forEach(k => { if (typeof f[k] === 'number') T[k] = (T[k] || 0) + f[k]; }); }));
@@ -9738,7 +9746,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     list.forEach(w => {
       const rc = eqRecipe(w), cost = WPN_COST[GT[w.g]], ok = rc.every(([k, n]) => (inv[k] || 0) >= n) && coins >= cost;
       h += '<div class="excard fgcard"><div class="exhd">' + wpnPic(w) + '<b>' + w.n + '</b><span class="exh">' + w.g + '</span></div>' +
-        '<div class="fgsub">' + w.t + '　' + attrBadge0(w.a) + ' ' + ATTR[w.a].n + '属性　<b>' + wpnLine(w) + '</b>' + (eqFxLine(w) ? '<br><small style="color:#ffd24a">' + eqFxLine(w) + '</small>' : '') + (w.fx ? '<br><small>ほかの効果：' + w.fx + '（今後対応）</small>' : '') + '</div>' +
+        '<div class="fgsub">' + w.t + '　' + attrBadge0(w.a) + ' ' + ATTR[w.a].n + '属性　<b>' + wpnLine(w) + '</b>' + (eqFxLine(w) ? '<br><small style="color:#ffd24a">' + eqFxLine(w) + '</small>' : '') + '</div>' +
         '<ul class="fgrc">' + rc.map(([k, n]) => { const hv = inv[k] || 0; return '<li class="' + (hv >= n ? 'ok' : 'ng') + '">' + EX_MAT[k][1] + ' ' + EX_MAT[k][0] + ' <b>' + hv + '/' + n + '</b></li>'; }).join('') +
         '<li class="' + (coins >= cost ? 'ok' : 'ng') + '">🪙 シルバー <b>' + cost.toLocaleString() + '</b></li></ul>' + matHints(rc) +
         (matShort(rc).cost > 0 && matShort(rc).ok ? '<button class="fgbuy" data-buymat="' + w.id + '">足りない素材をゴールド ' + matShort(rc).cost + ' で買う</button>' : '') +
@@ -11552,7 +11560,10 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     atkUntil = 0; defUntil = 0; zbuf = {atk: [1, 0], def: [1, 0], spd: [1, 0]};
     ebuf = [1, 0]; tslow = [0, 0]; tstop = 0; octaPend = 0; regens = [];
     wdots = []; wPierce = [0, 0]; wCrit = [0, 0]; wDrain = [0, 0];
-    eqT = gameMode === 'story' ? eqTeamFx(curTeam().map(unitOf).filter(Boolean)) : {}; eqGuardUsed = false; eqRegenAt = now() + 10000;
+    { const tu = curTeam().map(unitOf).filter(Boolean); eqT = gameMode === 'story' ? eqTeamFx(tu) : {};
+      eqT.darkMul = eqT.darkAtk && tu.length ? 1 + eqT.darkAtk / 100 * tu.filter(u => attrOf(u.id) === 'dark').length / tu.length : 1;
+    }
+    eqGuardUsed = false; eqRegenAt = now() + 10000; eqRowAt = now() + 10000; ogDmgUntil = 0;
     drawSkillBar(true);
   }
   function skillTick(t){
@@ -11589,6 +11600,10 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (wdots.length && running && !pausedAt) {
       wdots.forEach(g => { while (g.next <= t && g.next <= g.end) { dotHit(g.per, g.nm); g.next += 1000; } });
       wdots = wdots.filter(g => g.next <= g.end);
+    }
+    if (eqT.row10 && running && !pausedAt && t >= eqRowAt && phase === 'idle' && !confirmUntil && !bombPick) {   // 武器「雷神の槌ミョルニル」：10秒ごとに1列消す
+      eqRowAt = t + 10000; const r = Math.floor(Math.random() * N), cells = []; for (let k = 0; k < N; k++) cells.push([r, k]);
+      if (blast(cells)) toast('⚡ ミョルニル：横1列を消した');
     }
     if (eqT.regen && running && !pausedAt && t >= eqRegenAt) { eqRegenAt = t + 10000; if (stacks.some(v => v > 0)) healPct(eqT.regen / 100, 'tick'); }
     if (wPierce[1] && t >= wPierce[1]) { wPierce = [0, 0]; toast('貫通おわり'); }
@@ -12083,6 +12098,29 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     }
     if (msg) lines.push(pre + msg);
   }
+  // 武器の特殊効果：ブロックを消したとき（やけど・敵スロウ・5連鎖目の追加ダメージ）
+  function eqOnHit(dec){
+    const T = now();
+    if (eqT.burn && !wdots.some(g => g.nm === 'やけど' && g.end > T)) wdots.push({per: 0.5, end: T + 3000, next: T + 1000, nm: 'やけど'});
+    if (eqT.hitSlow) { const m = 1 - eqT.hitSlow / 100; if (!(ebuf[1] && T < ebuf[1] && ebuf[0] < m)) ebuf = [m, T + 5000]; }
+    if (eqT.chain5 && chain === 5 && vsOn) {
+      const add = outgoing(N) / TYPES;
+      cpus.forEach(c => { if (!c.alive) return; c.stacks = c.stacks.map(v => Math.min(enemyHP, v + add)); checkCpuOut(c); });
+      floatDmg(add * TYPES * enUnitPts(), 'direct', '5連鎖 '); drawVsPanel();
+    }
+  }
+  // 武器の特殊効果：技を使ったとき
+  function wpnSkFx(s2, lines){
+    if (gameMode !== 'story' || !s2.w) return;
+    const f = EQ_FX[s2.w.id]; if (!f) return;
+    const T = now(), pre = '⚔ ' + s2.w.n + '：';
+    if (s2.kind === 'sp' && f.spCrit) { wCrit = [1, T + f.spCrit * 1000]; lines.push(pre + f.spCrit + '秒間 かならずクリティカル'); }
+    if (s2.kind !== 'ougi') return;
+    if (f.ogHeart) { stockHeart('h', f.ogHeart); lines.push(pre + 'ハート +' + f.ogHeart); }
+    if (f.ogOcta) { addOcta(f.ogOcta); lines.push(pre + 'オクタブロック +' + f.ogOcta); }
+    if (f.ogDmg) { ogDmgUntil = T + 5000; lines.push(pre + '5秒間 ダメージ+' + f.ogDmg + '%'); }
+    if (f.ogFlat) { const was = stacks.slice(); stacks = stacks.map(v => Math.max(0, v - f.ogFlat)); updateGauges(); was.forEach((v, i) => { const d = v - stacks[i]; if (d) popMinus(i, d); }); lines.push(pre + 'カラーHP 全色−' + f.ogFlat); }
+  }
   // 防具の「奥義のとき」の効果
   function armFire(s2, lines){
     if (gameMode !== 'story' || !s2.ar) return;
@@ -12227,7 +12265,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     const hi = true;                                  // カットインは全キャラ顔つき（必殺技＝黒、奥義＝ゴールド）
     const snap = skSnap(); fxExtra = []; skUsing = s2;
     SKILLS[s2.id][s2.kind](s2);
-    const lines = skDiff(snap); if (s2.kind === 'ougi') { wpnFire(s2, lines); armFire(s2, lines); }
+    const lines = skDiff(snap); if (s2.kind === 'ougi') { wpnFire(s2, lines); armFire(s2, lines); } wpnSkFx(s2, lines);
     cutIn(s2, name, lines, hi);                // 技名と、何が起きたかを一緒に、画面の上の方に出す
     // 変えたオクタやかき混ぜた盤面で並びができたら、ふつうにそろえたときと同じく確定へ
     if (phase === 'idle' && !confirmUntil && findGroups().length) { rushHit(); confirmUntil = t + CFG.CONFIRM_MS; sndReady(); }
