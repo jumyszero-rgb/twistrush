@@ -517,6 +517,12 @@ body.on-menu .battlemain{opacity:0;}
   .ppbtn{width:100%;border:0;border-radius:10px;padding:8px 2px;font-weight:900;font-size:12px;font-family:inherit;background:#7dffb0;color:#063;} .ppbtn small{display:block;font-size:9.5px;font-weight:700;}
   .ppbtn.buy{background:#e9eef5;color:#1d2430;} .ppbtn.buy.gold{background:linear-gradient(135deg,#fff2b0,#ffc83d);color:#3a2000;} .ppbtn:disabled{background:rgba(255,255,255,.12);color:rgba(255,255,255,.6);}
   .ppnote{font-size:12px;line-height:1.6;margin:10px 0 4px;}
+  .stpop-ov{position:fixed;inset:0;z-index:9400;background:rgba(10,4,24,.6);display:flex;align-items:center;justify-content:center;padding:16px;}
+  .stpop{width:min(100%,340px);background:#241640;border:2px solid #b89bff;border-radius:16px;padding:12px 14px;color:#f6f0ff;font-size:13px;line-height:1.55;}
+  .stpop .sph{font-size:12px;opacity:.85;} .stpop .spn{font-size:17px;font-weight:900;margin:2px 0 6px;} .stpop .spl{margin:2px 0;} .stpop .spl b.good,.stpop .spl b.ok{color:#7dffb0;} .stpop .spl b.bad,.stpop .spl b.hard{color:#ff8aa0;} .stpop .spl b.near{color:#ffd24a;}
+  .stpop .spd{margin-top:8px;padding:8px;border-radius:10px;background:rgba(255,255,255,.06);} .stpop .spd>b{display:block;font-size:12px;margin-bottom:4px;color:#ffd24a;}
+  .sdi{display:flex;justify-content:space-between;gap:8px;} .sdi small{opacity:.8;white-space:nowrap;} .spx{display:block;text-align:center;opacity:.6;margin-top:6px;font-size:11px;}
+  .mnode{-webkit-touch-callout:none;user-select:none;}
   .rsq-x2{display:inline-block;margin-left:6px;padding:0 6px;border-radius:8px;background:#ff4f7b;color:#fff;font-size:13px;font-weight:900;vertical-align:middle;} .rsq-ad small{display:block;font-size:11px;font-weight:600;opacity:.85;} .mksort span{font-size:11px;opacity:.75;align-self:center;margin-right:2px;} .hfold{margin:6px 0;font-size:12px;line-height:1.55;} .hfold>summary{display:inline-block;cursor:pointer;list-style:none;padding:3px 12px;border-radius:999px;border:1px solid rgba(255,210,74,.6);background:rgba(255,210,74,.14);font-weight:700;font-size:12px;user-select:none;} .hfold>summary::-webkit-details-marker{display:none;} .hfold[open]>summary{background:rgba(255,210,74,.32);} .hfbody{margin-top:6px;padding:8px 10px;border-radius:10px;background:rgba(0,0,0,.18);} .fgkind button{flex:1;} .fghint{margin:6px 0 2px;padding:6px 8px;border-radius:10px;background:rgba(255,210,74,.12);font-size:11.5px;line-height:1.5;} .fghint b{display:block;font-size:11px;opacity:.85;} .fghint span{display:block;} .eqfx{margin-top:4px;font-size:12px;font-weight:700;color:#b07a00;} @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .eqfx{color:#ffd24a;} } :root[data-theme="dark"] .eqfx{color:#ffd24a;}
   .eqslot{background:rgba(0,0,0,.06);border-radius:10px;padding:8px;font-size:13px;} .eqslot.on{background:rgba(255,210,74,.18);} .eqslot button{margin-top:6px;padding:4px 14px;border-radius:8px;border:1px solid #c9a;background:#fff;}
   .eqitem{display:block;width:100%;text-align:left;margin:4px 0;padding:7px 9px;border-radius:10px;border:1px solid rgba(0,0,0,.15);background:#fff;font-family:inherit;}
@@ -4683,8 +4689,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       achvCheck();
       got = storyStars[i];
       coinNote = storyWinCoins(i, curStage.area + VAR_SHIFT[curVar], firstClear, got - bits(oldMask)) + teamExp(curStage) + zakoDrop();
-      const vr = varRewards(curVar, curStage.area); coinNote += vr.txt;
-      if (vr.list.length) msgLog('get', '🧊 ' + curStage.label + ' クリア：' + vr.txt.trim());
+      const vr = varRewards(curVar, curStage.area, curStage); coinNote += vr.txt;
+      if (vr.list.length) msgLog('get', '🎁 ' + curStage.label + ' クリア：' + vr.txt.trim());
       lastVarList = vr.list; lastAdx = true;      // 結果画面の「ごほうび」で広告2倍を選べる（2026-11-18 本人：ふつうのステージでも出す）
       seqExtra = [];
       if (firstClear && curStage.kind === 'boss') {         // エリアクリア報酬：ボスを初めて倒したとき
@@ -5692,9 +5698,42 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     const ux = Math.max(UEXP.pracMin, Math.min(UEXP.pracMax, Math.round((now() - runStart) / 60000 * UEXP.pracPerMin)));
     userExpAdd(ux); $('finalNote').textContent += '　経験値 +' + ux;
   }
-  // 氷・石のルート（とボスの氷・石）のごほうび：氷＝アイテム2つ／石＝素材2つ（経験値・コイン・仲間の率は別で上がる）
+  // ===== ストーリーの落とし物（2026-11-19 本人：場所ごとにちがう素材・広告で2倍になるので出る率を下げて設定しなおし）=====
+  //   エリアごとに出る素材の種類（2つ）とグレードの出やすさが決まっている。マスの種類で出る率がちがう
+  //   ふつうのマス 15%で1個（2つの種類を交互に）／中ボス 30%で1個／石のルート 60%で1個（グレード高め・属性のかけらも）／氷のルート アイテム1個／ボス 50%で1個（グレード高め）＋属性のかけら20%
+  //   （前は 氷＝アイテム2つ・石＝素材2つ。広告2倍で倍になるので1つに）
+  const AREA_MAT = [['wood', 'cloth'], ['metal', 'hide'], ['gem', 'craft'], ['wood', 'beast'], ['cloth', 'craft'], ['mech', 'metal'], ['beast', 'gem'], ['hide', 'polish'], ['craft', 'metal']];
+  const AREA_TW = [[90, 10, 0], [85, 15, 0], [80, 18, 2], [72, 24, 4], [65, 30, 5], [58, 35, 7], [50, 40, 10], [45, 42, 13], [40, 44, 16]];   // N・R・SR の出やすさ
   const VAR_ITEMS = ['refresh30', 'refresh50', 'slow', 'bomb', 'star3'];
-  function varRewards(v, area){
+  function stDropPlan(st, v){
+    const a = st.area, k = st.idx != null ? st.idx : (st.no - 1) % PER, fams = AREA_MAT[a] || AREA_MAT[0];
+    const kind = st.kind === 'boss' ? 'boss' : st.route === 2 || v === 2 ? 'stone' : st.route === 1 || v === 1 ? 'ice' : st.kind === 'mid' ? 'mid' : 'normal';
+    const p = {normal: 0.15, mid: 0.30, stone: 0.60, ice: 1, boss: 0.50}[kind];
+    const fl = kind === 'normal' || kind === 'mid' ? [fams[k % 2]] : fams;
+    let tw = (AREA_TW[a] || AREA_TW[0]).slice();
+    if (kind === 'stone' || kind === 'boss') { const m = tw[0] * 0.35; tw = tw[2] ? [tw[0] - m, tw[1] + m * 0.75, tw[2] + m * 0.25] : [tw[0] - m, tw[1] + m, 0]; }   // SRが出ないエリアでは、上げてもRまで
+    return {kind, p, fl, tw, attr: ATTR_AREA[a] || 'none', shard: kind === 'boss' ? 0.2 : kind === 'stone' ? 0.15 : 0};
+  }
+  function stDropRoll(st, v){
+    const P = stDropPlan(st, v), list = [];
+    if (P.kind === 'ice') list.push([VAR_ITEMS[Math.floor(Math.random() * VAR_ITEMS.length)], 1]);
+    else if (Math.random() < P.p) { const f = P.fl[Math.floor(Math.random() * P.fl.length)], sum = P.tw[0] + P.tw[1] + P.tw[2]; let r = Math.random() * sum, t = 0; while (t < 2 && r >= P.tw[t]) { r -= P.tw[t]; t++; } list.push(['m_' + f + '_' + t, 1]); }
+    if (P.shard && Math.random() < P.shard) list.push(['st_' + P.attr + '_0', 1]);
+    return list;
+  }
+  // 長押しで見せる「出るかもしれないもの」（確率は出さず、よく出る・ときどき・まれに）
+  function stDropText(st){
+    const P = stDropPlan(st, st.route === 1 ? 1 : st.route === 2 ? 2 : 0), L = [], sum = P.tw[0] + P.tw[1] + P.tw[2];
+    const lv = (x) => x >= 0.3 ? 'よく出る' : x >= 0.08 ? 'ときどき' : 'まれに';
+    if (P.kind === 'ice') L.push('アイテム（' + VAR_ITEMS.map(k => ITEMS[k] ? ITEMS[k].name : k).join('・') + '）のどれか1つ');
+    else P.fl.forEach(f => [0, 1, 2].forEach(t => { if (!P.tw[t]) return; const x = P.p * P.tw[t] / sum / P.fl.length; L.push('<span class="sdi">' + MAT_FAM[f].i + ' ' + MAT_FAM[f].l[t] + '<small>' + GN[t] + '・' + lv(x) + '</small></span>'); }));
+    if (P.shard) L.push('<span class="sdi">🔹 ' + stoneName(P.attr, 0) + '<small>まれに</small></span>');
+    return L;
+  }
+  function varRewards(v, area, st){
+    if (st) { const list = stDropRoll(st, v); list.forEach(([k, n]) => giveItem(k, n)); if (list.length) saveInv();
+      const nm = k => ITEMS[k] ? ITEMS[k].name : EX_MAT[k] ? EX_MAT[k][0] : k;
+      return {list, txt: list.length ? ' ' + list.map(([k, n]) => nm(k) + '×' + n).join('・') + '。' : ''}; }
     const list = [];
     if (v === 1) for (let k = 0; k < 2; k++) list.push([VAR_ITEMS[Math.floor(Math.random() * VAR_ITEMS.length)], 1]);
     // 石の素材（2026-11-15 本人：グレードの高いものは出にくく）：N 75%・R 22%・SR 3%。MR・LR・伝説は出ない。1個ずつ
@@ -7150,7 +7189,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.204';
+  const APP_VER = '0.9.205';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -7195,6 +7234,21 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     const nw = []; AREAS.forEach((_, a) => [1, 2].forEach(rt => { if (routeShown(a, rt) && !seen.includes(key(a, rt))) nw.push([a, rt]); })); if (!nw.length) return;
     save('hard_seen', JSON.stringify(seen.concat(nw.map(([a, rt]) => key(a, rt)))));
     if (!first && !openAll()) setTimeout(() => toast('エリア' + (nw[0][0] + 1) + 'に「' + VAR_NAME[nw[0][1]] + 'のルート」が出現！'), 400);
+  }
+  function stInfoPop(st, op){
+    const zk = st.kind === 'boss' ? null : zakoAt(st);
+    const nm = st.kind === 'boss' ? fullName(CHARS[st.char]) : st.kind === 'mid' ? st.name : (zk ? zakoFull(zk) : st.name);
+    const kind = st.kind === 'boss' ? 'ボス' : st.kind === 'mid' ? '中ボス' : 'ザコ';
+    const need = stagePow(st), mine = myStoryPow(), c = powCls(mine, need), ta = teamAttr(st);
+    const rt = st.route === 1 ? '氷のルート' : st.route === 2 ? '石のルート' : '';
+    const d = document.createElement('div'); d.className = 'stpop-ov';
+    d.innerHTML = '<div class="stpop"><div class="sph"><b>' + st.label + '</b>　' + kind + (rt ? '・' + rt : '') + '</div><div class="spn">' + nm + '</div>' +
+      '<div class="spl">属性 ' + attrBadge(stageEnemyId(st), true) + ' ' + ATTR[ta.ea].n + '　相性 <b class="' + (ta.out >= 1.05 ? 'good' : ta.out <= 0.95 ? 'bad' : '') + '">' + (ta.out >= 1.05 ? '有利' : ta.out <= 0.95 ? '不利' : 'ふつう') + '</b></div>' +
+      '<div class="spl">必要戦闘力 <b class="' + c + '">' + need.toLocaleString() + '</b>　あなた <b class="' + c + '">' + mine.toLocaleString() + '</b></div>' +
+      (op ? '' : '<div class="spl">🔒 まだ入れません</div>') +
+      '<div class="spd"><b>出るかもしれないもの</b>' + stDropText(st).map(x => '<div>' + x + '</div>').join('') + '</div><small class="spx">タップで閉じる</small></div>';
+    document.body.appendChild(d);
+    d.addEventListener('click', () => d.remove());
   }
   function drawStory(){
     try { hardNotice(); } catch(_) {}
@@ -7266,7 +7320,12 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       }
       b.insertAdjacentHTML('beforeend', '<span class="ms">' + starsHTML(got) + '</span>');
       if (op) { const need = stagePow(st); b.insertAdjacentHTML('beforeend', '<span class="pw ' + powCls(myPw, need) + '">⚔' + need.toLocaleString() + '</span>'); }
-      if (op) b.addEventListener('click', () => { pickStage = i; save('stage', String(i)); drawStory(); });
+      if (op) b.addEventListener('click', () => { if (b.dataset.lp === '1') { b.dataset.lp = ''; return; } pickStage = i; save('stage', String(i)); drawStory(); });
+      // 2026-11-19 本人：敵を長押しすると、かんたんな敵の情報と出るかもしれない素材
+      { let lpT = null; const cancel = () => clearTimeout(lpT);
+        b.addEventListener('pointerdown', () => { cancel(); lpT = setTimeout(() => { b.dataset.lp = '1'; stInfoPop(st, op); try { navigator.vibrate && navigator.vibrate(15); } catch (_) {} }, 480); });
+        ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => b.addEventListener(ev, cancel));
+        b.addEventListener('contextmenu', e => e.preventDefault()); }
       map.appendChild(b);
     });
     // まだ入れないエリア
