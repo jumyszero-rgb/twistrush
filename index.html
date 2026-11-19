@@ -7204,7 +7204,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.213';
+  const APP_VER = '0.9.214';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -9414,19 +9414,61 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     lvAll: c => ({t: '全員 LV' + c.n + '以上', ok: m => m.every(u => u.lv >= c.n)}),
     gradeMin: c => ({t: 'SR以上 ' + c.n + '人以上', ok: m => m.filter(u => ['SR', 'MR', 'LR'].includes((CHAR_STAT[u.id] || {}).grade)).length >= c.n}),
     gradeAll: c => ({t: '全員 SR以上', ok: m => m.every(u => ['SR', 'MR', 'LR'].includes((CHAR_STAT[u.id] || {}).grade))}),
-    heal: c => ({t: '回復の技を持つキャラ ' + c.n + '人以上', ok: m => m.filter(u => exHas(u.id, ['heart', 'sheart', 'gheart', 'heal'])).length >= c.n}),
+    heal: c => ({t: '回復の技を持つキャラ ' + c.n + '人以上', ok: m => m.filter(u => exHas(u.id, EX_HEAL_FX)).length >= c.n}),
     octa: c => ({t: 'オクタの技を持つキャラ ' + c.n + '人以上', ok: m => m.filter(u => exHas(u.id, ['octa', 'octaDrop', 'octaRect'])).length >= c.n}),
     powMin: c => ({t: 'チーム戦闘力 ' + c.n.toLocaleString() + '以上', ok: m => statPow(m.reduce((s, u) => { unitStats(u).forEach((v, k) => s[k] += v); return s; }, [0, 0, 0, 0])) >= c.n}),
     diffAttr: c => ({t: '全員ちがう属性', ok: m => new Set(m.map(u => attrOf(u.id))).size === m.length}),
     diffType: c => ({t: '全員ちがうタイプ', ok: m => new Set(m.map(u => (CHAR_STAT[u.id] || {}).type)).size === m.length}),
   };
+  // 条件の組み合わせが、ゲームにいるキャラで4人のチームとして組めるか（LV・戦闘力は育てれば満たせるので見ない）
+  const EX_TEAM_MAX = 4, exCanCache = {};
+  let exProf = null;
+  function exProfiles(){
+    if (exProf) return exProf; const m = {};
+    ALLC.forEach(c => { const st = CHAR_STAT[c.id]; if (!st) return;
+      const p = {a: attrOf(c.id), t: st.type, hi: ['SR', 'MR', 'LR'].includes(st.grade), h: exHas(c.id, EX_HEAL_FX), o: exHas(c.id, ['octa', 'octaDrop', 'octaRect'])}, k = JSON.stringify(p);
+      (m[k] = m[k] || Object.assign(p, {n: 0})).n++; });
+    return exProf = Object.values(m);
+  }
+  function exCanMake(list){
+    const key = JSON.stringify(list); if (key in exCanCache) return exCanCache[key];
+    const need = [], P0 = exProfiles();
+    let P = P0, dA = false, dT = false;
+    list.forEach(c => {
+      if (c.k === 'attrNone') P = P.filter(p => p.a !== c.a);
+      else if (c.k === 'gradeAll') P = P.filter(p => p.hi);
+      else if (c.k === 'diffAttr') dA = true;
+      else if (c.k === 'diffType') dT = true;
+      else if (c.k === 'attrMin') need.push([p => p.a === c.a, c.n]);
+      else if (c.k === 'typeMin') need.push([p => p.t === c.ty, c.n]);
+      else if (c.k === 'gradeMin') need.push([p => p.hi, c.n]);
+      else if (c.k === 'heal') need.push([p => p.h, c.n]);
+      else if (c.k === 'octa') need.push([p => p.o, c.n]);
+    });
+    const have = need.map(() => 0), used = new Map(), aS = new Set(), tS = new Set();
+    const ok = () => need.every((q, i) => have[i] >= q[1]);
+    const go = (from, left) => {
+      if (ok()) return true; if (!left) return false;
+      if (need.some((q, i) => q[1] - have[i] > left)) return false;
+      for (let i = from; i < P.length; i++) { const p = P[i], u = used.get(p) || 0;
+        if (u >= p.n || (dA && aS.has(p.a)) || (dT && tS.has(p.t))) continue;
+        if (!need.some((q, j) => have[j] < q[1] && q[0](p))) continue;   // 足りない条件に役立つキャラだけ入れる
+        used.set(p, u + 1); need.forEach((q, j) => { if (q[0](p)) have[j]++; }); if (dA) aS.add(p.a); if (dT) tS.add(p.t);
+        const r = go(i, left - 1);
+        used.set(p, u); need.forEach((q, j) => { if (q[0](p)) have[j]--; }); if (dA) aS.delete(p.a); if (dT) tS.delete(p.t);
+        if (r) return true; }
+      return false;
+    };
+    return exCanCache[key] = go(0, EX_TEAM_MAX);
+  }
+  const EX_HEAL_FX = ['heart', 'sheart', 'gheart', 'heal', 'regen'];
   function exHas(id, kinds){ const f = FX_DEF[id]; if (!f) return false; return [].concat(f.sp || [], f.ougi || []).some(e => kinds.includes(e[0])); }
   const EX_STAGES = [
     {id: 1, lv: 1, n: '大豆島の鳥類討伐', s: 1, h: 8, core: {k: 'attrMin', a: 'fire', n: 2}, pool: [{k: 'lvAll', n: 10}, {k: 'typeMin', ty: 'atk', n: 1}, {k: 'heal', n: 1}, {k: 'typeMin', ty: 'spd', n: 1}]},
     {id: 2, lv: 20, n: '火山島 マカニ村防衛戦', s: 2, h: 12, core: {k: 'attrMin', a: 'water', n: 2}, pool: [{k: 'typeMin', ty: 'def', n: 1}, {k: 'heal', n: 1}, {k: 'lvAll', n: 15}, {k: 'attrNone', a: 'wind'}, {k: 'gradeMin', n: 1}]},
     {id: 3, lv: 40, n: '海底大渦 竜種討伐', s: 4, h: 24, core: {k: 'attrMin', a: 'thunder', n: 2}, pool: [{k: 'lvAll', n: 30}, {k: 'gradeMin', n: 2}, {k: 'typeMin', ty: 'spd', n: 1}, {k: 'heal', n: 1}, {k: 'attrNone', a: 'fire'}, {k: 'powMin', n: 2200}]},
     // 2026-11-18 本人：はじめのレベルでもできる簡単な遠征を1つ（ノーマルの敵はLV1のチームでも100%近く・条件もやさしい）
-    {id: 11, lv: 1, n: '村はずれの畑のお手伝い', s: 1, h: 6, ep: 450, nc: 1, core: {k: 'lvAll', n: 1}, pool: [{k: 'lvAll', n: 2}, {k: 'lvAll', n: 3}]},
+    {id: 11, lv: 1, n: '村はずれの畑のお手伝い', s: 1, h: 6, ep: 450, nc: 2, core: {k: 'lvAll', n: 3}, pool: [{k: 'typeMin', ty: 'hp', n: 1}, {k: 'typeMin', ty: 'atk', n: 1}, {k: 'typeMin', ty: 'def', n: 1}, {k: 'typeMin', ty: 'spd', n: 1}, {k: 'heal', n: 1}, {k: 'octa', n: 1}]},   // 2026-11-19 本人：LVだけでなく、日替わりでタイプ・技の条件も1つ
     {id: 4, lv: 10, n: '迷いの森の薬草採り', s: 1, h: 8, core: {k: 'heal', n: 2}, pool: [{k: 'attrMin', a: 'wind', n: 1}, {k: 'lvAll', n: 8}, {k: 'typeMin', ty: 'hp', n: 1}, {k: 'attrNone', a: 'dark'}]},
     {id: 5, lv: 20, n: '古代遺跡の宝探し', s: 2, h: 12, core: {k: 'attrMin', a: 'light', n: 1}, pool: [{k: 'typeMin', ty: 'spd', n: 2}, {k: 'lvAll', n: 15}, {k: 'octa', n: 1}, {k: 'gradeMin', n: 1}], bonus: [['gticket', 1, 0.3]]},
     {id: 6, lv: 10, n: '雪原の行商キャラバン護衛', s: 2, h: 8, core: {k: 'typeMin', ty: 'def', n: 2}, pool: [{k: 'diffAttr'}, {k: 'lvAll', n: 12}, {k: 'heal', n: 1}, {k: 'attrMin', a: 'fire', n: 1}], bonus: [['silver', 200, 1]]},
@@ -9539,7 +9581,10 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   function exView(st){
     const g = exGOf(st), s = Math.min(10, st.s + EX_GR[g].add), boost = 1;
     // nc：ノーマルの条件の数を決めてある遠征（はじめ向け）
-    const cnds = [st.core].concat(st.poolS.slice(0, (st.nc && !g ? st.nc : EX_NCND[s]) - 1)).map(c => exCndUp(c, g)).map(c => Object.assign({k: c.k}, EX_CND[c.k](c)));
+    // 2026-11-19 本人：「防御型3人＋火属性2人」のように、4人のチームでは組めない条件の組み合わせは出さない（組めない条件は飛ばして次の候補へ）
+    const want = st.nc && !g ? st.nc : EX_NCND[s], pick = [exCndUp(st.core, g)];
+    for (const c0 of st.poolS) { if (pick.length >= want) break; const c = exCndUp(c0, g); if (exCanMake(pick.concat([c]))) pick.push(c); }
+    const cnds = pick.map(c => Object.assign({k: c.k}, EX_CND[c.k](c)));
     return Object.assign({}, st, {s, s0: st.s, g, boost, cnds});
   }
   let exData = loadJ('expd', null);
