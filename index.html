@@ -7116,7 +7116,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.202';
+  const APP_VER = '0.9.203';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -7786,7 +7786,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     {price: '¥3,000', name: 'ゴールドコイン 3,200枚', coin: 3200, sku: 'gold3200'},
     {price: '¥5,000', name: 'ゴールドコイン 5,500枚', coin: 5500, sku: 'gold5500'},
     {price: '¥10,000', name: 'ゴールドコイン 11,500枚', coin: 11500, sku: 'gold11500'},
-    {price: '¥980', sku: 'pass', name: '月パス（毎月自動更新）', desc: '毎日：ガチャチケット×2・スタミナポット×1／30日ずっと：<b>広告なし</b>（コンティニュー・ごほうび2倍・毎日プレゼントの2倍が広告なしで使える）・遠征の経験値+20%・遠征で素材が出る率+20%', pass: true},
+    {price: '¥980', sku: 'pass', name: '月パス（毎月自動更新）', desc: '毎日：ガチャチケット×2・スタミナポット×1／30日ずっと：<b>広告なし</b>（コンティニュー・ごほうび2倍・毎日プレゼントの2倍が広告なしで使える）・遠征の経験値+15%・遠征で素材が出る率+15%', pass: true},
     {price: '¥480', sku: 'first', name: '初回限定パック', desc: '最初の1回だけ：SR以上確定チケット×2・ガチャチケット×10・スタミナポット×3', first: true},
   ];
   const today = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
@@ -9486,9 +9486,11 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     exData.done = {[dk]: (exData.done[dk] || []).concat(id)};
     exSave(); try { if (!playSeFile('ex_go', 1.2)) sndMarch(); } catch (_) {} toast('「' + st.n + '」へ出発しました（' + hh + '時間）'); try { qAdd('exgo'); } catch (_) {} drawExpd(); drawExpdBadge();
   }
+  // 2026-11-19 本人：遠征の経験値・素材のパスの上乗せ。シルバー（今の月パス）+15%・ゴールド+30%（ゴールドパスを作ったらここで分ける）
+  const exPassMul = () => passOn() ? 1.15 : 1;
   function exGet(i){
     const a = exData.active[i]; if (!a || exLeft(a) > 0) return;
-    const mul = a.rate != null ? a.rate : 1, tm = a.tm || 1, gain = Math.round(EX_EXP[a.s] * mul * tm * (passOn() ? 1.2 : 1)), ups = [], got = [], gotR = [], team = [];
+    const mul = a.rate != null ? a.rate : 1, tm = a.tm || 1, gain = Math.round(EX_EXP[a.s] * mul * tm * exPassMul()), ups = [], got = [], gotR = [], team = [];
     let svGot = 0; const giv = [];                      // 広告2倍でもう一度わたすための記録（[キー, 数] と装備は ['@ID', 1]）
     const gv = (k, n) => { giveItem(k, n); giv.push([k, n]); };
     a.uids.forEach(uid => { const u = unitOf(uid); if (!u) return; let lv = u.lv, exp = u.exp + gain; const cap = capOf(u), was = lv, e0 = u.exp;
@@ -9499,7 +9501,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       const sv = Math.round((EX_SILVER[a.s] + ((a.bonus.find(x => x[0] === 'silver') || [0, 0])[1])) * mul * tm); addCoins(sv); got.push('シルバー ' + sv); svGot = sv;
       EX_ITEMS[a.s].concat(a.bonus.filter(x => x[0] !== 'silver')).forEach(([k, n, p]) => { const c = exCnt(p * mul * tm); if (c > 0) { gv(k, n * c); got.push(EX_ITEM_NAME(k) + ' ×' + n * c); } });
       const matUp = 1 + (eqTeamFx(a.uids.map(unitOf).filter(Boolean)).mat || 0) / 100;   // アクセ「遠征の素材が出る率」
-      (EX_MATS[a.id] || []).forEach(c => { for (let i = exCnt(EX_MAT_P * mul * tm * matUp * (passOn() ? 1.2 : 1)); i > 0; i--) { const [k, q] = exRollMat(c, a.s, EX_STAGE_ATTR[a.id]); gv(k, q); got.push(EX_MAT[k][1] + EX_MAT[k][0] + ' ×' + q); } });
+      (EX_MATS[a.id] || []).forEach(c => { for (let i = exCnt(EX_MAT_P * mul * tm * matUp * exPassMul()); i > 0; i--) { const [k, q] = exRollMat(c, a.s, EX_STAGE_ATTR[a.id]); gv(k, q); got.push(EX_MAT[k][1] + EX_MAT[k][0] + ' ×' + q); } });
       { const n = exCnt(ENH_DROP[a.s] * mul * tm); for (let i = 0; i < n; i++) { const k = 'enh_n_' + exTier(Math.min(5, a.s)); gv(k, 1); got.push('🔷 ' + EX_MAT[k][0] + ' ×1'); } }   // グレードは★で決まる（高いグレードはまれ）
       if (Math.random() < ENH_DROP_B[a.s] * mul * tm) { const k = 'enh_b_' + exTier(Math.min(5, a.s)); gv(k, 1); got.push('✨ ' + EX_MAT[k][0] + ' ×1！'); }
       if (Math.random() < EVO_DROP[a.s] * mul * tm) { gv('evo_c', 1); got.push('💠 進化素材「進化の結晶」×1'); }
