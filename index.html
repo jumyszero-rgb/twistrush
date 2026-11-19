@@ -1202,7 +1202,7 @@ body.on-menu .battlemain{opacity:0;}
   .tbadge.inl{position:static;display:inline-block;vertical-align:middle;}
   .abadge{position:absolute;top:2px;right:22px;width:16px;height:16px;border-radius:4px;font-style:normal;font-size:10px;line-height:16px;text-align:center;color:#fff;font-weight:900;text-shadow:0 1px 1px rgba(0,0,0,.35);}
   .ccell .abadge{top:22px;left:3px;right:auto;bottom:auto;width:18px;height:18px;line-height:18px;font-size:11px;} .abadge.inl{position:static;display:inline-block;vertical-align:middle;}
-  .attrln{font-size:12px;margin:4px 0 2px;} .attrln b.good{color:#1fa35c;} .attrln b.bad{color:#d8364f;}
+  .balln{font-size:12px;margin-top:3px}.balln small{display:block;opacity:.7;font-size:10.5px}.balln .good{color:#7ee08a}.balln .bad{color:#ff8a8a}.attrln{font-size:12px;margin:4px 0 2px;} .attrln b.good{color:#1fa35c;} .attrln b.bad{color:#d8364f;}
   .dlv{font-size:13px;margin-top:4px;} .dlv b{font-size:24px;color:#ffd24a;} .ustar.big{display:block;font-size:16px;letter-spacing:1px;}
   .dexp{font-size:11px;opacity:.85;margin-top:2px;}
   .dtabs{display:flex;gap:4px;margin:10px 0 6px;} .dtabs button{flex:1;border-radius:10px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.3);color:#fff;font-weight:800;font-size:11px;padding:7px 2px;}
@@ -7204,7 +7204,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.222';
+  const APP_VER = '0.9.223';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -7260,6 +7260,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     d.innerHTML = '<div class="stpop"><div class="sph"><b>' + st.label + '</b>　' + [kind, rt || 'ふつうルート'].filter(Boolean).join('・') + '</div><div class="spn">' + nm + '</div>' +
       '<div class="spl">属性 ' + attrBadge(stageEnemyId(st), true) + ' ' + ATTR[ta.ea].n + '　相性 <b class="' + (ta.out >= 1.05 ? 'good' : ta.out <= 0.95 ? 'bad' : '') + '">' + (ta.out >= 1.05 ? '有利' : ta.out <= 0.95 ? '不利' : 'ふつう') + '</b></div>' +
       '<div class="spl">必要戦闘力 <b class="' + c + '">' + need.toLocaleString() + '</b>　あなた <b class="' + c + '">' + mine.toLocaleString() + '</b></div>' +
+      (() => { const bl = teamBal(st); return '<div class="spl">攻め <b>' + Math.round(bl.off * 100) + '%</b>　守り <b>' + Math.round(bl.def * 100) + '%</b></div>'; })() +
       (op ? '' : '<div class="spl">🔒 まだ入れません</div>') +
       '<div class="spd"><b>出るかもしれないもの</b>' + stDropText(st).map(x => '<div>' + x + '</div>').join('') + '</div><small class="spx">タップで閉じる</small></div>';
     document.body.appendChild(d);
@@ -7366,6 +7367,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
           const ta = teamAttr(st), av = ta.out >= 1.05 ? ['good', '有利'] : ta.out <= 0.95 ? ['bad', '不利'] : ['', 'ふつう'];
           return '<div class="attrln">敵の属性 ' + attrBadge(stageEnemyId(st), true) + ' ' + ATTR[ta.ea].n + '　チームの相性 <b class="' + av[0] + '">' + av[1] + ' ×' + ta.out.toFixed(2) + '</b></div>' +
             '<div class="pwr">必要戦闘力 <b class="' + c + '">' + need.toLocaleString() + '</b>　あなたのチーム <b class="' + c + '">' + mine.toLocaleString() + '</b>' +
+            (() => { const bl = teamBal(st), pc = v => '<b class="' + (v >= 1 ? 'good' : v < 0.85 ? 'bad' : '') + '">' + Math.round(v * 100) + '%</b>'; return '<div class="balln">攻め ' + pc(bl.off) + '　守り ' + pc(bl.def) + (bl.heal > 0 ? '（回復の技 +' + Math.round(bl.heal) + '%）' : '（回復の技なし）') + '<small>敵と同じ強さ＝100%。弱いほうに引っぱられます</small></div>'; })() +
             '<small>' + (c === 'ok' ? '十分に戦えます' : c === 'near' ? 'ほぼ互角。技やアイテムを使えば勝てます' : '少し厳しいかも。クリアしたステージでレベルを上げるのがおすすめ') + '（技の強さは入っていません）</small></div>'; })() +
         (() => { const sc = misScale(st);
           return '<ul class="ml">' + st.missions.map((m, j) => '<li class="' + (storyMask[pickStage] >> j & 1 ? 'on' : '') + '">' +
@@ -9109,9 +9111,30 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   // 必要戦闘力＝敵のステータス×強さの補正。ボスはHPが多く技も使うので×1.4、中ボスは×1.15（2026-11-13：ボス1,400に1,700でギリギリだったので見直し）
   const POW_KIND = {boss: 1.25, mid: 1.1};   // 2026-11-13 2回目：×1.4では敵2,000・チーム1,800で少し余裕だったので、ボス×1.25・中ボス×1.1に
   // 2026-11-19 本人「同じ戦闘力でもゴールドハートがないと勝てない」：敵の体力の見えない倍率（EN_HP_MUL）を必要戦闘力に入れる
-  const stagePow = st => { const e = enemyStats(st); return Math.round(statPow([e[0] * EN_HP_MUL].concat(e.slice(1))) * (POW_KIND[st.kind] || 1)); };
+  const stagePow = st => Math.round(enBasePow(st) * (POW_KIND[st.kind] || 1));
   // いまのチーム（4人の合計）。ステージを渡すと属性の相性を入れる（有利なら攻撃が上がり、不利なら受けるダメージが増えるぶん体力・防御を下げて数える）
-  const myStoryPow = st => { const t = teamStats(); if (!st) return statPow(t); const a = teamAttr(st); return statPow([t[0] / a.inn, t[1] * a.out, t[2] / a.inn, t[3]]); };
+  // 2026-11-19 本人「こちらのバランスも考慮して。回復が弱かったら、いくら崩すのが早くても勝てない」
+  //   攻め＝敵を倒す速さ（攻撃×相性 と 敵の防御）、守り＝倒されるまでの長さ（体力・防御・スピード・チームの回復の技 と 敵の攻撃・相性）。
+  //   どちらも「敵と同じステータスなら100%」。全体は2つの調和平均（弱いほうに引っぱられる）。チーム戦闘力＝敵の戦闘力×全体
+  function teamHeal(){                                    // チームの回復の技の量（全色％。必殺技は何度も使えるので×1.5）
+    let h = 0; const t = curTeam(), sk = teamSk[teamNo];
+    t.forEach((uid, k) => { const u = unitOf(uid); if (!u || !FX_DEF[u.id]) return;
+      const kinds = !FX_DEF[u.id].ougi ? ['sp'] : k === 0 ? ['sp', 'ougi'] : [sk[k] === 'ougi' ? 'ougi' : 'sp'];
+      kinds.forEach(kind => fxAt(u.id, kind, u.star || 0, starMaxOf(u)).forEach(f => {
+        const v = f[0] === 'heal' || f[0] === 'regen' ? f[1] : f[0] === 'gheart' ? 50 * f[1] : f[0] === 'heart' ? 10 * f[1] : f[0] === 'sheart' ? 30 * f[1] : 0;
+        h += v * (kind === 'sp' ? 1.5 : 1); })); });
+    return h;
+  }
+  function teamBal(st){
+    const t = teamStats(), e = enemyStats(st), a = teamAttr(st);
+    const off = t[1] * a.out * corr(t[1], e[2]) / Math.max(1, e[1]);
+    const spd = (e[3] + t[3]) / (2 * Math.max(1, e[3]));
+    const heal = teamHeal();
+    const def = t[0] / (a.inn * corr(e[1], t[2]) * Math.max(1, e[0])) * spd * (1 + 0.3 * Math.min(1, heal / 100));
+    return {off, def, heal, all: 2 / (1 / Math.max(0.01, off) + 1 / Math.max(0.01, def))};
+  }
+  const enBasePow = st => { const e = enemyStats(st); return statPow([e[0] * EN_HP_MUL].concat(e.slice(1))); };
+  const myStoryPow = st => { if (!st) return statPow(teamStats()); return Math.round(enBasePow(st) * teamBal(st).all); };
   const powCls = (mine, need) => mine >= need ? 'ok' : mine >= need * 0.85 ? 'near' : 'hard';
   function enemyStats(st){
     if (!st) return [100, 100, 100, 100];
