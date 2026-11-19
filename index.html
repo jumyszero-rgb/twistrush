@@ -1098,6 +1098,7 @@ body.on-menu .battlemain{opacity:0;}
   .ccell{aspect-ratio:1;padding:0;overflow:hidden;border:3px solid var(--gc);box-shadow:0 0 8px color-mix(in srgb, var(--gc) 55%, transparent);}
   .ccell.g-LR{border-image:linear-gradient(135deg,#ff5f7e,#ffd84a,#5fe08a,#4fb4ff,#b77bff) 1;}
   .cface{position:absolute;inset:0;} .cface .cicon{width:100% !important;height:100% !important;border-radius:0;}
+   .cov{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;padding:2px 3px 2px;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.35),transparent 28%,transparent 52%,rgba(0,0,0,.75));border-radius:inherit} .cov .cv1,.cov .cv2{display:flex;justify-content:space-between;align-items:center;min-height:0} .cov .cvlv{font-size:13px;font-weight:900;color:#fff;text-shadow:0 0 3px #000,0 1px 2px #000;line-height:1.1} .cov .cvlk{font-style:normal;width:16px;height:16px;border-radius:50%;background:#ffd24a;font-size:9px;line-height:16px;text-align:center;box-shadow:0 0 4px #000} .cov .ustar{display:inline;font-size:8.5px;line-height:1;letter-spacing:-1.6px;color:#ffd24a;text-shadow:0 0 3px #000} .cov .cv2 .ustar{flex:1;min-width:0;overflow:hidden;white-space:nowrap} .cov .cvlb{flex:0 0 auto;white-space:nowrap;margin-left:2px;font-size:9px;font-weight:900;color:#fff;background:#e0457f;border-radius:6px;padding:0 4px;line-height:13px;box-shadow:0 0 4px rgba(0,0,0,.6)} .cov .cvmax{background:linear-gradient(90deg,#ff5f9e,#9b5cff)} .cov .cvsp{flex:1} .cov .cv3{display:flex;justify-content:flex-end;gap:2px;align-items:center} .cov .cvb{font-style:normal;width:15px;height:15px;border-radius:4px;color:#fff;font-size:9px;font-weight:900;line-height:15px;text-align:center;box-shadow:0 0 0 1px rgba(255,255,255,.8)} .cov .ctm{width:15px;height:15px;line-height:15px;font-size:9px} .cov .cv4{text-align:right;font-size:10.5px;font-weight:900;color:#fff;text-shadow:0 1px 2px #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.25}
   .ccell .clv{position:absolute;top:1px;left:3px;font-size:14px;font-weight:900;color:#fff;text-shadow:0 0 3px #000,0 1px 2px #000;}
   .ccell .tbadge{top:auto;bottom:16px;right:3px;}
   .ccell .cno{position:absolute;top:2px;right:2px;width:20px;height:20px;border-radius:50%;background:#ffd24a;color:#3a2210;font-size:15px;font-weight:900;line-height:20px;text-align:center;box-shadow:0 0 4px #000;}
@@ -7214,7 +7215,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.231';
+  const APP_VER = '0.9.232';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -10884,13 +10885,23 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   function teamMarks(uid){ let h = ''; (teams || []).forEach((t, i) => { const k = (t || []).indexOf(uid); if (k >= 0) h += '<i class="ctm" style="--tc:' + TEAM_COL[i] + '" title="チーム' + (i + 1) + 'の' + (k + 1) + '番目">' + (k + 1) + '</i>'; }); return h ? '<span class="ctms">' + h + '</span>' : ''; }
   function teamTabs(){ return '<div class="ttabs">' + [0, 1, 2, 3].map(k => '<button style="--tc:' + TEAM_COL[k] + '" data-team="' + k + '" class="' + (k === teamNo ? 'on' : '') + '">チーム' + (k + 1) + (k === teamNo ? '<small>使用中</small>' : '') + '</button>').join('') + '</div>'; }
   // チームの枠：キャラ一覧と同じ見た目。枠の下で必殺技か奥義を選ぶ（メインは両方）
+  // 2026-11-20 本人：キャラの枠の表示を整理（チームの枠も一覧も同じ）。二つ名はここでは出さない
+  //   1段目：左＝LV／右＝🔒　2段目：左＝★（限界突破）／右＝「突破」　3段目：右＝属性・タイプ・チーム　4段目：右＝名前
+  function cellOV(u, o){
+    const ci = ciOf(u), a = ATTR[attrOf(u.id)], cs = CHAR_STAT[u.id], tp = cs ? TYPE_INFO[cs.type] : null;
+    return '<div class="cov">' +
+      '<div class="cv1"><b class="cvlv">LV' + u.lv + '</b>' + (u.lock ? '<i class="cvlk" title="ロック中">🔒</i>' : '') + '</div>' +
+      '<div class="cv2">' + starsHTMLu(u) + (o.lb ? '<span class="cvlb">突破</span>' : o.max ? '<span class="cvlb cvmax">MAX</span>' : '') + '</div>' +
+      '<div class="cvsp"></div>' +
+      '<div class="cv3"><i class="cvb" style="background:' + a.col + '" title="' + a.n + '属性">' + a.n + '</i>' + (tp ? '<i class="cvb" style="background:' + tp.col + '" title="' + tp.name + '">' + tp.mark + '</i>' : '') + (o.team || '') + '</div>' +
+      '<div class="cv4">' + (o.name != null ? o.name : ALLC[ci].name) + '</div></div>';
+  }
   function slotHTML(uid, k, sel){
     const u = unitOf(uid);
     let h = '<div class="tcol"><div class="ccell tslot ' + (u ? 'g-' + CHAR_STAT[u.id].grade : 'empty') + (k === 0 ? ' main' : '') + (sel ? ' pick' : '') + (u && u.lock ? ' locked' : '') + '" data-k="' + k + '" role="button" style="--tc:' + TEAM_COL[teamNo] + '">';
     if (u) {
       const ci = ciOf(u);
-      h += '<span class="cface" data-ci="' + ci + '"></span><b class="clv">LV' + u.lv + '</b>' + typeBadge(u.id) + attrBadge(u.id) +
-           '<span class="cno">' + '①②③④'[k] + '</span><span class="cbot">' + starsHTMLu(u) + '<small>' + (ALLC[ci].title ? '<i class="cttl">' + ALLC[ci].title + '</i>' : '') + ALLC[ci].name + '</small></span>';
+      h += '<span class="cface" data-ci="' + ci + '"></span>' + cellOV(u, {team: '<i class="ctm" style="--tc:' + TEAM_COL[teamNo] + '">' + (k + 1) + '</i>'});
     } else h += '<span class="tplus">＋</span>';
     h += '</div><div class="tskrow">';
     if (u && k === 0) h += canMainId(u.id) ? '<span class="tsk both">必殺技＋奥義</span>' : '<span class="tsk sp1">必殺技</span>';
@@ -11270,10 +11281,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         const noMain = false;
         h += '<div class="ccell g-' + CHAR_STAT[u.id].grade + (boxSel === u.u ? ' sel' : '') + (u.lock ? ' locked' : '') + (noMain ? ' nomain' : '') + '" data-u="' + u.u + '">' + (noMain ? '<span class="nomk">①不可</span>' : '') +
              '<span class="cface" data-ci="' + ci + '"></span>' +
-             '<b class="clv">' + (u.lock ? '<i class="lkmk" title="ロック中">🔒</i>' : '') + 'LV' + u.lv + '</b>' + typeBadge(u.id) + attrBadge(u.id) +
-             teamMarks(u.u) +
-             (lb ? '<span class="lbmark">突破</span>' : '') + (isMaxed(u) && GRADE_DOWN.MR !== undefined && CHAR_STAT[u.id].grade !== 'LR' ? '<span class="maxmk cmax">MAX</span>' : '') +
-             '<span class="cbot">' + starsHTMLu(u) + '<small>' + (boxSort.startsWith('st') ? ST_NAME[+boxSort[2]] + ' ' + unitStats(u)[+boxSort[2]] : (ALLC[ci].title ? '<i class="cttl">' + ALLC[ci].title + '</i>' : '') + ALLC[ci].name) + '</small></span></div>';
+             cellOV(u, {lb, max: isMaxed(u) && CHAR_STAT[u.id].grade !== 'LR', team: teamMarks(u.u).replace(/<\/?span[^>]*>/g, ''),
+               name: boxSort.startsWith('st') ? ST_NAME[+boxSort[2]] + ' ' + unitStats(u)[+boxSort[2]] : null}) + '</div>';
       });
       h += '</div>' + pagerHTML(boxPage, list0.length, BOX_PER, 'box') + '</section>';
       const su = boxSel && unitOf(boxSel);
