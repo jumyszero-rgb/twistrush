@@ -1932,6 +1932,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         <div class="loadout" id="loadout"></div>
         <p class="maptotal" id="mapTotal"></p>
       </div>
+      <style>#storyStart.busyteam{background:linear-gradient(#6b6f80,#4b4f60)!important;color:#fff!important;box-shadow:none!important;line-height:1.25} #storyStart.busyteam small{display:block;font-size:11px;font-weight:600;opacity:.9}</style>
       <div class="how-foot"><button class="btn" id="storyStart">このステージに挑戦</button><div class="autobox" id="autoBox" hidden><div class="autobtns"><button class="btn gold" id="storyAuto">オート</button><button class="btn gold" id="storySkip">スキップ</button></div><small id="autoNote">コンティニュー・アイテムなしでクリアすると使えます</small></div></div>
       <small id="autoInfo" hidden><b>オート</b>：自動で戦う・レインボーブロックも取れる・途中で手動OK<br><b>スキップ</b>：一瞬で勝ち・10回まとめてOK・レインボーブロックは取れない</small>
     </div>
@@ -7213,7 +7214,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.228';
+  const APP_VER = '0.9.229';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -7389,6 +7390,9 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       $('stageInfo').innerHTML = '<div class="d">' + (open ? 'マスを選んでください。' : 'このエリアはまだ入れません。') + '</div>';
     }
     $('storyStart').disabled = !inArea;
+    // 2026-11-20 本人：遠征中のチームでは挑戦ボタンを押せない形に（押すとほかのチームへ切りかえ）
+    { const busyT = inArea && exTeamBusy(teamNo), b = $('storyStart'); b.classList.toggle('busyteam', busyT);
+      b.innerHTML = busyT ? '🧭 チーム' + (teamNo + 1) + 'は遠征中です<small>' + (freeTeam() >= 0 ? 'タップで、あいているチーム' + (freeTeam() + 1) + 'に切りかえ' : 'タップで、チームを作りなおす') + '</small>' : 'このステージに挑戦'; }
     drawAutoBtn();
     drawTeam(); drawLoadout(); refreshCoins(); drawStam();
     if (areaOpen(mapArea)) mapBgm();                         // 入れるエリアなら、そのエリアの曲にする
@@ -7541,8 +7545,16 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   $('storyBtn').addEventListener('click', () => { pickStage = nextStageIdx(); openStory(); });   // 続きのステージを選んだ状態で開く
   $('storyBack').addEventListener('click', () => { $('story').classList.add('hidden'); titleBgm(); });
+  // 遠征に出ていない、4人そろったチーム（今のチームの次から探す）
+  function freeTeam(){ for (let d = 1; d <= 4; d++) { const k = (teamNo + d) % 4, t = teams[k] || []; if (!exTeamBusy(k) && t[0] && t.filter(Boolean).length >= 4) return k; } return -1; }
   $('storyStart').addEventListener('click', () => {
     if (!stageOpen(pickStage)) return;
+    if (exTeamBusy(teamNo)) {                          // 遠征中のチーム：画面はそのままで、あいているチームに切りかえる
+      const k = freeTeam();
+      if (k >= 0) { teamNo = k; fixTeam(); drawStory(); toast('チーム' + (k + 1) + 'に切りかえました。もう一度押すと挑戦します'); }
+      else { toast('遠征に出ていない4人のチームがありません。チームを作りましょう'); $('story').classList.add('hidden'); openBox('char'); }
+      return;
+    }
     const tn = curTeam().filter(Boolean).length;
     if (!units.length) { toast('まずはガチャでキャラを仲間にしよう'); return; }
     if (!curTeam()[0] || tn < 4) {                // チームは4人そろわないと出発できない
@@ -7587,7 +7599,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     const inArea = Math.floor(pickStage / PER) === mapArea && stageOpen(pickStage);
     box.hidden = !inArea || !storyClr[pickStage];
     if (box.hidden) return;
-    const ok = autoOk(pickStage);
+    const ok = autoOk(pickStage) && !exTeamBusy(teamNo);   // 遠征中のチームではオート・スキップもできない
     $('storyAuto').disabled = !ok; $('storySkip').disabled = !ok;
     $('storyAuto').innerHTML = 'オート<small>⚡' + autoCost(pickStage, 'omakase') + '〜' + autoCost(pickStage, 'gachi') + '</small>';
     $('storySkip').innerHTML = 'スキップ<small>⚡' + stamCost(pickStage) + '</small>';   // オートもスキップもスタミナだけ
