@@ -865,14 +865,20 @@ const PAY_SKU = {
   gold11500: { name: 'ゴールドコイン 11,500枚', yen: 10000, gold: 11500 },
   first:     { name: '初回限定パック', yen: 480, once: 'first', items: { gticket_hi: 2, gticket: 10, stampot: 3 } },
   // noads（広告削除・買い切り）は 2026-11-18 に販売終了。月パスの特典「広告なし」に（前に買った人の記録 ents.noads はそのまま）
-  pass:      { name: '月パス（毎月自動更新）', yen: 980, sub: true },
+  // 2026-11-19 本人：パスは シルバー（980円）・ゴールド（4,980円）。どちらも毎月自動更新。シルバー→ゴールドはアップグレードだけ（両方は持てない）
+  pass:      { name: 'シルバーパス（毎月自動更新）', yen: 980, sub: true, tier: 'silver' },
+  gold:      { name: 'ゴールドパス（毎月自動更新）', yen: 4980, sub: true, tier: 'gold' },
 };
+const PASS_RANK = { silver: 1, gold: 2 };
+const passTierOf = e => e.pass_until > nowSec() ? (e.pass_tier || 'silver') : '';
+// シルバーからゴールドに上げるとき、シルバーの残りの日数ぶんを引く（円）
+const passCredit = e => passTierOf(e) === 'silver' ? Math.max(0, Math.floor(PAY_SKU.pass.yen * Math.min(PASS_DAYS, (e.pass_until - nowSec()) / 86400) / PASS_DAYS)) : 0;
 const PASS_DAYS = 30;
-async function stripe(env, path, params) {
+async function stripe(env, path, params, method) {
   const body = new URLSearchParams();
   const put = (k, v) => { if (v == null) return; if (typeof v === 'object') Object.keys(v).forEach(x => put(k + '[' + x + ']', v[x])); else body.append(k, String(v)); };
   Object.keys(params || {}).forEach(k => put(k, params[k]));
-  const r = await fetch('https://api.stripe.com/v1/' + path, { method: 'POST', headers: { Authorization: 'Bearer ' + env.STRIPE_SECRET_KEY, 'Content-Type': 'application/x-www-form-urlencoded' }, body });
+  const r = await fetch('https://api.stripe.com/v1/' + path, { method: method || 'POST', headers: { Authorization: 'Bearer ' + env.STRIPE_SECRET_KEY, 'Content-Type': 'application/x-www-form-urlencoded' }, body });
   return r.json().catch(() => ({}));
 }
 function payOrigin(env, req) {
@@ -903,16 +909,16 @@ async function payLimit(env, id) {
   if (!row) return { birth: false };
   const age = ageOf(row.birth), cap = capOfAge(age);
   const j = new Date(Date.now() + 9 * 3600 * 1000), from = Date.UTC(j.getUTCFullYear(), j.getUTCMonth(), 1) / 1000 - 9 * 3600;
-  const s = await env.DB.prepare("SELECT COALESCE(SUM(amount), 0) AS y, SUM(CASE WHEN sku = 'pass' THEN 1 ELSE 0 END) AS np FROM purchases WHERE account_id = ? AND created_at >= ?").bind(id, from).first();
+  const s = await env.DB.prepare("SELECT COALESCE(SUM(amount), 0) AS y, SUM(CASE WHEN sku IN ('pass', 'gold') THEN 1 ELSE 0 END) AS np FROM purchases WHERE account_id = ? AND created_at >= ?").bind(id, from).first();
   // 月パス契約中（自動更新あり）で、今月まだ更新の支払いがないときは、更新分（980円）を先に「使ったもの」として数えておく
   //   → ほかの買い物で上限いっぱいまで使っても、月パスの更新で上限をこえない
-  const e = await entsOf(env, id), reserve = e.pass_auto && e.pass_until > nowSec() && !((s && s.np) | 0) ? PAY_SKU.pass.yen : 0;
+  const e = await entsOf(env, id), reserve = e.pass_auto && e.pass_until > nowSec() && !((s && s.np) | 0) ? PAY_SKU[passTierOf(e) === 'gold' ? 'gold' : 'pass'].yen : 0;
   return { birth: true, minor: age < 18, cap, spent: ((s && s.y) | 0) + reserve, reserve };
 }
 async function payStatus(env, id) {
   const e = await entsOf(env, id), lim = await payLimit(env, id);
   const claims = (await env.DB.prepare('SELECT id, sku FROM purchases WHERE account_id = ? AND claimed = 0 ORDER BY created_at').bind(id).all()).results || [];
-  return { enabled: !!env.STRIPE_SECRET_KEY, passUntil: e.pass_until, passAuto: !!e.pass_auto, passSub: !!e.pass_sub, noads: !!e.noads, first: !!e.first && env.PAY_TEST !== '1', limit: lim, portal: !!e.customer, claims: claims.map(c => ({ id: c.id, sku: c.sku, items: (PAY_SKU[c.sku] || {}).items || {} })) };
+  return { enabled: !!env.STRIPE_SECRET_KEY, passTier: passTierOf(e), passCredit: passCredit(e), passUntil: e.pass_until, passAuto: !!e.pass_auto, passSub: !!e.pass_sub, noads: !!e.noads, first: !!e.first && env.PAY_TEST !== '1', limit: lim, portal: !!e.customer, claims: claims.map(c => ({ id: c.id, sku: c.sku, items: (PAY_SKU[c.sku] || {}).items || {} })) };
 }
 async function payCheckout(env, req, me) {
   if (!env.STRIPE_SECRET_KEY) return fail(env, req, '準備中です', 503);
@@ -922,11 +928,15 @@ async function payCheckout(env, req, me) {
   if (!real) return fail(env, req, '購入にはログイン（Googleなど）が必要です', 401);
   const e = await entsOf(env, me.id);
   if (it.once && e[it.once] && env.PAY_TEST !== '1') return fail(env, req, 'もう購入済みです', 409);   // PAY_TEST="1"（テスト環境）だけ、初回パックを何度でも買える
-  if (it.sub && e.pass_auto && e.pass_until > nowSec()) return fail(env, req, '月パスはもう契約中です', 409);
+  const cur = passTierOf(e);
+  if (it.sub && cur && PASS_RANK[cur] > PASS_RANK[it.tier]) return fail(env, req, 'ゴールドパスを契約中です（シルバーパスは買えません）', 409);
+  if (it.sub && cur === it.tier && e.pass_auto) return fail(env, req, 'このパスはもう契約中です', 409);
+  const credit = it.tier === 'gold' ? passCredit(e) : 0;      // シルバー→ゴールド：シルバーの残りの日数ぶんを最初の支払いから引く
   const lim = await payLimit(env, me.id);
   if (!lim.birth) return json(env, req, { error: '生年月日を入れてください', need: 'birth' }, 402);
-  if (lim.cap && lim.spent + it.yen > lim.cap) return json(env, req, { error: '今月の購入の上限（' + lim.cap.toLocaleString() + '円）をこえるため購入できません。今月はあと ' + Math.max(0, lim.cap - lim.spent).toLocaleString() + '円 まで購入できます', need: 'cap' }, 402);
+  if (lim.cap && lim.spent + it.yen - credit > lim.cap) return json(env, req, { error: '今月の購入の上限（' + lim.cap.toLocaleString() + '円）をこえるため購入できません。今月はあと ' + Math.max(0, lim.cap - lim.spent).toLocaleString() + '円 まで購入できます', need: 'cap' }, 402);
   const o = payOrigin(env, req), md = { account: me.id, sku };
+  if (credit > 0 && e.pass_sub) md.up_from = e.pass_sub;
   const price = { currency: 'jpy', unit_amount: it.yen, product_data: { name: it.name } };
   if (it.sub) price.recurring = { interval: 'month' };
   const params = {
@@ -936,6 +946,11 @@ async function payCheckout(env, req, me) {
   Object.keys(price).forEach(k => { params['line_items[0][price_data][' + k + ']'] = price[k]; });
   if (it.sub) params.subscription_data = { metadata: md }; else params.payment_intent_data = { metadata: md };
   if (e.customer) params.customer = e.customer; else if (!it.sub) params.customer_creation = 'always';
+  if (credit > 0) {
+    const cp = await stripe(env, 'coupons', { amount_off: credit, currency: 'jpy', duration: 'once', max_redemptions: 1, name: 'シルバーパスの残り日数ぶん' });
+    if (!cp.id) return fail(env, req, '割引を作れませんでした' + (cp.error && cp.error.message ? '（' + cp.error.message + '）' : ''), 502);
+    params['discounts[0][coupon]'] = cp.id;
+  }
   const r = await stripe(env, 'checkout/sessions', params);
   if (!r.url) return fail(env, req, '決済のページを作れませんでした' + (r.error && r.error.message ? '（' + r.error.message + '）' : ''), 502);
   return json(env, req, { url: r.url });
@@ -956,14 +971,14 @@ async function payWebhook(env, req) {
   const o = (ev.data && ev.data.object) || {};
   if (ev.type === 'checkout.session.completed' && (o.payment_status === 'paid' || o.payment_status === 'no_payment_required')) {
     const acc = o.client_reference_id || (o.metadata || {}).account, sku = (o.metadata || {}).sku;
-    if (acc && PAY_SKU[sku]) await payFulfill(env, acc, sku, o.id, o.amount_total || 0, { customer: o.customer || '', sub: o.subscription || '' });
+    if (acc && PAY_SKU[sku]) await payFulfill(env, acc, sku, o.id, o.amount_total || 0, { customer: o.customer || '', sub: o.subscription || '', upFrom: (o.metadata || {}).up_from || '' });
   } else if (ev.type === 'invoice.paid' && o.billing_reason === 'subscription_cycle') {   // 月パスの毎月の更新
     const md = (o.subscription_details && o.subscription_details.metadata) || (o.parent && o.parent.subscription_details && o.parent.subscription_details.metadata) || {};
-    if (md.account && md.sku === 'pass') await payFulfill(env, md.account, 'pass', o.id, o.amount_paid || 0, {});
+    if (md.account && (md.sku === 'pass' || md.sku === 'gold')) await payFulfill(env, md.account, md.sku, o.id, o.amount_paid || 0, {});
   } else if (ev.type === 'customer.subscription.updated') {                               // Stripe のページで解約・とりけしをしたとき
-    const md = o.metadata || {}; if (md.account && md.sku === 'pass') await entsSet(env, md.account, { pass_auto: o.cancel_at_period_end || o.status !== 'active' ? 0 : 1 });
+    const md = o.metadata || {}; if (md.account && (md.sku === 'pass' || md.sku === 'gold')) { const e = await entsOf(env, md.account); if (!e.pass_sub || e.pass_sub === o.id) await entsSet(env, md.account, { pass_auto: o.cancel_at_period_end || o.status !== 'active' ? 0 : 1 }); }
   } else if (ev.type === 'customer.subscription.deleted') {                               // 解約：のこりの日数は使える
-    const md = o.metadata || {}; if (md.account) await entsSet(env, md.account, { pass_auto: 0 });
+    const md = o.metadata || {}; if (md.account) { const e = await entsOf(env, md.account); if (!e.pass_sub || e.pass_sub === o.id) await entsSet(env, md.account, { pass_auto: 0 }); }   // アップグレードで止めた古いシルバーは無視
   }
   return new Response('ok');
 }
@@ -974,7 +989,12 @@ async function payFulfill(env, acc, sku, id, amount, x) {
   if (x.customer) await entsSet(env, acc, { customer: x.customer });
   if (it.gold) await addGold(env, acc, 'web', it.gold, 'buy:' + sku, id);
   if (it.once) await entsSet(env, acc, { [it.once]: 1 });
-  if (it.sub) { const e = await entsOf(env, acc); await entsSet(env, acc, Object.assign({ pass_until: Math.max(t, e.pass_until) + PASS_DAYS * 86400, pass_auto: 1 }, x.sub ? { pass_sub: x.sub } : {})); }
+  if (it.sub) {
+    const e = await entsOf(env, acc), cur = passTierOf(e), up = cur && cur !== it.tier;
+    // アップグレード：今日から30日（シルバーの残りは支払いから引いてある）。同じパスの更新：残りに30日足す
+    await entsSet(env, acc, Object.assign({ pass_until: (up ? t : Math.max(t, e.pass_until)) + PASS_DAYS * 86400, pass_auto: 1, pass_tier: it.tier }, x.sub ? { pass_sub: x.sub } : {}));
+    if (up && x.upFrom && x.upFrom !== x.sub) { try { await stripe(env, 'subscriptions/' + encodeURIComponent(x.upFrom), {}, 'DELETE'); } catch (_) {} }   // 古いシルバーはすぐ止める
+  }
 }
 
 // つないだ場所の国（Cloudflare が判定する2文字の国コード。住所などは使わない）
@@ -1021,7 +1041,7 @@ function prepared(env) {
   if (!ready) ready = (async () => {
     await env.DB.batch(SCHEMA.map(q => env.DB.prepare(q)));
     // あとから足した列（すでにあればエラーになるので無視）
-    for (const q of ["ALTER TABLE accounts ADD COLUMN country TEXT NOT NULL DEFAULT ''"]) { try { await env.DB.prepare(q).run(); } catch (e) {} }
+    for (const q of ["ALTER TABLE accounts ADD COLUMN country TEXT NOT NULL DEFAULT ''", "ALTER TABLE ents ADD COLUMN pass_tier TEXT NOT NULL DEFAULT 'silver'"]) { try { await env.DB.prepare(q).run(); } catch (e) {} }
     let secret = env.SESSION_SECRET;
     if (!secret) {
       await env.DB.prepare("INSERT OR IGNORE INTO meta (k, v) VALUES ('session_secret', ?)").bind(randId(48)).run();

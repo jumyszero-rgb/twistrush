@@ -497,6 +497,26 @@ body.on-menu .battlemain{opacity:0;}
   .exrnone{width:58px;height:58px;border-radius:12px;border:1px dashed rgba(255,255,255,.3);display:grid;place-items:center;font-size:11px;opacity:.6;}
   .exrinfo{font-size:12.5px;} .exrarrow{color:#ffd24a;font-size:16px;margin:2px 0;} .exrnote{font-size:11px;opacity:.75;margin:10px 0 4px;}
   .exrq{font-weight:800;margin:8px 0;} .exrbtns{display:flex;gap:8px;} .exrbtns .btn{flex:1;}
+  .passbtn .ml small{display:block;font-size:10px;opacity:.8;font-weight:600;} .passbtn{position:relative;background:linear-gradient(135deg,rgba(255,255,255,.08),rgba(255,210,74,.18));}
+  .passbtn.dot::after{content:'';position:absolute;top:6px;right:8px;width:11px;height:11px;border-radius:50%;background:#ff4f7b;box-shadow:0 0 0 2px #fff;}
+  .passban{display:block;width:100%;margin:0 0 10px;padding:10px;border-radius:14px;border:2px solid #ffd24a;background:linear-gradient(135deg,#3a2a00,#6b4c00);color:#fff;font-weight:900;font-size:15px;font-family:inherit;}
+  .passban small{display:block;font-size:11px;font-weight:600;opacity:.85;margin-top:2px;}
+  #passPg.overlay{position:fixed;inset:0;z-index:60;border-radius:0;padding:0;gap:0;justify-content:flex-start;text-align:left;color:#f6f0ff;background:linear-gradient(180deg, rgba(22,10,44,.95), rgba(22,10,44,.98)), #1f1236;}
+  #passPg .how-body{flex:1;overflow:auto;width:100%;box-sizing:border-box;padding:12px 12px 40px;} #passPg h2{color:#fff;} .ppgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px 6px;}
+  .pph{border-radius:14px 14px 6px 6px;padding:10px 4px 8px;text-align:center;position:relative;color:#fff;}
+  .pph b{display:block;font-size:16px;} .pph span{font-size:14px;font-weight:900;} .pph span small{font-size:10px;} .pph em{position:absolute;top:-8px;left:50%;transform:translateX(-50%);font-style:normal;font-size:10px;font-weight:900;background:#ff4f7b;border-radius:999px;padding:1px 8px;white-space:nowrap;}
+  .pph.free{background:linear-gradient(160deg,#5b5b66,#3a3a44);}
+  .pph.silver{background:linear-gradient(160deg,#e9eef5,#9aa6b8 55%,#dfe6ef);color:#1d2430;box-shadow:0 0 10px rgba(220,230,245,.5);}
+  .pph.gold{background:linear-gradient(160deg,#fff2b0,#ffc83d 45%,#c98a00);color:#3a2000;box-shadow:0 0 16px rgba(255,200,61,.75);animation:ppGlow 2.4s ease-in-out infinite;}
+  @keyframes ppGlow{0%,100%{box-shadow:0 0 10px rgba(255,200,61,.5)}50%{box-shadow:0 0 22px rgba(255,200,61,.95)}}
+  .pph.cur{outline:3px solid #ff4f7b;outline-offset:1px;} .pph.flash{animation:ppFlash .9s ease-out 2;}
+  @keyframes ppFlash{0%{filter:brightness(1)}40%{filter:brightness(1.3)}100%{filter:brightness(1)}}
+  .pplbl{grid-column:1 / -1;font-size:11px;font-weight:800;opacity:.75;margin-top:6px;border-bottom:1px solid rgba(255,255,255,.12);padding-bottom:2px;}
+  .ppc{font-size:11.5px;line-height:1.45;text-align:center;padding:6px 3px;border-radius:8px;background:rgba(255,255,255,.04);} .ppc small{display:block;font-size:10px;opacity:.8;}
+  .ppc.silver{background:rgba(220,230,245,.08);} .ppc.gold{background:rgba(255,200,61,.12);}
+  .ppbtn{width:100%;border:0;border-radius:10px;padding:8px 2px;font-weight:900;font-size:12px;font-family:inherit;background:#7dffb0;color:#063;} .ppbtn small{display:block;font-size:9.5px;font-weight:700;}
+  .ppbtn.buy{background:#e9eef5;color:#1d2430;} .ppbtn.buy.gold{background:linear-gradient(135deg,#fff2b0,#ffc83d);color:#3a2000;} .ppbtn:disabled{background:rgba(255,255,255,.12);color:rgba(255,255,255,.6);}
+  .ppnote{font-size:12px;line-height:1.6;margin:10px 0 4px;}
   .rsq-x2{display:inline-block;margin-left:6px;padding:0 6px;border-radius:8px;background:#ff4f7b;color:#fff;font-size:13px;font-weight:900;vertical-align:middle;} .rsq-ad small{display:block;font-size:11px;font-weight:600;opacity:.85;} .mksort span{font-size:11px;opacity:.75;align-self:center;margin-right:2px;} .hfold{margin:6px 0;font-size:12px;line-height:1.55;} .hfold>summary{display:inline-block;cursor:pointer;list-style:none;padding:3px 12px;border-radius:999px;border:1px solid rgba(255,210,74,.6);background:rgba(255,210,74,.14);font-weight:700;font-size:12px;user-select:none;} .hfold>summary::-webkit-details-marker{display:none;} .hfold[open]>summary{background:rgba(255,210,74,.32);} .hfbody{margin-top:6px;padding:8px 10px;border-radius:10px;background:rgba(0,0,0,.18);} .fgkind button{flex:1;} .fghint{margin:6px 0 2px;padding:6px 8px;border-radius:10px;background:rgba(255,210,74,.12);font-size:11.5px;line-height:1.5;} .fghint b{display:block;font-size:11px;opacity:.85;} .fghint span{display:block;} .eqfx{margin-top:4px;font-size:12px;font-weight:700;color:#b07a00;} @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .eqfx{color:#ffd24a;} } :root[data-theme="dark"] .eqfx{color:#ffd24a;}
   .eqslot{background:rgba(0,0,0,.06);border-radius:10px;padding:8px;font-size:13px;} .eqslot.on{background:rgba(255,210,74,.18);} .eqslot button{margin-top:6px;padding:4px 14px;border-radius:8px;border:1px solid #c9a;background:#fff;}
   .eqitem{display:block;width:100%;text-align:left;margin:4px 0;padding:7px 9px;border-radius:10px;border:1px solid rgba(0,0,0,.15);background:#fff;font-family:inherit;}
@@ -523,7 +543,7 @@ body.on-menu .battlemain{opacity:0;}
   #featNew h3{margin:10px 0 6px;font-size:17px;} #featNew p{font-size:13px;line-height:1.6;text-align:left;} #featNew button{margin-top:8px;padding:8px 36px;border-radius:12px;border:0;background:#ffd24a;color:#3a1a00;font-weight:900;font-size:15px;font-family:inherit;}
   @keyframes fnPop{from{transform:scale(.7);opacity:0;}to{transform:scale(1);opacity:1;}}
   .maptools{grid-template-columns:repeat(5,minmax(0,1fr));}
-  .exrush{display:block;margin-top:4px;padding:4px 8px;border-radius:8px;border:0;background:linear-gradient(135deg,#ffe27a,#ffb400);color:#3a1a00;font-weight:900;font-size:11px;font-family:inherit;} .exrush small{display:block;font-size:9px;}
+  .exrush{display:block;margin-top:4px;padding:4px 8px;border-radius:8px;border:0;background:linear-gradient(135deg,#ffe27a,#ffb400);color:#3a1a00;font-weight:900;font-size:11px;font-family:inherit;} .exrush small{display:block;font-size:9px;} .exrush.extk{background:linear-gradient(135deg,#fff3c4,#ffd24a);}
   .exslot{display:block;width:100%;margin:6px 0;padding:8px;border-radius:10px;border:1px dashed rgba(255,210,74,.7);background:rgba(255,210,74,.1);color:#ffd24a;font-weight:900;font-family:inherit;} .exslot small{display:block;font-size:10px;color:#f6f0ff;opacity:.8;}
   .shoprow.firstpack{outline:2px solid #ffd24a;border-radius:12px;}
   .pickup{width:100%;background:linear-gradient(135deg,rgba(255,90,140,.25),rgba(255,210,74,.25));border:2px solid #ffd24a;border-radius:12px;padding:8px;margin-bottom:6px;color:#fff;text-align:center;}
@@ -1696,6 +1716,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
           <button class="mtile low" id="forgeBtn" data-forge="1" data-tip="鍛冶屋：遠征で集めた素材で武器を作る。装備ガチャもここ"><span class="mi" style="font-size:26px">⚒</span><span class="ml">鍛冶屋</span></button>
           <button class="mtile low" id="mktBtn" data-tip="ミケの店：いらない武器や素材をニャンコインに換える。ほかのプレイヤーと預けて売り買いもできる"><span class="mi" style="font-size:26px">🐈</span><span class="ml">ミケの店</span></button>
         </div>
+        <div class="mrow2 one"><button class="mtile low passbtn" id="passBtn" data-tip="パス：無料・シルバー・ゴールドをくらべる。毎日の受け取りもここ"><span class="mi" style="font-size:24px">🎫</span><span class="ml">パス<small>無料・シルバー・ゴールド</small></span></button></div>
         <div class="mrow2 three">
           <button class="mtile low" id="chalBtn" data-tip="毎週3つのお題：みんな同じ盤面・同じ条件で点数を競う。週間ランキングの順位でごほうび"><span class="mi" style="font-size:26px">🎯</span><span class="ml">チャレンジ</span></button>
           <button class="mtile low" id="vsBtn" data-tip="ほかの人と対戦する（準備中）"><span class="mi"><img data-mimg="online" alt=""></span><span class="ml">オンライン対戦</span></button>
@@ -5710,13 +5731,25 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         setTimeout(() => { el.classList.add('hidden'); el.style.zIndex = ''; done(); }, 700); }
     }, 100);
   }
+  // ===== 広告なし（2026-11-19 本人）：シルバー＝ストーリーだけ・1日20回まで／ゴールド＝ストーリーと遠征・上限なし／前に広告削除を買った人＝上限なし
+  const ADFREE_SILVER = 20;
+  const adFreeUsed = () => { const o = loadJ('adfree', null) || {}; return o.d === today() ? o.n | 0 : 0; };
+  const adFreeLeft = () => Math.max(0, ADFREE_SILVER - adFreeUsed());
+  function adSkip(where){
+    if (load('noads', '') === '1' && where !== 'expd') return true;
+    const t = passTier();
+    if (t === 'gold') return true;
+    if (t !== 'silver' || where === 'expd') return false;
+    if (adFreeLeft() <= 0) { toast('きょうの広告なし（' + ADFREE_SILVER + '回）は使い切りました。広告を見ると受け取れます'); return false; }
+    save('adfree', JSON.stringify({d: today(), n: adFreeUsed() + 1})); return true;
+  }
   function playAd(done){
-    if (noAds()) { done(); return; }
+    if (adSkip('story')) { done(); return; }
     $('ad').style.zIndex = 9700; adRun(done);
   }
   // 広告（プロトタイプはダミーのカウントダウン。本番はAdMobのリワード広告に差し替え）
   function watchAd(){
-    if (noAds()) { if (gameMode === 'story' && curVar === 0) contLeft = Math.max(0, contLeft - 1); $('cont').classList.add('hidden'); resumeGame(); return; }   // 広告削除を買った人は、すぐ続ける
+    if (adSkip('story')) { if (gameMode === 'story' && curVar === 0) contLeft = Math.max(0, contLeft - 1); $('cont').classList.add('hidden'); resumeGame(); return; }   // 広告削除を買った人は、すぐ続ける
     if (gameMode === 'story' && curVar === 0) contLeft = Math.max(0, contLeft - 1);   // 氷・石は広告コンティニュー何回でも
     $('cont').classList.add('hidden');
     clearInterval(adTimer); adRun(() => resumeGame());
@@ -6860,12 +6893,13 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   // 月間ランキングのごほうび：先月の順位でアイテムがもらえる（起動したとき・登録したときに確認）
   const RW_MODE = {sixty: '60秒アタック', rank: 'エンドレス', ta: 'タイムアタック（前の記録）', sv: 'サバイバル'};
-  const TICKET_LABEL = {gticket: 'ガチャチケット', gticket_hi: 'SR以上確定チケット', aticket: 'スキップチケット', stampot: 'スタミナポット'};
+  const TICKET_LABEL = {gticket: 'ガチャチケット', gticket_hi: 'SR以上確定チケット', aticket: 'スキップチケット', stampot: 'スタミナポット', exticket: '遠征すぐ帰る券'};
   // スタミナポットの絵（まだ画像がないので図で描く：黄色い薬びんに⚡）
   const STAMPOT_IMG = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff59a"/><stop offset="1" stop-color="#ffb21e"/></linearGradient></defs>' +
     '<rect x="25" y="6" width="14" height="9" rx="3" fill="#b8742a"/><path d="M27 15h10v8l11 14c4 6 0 21-16 21S12 43 16 37l11-14z" fill="url(#g)" stroke="#8a4b00" stroke-width="3"/>' +
     '<path d="M34 26l-9 14h7l-3 12 11-16h-7l4-10z" fill="#fff" stroke="#8a4b00" stroke-width="2" stroke-linejoin="round"/></svg>');
-  const tkImg = k => k === 'stampot' ? STAMPOT_IMG : gImg(k === 'gticket_hi' ? 'ticket_hi' : 'ticket');   // スキップチケットの絵はまだないので、ガチャチケットの絵で代用
+  const EXTK_IMG = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="6" y="14" width="52" height="36" rx="8" fill="#ffd24a" stroke="#8a5a00" stroke-width="3"/><circle cx="6" cy="32" r="6" fill="#241640"/><circle cx="58" cy="32" r="6" fill="#241640"/><path d="M20 22l12 10-12 10zM32 22l12 10-12 10z" fill="#8a3a00"/></svg>');
+  const tkImg = k => k === 'exticket' ? EXTK_IMG : k === 'stampot' ? STAMPOT_IMG : gImg(k === 'gticket_hi' ? 'ticket_hi' : 'ticket');   // スキップチケットの絵はまだないので、ガチャチケットの絵で代用
   const itemLabel = k => TICKET_LABEL[k] || (k.startsWith('pot_') ? potName(k.slice(4)) : (ITEMS[k] ? ITEMS[k].name : k));
   const invImg = k => TICKET_LABEL[k] ? tkImg(k) : k.startsWith('pot_') ? potImg(k.slice(4)) : itemImg(k);
   const ownAny = k => TICKET_LABEL[k] ? (+load(k, '0') || 0) : own(k);
@@ -7116,7 +7150,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.203';
+  const APP_VER = '0.9.204';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -7786,7 +7820,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     {price: '¥3,000', name: 'ゴールドコイン 3,200枚', coin: 3200, sku: 'gold3200'},
     {price: '¥5,000', name: 'ゴールドコイン 5,500枚', coin: 5500, sku: 'gold5500'},
     {price: '¥10,000', name: 'ゴールドコイン 11,500枚', coin: 11500, sku: 'gold11500'},
-    {price: '¥980', sku: 'pass', name: '月パス（毎月自動更新）', desc: '毎日：ガチャチケット×2・スタミナポット×1／30日ずっと：<b>広告なし</b>（コンティニュー・ごほうび2倍・毎日プレゼントの2倍が広告なしで使える）・遠征の経験値+15%・遠征で素材が出る率+15%', pass: true},
+    {price: '¥4,980', sku: 'gold', name: 'ゴールドパス（毎月自動更新）', hide: true},
+    {price: '¥980', sku: 'pass', hide: true, name: 'シルバーパス（毎月自動更新）', desc: '毎日：ガチャチケット×2・スタミナポット×1／30日ずっと：<b>広告なし</b>（コンティニュー・ごほうび2倍・毎日プレゼントの2倍が広告なしで使える）・遠征の経験値+15%・遠征で素材が出る率+15%', pass: true},
     {price: '¥480', sku: 'first', name: '初回限定パック', desc: '最初の1回だけ：SR以上確定チケット×2・ガチャチケット×10・スタミナポット×3', first: true},
   ];
   const today = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
@@ -8246,18 +8281,86 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   const passEnd = () => +load('pass_end', '0') || 0;
   const passLeft = () => Math.max(0, Math.ceil((passEnd() - Date.now()) / 86400000));
   const passOn = () => passEnd() > Date.now();
-  function passDaily(){
-    if (!passOn() || load('pass_day', '') === today()) return;
-    save('pass_day', today()); giveItem('gticket', 2); giveItem('stampot', 1);
-    setTimeout(() => toast('月パス：今日のガチャチケット×2・スタミナポット×1を受け取りました'), 1500);
+  const passTier = () => passOn() ? (load('pass_tier', '') === 'gold' ? 'gold' : 'silver') : '';
+  function passDaily(){}   // 2026-11-19：パスの受け取りは「パス」のページで（passClaim）
+  const passCanClaim = () => load('passf_day', '') !== today() || (passOn() && load('pass_day', '') !== today());
+  function passNotify(){ try { const b = $('passBtn'); if (b) b.classList.toggle('dot', passCanClaim()); } catch (_) {} }
+  // ===== パスのページ（2026-11-19 本人）：無料・シルバー・ゴールドを横に並べてくらべる。毎日の受け取りもここ（受け取るたびに上のパスが目に入る）=====
+  //   中身はそれぞれ値段の約1.5倍の価値（ショップのゴールドの値段で計算）。広告なしは時間で見せる（広告1回30秒〜1分）
+  const PASS_FREE_SILVER = 300;
+  const PASS_ROWS = [
+    ['毎日', '🪙 シルバー' + PASS_FREE_SILVER, '⚡ スタミナポット×1<br>🎟 ガチャチケット×2', '🎫 遠征すぐ帰る券×1<br>⚡ スタミナポット×1<br>🎟 ガチャチケット×3'],
+    ['毎月', '—', '—', '🌟 SR以上確定チケット×3'],
+    ['広告なし', '—', 'ストーリー<br><small>1日' + ADFREE_SILVER + '回まで</small>', 'ストーリー・遠征<br><small>上限なし</small>'],
+    ['広告の待ち時間', '1日 約12分', '<b>1日 約12分 → 0分</b><small>（20回まで）</small>', '<b>ずっと 0分</b>'],
+    ['遠征の経験値・素材', '—', '+15%', '+30%'],
+    ['中身の価値', '—', '約1,570円ぶん', '約7,650円ぶん'],
+  ];
+  function passClaim(kind){
+    const T = []; const give = (k, n) => { if (k === 'silver') addCoins(n); else giveItem(k, n); T.push((k === 'silver' ? 'シルバー ' + n : itemLabel(k) + ' ×' + n)); };
+    if (kind === 'free') { if (load('passf_day', '') === today()) return; save('passf_day', today()); give('silver', PASS_FREE_SILVER); }
+    else { if (!passOn() || load('pass_day', '') === today()) return; save('pass_day', today());
+      if (passTier() === 'gold') { give('exticket', 1); give('stampot', 1); give('gticket', 3);
+        const m = today().slice(0, 7); if (load('passg_m', '') !== m) { save('passg_m', m); give('gticket_hi', 3); } }
+      else { give('stampot', 1); give('gticket', 2); } }
+    try { sndLevelUp(true); } catch (_) {}
+    msgLog('get', '🎫 ' + ({free: '無料パス', silver: 'シルバーパス', gold: 'ゴールドパス'}[kind]) + '：' + T.join('・'));
+    toast('🎫 受け取りました：' + T.join('・'));
+    passNotify(); drawPassPg(kind);
   }
+  function passBanner(){ return '<button class="passban" data-openpass="1">🎫 パスをくらべる<small>無料・シルバー（980円）・ゴールド（4,980円）／毎日の受け取りはここ</small></button>'; }
+  function drawPassPg(flash){
+    const d = $('passPg'); if (!d) return;
+    const t = passTier(), auto = load('pass_auto', '') === '1', cr = +load('pass_credit', '0') || 0, gotF = load('passf_day', '') === today(), gotP = load('pass_day', '') === today();
+    const head = (k, n, pr) => '<div class="pph ' + k + (t === k || (k === 'free' && !t) ? ' cur' : '') + (flash === k ? ' flash' : '') + '"><b>' + n + '</b><span>' + pr + '</span>' + (t === k ? '<em>契約中</em>' : '') + '</div>';
+    let h = '<div class="ppgrid">' + head('free', '無料', '0円') + head('silver', 'シルバー', '980円<small>/月</small>') + head('gold', 'ゴールド', '4,980円<small>/月</small>');
+    PASS_ROWS.forEach(r => { h += '<div class="pplbl">' + r[0] + '</div><div class="ppc free">' + r[1] + '</div><div class="ppc silver">' + r[2] + '</div><div class="ppc gold">' + r[3] + '</div>'; });
+    // ボタン
+    const bf = '<button class="ppbtn" data-pclaim="free"' + (gotF ? ' disabled' : '') + '>' + (gotF ? '受け取り済み' : '受け取る') + '</button>';
+    const bs = t === 'silver' ? '<button class="ppbtn" data-pclaim="paid"' + (gotP ? ' disabled' : '') + '>' + (gotP ? '受け取り済み' : '今日の分を受け取る') + '</button>'
+      : t === 'gold' ? '<button class="ppbtn" disabled>ゴールド契約中</button>' : '<button class="ppbtn buy" data-pbuy2="pass">購入する</button>';
+    const bg = t === 'gold' ? '<button class="ppbtn" data-pclaim="paid"' + (gotP ? ' disabled' : '') + '>' + (gotP ? '受け取り済み' : '今日の分を受け取る') + '</button>'
+      : t === 'silver' ? '<button class="ppbtn buy gold" data-pbuy2="gold">アップグレード' + (cr ? '<small>シルバーの残り −' + cr.toLocaleString() + '円</small>' : '') + '</button>' : '<button class="ppbtn buy gold" data-pbuy2="gold">購入する</button>';
+    h += '<div class="pplbl"></div><div class="ppc free">' + bf + '</div><div class="ppc silver">' + bs + '</div><div class="ppc gold">' + bg + '</div></div>';
+    if (t) h += '<p class="ppnote">' + (t === 'gold' ? 'ゴールドパス' : 'シルバーパス') + '：' + (auto ? '次の更新 ' + passDay() + '　<button class="paylink" data-pcancel="1">解約する</button><button class="paylink" data-portal="1">支払い方法・領収書</button>' : passDay() + ' まで使えます（解約済み）' + (load('pass_sub', '') === '1' ? '　<button class="paylink" data-presume="1">解約をとりけす</button>' : '')) +
+      (t === 'silver' ? '<br>きょうの広告なし：のこり <b>' + adFreeLeft() + '</b> / ' + ADFREE_SILVER + '回' : '') + '</p>';
+    h += helpFold('pass', 'どちらも毎月自動で更新されます（いつでも解約でき、次の更新日まで使えます）。<br>シルバーからゴールドへは「アップグレード」で切りかわり、シルバーの残りの日数ぶんを最初の支払いから引きます。ゴールドとシルバーを両方持つことはできません。<br>毎日の分は、このページで受け取ります（受け取らなかった日の分は持ちこせません）。<br>遠征のごほうび2倍は、シルバーでは広告を見ると受け取れます。<br>「中身の価値」は、ショップのゴールドの値段で計算した目安です。') +
+      '<p class="ppnote">' + (acctToken ? '' : '購入にはログインが必要です（設定 → アカウント）。') + '</p>';
+    $('passBody').innerHTML = h;
+  }
+  function openPassPg(){
+    audio(); let d = $('passPg');
+    if (!d) { d = document.createElement('div'); d.id = 'passPg'; d.className = 'overlay passpg'; d.setAttribute('role', 'dialog');
+      d.innerHTML = '<div class="how-head"><button class="back" id="passBack">‹ 戻る</button><h2>PASS <small>パス</small></h2></div><div class="how-body" id="passBody"></div>';
+      document.body.appendChild(d);
+      $('passBack').addEventListener('click', () => d.classList.add('hidden'));
+      d.addEventListener('click', e => {
+        const c = e.target.closest('[data-pclaim]'); if (c && !c.disabled) { passClaim(c.dataset.pclaim === 'free' ? 'free' : passTier()); return; }
+        const b = e.target.closest('[data-pbuy2]'); if (b) { passBuy(b.dataset.pbuy2); return; }
+      }); }
+    d.classList.remove('hidden'); drawPassPg(); d.querySelector('.how-body').scrollTop = 0;
+  }
+  function passBuy(sku){
+    const p = PACKS.find(x => x.sku === sku); if (!p) return;
+    if (payOn) {
+      if (!acctToken) { payAsk('購入には<b>ログイン</b>が必要です。<br>設定の「アカウント」からログインしてください。'); return; }
+      payBuy(sku === 'gold' && passTier() === 'silver' ? Object.assign({}, p, {yen: Math.max(0, 4980 - (+load('pass_credit', '0') || 0)), name: 'ゴールドパスにアップグレード', price: '¥' + Math.max(0, 4980 - (+load('pass_credit', '0') || 0)).toLocaleString() + '（初月・シルバーの残りを引いたあと。2か月目から¥4,980）'}) : p); return; }
+    // テスト（決済なし）
+    payAsk('【テスト】' + p.name + '（' + p.price + '・30日）を開始しますか？<br><small>本番では決済のあとに有効になります。</small>', () => {
+      const up = sku === 'gold' && passTier() === 'silver';
+      save('pass_tier', sku === 'gold' ? 'gold' : 'silver'); save('pass_end', String((up ? Date.now() : Math.max(Date.now(), passEnd())) + 30 * 86400000));
+      if (up) save('pass_day', '');                       // アップグレードした日は、ゴールドの分も受け取れる
+      passNotify(); drawPassPg(sku === 'gold' ? 'gold' : 'silver'); toast((sku === 'gold' ? 'ゴールド' : 'シルバー') + 'パスが有効になりました（テスト）');
+    });
+  }
+  document.addEventListener('click', e => { if (e.target.closest('[data-openpass]')) { e.preventDefault(); try { $('shop').classList.add('hidden'); } catch (_) {} openPassPg(); } });
   document.addEventListener('click', e => {
     if (!e.target.closest('[data-pass]') || payOn) return;
     payAsk('【テスト】月パス（¥980・30日）を' + (passOn() ? '延長' : '開始') + 'しますか？ 本番では決済のあとに有効になります。', () => {
-      save('pass_end', String(Math.max(Date.now(), passEnd()) + 30 * 86400000)); passDaily(); toast('月パスが有効になりました（のこり' + passLeft() + '日）'); try { drawShop(); } catch(_) {}
+      save('pass_end', String(Math.max(Date.now(), passEnd()) + 30 * 86400000)); passNotify(); toast('月パスが有効になりました（のこり' + passLeft() + '日）'); try { drawShop(); } catch(_) {}
     });
   }, true);
-  setTimeout(passDaily, 3000);
+  setTimeout(() => { passNotify(); if (passCanClaim() && passOn()) toast('🎫 パスの今日の分が受け取れます（メニューの「パス」）'); }, 4000);
   const payAsk = (m, y) => { askYes(m, y); const a = $('askBox'); if (a) a.style.zIndex = 9600; };
   // 初回限定パック（テスト：決済なしで受け取れる。決済を入れたら購入完了後に呼ぶ）
   document.addEventListener('click', e => {
@@ -8276,7 +8379,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   const noAds = () => passOn() || load('noads', '') === '1';
   function drawPayPacks(){
     const fb = load('first_srv', '') === '1', na = noAds(), auto = load('pass_auto', '') === '1';   // 初回パックは、サーバーの記録で判断（テストで受け取った分は数えない）
-    $('shopPacks').innerHTML = PACKS.filter(p => !(p.first && fb)).map(p => {
+    $('shopPacks').innerHTML = passBanner() + PACKS.filter(p => !p.hide && !(p.first && fb)).map(p => {
       const own = (p.sku === 'noads' && na), sub = p.sku === 'pass' && auto && passOn(), stop = p.sku === 'pass' && !auto && passOn() && load('pass_srv', '') === '1';
       return '<div class="shoprow' + (p.first ? ' firstpack' : '') + '"><img src="' + itemImg(p.coin ? 'coin' : 'charm') + '" alt=""><div class="tx"><div class="nm">' + (p.first ? '🎁 ' : '') + p.name + '</div>' +
         (p.desc ? '<div class="ds">' + p.desc + '</div>' : '') +
@@ -8291,8 +8394,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (payBusy) return; payBusy = true;
     try { const r = await api('/api/pay/pass/' + (cancel ? 'cancel' : 'resume'), {method: 'POST', body: '{}'});
       if (r.ok) { save('pass_auto', r.auto ? '1' : ''); if (r.until) save('pass_end', String(r.until * 1000)); try { drawShop(); } catch (_) {}
-        msgLog('buy', cancel ? '🛑 月パスを解約しました（' + passDay() + ' まで使えます）' : '↩ 月パスの解約をとりけしました');
-        payAsk(cancel ? '<b>月パスを解約しました</b><br><small>次の更新から支払いは止まります。<br><b>' + passDay() + '</b> までは、今まで通り使えます。<br>その日までなら「解約をとりけす」で元にもどせます。</small>' : '<b>解約をとりけしました</b><br><small>月パスは今まで通り、毎月自動で更新されます。<br>次の更新は ' + passDay() + ' です。</small>'); }
+        msgLog('buy', cancel ? '🛑 パスを解約しました（' + passDay() + ' まで使えます）' : '↩ パスの解約をとりけしました');
+        payAsk(cancel ? '<b>パスを解約しました</b><br><small>次の更新から支払いは止まります。<br><b>' + passDay() + '</b> までは、今まで通り使えます。<br>その日までなら「解約をとりけす」で元にもどせます。</small>' : '<b>解約をとりけしました</b><br><small>パスは今まで通り、毎月自動で更新されます。<br>次の更新は ' + passDay() + ' です。</small>'); }
       else payAsk(r.error || 'できませんでした'); }
     catch (e) { payAsk(e.message || 'サーバーにつながりませんでした'); }
     payBusy = false;
@@ -8300,8 +8403,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   document.addEventListener('click', async e => {
     const pc = e.target.closest('[data-pcancel],[data-presume]');
     if (pc) { e.preventDefault(); e.stopPropagation();
-      if (pc.dataset.pcancel) payAsk('<b>月パスを解約しますか？</b><br><small>次の更新（' + passDay() + '）から支払いが止まります。<br>' + passDay() + ' までは今まで通り使えます。<br>毎日のガチャチケット・スタミナポットも、その日まで受け取れます。</small>', () => passSet(true));
-      else payAsk('<b>解約をとりけしますか？</b><br><small>月パスがまた毎月自動で更新されます（980円・税込）。</small>', () => passSet(false));
+      if (pc.dataset.pcancel) payAsk('<b>パスを解約しますか？</b><br><small>次の更新（' + passDay() + '）から支払いが止まります。<br>' + passDay() + ' までは今まで通り使えます。<br>毎日の分も、その日までパスのページで受け取れます。</small>', () => passSet(true));
+      else payAsk('<b>解約をとりけしますか？</b><br><small>パスがまた毎月自動で更新されます。</small>', () => passSet(false));
       return; }
     const pt = e.target.closest('[data-portal]');
     if (pt) { e.preventDefault(); e.stopPropagation(); try { const r = await api('/api/pay/portal', {method: 'POST', body: '{}'}); if (r.url) location.href = r.url; else toast(r.error || '開けませんでした'); } catch (_) { toast('サーバーにつながりませんでした'); } return; }
@@ -8327,7 +8430,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   async function payBuy(p){
     if (!payLim || !payLim.birth) { try { const s = await api('/api/pay/status'); payLim = s.limit || null; } catch (_) {} }
     if (!payLim || !payLim.birth) { birthAsk(() => payBuy(p)); return; }
-    const left = payLim.cap ? Math.max(0, payLim.cap - payLim.spent) : -1, yen = +String(p.price).replace(/[^\d]/g, '') || 0;
+    const left = payLim.cap ? Math.max(0, payLim.cap - payLim.spent) : -1, yen = p.yen != null ? p.yen : (+String(p.price).replace(/[^\d]/g, '') || 0);
     if (left >= 0 && yen > left) { payAsk('今月の購入の上限（' + payLim.cap.toLocaleString() + '円）をこえるため、購入できません。<br><small>今月はあと ' + left.toLocaleString() + '円 まで購入できます' + (payLim.reserve ? '（月パスの更新分 ' + payLim.reserve.toLocaleString() + '円 を先に引いています）' : '') + '。来月1日にもどります。</small>'); return; }
     const minor = payLim.minor ? '<br><br><b>⚠ 18歳未満の方へ</b><br><small>購入する前に、かならず<b>保護者の方の同意</b>を得てください。<br>今月はあと ' + left.toLocaleString() + '円 まで購入できます' + (payLim.reserve ? '（月パスの更新分 ' + payLim.reserve.toLocaleString() + '円 を先に引いています）' : '') + '。</small><br><label class="pcons"><input type="checkbox" id="parentOk"> 保護者の同意を得ました</label>' : '';
     payAsk('<b>' + p.name + '</b><br>' + p.price + '（税込）<br><small>Stripe の支払いページへ移動します</small>' + minor, async () => {
@@ -8355,13 +8458,14 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     try {
       const s = await api('/api/pay/status');
       if (s.passUntil) save('pass_end', String(s.passUntil * 1000));
+      save('pass_tier', s.passTier || ''); save('pass_credit', String(s.passCredit | 0));
       payLim = s.limit || null; save('pass_auto', s.passAuto ? '1' : ''); save('pass_srv', s.passSub ? '1' : ''); save('pass_sub', s.passSub ? '1' : ''); if (s.noads) save('noads', '1'); save('first_srv', s.first ? '1' : ''); if (s.first) save('firstpack', '1');
       for (const c of s.claims || []) {
         try { const k = await api('/api/pay/claim', {method: 'POST', body: JSON.stringify({id: c.id})}); if (k && k.ok) { Object.entries(k.items || {}).forEach(([key, n]) => giveNt(key, n)); saveInv(); got = true;
           const nm = (PACKS.find(x => x.sku === k.sku) || {}).name || '購入したもの', its = Object.entries(k.items || {}).map(([key, n]) => itemLabel(key) + ' ×' + n).join('<br>');
           payGot.push('<b>' + nm + '</b><br>' + its); msgLog('buy', '🛒 ' + nm + '：' + its.replace(/<br>/g, '・')); try { syncDirty = true; syncUp(); } catch (_) {} } } catch (_) {}   // 受け取ったらすぐクラウドへ
       }
-      passDaily();
+      passNotify();
     } catch (_) {}
     try { await acctRefresh(); } catch (_) {}
     try { if (!$('shop').classList.contains('hidden')) drawShop(); } catch (_) {}
@@ -8377,7 +8481,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       let done = false;
       for (let k = 0; k < 8 && !done; k++) { await new Promise(res => setTimeout(res, 2500)); const got = await paySync(); const pe = +load('pass_end', '0'), na = load('noads', '') === '1';
         if (gold > g0) { payGot.push('<b>ゴールドコイン</b> +' + (gold - g0).toLocaleString()); msgLog('buy', '🛒 ゴールドコイン +' + (gold - g0).toLocaleString()); done = true; }
-        if (pe > pe0 && pe > Date.now()) { payGot.push('<b>月パス</b>（のこり' + passLeft() + '日）'); msgLog('buy', '🛒 月パス（のこり' + passLeft() + '日）'); done = true; }
+        if (pe > pe0 && pe > Date.now()) { const pn = passTier() === 'gold' ? 'ゴールドパス' : 'シルバーパス'; payGot.push('<b>' + pn + '</b>（のこり' + passLeft() + '日）<br>パスのページで今日の分を受け取れます'); msgLog('buy', '🛒 ' + pn + '（のこり' + passLeft() + '日）'); done = true; }
         if (na && !na0) { payGot.push('<b>広告削除</b>（これから広告は出ません）'); msgLog('buy', '🛒 広告削除'); done = true; }
         if (got) done = true; }
       if (done) payShow(); else askYes('お支払いの反映に時間がかかっています。<br><small>少したってから開き直すと受け取れます。</small>');
@@ -8389,7 +8493,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       return '<div class="shoprow"><img src="' + itemImg(k) + '" alt=""><div class="tx"><div class="nm">' + it.name + '<small>所持 ' + own(k) + '</small></div>' +
         '<div class="ds">' + it.desc + '</div></div><button class="buybtn" data-k="' + k + '"' + (coins < it.price ? ' disabled' : '') + '>' + coinTag() + it.price + '</button></div>'; }).join('');
     if (payOn) { drawPayPacks(); refreshCoins(); return; }
-    $('shopPacks').innerHTML = PACKS.filter(p => !(p.first && load('firstpack', '0') === '1')).map(p => '<div class="shoprow' + (p.first ? ' firstpack' : '') + '"><img src="' + itemImg(p.coin ? 'coin' : 'charm') + '" alt=""><div class="tx"><div class="nm">' + (p.first ? '🎁 ' : '') + p.name + '</div>' +
+    $('shopPacks').innerHTML = passBanner() + PACKS.filter(p => !p.hide && !(p.first && load('firstpack', '0') === '1')).map(p => '<div class="shoprow' + (p.first ? ' firstpack' : '') + '"><img src="' + itemImg(p.coin ? 'coin' : 'charm') + '" alt=""><div class="tx"><div class="nm">' + (p.first ? '🎁 ' : '') + p.name + '</div>' +
       (p.desc ? '<div class="ds">' + p.desc + '</div>' : '') + '</div><button class="buybtn"' + (p.first ? ' data-firstpack="1"' : p.pass ? ' data-pass="1"' : ' disabled') + '>' + (p.pass && passLeft() > 0 ? 'のこり' + passLeft() + '日<small style="display:block;font-size:9px">延長（テスト）</small>' : p.price + (p.first || p.pass ? '<small style="display:block;font-size:9px">テスト</small>' : '')) + '</button></div>').join('');
     refreshCoins();
   }
@@ -8404,6 +8508,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   });
   function openShop(){ audio(); drawShop(); $('shop').classList.remove('hidden'); $('shop').querySelector('.how-body').scrollTop = 0; }
   $('shopBtn').addEventListener('click', openShop);
+  $('passBtn').addEventListener('click', openPassPg);
   $('shopBack').addEventListener('click', () => { $('shop').classList.add('hidden'); drawLoadout(); });
   // テスト用（公開前に消す）：ガチャ画面から移した。シルバー・ゴールド +10,000、チケット +10・確定チケット +5・キャラ確定チケット +1、無料10連をもう一度
   function devGrant(){
@@ -9389,7 +9494,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     exData.active.forEach((a, i) => {
       const left = exLeft(a);
       h += '<div class="exact"><div><b>' + a.name + '</b> <small>チーム' + (a.team + 1) + '</small><div class="exmini">' + a.uids.map(uid => { const u = unitOf(uid); return u ? '<span class="cface" data-ci="' + ciOf(u) + '"></span>' : ''; }).join('') + '</div></div>' +
-        (left > 0 ? '<div class="exleft">のこり<br><b>' + exHM(left) + '</b><button class="exrush" data-rush="' + i + '">⚡ すぐ帰る<small>ゴールド ' + exRushCost(a) + '</small></button></div>' : '<button class="exget" data-get="' + i + '">受け取る<small>達成率 ' + exPct(a.rate) + '</small></button>') + '</div>';
+        (left > 0 ? '<div class="exleft">のこり<br><b>' + exHM(left) + '</b><button class="exrush" data-rush="' + i + '">⚡ すぐ帰る<small>ゴールド ' + exRushCost(a) + '</small></button>' + (ownAny('exticket') > 0 ? '<button class="exrush extk" data-extk="' + i + '">🎫 すぐ帰る券<small>4時間はやく（のこり' + ownAny('exticket') + '枚）</small></button>' : '') + '</div>' : '<button class="exget" data-get="' + i + '">受け取る<small>達成率 ' + exPct(a.rate) + '</small></button>') + '</div>';
     });
     h += '</section><section><h3>遠征先 <small>（条件は毎日0時に入れかわり）</small></h3>';
     const ULv = userLv();
@@ -9487,7 +9592,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     exSave(); try { if (!playSeFile('ex_go', 1.2)) sndMarch(); } catch (_) {} toast('「' + st.n + '」へ出発しました（' + hh + '時間）'); try { qAdd('exgo'); } catch (_) {} drawExpd(); drawExpdBadge();
   }
   // 2026-11-19 本人：遠征の経験値・素材のパスの上乗せ。シルバー（今の月パス）+15%・ゴールド+30%（ゴールドパスを作ったらここで分ける）
-  const exPassMul = () => passOn() ? 1.15 : 1;
+  const exPassMul = () => passTier() === 'gold' ? 1.3 : passOn() ? 1.15 : 1;
   function exGet(i){
     const a = exData.active[i]; if (!a || exLeft(a) > 0) return;
     const mul = a.rate != null ? a.rate : 1, tm = a.tm || 1, gain = Math.round(EX_EXP[a.s] * mul * tm * exPassMul()), ups = [], got = [], gotR = [], team = [];
@@ -9530,7 +9635,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       const ad = e.target.closest('[data-exrad]');
       if (ad) { if (ad.disabled) return; ad.disabled = true;
         // 2026-11-18 本人：遠征も広告でごほうび2倍。これは広告のみ（月パスの「広告なし」でも、広告を見たときだけ）
-        adRun(() => {
+        (adSkip('expd') ? (f => f()) : adRun)(() => {
           if (x.silver > 0) addCoins(x.silver);
           (x.giv || []).forEach(([k, n]) => { if (k[0] === '@') gearAdd(k.slice(1)); else giveItem(k, n); }); saveInv();
           const ups2 = x.gain ? expAgain(x.gain, (x.uids || []).map(unitOf).filter(Boolean)) : [];
@@ -9557,7 +9662,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         '<div class="rsq-row">' + coinTag() + 'シルバー ' + dial(x.silver) + '</div><div class="rsq-row">EXP ' + dial(x.gain) + '<small style="opacity:.75">（ひとり）</small></div>' +
         x.items.map((t, k) => '<div class="rsq-row rsq-ex exi" style="animation-delay:' + (1300 + k * 260) + 'ms">' + t + '</div>').join('') + '</div>' +
         '<div class="rsq-team">' + x.team.map(() => '<div class="rsq-mem"><span class="lvb"></span><div class="ic"></div><div class="lv"></div><div class="bar"><i></i></div></div>').join('') + '</div>' +
-        (x.rate > 0 && x.gain ? '<button class="rsq-ad" data-exrad="1">📺 広告を見て ごほうび2倍<small>シルバー・経験値・持ち帰ったものがぜんぶ2倍</small></button>' : '') +
+        (x.rate > 0 && x.gain ? '<button class="rsq-ad" data-exrad="1">' + (passTier() === 'gold' ? '👑 ゴールドパスで ごほうび2倍' : '📺 広告を見て ごほうび2倍') + '<small>シルバー・経験値・持ち帰ったものがぜんぶ2倍</small></button>' : '') +
         '<div class="resbtns rsq-btns"><button class="rbtn next" data-exrclose="1"><i>🧭</i><span>遠征にもどる</span></button></div>');
       const vals = [x.silver, x.gain]; let longest = 0;
       // 広告で2倍：ダイヤルを2倍の数まで回しなおし、持ち帰ったものに ×2、チームのバーを伸ばす
@@ -9630,6 +9735,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     const g = e.target.closest('[data-go]'); if (g) { exGo(+g.dataset.go); return; }
     const r = e.target.closest('[data-get]'); if (r) { exGet(+r.dataset.get); return; }
     const ru = e.target.closest('[data-rush]'); if (ru) { exRush(+ru.dataset.rush); return; }
+    const xt = e.target.closest('[data-extk]'); if (xt) { exTicket(+xt.dataset.extk); return; }
     if (e.target.closest('[data-slotbuy]')) exSlotBuy();
   });
   async function exRush(i){
@@ -9639,6 +9745,13 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       if (!(await spendGold(c, 'expd-rush'))) return;
       a.end = Date.now() - 1; exSave(); refreshCoins(); exGet(exData.active.indexOf(a));
     });
+  }
+  // 遠征すぐ帰る券（ゴールドパス・2026-11-19）：1枚で4時間はやく帰る
+  function exTicket(i){
+    const a = exData.active[i]; if (!a || exLeft(a) <= 0 || ownAny('exticket') <= 0) return;
+    save('exticket', String(ownAny('exticket') - 1));
+    a.end = Math.max(Date.now() - 1, a.end - 4 * 3600000); exSave();
+    if (exLeft(a) <= 0) { toast('🎫 すぐ帰る券で帰ってきました'); exGet(i); } else { toast('🎫 4時間はやくなりました（のこり ' + exHM(exLeft(a)) + '）'); drawExpd(); }
   }
   async function exSlotBuy(){
     if (exSlotPlus()) return;
@@ -12687,11 +12800,9 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     };
     $('dailyGet').onclick = () => claim(1);
     $('dailyAd').onclick = () => {             // 広告（プロトタイプはダミーのカウントダウン）
-      if (noAds()) { claim(2); return; }
+      if (adSkip('story')) { claim(2); return; }
       $('dailyAd').disabled = true; $('dailyGet').disabled = true;
-      let n = CFG.AD_SEC; $('dailyNote').textContent = '広告（テスト表示）… ' + n;
-      const tm = setInterval(() => { n--; $('dailyNote').textContent = '広告（テスト表示）… ' + Math.max(0, n);
-        if (n <= 0) { clearInterval(tm); claim(2); } }, 1000);
+      adRun(() => claim(2));
     };
   }
   refreshCoins();
