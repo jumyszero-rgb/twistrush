@@ -5698,36 +5698,51 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     const ux = Math.max(UEXP.pracMin, Math.min(UEXP.pracMax, Math.round((now() - runStart) / 60000 * UEXP.pracPerMin)));
     userExpAdd(ux); $('finalNote').textContent += '　経験値 +' + ux;
   }
-  // ===== ストーリーの落とし物（2026-11-19 本人：場所ごとにちがう素材・広告で2倍になるので出る率を下げて設定しなおし）=====
-  //   エリアごとに出る素材の種類（2つ）とグレードの出やすさが決まっている。マスの種類で出る率がちがう
-  //   ふつうのマス 15%で1個（2つの種類を交互に）／中ボス 30%で1個／石のルート 60%で1個（グレード高め・属性のかけらも）／氷のルート アイテム1個／ボス 50%で1個（グレード高め）＋属性のかけら20%
-  //   （前は 氷＝アイテム2つ・石＝素材2つ。広告2倍で倍になるので1つに）
+  // ===== ストーリーの落とし物（2026-11-19 本人）=====
+  //   ルートごとに出るものをしばる（素材＋アイテム）。ルートの縦（1→5マス目で少しずつ良くなる）・横（ふつう／氷／石でちがうもの）・エリア（グレードが上がる）のバランス
+  //   素材はエリアごとに2種類だけ（AREA_MAT）。MR・LR・伝説・強化石・ほかの種類は出ない（遠征の意味をなくさないため）。広告で2倍になるので率はひかえめ
+  //   ふつう：エリアの1つ目の素材（N・R）＋アイテム（リフレッシュ30・スター3）
+  //   氷　　：エリアの2つ目の素材（N・R）＋アイテム（リフレッシュ50・スロウ）が出やすい
+  //   石　　：2つのどちらか（R中心・後半エリアはSRも）＋属性のかけら＋アイテム（ボム）
+  //   ボス　：2つのどちらか（グレード高め）＋属性のかけら＋アイテム（リフレッシュ50・スター3）
   const AREA_MAT = [['wood', 'cloth'], ['metal', 'hide'], ['gem', 'craft'], ['wood', 'beast'], ['cloth', 'craft'], ['mech', 'metal'], ['beast', 'gem'], ['hide', 'polish'], ['craft', 'metal']];
   const AREA_TW = [[90, 10, 0], [85, 15, 0], [80, 18, 2], [72, 24, 4], [65, 30, 5], [58, 35, 7], [50, 40, 10], [45, 42, 13], [40, 44, 16]];   // N・R・SR の出やすさ
   const VAR_ITEMS = ['refresh30', 'refresh50', 'slow', 'bomb', 'star3'];
   function stDropPlan(st, v){
-    const a = st.area, k = st.idx != null ? st.idx : (st.no - 1) % PER, fams = AREA_MAT[a] || AREA_MAT[0];
-    const kind = st.kind === 'boss' ? 'boss' : st.route === 2 || v === 2 ? 'stone' : st.route === 1 || v === 1 ? 'ice' : st.kind === 'mid' ? 'mid' : 'normal';
-    const p = {normal: 0.15, mid: 0.30, stone: 0.60, ice: 1, boss: 0.50}[kind];
-    const fl = kind === 'normal' || kind === 'mid' ? [fams[k % 2]] : fams;
-    let tw = (AREA_TW[a] || AREA_TW[0]).slice();
-    if (kind === 'stone' || kind === 'boss') { const m = tw[0] * 0.35; tw = tw[2] ? [tw[0] - m, tw[1] + m * 0.75, tw[2] + m * 0.25] : [tw[0] - m, tw[1] + m, 0]; }   // SRが出ないエリアでは、上げてもRまで
-    return {kind, p, fl, tw, attr: ATTR_AREA[a] || 'none', shard: kind === 'boss' ? 0.2 : kind === 'stone' ? 0.15 : 0};
+    const a = st.area, step = st.step || 0, fams = AREA_MAT[a] || AREA_MAT[0], base = (AREA_TW[a] || AREA_TW[0]).slice();
+    const kind = st.kind === 'boss' ? 'boss' : (st.route === 2 || v === 2) ? 'stone' : (st.route === 1 || v === 1) ? 'ice' : 'normal';
+    let fl, tw, pm, it, pi, shard = 0;
+    if (kind === 'normal' || kind === 'ice') {
+      tw = [base[0] - step * 2, base[1] + base[2] + step * 2, 0];                 // N・R だけ（SRは出ない）。奥のマスほどRが少し出やすい
+      fl = [fams[kind === 'normal' ? 0 : 1]];
+      pm = 0.10 + 0.02 * step;                                                    // 10%〜18%
+      it = kind === 'normal' ? ['refresh30', 'star3'] : ['refresh50', 'slow'];
+      pi = kind === 'normal' ? 0.06 + 0.01 * step : 0.18 + 0.03 * step;            // 氷はアイテムが出やすい
+    } else {
+      const m = base[0] * (kind === 'boss' ? 0.4 : 0.5);
+      tw = base[2] ? [base[0] - m, base[1] + m * 0.75, base[2] + m * 0.25] : [base[0] - m, base[1] + m, 0];
+      fl = fams;
+      pm = kind === 'boss' ? 0.40 : 0.22 + 0.04 * step;                           // 石：22%〜38%
+      shard = kind === 'boss' ? 0.20 : 0.08 + 0.02 * step;
+      it = kind === 'boss' ? ['refresh50', 'star3'] : ['bomb'];
+      pi = kind === 'boss' ? 0.15 : 0.05;
+    }
+    return {kind, fl, tw, pm, it, pi, shard, attr: ATTR_AREA[a] || 'none'};
   }
   function stDropRoll(st, v){
-    const P = stDropPlan(st, v), list = [];
-    if (P.kind === 'ice') list.push([VAR_ITEMS[Math.floor(Math.random() * VAR_ITEMS.length)], 1]);
-    else if (Math.random() < P.p) { const f = P.fl[Math.floor(Math.random() * P.fl.length)], sum = P.tw[0] + P.tw[1] + P.tw[2]; let r = Math.random() * sum, t = 0; while (t < 2 && r >= P.tw[t]) { r -= P.tw[t]; t++; } list.push(['m_' + f + '_' + t, 1]); }
+    const P = stDropPlan(st, v), list = [], sum = P.tw[0] + P.tw[1] + P.tw[2];
+    if (Math.random() < P.pm) { const f = P.fl[Math.floor(Math.random() * P.fl.length)]; let r = Math.random() * sum, t = 0; while (t < 2 && r >= P.tw[t]) { r -= P.tw[t]; t++; } list.push(['m_' + f + '_' + t, 1]); }
     if (P.shard && Math.random() < P.shard) list.push(['st_' + P.attr + '_0', 1]);
+    if (Math.random() < P.pi) list.push([P.it[Math.floor(Math.random() * P.it.length)], 1]);
     return list;
   }
   // 長押しで見せる「出るかもしれないもの」（確率は出さず、よく出る・ときどき・まれに）
   function stDropText(st){
     const P = stDropPlan(st, st.route === 1 ? 1 : st.route === 2 ? 2 : 0), L = [], sum = P.tw[0] + P.tw[1] + P.tw[2];
-    const lv = (x) => x >= 0.3 ? 'よく出る' : x >= 0.08 ? 'ときどき' : 'まれに';
-    if (P.kind === 'ice') L.push('アイテム（' + VAR_ITEMS.map(k => ITEMS[k] ? ITEMS[k].name : k).join('・') + '）のどれか1つ');
-    else P.fl.forEach(f => [0, 1, 2].forEach(t => { if (!P.tw[t]) return; const x = P.p * P.tw[t] / sum / P.fl.length; L.push('<span class="sdi">' + MAT_FAM[f].i + ' ' + MAT_FAM[f].l[t] + '<small>' + GN[t] + '・' + lv(x) + '</small></span>'); }));
-    if (P.shard) L.push('<span class="sdi">🔹 ' + stoneName(P.attr, 0) + '<small>まれに</small></span>');
+    const lv = x => x >= 0.15 ? 'よく出る' : x >= 0.05 ? 'ときどき' : 'まれに';
+    P.fl.forEach(f => [0, 1, 2].forEach(t => { if (P.tw[t] <= 0) return; const x = P.pm * P.tw[t] / sum / P.fl.length; L.push('<span class="sdi">' + MAT_FAM[f].i + ' ' + MAT_FAM[f].l[t] + '<small>' + GN[t] + '・' + lv(x) + '</small></span>'); }));
+    if (P.shard) L.push('<span class="sdi">🔹 ' + stoneName(P.attr, 0) + '<small>' + lv(P.shard) + '</small></span>');
+    P.it.forEach(k => L.push('<span class="sdi">🎒 ' + (ITEMS[k] ? ITEMS[k].name : k) + '<small>' + lv(P.pi / P.it.length) + '</small></span>'));
     return L;
   }
   function varRewards(v, area, st){
@@ -7189,7 +7204,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.205';
+  const APP_VER = '0.9.206';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -7238,11 +7253,11 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   function stInfoPop(st, op){
     const zk = st.kind === 'boss' ? null : zakoAt(st);
     const nm = st.kind === 'boss' ? fullName(CHARS[st.char]) : st.kind === 'mid' ? st.name : (zk ? zakoFull(zk) : st.name);
-    const kind = st.kind === 'boss' ? 'ボス' : st.kind === 'mid' ? '中ボス' : 'ザコ';
+    const kind = st.kind === 'boss' ? 'ボス' : st.kind === 'mid' ? '中ボス' : '';
     const need = stagePow(st), mine = myStoryPow(), c = powCls(mine, need), ta = teamAttr(st);
     const rt = st.route === 1 ? '氷のルート' : st.route === 2 ? '石のルート' : '';
     const d = document.createElement('div'); d.className = 'stpop-ov';
-    d.innerHTML = '<div class="stpop"><div class="sph"><b>' + st.label + '</b>　' + kind + (rt ? '・' + rt : '') + '</div><div class="spn">' + nm + '</div>' +
+    d.innerHTML = '<div class="stpop"><div class="sph"><b>' + st.label + '</b>　' + [kind, rt || 'ふつうルート'].filter(Boolean).join('・') + '</div><div class="spn">' + nm + '</div>' +
       '<div class="spl">属性 ' + attrBadge(stageEnemyId(st), true) + ' ' + ATTR[ta.ea].n + '　相性 <b class="' + (ta.out >= 1.05 ? 'good' : ta.out <= 0.95 ? 'bad' : '') + '">' + (ta.out >= 1.05 ? '有利' : ta.out <= 0.95 ? '不利' : 'ふつう') + '</b></div>' +
       '<div class="spl">必要戦闘力 <b class="' + c + '">' + need.toLocaleString() + '</b>　あなた <b class="' + c + '">' + mine.toLocaleString() + '</b></div>' +
       (op ? '' : '<div class="spl">🔒 まだ入れません</div>') +
