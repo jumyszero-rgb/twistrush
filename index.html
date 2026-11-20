@@ -1203,7 +1203,7 @@ body.on-menu .battlemain{opacity:0;}
   .tbadge.inl{position:static;display:inline-block;vertical-align:middle;}
   .abadge{position:absolute;top:2px;right:22px;width:16px;height:16px;border-radius:4px;font-style:normal;font-size:10px;line-height:16px;text-align:center;color:#fff;font-weight:900;text-shadow:0 1px 1px rgba(0,0,0,.35);}
   .ccell .abadge{top:21px;right:3px;left:auto;bottom:auto;width:17px;height:17px;line-height:17px;font-size:10px;box-shadow:0 0 0 1.5px rgba(255,255,255,.85);} .ctms{position:absolute;left:3px;bottom:44px;display:flex;gap:1px;z-index:2;pointer-events:none} .ctm{width:14px;height:14px;border-radius:50%;background:var(--tc);color:#fff;font-size:10px;font-weight:900;line-height:14px;text-align:center;font-style:normal;box-shadow:0 0 0 1px rgba(255,255,255,.9),0 1px 2px rgba(0,0,0,.5)} .tgrid .ccell.tslot .cno{z-index:4;width:18px;height:18px;line-height:18px;font-size:12px;background:var(--tc,#ffd24a)!important;color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.4);top:auto;bottom:2px;left:2px;right:auto;} .ttabs button{border-bottom:3px solid var(--tc)!important} .ttabs button.on{background:var(--tc)!important;border-color:var(--tc)!important;color:#fff!important;text-shadow:0 1px 2px rgba(0,0,0,.4)} .cmslots{display:flex;gap:4px;justify-content:center;margin:2px 0 4px} .cmslots button{flex:1;max-width:64px;background:var(--tc)!important;color:#fff!important} .cmslots button:disabled{opacity:.4} .abadge.inl{position:static;display:inline-block;vertical-align:middle;}
-  .balln{font-size:12px;margin-top:3px}.balln small{display:block;opacity:.7;font-size:10.5px}.balln .good{color:#7ee08a}.balln .bad{color:#ff8a8a}.tipbox{background:rgba(255,210,74,.12);border:1px solid rgba(255,210,74,.45);border-radius:10px;padding:8px 10px;}.attrln{font-size:12px;margin:4px 0 2px;} .attrln b.good{color:#1fa35c;} .attrln b.bad{color:#d8364f;}
+  .balln{font-size:12px;margin-top:3px}.balln small{display:block;opacity:.7;font-size:10.5px}.balln .good{color:#7ee08a}.balln .bad{color:#ff8a8a}.tipbox{background:rgba(255,210,74,.12);border:1px solid rgba(255,210,74,.45);border-radius:10px;padding:8px 10px;}.igemo{display:inline-flex;align-items:center;justify-content:center;font-size:40px;line-height:1}.attrln{font-size:12px;margin:4px 0 2px;} .attrln b.good{color:#1fa35c;} .attrln b.bad{color:#d8364f;}
   .dlv{font-size:13px;margin-top:4px;} .dlv b{font-size:24px;color:#ffd24a;} .ustar.big{display:block;font-size:16px;letter-spacing:1px;}
   .dexp{font-size:11px;opacity:.85;margin-top:2px;}
   .dtabs{display:flex;gap:4px;margin:10px 0 6px;} .dtabs button{flex:1;border-radius:10px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.3);color:#fff;font-weight:800;font-size:11px;padding:7px 2px;}
@@ -7244,7 +7244,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.245';
+  const APP_VER = '0.9.246';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -11061,6 +11061,18 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   // 出るものは同じ。ゴールド（課金）版のほうが上のポットが出やすい
   // 2026-11-20 本人「SRの限界突破ポットが出すぎ（10連2回で6個）」：キャラガチャと同じくらいに下げる。シルバー10連の確定はR以上、ゴールド10連はSR以上
   const IG_RATE = {silver: {LR: 0.1, MR: 0.8, SR: 3, R: 30, N: 66.1}, gold: {LR: 1.5, MR: 6, SR: 20, R: 50, N: 22.5}};
+  // 2026-11-20 本人：アイテムガチャに スタミナポット・回復（リフレッシュ）・進化素材（ごくまれ）なども入れる
+  //   グレードで「どの箱か」が決まり、箱の中身から1つ（数字は箱の中の重み）
+  const IG_BOX = {
+    N:  [['pot_N', 55], ['refresh30', 20], ['star3', 15], ['slow', 10]],
+    R:  [['pot_R', 45], ['stampot', 25], ['refresh50', 12], ['bomb', 10], ['star6', 8]],
+    SR: [['pot_SR', 60], ['exticket', 20], ['star9', 20]],
+    MR: [['pot_MR', 75], ['evo_c', 25]],
+    LR: [['pot_LR', 70], ['evo_g', 30]],
+  };
+  function igPick(g){ const L = IG_BOX[g] || IG_BOX.N, tot = L.reduce((a, x) => a + x[1], 0); let r = Math.random() * tot; for (const [k, w] of L) { if ((r -= w) < 0) return k; } return L[0][0]; }
+  const igName = k => EX_MAT[k] ? EX_MAT[k][0] + '（進化素材）' : itemLabel(k);
+  const igBoxText = () => ['N', 'R', 'SR', 'MR', 'LR'].map(g => { const L = IG_BOX[g], t = L.reduce((a, x) => a + x[1], 0); return g + '＝' + L.map(([k, w]) => igName(k) + ' ' + Math.round(w / t * 100) + '%').join('・'); }).join('／');
   const igRateText = k => { const r = IG_RATE[k]; return ['LR', 'MR', 'SR', 'R', 'N'].map(g => g + ' ' + r[g] + '%').join('／'); };
   function itemPull(n, kind){
     const rate = IG_RATE[kind] || IG_RATE.silver;
@@ -11070,13 +11082,17 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       for (const x of ['LR', 'MR', 'SR', 'R', 'N']) { if (r < rate[x]) { g = x; break; } r -= rate[x]; }
       const gmin = kind === 'gold' ? 3 : 2;              // 10連の確定：ゴールド＝SR以上、シルバー＝R以上
       if (n >= 11 && k === n - 1 && !out.some(o => GRADE_RANK[o.g] >= gmin) && GRADE_RANK[g] < gmin) g = gmin === 3 ? 'SR' : 'R';
-      inv[potKey(g)] = own(potKey(g)) + 1; out.push({g});
+      const ik = igPick(g); giveItem(ik, 1); out.push({g, k: ik});
     }
     saveInv(); return out;
   }
   function itemCard(r, big){
-    const d = document.createElement('div'); d.className = 'g-card g-' + r.g + (big ? ' big' : '');
-    d.innerHTML = '<img class="potic" src="' + potImg(r.g) + '" alt=""><div>' + potName(r.g) + '</div>';
+    const d = document.createElement('div'), k = r.k || potKey(r.g); d.className = 'g-card g-' + r.g + (big ? ' big' : '');
+    const ic = k.startsWith('pot_') ? '<img class="potic" src="' + potImg(k.slice(4)) + '" alt="">'
+      : EX_MAT[k] ? '<span class="potic igemo">' + EX_MAT[k][1] + '</span>'
+      : TICKET_LABEL[k] ? '<img class="potic" src="' + tkImg(k) + '" alt="">'
+      : '<img class="potic" src="' + itemImg(k) + '" alt="">';
+    d.innerHTML = ic + '<div>' + igName(k) + '</div>';
     return d;
   }
   function itemGachaGo(n, kind){
@@ -11131,7 +11147,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (gTab !== 'item') { const ct = cTickets(); Object.keys(ct).filter(id => ct[id] > 0 && ALLC_IDX.has(id)).forEach(id => {
       h += '<button class="btn shop" data-g="char:' + id + '">' + coinImg('ticket_hi') + fullName(ALLC[ALLC_IDX.get(id)]) + ' 確定チケット（' + ct[id] + '枚）</button>'; }); }
     if (!gRev) h += 
-      (gTab === 'item' ? '<div class="rate">アイテムガチャ：ショップでは買えないポットが出る（N＝経験値ポット小、R＝経験値ポット大、SR・MR・LR＝限界突破ポット）。' + 'シルバー版：' + igRateText('silver') + '。ゴールド版（課金）：' + igRateText('gold') + '。出るものは同じ。10連はシルバー版がR以上、ゴールド版がSR以上を1個確定。</div>' : '<div class="rate">' + (gTab === 'silver' ? 'シルバーガチャ：無料のシルバーコインで引ける。' : 'ゴールドガチャ：有料のゴールドコインで引ける。高グレードが出やすい（予定）。') +
+      (gTab === 'item' ? '<div class="rate">アイテムガチャ：ポット・スタミナポット・バトルの道具・遠征すぐ帰る券・進化素材（ごくまれ）が出る。グレードごとの中身：' + igBoxText() + '。' + 'シルバー版：' + igRateText('silver') + '。ゴールド版（課金）：' + igRateText('gold') + '。出るものは同じ。10連はシルバー版がR以上、ゴールド版がSR以上を1個確定。</div>' : '<div class="rate">' + (gTab === 'silver' ? 'シルバーガチャ：無料のシルバーコインで引ける。' : 'ゴールドガチャ：有料のゴールドコインで引ける。高グレードが出やすい（予定）。') +
       (gTab === 'gold' ? '出る確率：' + rateText(G_RATE.gold) + '。LEGEND GAUGE：ゴールドガチャ1回で1ポイント（10連は10）。' + PITY_N + 'ポイントで好きなLRを1体と交換（LRが出てもポイントは減りません）。確定チケット（SR以上確定）：' + rateText(G_RATE.hi) + '。' : '出る確率：' + rateText(G_RATE.silver) + '（ガチャチケットも同じ）。') + '10連は1体SR以上が確定。キャラ確定チケットはそのキャラが100%。同じキャラも1体ずつボックスに入ります。</div>');
     $('gachaFoot').innerHTML = h;
     $('gachaCoin').innerHTML = '';
