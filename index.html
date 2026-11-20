@@ -7152,6 +7152,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   // ===== 軽量モード（力の弱い端末向け）=====
   // 自動：戦闘の最初の数秒で動きを測って、重ければ軽くする（その端末で覚えておく）
   var liteMode = load('lite', 'auto'), liteAuto = load('liteauto', '') === '1';
+  // 2026-11-20 本人（Galaxy A22 で遅い）：メモリ4GB以下のAndroidは、はじめから「軽く」で動かす（設定で「きれい」にもできる）
+  if (!liteAuto && load('liteauto', '') !== '0' && /Android/i.test(navigator.userAgent) && (navigator.deviceMemory || 8) <= 4) { liteAuto = true; save('liteauto', '1'); }
   // 2026-11-20 本人（Galaxy A22 で遅い）：メモリが4GB以下のAndroidは、はじめから「軽く」で動かす（設定で「きれい」にもできる）
   if (liteMode === 'auto' && !liteAuto && load('liteauto', '') !== '0' && /Android/i.test(navigator.userAgent) && (navigator.deviceMemory || 8) <= 4) { liteAuto = true; save('liteauto', '1'); }
   function liteOn(){ return liteMode === 'on' || (liteMode === 'auto' && liteAuto); }
