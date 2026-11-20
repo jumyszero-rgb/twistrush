@@ -1203,7 +1203,7 @@ body.on-menu .battlemain{opacity:0;}
   .tbadge.inl{position:static;display:inline-block;vertical-align:middle;}
   .abadge{position:absolute;top:2px;right:22px;width:16px;height:16px;border-radius:4px;font-style:normal;font-size:10px;line-height:16px;text-align:center;color:#fff;font-weight:900;text-shadow:0 1px 1px rgba(0,0,0,.35);}
   .ccell .abadge{top:21px;right:3px;left:auto;bottom:auto;width:17px;height:17px;line-height:17px;font-size:10px;box-shadow:0 0 0 1.5px rgba(255,255,255,.85);} .ctms{position:absolute;left:3px;bottom:44px;display:flex;gap:1px;z-index:2;pointer-events:none} .ctm{width:14px;height:14px;border-radius:50%;background:var(--tc);color:#fff;font-size:10px;font-weight:900;line-height:14px;text-align:center;font-style:normal;box-shadow:0 0 0 1px rgba(255,255,255,.9),0 1px 2px rgba(0,0,0,.5)} .tgrid .ccell.tslot .cno{z-index:4;width:18px;height:18px;line-height:18px;font-size:12px;background:var(--tc,#ffd24a)!important;color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.4);top:auto;bottom:2px;left:2px;right:auto;} .ttabs button{border-bottom:3px solid var(--tc)!important} .ttabs button.on{background:var(--tc)!important;border-color:var(--tc)!important;color:#fff!important;text-shadow:0 1px 2px rgba(0,0,0,.4)} .cmslots{display:flex;gap:4px;justify-content:center;margin:2px 0 4px} .cmslots button{flex:1;max-width:64px;background:var(--tc)!important;color:#fff!important} .cmslots button:disabled{opacity:.4} .abadge.inl{position:static;display:inline-block;vertical-align:middle;}
-  .balln{font-size:12px;margin-top:3px}.balln small{display:block;opacity:.7;font-size:10.5px}.balln .good{color:#7ee08a}.balln .bad{color:#ff8a8a}.attrln{font-size:12px;margin:4px 0 2px;} .attrln b.good{color:#1fa35c;} .attrln b.bad{color:#d8364f;}
+  .balln{font-size:12px;margin-top:3px}.balln small{display:block;opacity:.7;font-size:10.5px}.balln .good{color:#7ee08a}.balln .bad{color:#ff8a8a}.tipbox{background:rgba(255,210,74,.12);border:1px solid rgba(255,210,74,.45);border-radius:10px;padding:8px 10px;}.attrln{font-size:12px;margin:4px 0 2px;} .attrln b.good{color:#1fa35c;} .attrln b.bad{color:#d8364f;}
   .dlv{font-size:13px;margin-top:4px;} .dlv b{font-size:24px;color:#ffd24a;} .ustar.big{display:block;font-size:16px;letter-spacing:1px;}
   .dexp{font-size:11px;opacity:.85;margin-top:2px;}
   .dtabs{display:flex;gap:4px;margin:10px 0 6px;} .dtabs button{flex:1;border-radius:10px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.3);color:#fff;font-weight:800;font-size:11px;padding:7px 2px;}
@@ -1818,6 +1818,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
           <div class="demo"><canvas class="mini" data-v="0,0,0"></canvas><canvas class="mini" data-v="2,2,2,2"></canvas></div>
           <p>白い枠の4マスを回して、同じキャラを<b>縦か横に3〜6個</b>並べると消えます。</p>
           <p>1列そろうと枠の金色の線が減り始め、<b>2秒後に確定</b>して消えます。その2秒の間にほかの列もそろえれば、まとめて消せます。</p>
+          <p class="tipbox">💡 <b>点数を伸ばすコツ</b>：1つそろったら、すぐ消そうとせずに、<b>2秒のあいだに別の場所でも3個そろえ</b>を作りましょう。まとめて消すほど倍率（RUSH）が上がって、点数がぐんと伸びます。枠を遠くまで動かすより、<b>今いる枠の近く</b>でそろえるのが早道。長い列を狙うより、3個そろえを2〜3か所作るほうが伸びやすいです。落ちてくるブロックは運なので、連鎖は狙わなくてOK。</p>
           <p>消えた色のカラーHPは、消した数だけ減ります。</p>
         </section>
         <section>
@@ -7243,7 +7244,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.242';
+  const APP_VER = '0.9.243';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -13258,6 +13259,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         await waitFor(() => !stillOn() || phase === 'idle', 6000); if (!stillOn()) return;
         pauseClock();
         await say('こんなふうに消していくよ！<br>たくさん消すほど、敵に大ダメージ！');
+        await say('<b>コツ</b>：1つそろったら<b>2秒のあいだ</b>に、近くでもう1つ、2つとそろえよう！<br>まとめて消すほど<b>RUSH</b>で大ダメージ＆高得点だよ。');
         if (!stillOn()) return;
         resumeClock();
         const k = skList.findIndex(s2 => s2.main && s2.kind === 'sp') >= 0 ? skList.findIndex(s2 => s2.main && s2.kind === 'sp') : 0;
