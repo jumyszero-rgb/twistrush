@@ -7252,7 +7252,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.256';
+  const APP_VER = '0.9.257';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -9170,7 +9170,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   // 必要戦闘力＝敵のステータス×強さの補正。ボスはHPが多く技も使うので×1.4、中ボスは×1.15（2026-11-13：ボス1,400に1,700でギリギリだったので見直し）
   const POW_KIND = {boss: 1.25, mid: 1.1};   // 2026-11-13 2回目：×1.4では敵2,000・チーム1,800で少し余裕だったので、ボス×1.25・中ボス×1.1に
   // 2026-11-19 本人「同じ戦闘力でもゴールドハートがないと勝てない」：敵の体力の見えない倍率（EN_HP_MUL）を必要戦闘力に入れる
-  const stagePow = st => Math.round(enBasePow(st) * (POW_KIND[st.kind] || 1) * bossLoad(st));   // 2026-11-22 本人「ウィンディより数字が上なのに歯が立たない」：ボスは削るHPの量のぶん重い → 必要戦闘力に入れる（マップのチーム戦闘力とそのまま比べられる）
+  // stagePow は下（戦闘力 v2）で決める
   // いまのチーム（4人の合計）。ステージを渡すと属性の相性を入れる（有利なら攻撃が上がり、不利なら受けるダメージが増えるぶん体力・防御を下げて数える）
   // 2026-11-19 本人「こちらのバランスも考慮して。回復が弱かったら、いくら崩すのが早くても勝てない」
   //   攻め＝敵を倒す速さ（攻撃×相性 と 敵の防御）、守り＝倒されるまでの長さ（体力・防御・スピード・チームの回復の技 と 敵の攻撃・相性）。
@@ -9192,7 +9192,6 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     const def = t[0] / (a.inn * corr(e[1], t[2]) * Math.max(1, e[1])) * spd * (1 + 0.3 * Math.min(1, heal / 100));
     return {off, def, heal, all: 2 / (1 / Math.max(0.01, off) + 1 / Math.max(0.01, def))};
   }
-  const enBasePow = st => { const e = enemyStats(st); return statPow([e[0] * EN_HP_MUL].concat(e.slice(1))); };
   // 2026-11-20 本人「3832が4620に勝てる。限界突破が入っていない」：ステータスは★で変わらないが、技は★で大きく強くなる → 技の強さを戦闘力に入れる
   //   1人ぶん：グレードの重み × (★0で0.5〜★MAXで1.0)。4人の合計を掛ける（LRの★MAX4人で×1.64）
   const SK_POW_W = {N: 0.03, R: 0.05, SR: 0.09, MR: 0.13, LR: 0.16};
@@ -9201,31 +9200,59 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       m += (SK_POW_W[g] || 0) * (0.5 + 0.5 * Math.min(1, (u.star || 0) / smax)); });
     return m;
   }
-  // 2026-11-22 本人「ウィンディ 5,133 対 4,943 で全く歯が立たない。こちらの見積もりが高すぎる」：
-  //   オート「しっかり」で実際に戦わせると、ザコはほぼ表示どおりだが、ボスは削るHPの量（エリアが進むほど増える）の分だけ負けていた
-  //   （カミラHP324で約1.3倍・ウィンディ420とギルバート540で約1.6倍の戦闘力が必要）→ ボスはHPの量÷245 で割る（1〜1.6の間）
-  const BOSS_HP_REF = 245, BOSS_LOAD_MAX = 1.6;
-  //   それでもチヨだけ約1.25倍つよかった（必殺技で自分を回復する）→ ボスごとの補正。全体も実戦に合わせて少しだけ下げる（÷1.05）
-  const BOSS_ADJ = {chiyo: 1.25};
-  const bossLoad = st => !st || st.kind !== 'boss' ? 1 : 1.05 * (BOSS_ADJ[(CHARS[st.char] || {}).id] || 1) * Math.min(BOSS_LOAD_MAX, Math.max(1, ((st.hpV ? st.hpV[varOf(st)] : st.hp) || 0) / BOSS_HP_REF));
-  // 2026-11-22 本人「上の戦闘力とあなたの戦闘力が違うのはおかしい。ボスによって変わるのもおかしい」：チーム戦闘力は1つだけ（相手によって変えない）
-  const myStoryPow = () => Math.round(statPow(teamStats()) * teamSkillMul());
+  // ===== 戦闘力 v2（2026-11-22）：オート「しっかり」で1,200戦させた結果から決めた =====
+  //   本人「ウィンディ 5,133 対 4,943 で歯が立たない」「中身を360度評価して組んで」「単純な計算では語れない」
+  //   チーム・装備・★・構成・ボス・ザコをばらばらに変えて戦わせ、勝ち負けと削った量から「何が効くか」を出した（当たり率 約92%）
+  //   わかったこと：スピード（敵の技の回数が減る）と攻撃が強く効く。体力・防御は前の式ほど効かない。★（技）はとても効く。
+  //   チーム戦闘力＝ 体力^0.20 × 攻撃^0.30 × 防御^0.10 × スピード^0.40 × 技の強さ^0.91 × 装備の効果（クリティカル・与ダメ・被ダメ減・回復・チャージ・スロウ）
+  //   必要戦闘力＝ 敵を同じ物差しで測ったもの。同じ数字なら「しっかり」で8割ほど勝てる（ぎりぎり勝ち）。相手によって自分の数字は変えない
+  const PW = {core: 0.4955, spd: 0.9787, sk: 2.2383, regen: 0.112, chg: 0.8804, slow: 1.0459, ic: 2.1698, tau: 0.3, K: 2.4653, lnC: 2.4446};
+  //   その敵だけの強さ（技・盤面のくせ）：実際の勝ち負けとのずれ（＋はやさしめ、−は強め）。ザコはエリアごと
+  const PW_ADJ = {ichigo: 0.335, mocha: 0.368, rinpan: 0.092, busy: 0.108, camilla: -0.007, titan: 0.096, windy: -0.098, chiyo: -0.383, gilbert: -0.243};
+  const PW_ADJ_Z = [0.054, 0.410, 0.251, 0.201, 0.245, 0.119, 0.127, -0.094, -0.186, -0.336, -0.603, -0.325, -0.577, -0.583];
+  function teamPowOf(t, sk, fx){
+    fx = fx || {}; const L = v => Math.log(Math.max(1, v));
+    const dm = (1 + (fx.crit || 0) / 100 * (0.5 + (fx.critDmg || 0) / 100)) * (1 + (fx.dmgP || 0) / 100) * (1 + (fx.chainP || 0) / 200) * (1 + (fx.sync || 0) / 200);
+    const core = L(t[0]) + 1.5 * L(t[1]) + 0.5 * L(t[2]) + Math.log(dm) - Math.log(1 - Math.min(50, fx.cut || 0) / 100);
+    const S = PW.core * core + PW.spd * L(t[3]) + PW.sk * Math.log(Math.max(1, sk)) + PW.regen * (fx.regen || 0) / 10 + PW.chg * ((fx.chgSp || 0) + (fx.chgOg || 0)) / 100 + PW.slow * (fx.hitSlow || 0) / 100;
+    return Math.exp(S / PW.K + PW.lnC);
+  }
+  const myStoryPow = () => { const m = teamMembers(); return Math.round(teamPowOf(teamStats(), teamSkillMul(), eqTeamFx(m))); };
+  const ticksOf = (st, v) => (st.hpV ? st.hpV[v] : st.hp) || 1;
+  const adjOf = (st, v) => st.kind === 'boss' ? (PW_ADJ[(CHARS[st.char] || {}).id] || 0) : PW_ADJ_Z[Math.min(PW_ADJ_Z.length - 1, st.area + VAR_SHIFT[v])];
+  function needOf(e, ticks, adj){
+    const L = v => Math.log(Math.max(1, v));
+    const Q = PW.core * (L(ticks) + L(e[0]) + 1.5 * L(e[1]) + 0.5 * L(e[2])) + PW.spd * L(e[3]) - PW.ic - adj;
+    return Math.exp((Q + PW.tau) / PW.K + PW.lnC);
+  }
+  const needAt = (st, v) => needOf(enemyStats(st, v), ticksOf(st, v), adjOf(st, v));
+  const stagePow = st => Math.round(needAt(st, varOf(st)));
+  const bossStageOf = a => STORY.find(s => s.area === a && s.kind === 'boss');
+  // ボスの本当の強さ：本人が決めた必要戦闘力の曲線（いちご827→ギルバート8,499）にそろえる倍率（ステータスにかける）
+  const BOSS_FIX = {ichigo: 1.171, mocha: 1.280, rinpan: 1.015, busy: 0.994, camilla: 1.011, titan: 1.027, windy: 0.846, chiyo: 0.693, gilbert: 0.833};
   const powCls = (mine, need) => mine >= need ? 'ok' : mine >= need * 0.85 ? 'near' : 'hard';
   // 2026-11-20 本人「1か月でギルバートは早い。SRをMAXまで育てて装備をつけたら勝てるくらいに」：エリア5から後半を強く
   //   ボスの必要戦闘力 5:2,656→3,000／6:3,254→4,000／7:3,876→5,200／8:4,620→6,800／9:5,650→8,500。氷・石（ずらしたエリア）も同じ倍率
   const AREA_UP = [1, 1, 1.04, 1.1, 1.074, 1.168, 1.278, 1.404, 1.505];   // 2回目（本人「急に上がりすぎ」）：エリア3から少しずつ上げて、なだらかに
   const areaUp = a => a < AREA_UP.length ? AREA_UP[Math.max(0, a)] : AREA_UP[AREA_UP.length - 1];
-  function enemyStats(st){
+  function enemyStats(st, v){
     if (!st) return [100, 100, 100, 100];
-    const aE = st.area + VAR_SHIFT[varOf(st)];             // 氷・石はエリアをずらした強さ
-    const row = enRow(aE).map(v => Math.round(v * eqUp(aE) * areaUp(aE)));
-    // 面ごとの固定値：ザコはエリアの1面目が表の数字、そこから1面ごとに+3.5%（5面目で+14%。次のエリアの1面目を超えない）。中ボスは表の中ボスの数字以上、ボスは表のボスの数字
+    if (v == null) v = varOf(st);
+    const aE = st.area + VAR_SHIFT[v];                    // 氷・石はエリアをずらした強さ
+    const row = enRow(aE).map(x => Math.round(x * eqUp(aE) * areaUp(aE)));
+    // 面ごとの固定値：ザコはエリアの1面目が表の数字、そこから1面ごとに+3.5%（5面目で+14%）。中ボスは表の中ボスの数字以上、ボスは表のボスの数字
     let zk = Math.round(row[0] * (1 + 0.035 * Math.min(4, st.step || 0)));
     // 2026-11-20 本人「ボスに勝つ→次のエリアのザコが弱い→すぐボス→急に強くて止まる」：
-    //   エリア2から（氷・石はずらしたエリアで）、ザコは必要戦闘力で「前のボスの90%」から「このエリアのボスの85%」へなだらかに上げる。ボスはそのまま
-    if (aE >= 1) { const pb = enRow(aE - 1)[2] * eqUp(aE - 1) * areaUp(aE - 1) * POW_KIND.boss, cb = row[2] * POW_KIND.boss, f = Math.min(4, st.step || 0) / 4;
-      zk = Math.round(Math.max(zk, pb * 0.9 + (cb * 0.85 - pb * 0.9) * f)); }
+    //   エリア2から（氷・石はずらしたエリアで）、ザコは必要戦闘力で「前のボスの90%」から「このエリアのボスの85%」へなだらかに上げる
+    //   2026-11-22 戦闘力 v2：同じ物差し（必要戦闘力）でそろえる。前は物差しがずれていて、エリア8・9のザコがボスより強くなっていた
+    if (st.kind !== 'boss' && aE >= 1) {
+      const pbS = st.area >= 1 ? bossStageOf(st.area - 1) : bossStageOf(aE - 1), cbS = bossStageOf(st.area);
+      const pb = pbS ? needAt(pbS, st.area >= 1 ? v : 0) : 0, cb = cbS ? needAt(cbS, v) : 0, f = Math.min(4, st.step || 0) / 4;
+      const target = pb * 0.9 + (cb * 0.85 - pb * 0.9) * f;
+      if (target > 0) zk = Math.max(1, Math.round(target / needOf([1, 1, 1, 1], ticksOf(st, v), adjOf(st, v))));
+    }
     let base = st.kind === 'boss' ? row[2] : (st.kind === 'mid' ? Math.max(row[1], zk) : zk);
+    if (st.kind === 'boss') base = Math.round(base * (BOSS_FIX[(CHARS[st.char] || {}).id] || 1));
     const out = [base, base, base, base];
     if (st.kind === 'boss') {
       const cs = CHARS[st.char] && CHAR_STAT[CHARS[st.char].id];
