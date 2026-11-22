@@ -684,7 +684,7 @@ body.on-menu .battlemain{opacity:0;}
   .resstars .rs-total{font-size:11px;font-weight:800;color:#e0a21e;}
   .resstars.hidden{display:none;}
   /* ボス登場シーン */
-  .intro{position:fixed;inset:0;z-index:60;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;}
+  .intro-skip{position:absolute;right:14px;top:calc(env(safe-area-inset-top,0px) + 14px);z-index:5;padding:8px 14px;border:1px solid rgba(255,255,255,.5);border-radius:999px;background:rgba(0,0,0,.45);color:#fff;font-weight:700;font-size:14px;line-height:1;cursor:pointer} .intro{position:fixed;inset:0;z-index:60;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;}
   .intro.hidden{display:none;}
   .intro video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;}
   .intro video[hidden]{display:none;}
@@ -2225,6 +2225,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       <video id="introVid" playsinline preload="auto"></video>
       <div class="intro-ph" id="introPh"></div>
       <div class="intro-name" id="introName"></div>
+      <button class="intro-skip" id="introSkip" hidden>スキップ ▶</button>
     </div>
     <div class="mefight" id="meRow">
       <div id="meArt" class="art" hidden><span class="l0"></span><span class="l1"></span></div>
@@ -2295,7 +2296,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     ATK_CHARGE: 260,           // 相手がためてから撃つまで
     WIN_SHOW_AT: 6000,         // 勝ったとき、相手の負け姿を見せてから結果画面を出すまで（全キャラ共通）
     WIN_FADE_AT: 4000,         // 負け姿が消え始めるまで＝4秒まるごと表示（全キャラ共通）
-    ROT_MS: 90,  CLEAR_MS: 420, FALL_MS: 260, CURSOR_MS: 90, CURSOR_FOLLOW_MS: 35, OVER_GRAY_STEP: 90, OVER_FALL_AT: 900, OVER_TEXT_AT: 1350, OVER_SHOW_AT: 3000, AD_SEC: 5, POP_MS: 1000, POP_GAP_MS: 120, FEED_MS: 1600
+    ROT_MS: 90,  CLEAR_MS: 420, FALL_MS: 260, CURSOR_MS: 90, CURSOR_FOLLOW_MS: 35, OVER_GRAY_STEP: 90, OVER_FALL_AT: 1200, OVER_TEXT_AT: 2400, OVER_SHOW_AT: 4200, WIN_CRUMBLE_AT: 3400, AD_SEC: 5, POP_MS: 1000, POP_GAP_MS: 120, FEED_MS: 1600
   };
   // ===== 難易度（イージー＝練習／ノーマル／ハード）=====
   // 時間そのもので圧力はかけない。効くのは「壊したブロック数」と「★の巻き戻しの上限」
@@ -4780,16 +4781,26 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       zakoFx('out');
       toast('STAGE CLEAR!');
       winShow = setTimeout(showResult, 1500);
-    } else if (lose1) {
-      showBigArt(lose1, showResult);
     } else {
-      winFade = setTimeout(() => { if (!running) $('enemyRow').classList.add('fading'); }, CFG.WIN_FADE_AT);
-      winShow = setTimeout(showResult, CFG.WIN_SHOW_AT);
+      // 2026-11-22 本人「いきなり画像に変わる」：ボスを倒したら、盤面のブロックが崩れ落ちてから負け姿を出す（灰色にはしない）
+      overFx = {t: now(), i: -1, win: true,
+        delay: Array.from({length: N * N}, () => Math.random() * 450),
+        spin:  Array.from({length: N * N}, () => (Math.random() - 0.5) * 2),
+        drift: Array.from({length: N * N}, () => (Math.random() - 0.5) * 60)};
+      setTimeout(sndCrash, CFG.OVER_FALL_AT);
+      const tk = overFx;
+      winShow = setTimeout(() => {
+        if (running || overFx !== tk) return;
+        if (lose1) showBigArt(lose1, showResult);
+        else { winFade = setTimeout(() => { if (!running) $('enemyRow').classList.add('fading'); }, CFG.WIN_FADE_AT); winShow = setTimeout(showResult, CFG.WIN_SHOW_AT); }
+      }, CFG.WIN_CRUMBLE_AT);
     }
   }
   function tick(t){
     vsTick(t); onlTick(t);
     bgmUpdate();
+    // 2026-11-22 本人「ずっとじわじわ回復5秒って表示されてる」：戦いが終わると強化バーの更新が止まって残っていた → 終わったら消す
+    if (!running) { try { const bb = $('buffBar'); if (bb && bb.style.display !== 'none') { bb.style.display = 'none'; buffKey = ''; } } catch(_) {} }
     if (running && bombPick) return;                // カラーボムの色を選んでいる間は止める
     if (running && pausedAt) return;                // 一時停止・設定を開いている間は止める
     if (running) { slowTick(t); lapHold(t); }
@@ -5142,12 +5153,12 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   // ゲームオーバー中のブロック：下の段から灰色になり、そのあと崩れ落ちる
   function drawOverTile(x, y, s, v, r, c, t){
     const e = t - overFx.t, k = r * N + c;
-    const grayA = Math.max(0, Math.min(1, (e - (N - 1 - r) * CFG.OVER_GRAY_STEP) / 160));
+    const grayA = overFx.win ? 0 : Math.max(0, Math.min(1, (e - (N - 1 - r) * CFG.OVER_GRAY_STEP) / 160));
     const fallAt = CFG.OVER_FALL_AT + (N - 1 - r) * 60 + overFx.delay[k];
     let dy = 0, dx = 0, rot = 0;
     if (e > fallAt) {
       const d = (e - fallAt) / 1000;
-      dy = 0.5 * size * 5 * d * d - size * 0.25 * d;    // 少し跳ねてから落ちる
+      dy = 0.5 * size * 2.6 * d * d - size * 0.22 * d;  // 少し跳ねてから落ちる（2026-11-22 本人「もう少し長く」：ゆっくり落とす）
       dx = overFx.drift[k] * d;
       rot = overFx.spin[k] * d * 4;
       if (y + dy > size + s) return;
@@ -7252,7 +7263,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.259';
+  const APP_VER = '0.9.260';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -7488,8 +7499,12 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (st && st.kind === 'boss') playBossIntro(st, () => start('story', o));
     else start('story', o);
   }
+  // 2026-11-22 本人「一回見た動画はスキップできるようにして」：最後まで見た登場シーンは、次からスキップボタンを出す
+  let introSeenId = null;
+  const introSeen = () => { try { return JSON.parse(load('introseen', '[]')) || []; } catch(_) { return []; } };
   function playBossIntro(st, done){
     const box = $('intro'), vid = $('introVid'), ph = $('introPh'), c = CHARS[st.char];
+    introSeenId = c.id; $('introSkip').hidden = !introSeen().includes(c.id);
     box.style.setProperty('--bc', c.color);
     $('introName').innerHTML = '<small>BOSS　' + (c.title || '') + '</small><b>' + c.name + '</b>';
     introDone = done; clearTimeout(introTimer);
@@ -7559,17 +7574,19 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     const nm = $('introName'); nm.style.animation = 'none'; void nm.offsetWidth; nm.style.animation = '';
     clearTimeout(introTimer); introTimer = setTimeout(endBossIntro, 2600);
   }
-  function endBossIntro(){
+  function endBossIntro(skipped){
     clearTimeout(introTimer);
     const box = $('intro'), vid = $('introVid');
     if (box.classList.contains('hidden')) return;
+    if (!skipped && introSeenId) { const a = introSeen(); if (!a.includes(introSeenId)) { a.push(introSeenId); save('introseen', JSON.stringify(a)); } }
+    $('introSkip').hidden = true;
     stopIntroVoice(); vid.onplaying = null;
     try { vid.pause(); } catch(_) {}
     vid.onended = vid.onerror = null;
     box.classList.add('hidden');
     const d = introDone; introDone = null; if (d) d();
   }
-  // 登場シーンはスキップしない（最後まで見せる）
+  $('introSkip').addEventListener('click', e => { e.stopPropagation(); endBossIntro(true); });
   function openStory(){
     audio(); loadVoices();                                  // 登場シーンのセリフを先に読み込んでおく
     if (!stageOpen(pickStage)) pickStage = nextStageIdx();
