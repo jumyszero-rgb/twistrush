@@ -2778,7 +2778,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     }
   });
   // ステージの目標の文
-  const goalText = st => '相手のHP ' + ((st.kind === 'boss' && st.hpV ? st.hpV[varOf(st)] : st.hp) * enemyStats(st)[0]).toLocaleString() + ' を削りきる（どれか1色を削りきれば勝ち）';
+  const goalText = st => '相手のHP ' + (EN_HP_H * enemyStats(st)[0]).toLocaleString() + ' を削りきる（どれか1色を削りきれば勝ち）';
   const misText = m => MISSION[m.t].text(m);
   const MODE_LABEL = {story: 'STORY', practice: 'PRACTICE', rank: 'SURVIVAL', sixty: '60秒', online: '対戦', chal: 'CHALLENGE'};
   const SIXTY_SEC = 60;                                   // 60秒アタックの持ち時間
@@ -4307,6 +4307,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     enemyHP = stage ? (goalColor >= 0 ? stage.count : stage.hp) : CFG.STACK_MAX;
     curVar = gameMode === 'story' ? varOf(stage) : 0;
     if (stage && stage.kind === 'boss' && curVar > 0 && stage.hpV) enemyHP = stage.hpV[curVar];   // ボスの氷・石の盤面は、ずらしたエリアの体力
+    if (gameMode === 'story' && stage && goalColor < 0) enemyHP = EN_HP_H;                          // 戦い v3：HPは体力×同じ数（ボスもザコも）
     obsWant = gameMode === 'story' && curVar > 0 ? {k: curVar === 1 ? 'ice' : 'stone', n: Math.min(8, 3 + Math.floor((stage.area || 0) / 2))} : null;
     obsArea = stage ? (stage.area || 0) : 0; iceNext = 0;
     cpuSpec = stage ? {every: stage.every, burst: stage.burst} : {every: 4600, burst: [3, 5]};
@@ -4829,7 +4830,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (running && (gameMode === 'sixty' || gameMode === 'chal')) tickSixty(t);
     if (gameMode === 'chal' && chCur && chCur.r.turns) { lapStart = t; lastStackTick = t; }
     drawRush(t);   // 「30 TURNS」は手数だけの勝負：外周もカラーHPも進まない（じっくり考えてOK）
-    while (running && t - lastStackTick >= CFG.STACK_TICK_MS * spdMul()) { lastStackTick += CFG.STACK_TICK_MS * spdMul();
+    if (running && gameMode === 'story') lastStackTick = t;   // 戦い v3：ストーリーは時間でたまらない。敵のふつうの攻撃で受ける
+    while (running && gameMode !== 'story' && t - lastStackTick >= CFG.STACK_TICK_MS * spdMul()) { lastStackTick += CFG.STACK_TICK_MS * spdMul();
       const inc = stackInc();
       if (gameMode === 'rank' && inc > endlessIncShown) { endlessIncShown = inc;
         pops.push({text: 'PRESSURE UP! ×' + inc, style: 'speed', r: 2.2, c: 2.5, row: 0, n: 1, t: t + 100, big: true}); speedFlash = t; sndSpeed(); }
@@ -4838,6 +4840,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (running && gameMode === 'rank') { const L = lapSec();   // サバイバル：時間で1周が短くなった
       if (L < lapShown) { pops.push({text: 'SPEED UP!', style: 'speed', r: 2.2, c: 2.5, row: 0, n: 1, t: t + 100, big: true}); toast('1周 ' + secTxt(L) + '秒'); speedFlash = t; sndSpeed(); }
       lapShown = L; }
+    if (gameMode === 'story') lapStart = t;                // 戦い v3：ストーリーの外周は敵の技のタイマー（1周のペナルティはなし）
     if (running && t - lapStart >= lapSec() * spdMul() * 1000) {
       lapStart = t; penaltyFlash = t; sndPenalty(); toast(statOn() ? '全色 −' + Math.round(CFG.PENALTY * unitPts()).toLocaleString() : '全色 +' + CFG.PENALTY);   // ストーリー・キャラ対戦は実際に減るHPで見せる
       misPen++;                                   // お題「ペナルティ0回」用
@@ -5285,8 +5288,21 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         } else if (document.body.classList.contains('danger')) document.body.classList.remove('danger');
       }
 
+      // 戦い v3：ストーリーは外周を2重にして敵の技のタイマー（内側＝必殺技、外側＝奥義。ザコは内側だけ）
+      if (running && gameMode === 'story' && enSk.length) {
+        const lw = Math.max(4, gm * 0.42);
+        const ring = (ins, f, col) => { const w = size - ins * 2, L = 4 * w;
+          ctx.strokeStyle = COL.track; ctx.setLineDash([]); rr(ctx, ins, ins, w, w, 14); ctx.stroke();
+          ctx.strokeStyle = col; ctx.setLineDash([Math.max(0, Math.min(1, f)) * L, L]); rr(ctx, ins, ins, w, w, 14); ctx.stroke(); };
+        ctx.save(); ctx.lineWidth = lw; ctx.lineCap = 'butt';
+        const sp = enSk.find(e => e.kind === 'sp'), og = enSk.find(e => e.kind === 'ougi');
+        if (og) ring(lw / 2 + 1, og.charge / enMs('ougi'), og.charge / enMs('ougi') > 0.8 ? '#ff4fd8' : '#b04cff');
+        if (sp) ring(og ? lw * 1.5 + 3 : lw / 2 + 1, sp.charge / enMs('sp'), sp.charge / enMs('sp') > 0.8 ? '#e8455f' : '#34c6a0');
+        ctx.restore();
+        if (t - penaltyFlash < 450) { ctx.save(); ctx.globalAlpha = 1 - (t - penaltyFlash) / 450; ctx.strokeStyle = '#e8455f'; ctx.lineWidth = lw * 1.6; rr(ctx, lw / 2 + 1, lw / 2 + 1, size - lw - 2, size - lw - 2, 14); ctx.stroke(); ctx.restore(); }
+      }
       // タイムゲージ：盤面の外周を1周
-      if (running) {
+      else if (running) {
         const f = Math.max(0, 1 - (t - lapStart) / (lapSec() * spdMul() * 1000));
         const lw = Math.max(4, gm * 0.55), ins = lw / 2 + 1, w = size - ins * 2, L = 4 * w;
         ctx.save(); ctx.lineWidth = lw; ctx.lineCap = 'butt';
@@ -7263,7 +7279,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.260';
+  const APP_VER = '0.9.261';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -9217,66 +9233,47 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       m += (SK_POW_W[g] || 0) * (0.5 + 0.5 * Math.min(1, (u.star || 0) / smax)); });
     return m;
   }
-  // ===== 戦闘力 v2（2026-11-22）：オート「しっかり」で1,200戦させた結果から決めた =====
-  //   本人「ウィンディ 5,133 対 4,943 で歯が立たない」「中身を360度評価して組んで」「単純な計算では語れない」
-  //   チーム・装備・★・構成・ボス・ザコをばらばらに変えて戦わせ、勝ち負けと削った量から「何が効くか」を出した（当たり率 約92%）
-  //   わかったこと：スピード（敵の技の回数が減る）と攻撃が強く効く。体力・防御は前の式ほど効かない。★（技）はとても効く。
-  //   チーム戦闘力＝ 体力^0.20 × 攻撃^0.30 × 防御^0.10 × スピード^0.40 × 技の強さ^0.91 × 装備の効果（クリティカル・与ダメ・被ダメ減・回復・チャージ・スロウ）
-  //   必要戦闘力＝ 敵を同じ物差しで測ったもの。同じ数字なら「しっかり」で8割ほど勝てる（ぎりぎり勝ち）。相手によって自分の数字は変えない
-  const PW = {core: 0.4955, spd: 0.9787, sk: 2.2383, regen: 0.112, chg: 0.8804, slow: 1.0459, ic: 2.1698, tau: 0.3, K: 2.4653, lnC: 2.4446};
-  //   その敵だけの強さ（技・盤面のくせ）：実際の勝ち負けとのずれ（＋はやさしめ、−は強め）。ザコはエリアごと
-  const PW_ADJ = {ichigo: 0.335, mocha: 0.368, rinpan: 0.092, busy: 0.108, camilla: -0.007, titan: 0.096, windy: -0.098, chiyo: -0.383, gilbert: -0.243};
-  const PW_ADJ_Z = [0.054, 0.410, 0.251, 0.201, 0.245, 0.119, 0.127, -0.094, -0.186, -0.336, -0.603, -0.325, -0.577, -0.583];
-  function teamPowOf(t, sk, fx){
-    fx = fx || {}; const L = v => Math.log(Math.max(1, v));
-    const dm = (1 + (fx.crit || 0) / 100 * (0.5 + (fx.critDmg || 0) / 100)) * (1 + (fx.dmgP || 0) / 100) * (1 + (fx.chainP || 0) / 200) * (1 + (fx.sync || 0) / 200);
-    const core = L(t[0]) + 1.5 * L(t[1]) + 0.5 * L(t[2]) + Math.log(dm) - Math.log(1 - Math.min(50, fx.cut || 0) / 100);
-    const S = PW.core * core + PW.spd * L(t[3]) + PW.sk * Math.log(Math.max(1, sk)) + PW.regen * (fx.regen || 0) / 10 + PW.chg * ((fx.chgSp || 0) + (fx.chgOg || 0)) / 100 + PW.slow * (fx.hitSlow || 0) / 100;
-    return Math.exp(S / PW.K + PW.lnC);
+  // ===== 戦闘力 v3（2026-11-22 本人と決めた）：ステータス4つだけ・敵もこちらも同じ式 =====
+  //   本人「6400と5300なら、まず基本のスペックがそれだけ上でないとおかしい」「無理に敵のHPを強くするのではなく、こちらと同じ考え方で」
+  //   戦闘力 ＝ 15 ×（体力×攻撃×攻撃×防御×スピード）の5乗根
+  //     ダメージ＝ブロック数×攻撃×（攻撃÷相手の防御）なので攻撃は2回効く／HP＝体力×同じ数／攻撃の回数＝スピードの比
+  //   技と装備の効果（〇%）は戦闘力に入れない（基準からのおまけ）
+  const powOf = t => 15 * Math.pow(Math.max(1, t[0]) * Math.max(1, t[1]) * Math.max(1, t[1]) * Math.max(1, t[2]) * Math.max(1, t[3]), 0.2);
+  const myStoryPow = () => Math.round(powOf(teamStats()));
+  // 敵＝そのキャラ4人。ボスは★5、ザコはグレードの★上限。必要戦闘力になるLvを出す（Lvの上限はなし）
+  //   ボスの必要戦闘力（本人が決めた曲線のまま）：[ふつう, 氷, 石]
+  const BOSS_NEED = [[829, 2389, 5972], [1177, 3032, 7839], [1607, 3996, 9803], [2128, 5342, 11053], [2839, 7326, 12676], [3798, 9301, 13952], [4948, 10227, 14777], [6478, 11209, 15663], [8498, 12751, 17377]];
+  const ZAKO1_NEED = [474, 493, 517, 529, 560];        // エリア1のザコ（前のボスがいないので決め打ち）
+  const bossNeed = (a, v) => (BOSS_NEED[Math.max(0, Math.min(BOSS_NEED.length - 1, a))] || [0])[v] || 0;
+  function needTarget(st, v){
+    if (st.kind === 'boss') return bossNeed(st.area, v);
+    if (st.area === 0 && v === 0) return ZAKO1_NEED[Math.min(4, st.step || 0)];
+    // 決めたルール：エリアの1面目は「前のボスの90%」→ 5面目は「このエリアのボスの85%」（氷・石はずらしたエリアの前のボス）
+    const aE = st.area + VAR_SHIFT[v];
+    const pb = st.area >= 1 ? bossNeed(st.area - 1, v) : bossNeed(aE - 1, 0), cb = bossNeed(st.area, v), f = Math.min(4, st.step || 0) / 4;
+    return pb * 0.9 + (cb * 0.85 - pb * 0.9) * f;
   }
-  const myStoryPow = () => { const m = teamMembers(); return Math.round(teamPowOf(teamStats(), teamSkillMul(), eqTeamFx(m))); };
-  const ticksOf = (st, v) => (st.hpV ? st.hpV[v] : st.hp) || 1;
-  const adjOf = (st, v) => st.kind === 'boss' ? (PW_ADJ[(CHARS[st.char] || {}).id] || 0) : PW_ADJ_Z[Math.min(PW_ADJ_Z.length - 1, st.area + VAR_SHIFT[v])];
-  function needOf(e, ticks, adj){
-    const L = v => Math.log(Math.max(1, v));
-    const Q = PW.core * (L(ticks) + L(e[0]) + 1.5 * L(e[1]) + 0.5 * L(e[2])) + PW.spd * L(e[3]) - PW.ic - adj;
-    return Math.exp((Q + PW.tau) / PW.K + PW.lnC);
+  const enCiOf = st => { if (st.kind === 'boss' || st.char != null) return st.char; const z = zakoAt(st); const ci = z ? ALLC_IDX.get('z_' + z.k) : null; return ci != null ? ci : null; };
+  const enStarOf = (st, ci) => { if (st.kind === 'boss') return 5; const cs = ALLC[ci] && CHAR_STAT[ALLC[ci].id]; return cs ? (STAR_MAX[cs.grade] || 0) : 0; };
+  const enLvCache = {};
+  function enemyLv(st, v){
+    const ci = enCiOf(st), key = STORY.indexOf(st) + ':' + v + ':' + ci;
+    if (enLvCache[key]) return enLvCache[key];
+    const need = needTarget(st, v); let L = 1;
+    if (ci != null) for (; L < 999; L++) if (powOf(statsOf(ci, L).map(x => x * 4)) >= need) break;
+    return (enLvCache[key] = {ci, lv: L, star: ci != null ? enStarOf(st, ci) : 0});
   }
-  const needAt = (st, v) => needOf(enemyStats(st, v), ticksOf(st, v), adjOf(st, v));
-  const stagePow = st => Math.round(needAt(st, varOf(st)));
-  const bossStageOf = a => STORY.find(s => s.area === a && s.kind === 'boss');
-  // ボスの本当の強さ：本人が決めた必要戦闘力の曲線（いちご827→ギルバート8,499）にそろえる倍率（ステータスにかける）
-  const BOSS_FIX = {ichigo: 1.171, mocha: 1.280, rinpan: 1.015, busy: 0.994, camilla: 1.011, titan: 1.027, windy: 0.846, chiyo: 0.693, gilbert: 0.833};
-  const powCls = (mine, need) => mine >= need ? 'ok' : mine >= need * 0.85 ? 'near' : 'hard';
-  // 2026-11-20 本人「1か月でギルバートは早い。SRをMAXまで育てて装備をつけたら勝てるくらいに」：エリア5から後半を強く
-  //   ボスの必要戦闘力 5:2,656→3,000／6:3,254→4,000／7:3,876→5,200／8:4,620→6,800／9:5,650→8,500。氷・石（ずらしたエリア）も同じ倍率
-  const AREA_UP = [1, 1, 1.04, 1.1, 1.074, 1.168, 1.278, 1.404, 1.505];   // 2回目（本人「急に上がりすぎ」）：エリア3から少しずつ上げて、なだらかに
-  const areaUp = a => a < AREA_UP.length ? AREA_UP[Math.max(0, a)] : AREA_UP[AREA_UP.length - 1];
   function enemyStats(st, v){
     if (!st) return [100, 100, 100, 100];
     if (v == null) v = varOf(st);
-    const aE = st.area + VAR_SHIFT[v];                    // 氷・石はエリアをずらした強さ
-    const row = enRow(aE).map(x => Math.round(x * eqUp(aE) * areaUp(aE)));
-    // 面ごとの固定値：ザコはエリアの1面目が表の数字、そこから1面ごとに+3.5%（5面目で+14%）。中ボスは表の中ボスの数字以上、ボスは表のボスの数字
-    let zk = Math.round(row[0] * (1 + 0.035 * Math.min(4, st.step || 0)));
-    // 2026-11-20 本人「ボスに勝つ→次のエリアのザコが弱い→すぐボス→急に強くて止まる」：
-    //   エリア2から（氷・石はずらしたエリアで）、ザコは必要戦闘力で「前のボスの90%」から「このエリアのボスの85%」へなだらかに上げる
-    //   2026-11-22 戦闘力 v2：同じ物差し（必要戦闘力）でそろえる。前は物差しがずれていて、エリア8・9のザコがボスより強くなっていた
-    if (st.kind !== 'boss' && aE >= 1) {
-      const pbS = st.area >= 1 ? bossStageOf(st.area - 1) : bossStageOf(aE - 1), cbS = bossStageOf(st.area);
-      const pb = pbS ? needAt(pbS, st.area >= 1 ? v : 0) : 0, cb = cbS ? needAt(cbS, v) : 0, f = Math.min(4, st.step || 0) / 4;
-      const target = pb * 0.9 + (cb * 0.85 - pb * 0.9) * f;
-      if (target > 0) zk = Math.max(1, Math.round(target / needOf([1, 1, 1, 1], ticksOf(st, v), adjOf(st, v))));
-    }
-    let base = st.kind === 'boss' ? row[2] : (st.kind === 'mid' ? Math.max(row[1], zk) : zk);
-    if (st.kind === 'boss') base = Math.round(base * (BOSS_FIX[(CHARS[st.char] || {}).id] || 1));
-    const out = [base, base, base, base];
-    if (st.kind === 'boss') {
-      const cs = CHARS[st.char] && CHAR_STAT[CHARS[st.char].id];
-      if (cs) { out[TYPE_INFO[cs.type].i] = Math.round(base * 1.2); out[WEAK[cs.type]] = Math.round(base * 0.8); }
-    }
-    return out;
+    const e = enemyLv(st, v);
+    if (e.ci == null) { const n = needTarget(st, v) / 15; return [n, n, n, n].map(Math.round); }
+    return statsOf(e.ci, e.lv).map(x => x * 4);
   }
+  const needAt = (st, v) => powOf(enemyStats(st, v));
+  const stagePow = st => Math.round(needAt(st, varOf(st)));
+  const bossStageOf = a => STORY.find(s => s.area === a && s.kind === 'boss');
+  const powCls = (mine, need) => mine >= need ? 'ok' : mine >= need * 0.85 ? 'near' : 'hard';
   // 比べ合いの補正：同じなら1倍、0〜2倍の間に収まる
   const corr = (a, d) => (a + d) > 0 ? 2 * a / (a + d) : 1;
   let runMy = [100, 100, 100, 100], runEn = [100, 100, 100, 100];
@@ -9329,16 +9326,36 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     runMy = statOn() ? teamStats() : [100, 100, 100, 100];
     runAttr = gameMode === 'story' && curStage ? teamAttr(curStage) : {out: 1, inn: 1};
     runEn = !statOn() ? [100, 100, 100, 100] : gameMode === 'online' ? ((onl.opp && onl.opp.team && onl.opp.team.st) || [100, 100, 100, 100]).map(v => Math.max(1, +v || 1)) : enemyStats(curStage);
-    if (statOn() && gameMode === 'story') runEn = [Math.round(runEn[0] * EN_HP_MUL * FIGHT_T)].concat(runEn.slice(1));
+    // 戦闘力 v3：ストーリーの敵もステータスそのまま（隠れた倍率なし）
   }
   const myAtk = () => runMy[1] * (atkUntil && now() < atkUntil ? 2 : 1) * bm('atk');
   const myDef = () => runMy[2] * (defUntil && now() < defUntil ? 2 : 1) * bm('def');
   const unitPts = () => Math.max(1, runMy[0]);                          // カラーHPの1目もり＝体力合計（HP＝体力×30）
   const hpMaxPts = () => unitPts() * CFG.STACK_MAX;
   // 受けるダメージ：敵の攻撃1回あたりの目もり数
-  function incoming(n){ if (!statOn()) return n; const pts = n * runEn[1] * corr(runEn[1], myDef()) * runAttr.inn * (1 - (eqT.cut || 0) / 100); return pts / unitPts() / (gameMode === 'story' ? FIGHT_T : 1); }
+  // ===== 戦い v3（2026-11-22 本人と決めた）：敵もこちらも同じルール =====
+  //   与えるダメージ＝ブロック数×攻撃×（攻撃÷相手の防御）／相手のHP＝体力×EN_HP_H（全員同じ数・隠れた倍率なし）
+  //   敵のふつうの攻撃：基準5秒×（自分のスピード÷敵のスピード）ごと。重さ＝ボス3〜15・中ボス3〜8・ザコ0〜8ブロック（ザコはミスあり）
+  //   受けるダメージ＝ブロック数×敵の攻撃×（敵の攻撃÷自分の防御）÷自分の体力×STACK_K（カラーHPの目もり）
+  //   本人「勝てるように無理やり倍率をかけるのは本末転倒」：受けるダメージに勝手な倍率はかけない。
+  //   こちらのHPも敵と同じ「体力×EN_HP_H」。カラーHPは5色×30目もりなので、1ブロック分（同じステータス）＝150÷EN_HP_H 目もり
+  const EN_HP_H = 96, EN_ATK_BASE = 5000;
+  const STACK_K = 30 * 5 / EN_HP_H;
+  //   2026-11-23 本人「ザコが弱いのは1回の重さ。中心をザコ6・中ボス8・ボス10に寄せて出る率を割り振る」：[いちばん少ない, いちばん多い, 中心]
+  const EN_ATK_RANGE = {boss: [3, 15, 10], mid: [3, 8, 8], normal: [0, 8, 6]};
+  function enAtkRoll([lo, hi, md]){                     // 中心がいちばん出やすい山形（三角）の割り振り
+    const w = []; for (let k = lo; k <= hi; k++) w.push(k <= md ? (k - lo + 1) / (md - lo + 1) : (hi - k + 1) / (hi - md + 1));
+    let r = Math.random() * w.reduce((a, b) => a + b, 0);
+    for (let i = 0; i < w.length; i++) { r -= w[i]; if (r <= 0) return lo + i; }
+    return hi;
+  }
+  const ratioC = x => Math.max(0.25, Math.min(4, x));
+  const storyV3 = () => gameMode === 'story' && !!curStage;
+  function incoming(n){ if (!statOn()) return n;
+    if (storyV3()) { const ea = runEn[1] * ebm(); return n * ea * ratioC(ea / Math.max(1, myDef())) * runAttr.inn * (1 - (eqT.cut || 0) / 100) / Math.max(1, runMy[0]) * STACK_K; }
+    const pts = n * runEn[1] * corr(runEn[1], myDef()) * runAttr.inn * (1 - (eqT.cut || 0) / 100); return pts / unitPts() / (gameMode === 'story' ? FIGHT_T : 1); }
   // 与えるダメージ：敵のHPの1目もり＝敵の体力（同じステータスならブロック1個で1目もり）
-  function outgoing(d){ if (!statOn()) return d * atkMul(); return d * myAtk() * corr(myAtk(), runEn[2]) * runAttr.out / Math.max(1, runEn[0]); }
+  function outgoing(d){ if (!statOn()) return d * atkMul(); if (storyV3()) return d * myAtk() * ratioC(myAtk() / Math.max(1, runEn[2])) * runAttr.out / Math.max(1, runEn[0]); return d * myAtk() * corr(myAtk(), runEn[2]) * runAttr.out / Math.max(1, runEn[0]); }
   const enUnitPts = () => statOn() ? Math.max(1, runEn[0]) : 1;
   // スピード：自分が速いほど、外周の光とカラーHPの時計がゆっくりになる
   // 2026-11-20 本人：1エリアのふつうルートは、強さ（戦闘力）はそのままで、敵の速さだけ下げる（練習用。弱すぎると案内の途中で勝ってしまうため）
@@ -12207,6 +12224,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     const base = SK_MS[kind] * skPowMul(enId(), kind);
     if (!statOn()) return Math.round(base);
     const en = Math.max(1, runEn[3]), me = Math.max(1, runMy[3]);
+    if (storyV3()) return Math.round(base * clampF(me / en, 0.4, 2.5));   // 戦い v3：スピードの比そのまま
     return Math.round(base * clampF((en + me) / (2 * en), 0.5, 1.5));
   }
   const OUGI_NAME = {ichigo: 'レインボースラッシュ', mocha: 'ホーリークロス', rinpan: 'アイスバーグ・フォール', busy: 'グラビティ・クラッシュ',
@@ -12247,6 +12265,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     const id = enId(); if (!id) return;
     enSk.push({kind: 'sp', charge: 0});
     if (curStage.char != null && OUGI_NAME[id]) enSk.push({kind: 'ougi', charge: 0});
+    enAtkCharge = 0;
     drawEnSk(true);
   }
   const EN_SK_DMG = {sp: 6, ougi: 10};                   // 全色のカラーHPに入る量（ステータスの比べ合いで増減）
@@ -12266,9 +12285,22 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     try { e.kind === 'ougi' ? sndPenalty() : sndPenalty(); } catch(_) {}
     penaltyFlash = now();
   }
+  // 戦い v3：敵のふつうの攻撃（基準5秒×自分のスピード÷敵のスピード）
+  let enAtkCharge = 0;
+  const enAtkMs = () => EN_ATK_BASE * clampF(Math.max(1, runMy[3] * bm('spd')) / Math.max(1, runEn[3]), 0.4, 2.5) * practiceSlow();
+  function enemyNormalAttack(){
+    const k = curStage ? (curStage.kind === 'boss' ? 'boss' : curStage.kind === 'mid' ? 'mid' : 'normal') : 'normal';
+    const n = enAtkRoll(EN_ATK_RANGE[k]);
+    if (n <= 0) { enemySay('ミス！'); return; }
+    try { playAnim('en', 'atk'); } catch(_) {}
+    spawnBolt(Math.min(n, 6));
+    addStack(n);
+  }
   function enSkTick(dt){
     if (!enSk.length || !running || pausedAt) return;
     if (tstop && now() < tstop) return;                  // 時止め中はたまらない
+    enAtkCharge += dt * ebm();
+    if (enAtkCharge >= enAtkMs()) { enAtkCharge = 0; if (phase === 'idle' || phase === 'clear' || phase === 'fall') enemyNormalAttack(); }
     enSk.forEach(e => {
       e.charge += dt * ebm();                           // 敵のスピードダウン中はゆっくり
       if (e.charge >= enMs(e.kind)) { e.charge = 0; if (phase === 'idle' || phase === 'clear' || phase === 'fall') enemyCast(e); }
