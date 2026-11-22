@@ -4682,6 +4682,12 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (!vsOn || !running) return;
     drawVsPanel();
   }
+  // 2026-11-23 本人「継続スキルが盤面下に出たまま、次のゲームでも出っぱなし」：戦いが終わったら、戦い中だけの表示を全部消す
+  //   流れ：終わる → ブロックが崩れる → 画面をリセット → 負け姿（勝ち姿）＋声 → ゲット画面 → REWARD
+  function endUi(){
+    try { ['buffBar', 'heartTray', 'enSk'].forEach(id => { const el = $(id); if (el) el.style.display = 'none'; }); buffKey = ''; } catch(_) {}
+    try { document.querySelectorAll('.healfx').forEach(el => el.remove()); } catch(_) {}
+  }
   // 相手が全員脱落したら勝ち
   function winGame(){
     if (!running) return;
@@ -4715,11 +4721,11 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       const ni = nextOnRoute(i); pickStage = stageOpen(ni) ? ni : i; save('stage', String(pickStage));
       refreshStoryBtn();
     }
-    running = false; confirmUntil = 0; refreshZone();
+    running = false; confirmUntil = 0; refreshZone(); endUi();
     document.body.classList.remove('danger');
     bgmStop(1.2); sndSpeed();
     // 負けた相手を、盤面の真ん中に大きく出す
-    playAnim('enemy', 'lose'); playVoice('lose');
+    // 負けた声と姿は、ブロックが崩れたあと（負け姿を出すとき）に出す
     // 負け姿の専用画像（1:1）があれば、立ち絵は隠して専用の1枚絵で出す
     const lose1 = isZako() ? null : loseImgOf(curStage ? curStage.char : 0);
     if (lose1 || isZako()) {
@@ -4777,31 +4783,29 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       ov.classList.add('soft'); ov.classList.remove('hidden');
       requestAnimationFrame(() => ov.classList.add('in'));
     };
-    if (isZako()) {                                  // 暴走ブロックはくるっと回って消える → 少し待って結果へ
-      $('enemyRow').classList.remove('hidden');
-      zakoFx('out');
-      toast('STAGE CLEAR!');
-      winShow = setTimeout(showResult, 1500);
-    } else {
-      // 2026-11-22 本人「いきなり画像に変わる」：ボスを倒したら、盤面のブロックが崩れ落ちてから負け姿を出す（灰色にはしない）
-      overFx = {t: now(), i: -1, win: true,
-        delay: Array.from({length: N * N}, () => Math.random() * 450),
-        spin:  Array.from({length: N * N}, () => (Math.random() - 0.5) * 2),
-        drift: Array.from({length: N * N}, () => (Math.random() - 0.5) * 60)};
-      setTimeout(sndCrash, CFG.OVER_FALL_AT);
-      const tk = overFx;
-      winShow = setTimeout(() => {
-        if (running || overFx !== tk) return;
-        if (lose1) showBigArt(lose1, showResult);
-        else { winFade = setTimeout(() => { if (!running) $('enemyRow').classList.add('fading'); }, CFG.WIN_FADE_AT); winShow = setTimeout(showResult, CFG.WIN_SHOW_AT); }
-      }, CFG.WIN_CRUMBLE_AT);
-    }
+    // 2026-11-23 本人の決めた流れ：終わる → ブロックが崩れる → 画面をリセット → 負け姿＋声 → ゲット画面 → REWARD（ザコもボスも同じ）
+    overFx = {t: now(), i: -1, win: true,
+      delay: Array.from({length: N * N}, () => Math.random() * 450),
+      spin:  Array.from({length: N * N}, () => (Math.random() - 0.5) * 2),
+      drift: Array.from({length: N * N}, () => (Math.random() - 0.5) * 60)};
+    setTimeout(sndCrash, CFG.OVER_FALL_AT);
+    const tk = overFx;
+    winShow = setTimeout(() => {
+      if (running || overFx !== tk) return;
+      endUi();
+      playAnim('enemy', 'lose'); playVoice('lose');
+      if (isZako()) {                                // 暴走ブロックはくるっと回って消える → 少し待って結果へ
+        $('enemyRow').classList.remove('hidden');
+        zakoFx('out');
+        toast('STAGE CLEAR!');
+        winShow = setTimeout(showResult, 1500);
+      } else if (lose1) showBigArt(lose1, showResult);
+      else { winFade = setTimeout(() => { if (!running) $('enemyRow').classList.add('fading'); }, CFG.WIN_FADE_AT); winShow = setTimeout(showResult, CFG.WIN_SHOW_AT); }
+    }, CFG.WIN_CRUMBLE_AT);
   }
   function tick(t){
     vsTick(t); onlTick(t);
     bgmUpdate();
-    // 2026-11-22 本人「ずっとじわじわ回復5秒って表示されてる」：戦いが終わると強化バーの更新が止まって残っていた → 終わったら消す
-    if (!running) { try { const bb = $('buffBar'); if (bb && bb.style.display !== 'none') { bb.style.display = 'none'; buffKey = ''; } } catch(_) {} }
     if (running && bombPick) return;                // カラーボムの色を選んでいる間は止める
     if (running && pausedAt) return;                // 一時停止・設定を開いている間は止める
     if (running) { slowTick(t); lapHold(t); }
@@ -5559,7 +5563,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   // 時間切れ：ゲームオーバーではないので、崩れる演出なしで結果へ
   function timeUp(){
     if (!running) return;
-    running = false; confirmUntil = 0; refreshZone(); hideFighters();
+    running = false; confirmUntil = 0; refreshZone(); hideFighters(); endUi();
     document.body.classList.remove('danger');
     bgmStop(1.2); sndSpeed();
     if (tapTimer) { clearTimeout(tapTimer); tapTimer = null; }
@@ -5588,7 +5592,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (eqGuard()) return;                        // 防具「不死鳥の衣」：1回だけ負けを防ぐ
     if (gameMode === 'online') onlSend({t: 'lose'});   // オンライン対戦：負けを知らせる
     itemsStop();
-    running = false; confirmUntil = 0; refreshZone(); hideFighters();   // 終わったら立ち絵を消す
+    running = false; confirmUntil = 0; refreshZone(); hideFighters(); endUi();   // 終わったら立ち絵を消す
     document.body.classList.remove('danger');
     bgmStop(1.2);
     if (tapTimer) { clearTimeout(tapTimer); tapTimer = null; }
@@ -6811,7 +6815,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   function onlEnd(){
     const r = onl && onl.result; if (!r) return;
     if (running) {                                      // 勝った・時間切れ：その場で止める
-      running = false; confirmUntil = 0; refreshZone(); hideFighters();
+      running = false; confirmUntil = 0; refreshZone(); hideFighters(); endUi();
       document.body.classList.remove('danger'); bgmStop(1.2);
       if (tapTimer) { clearTimeout(tapTimer); tapTimer = null; }
       afterShown = true;
@@ -7279,7 +7283,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.261';
+  const APP_VER = '0.9.262';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
