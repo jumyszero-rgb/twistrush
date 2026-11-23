@@ -2150,7 +2150,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         <button class="how-back" id="boxBack" aria-label="戻る">‹ 戻る</button>
         <h2>ボックス</h2>
       </div>
-      <div class="boxtabs boxtabs-box"><button class="on" data-t="char">持ちキャラ</button><button data-t="dex">図鑑</button><button data-t="item">アイテム</button><button data-t="vote" class="lock" disabled>🔒投票</button></div>
+      <div class="boxtabs boxtabs-box"><button class="on" data-t="char">持ちキャラ</button><button data-t="dex">図鑑</button><button data-t="item">アイテム</button></div>
       <div class="how-body" id="boxBody"></div>
     </div>
     <div class="overlay hidden" id="shop" role="dialog" aria-label="ショップ">
@@ -7285,7 +7285,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.270';
+  const APP_VER = '0.9.271';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -10652,7 +10652,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   });
   // ===== キャラ進化（2026-11-15）：SR→MR、MR→LR。人気投票の上位から少しずつ解放していく =====
   //   毎月の人気投票（無料1日1票＋ゴールドで追加）で上位3体を決める → 進化後の絵・声を作って、次の更新で EVO_OPEN に入れる
-  //   進化の条件：①そのキャラの進化が解放されている ②レベル最大 ③★最大 ④進化素材＋属性の宝珠＋シルバー
+  //   2026-11-23 本人「ランキング上位（人気投票）はなし。進化後の絵・声ができたキャラから順に解放していく流れ」→ 投票は使わない
+  //   進化の条件：①そのキャラの進化が解放されている（準備ができたキャラから順に）②レベル最大 ③★最大 ④進化素材＋属性の宝珠＋シルバー
   //   進化のしくみ（グレードが上がる・絵が変わる・技が強くなる）は、最初のキャラの絵ができたときに入れる
   const EVO_GR = {SR: {to: 'MR', mat: 'evo_c', n: 20, orb: 5, silver: 30000}, MR: {to: 'LR', mat: 'evo_g', n: 20, orb: 10, silver: 100000}};
   const EVO_OPEN = {};                                    // 例：EVO_OPEN['x_g05'] = {month: '2026-12'}（進化が解放されたキャラ）
@@ -10663,14 +10664,14 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     return '<div class="dsec evo"><h4>進化 <span>' + cs.grade + ' → ' + e.to + '</span></h4>' +
       ''+
       '<ul class="evoreq">' +
-        it(ok[0], ok[0] ? '進化が解放されている' : '人気投票で上位3体に入る') +
+        it(ok[0], ok[0] ? '進化が解放されている' : '進化の解放を待つ（準備ができたキャラから順に解放）') +
         it(ok[1], 'レベル最大（LV' + u.lv + ' / ' + lvMaxOf(u) + '）') +
         it(ok[2], '★最大（★' + (u.star || 0) + ' / ' + starMaxOf(u) + '）') +
         it(ok[3], EX_MAT[e.mat][1] + EX_MAT[e.mat][0] + ' ×' + e.n + '（所持 ' + own(e.mat) + '）') +
         it(ok[4], (EX_MAT[orb] ? EX_MAT[orb][1] + EX_MAT[orb][0] : ATTR[at].n + 'の宝珠') + ' ×' + e.orb + '（所持 ' + own(orb) + '）') +
         it(ok[5], 'シルバー ' + e.silver.toLocaleString() + '（所持 ' + coins.toLocaleString() + '）') +
       '</ul>' +
-      '<div class="evobtns"><button class="evogo" disabled>' + (ok[0] ? '✨ 進化する' : '🔒 まだ進化できません') + '</button><button class="evovote" data-vote="' + u.id + '">🗳 このキャラに投票する</button></div></div>';
+      '<div class="evobtns"><button class="evogo" disabled>' + (ok[0] ? '✨ 進化する' : '🔒 まだ進化できません') + '</button></div></div>';
   }
   // ===== 人気投票 =====
   const voteCands = () => ALLC.map((c, i) => ({c, i})).filter(({c}) => { const g = CHAR_STAT[c.id] && CHAR_STAT[c.id].grade; return EVO_GR[g] && SKILLS[c.id] && !EVO_OPEN[c.id]; });
@@ -10716,7 +10717,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   $('boxBody').addEventListener('click', async e => {
     if (boxTab !== 'vote' && !e.target.closest('[data-vote]')) return;
-    const go = e.target.closest('[data-vote]'); if (go && !EVO_LOCK) { e.stopPropagation(); voteFocus = go.dataset.vote; boxDetail = null; boxTab = 'vote'; voteData = null; drawBox(); return; }
+    const go = e.target.closest('[data-vote]'); if (go && false) {   // 人気投票はなし（2026-11-23） e.stopPropagation(); voteFocus = go.dataset.vote; boxDetail = null; boxTab = 'vote'; voteData = null; drawBox(); return; }
     const v1 = e.target.closest('[data-vote1]'); if (v1) { e.stopPropagation(); voteSend(v1.dataset.vote1, 'free', 1); return; }
     const vg = e.target.closest('[data-voteg]'); if (vg) { e.stopPropagation(); const [id, n] = vg.dataset.voteg.split(':'), c = (voteData.cost || {})[n];
       payAsk('<b>' + (ALLC.find(x => x.id === id) || {}).name + '</b>に <b>' + n + '票</b> 入れますか？<br>🟡 ゴールドコイン ' + c + '<br><small>所持 ' + gold.toLocaleString() + '</small>', () => voteSend(id, 'gold', +n)); return; }
@@ -11405,7 +11406,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     $('boxBody').classList.toggle('slotmode', boxSlot >= 0 && !boxDetail && !boxPick && boxTab === 'char');
     document.querySelectorAll('.boxtabs-box button').forEach(b => b.classList.toggle('on', b.dataset.t === boxTab));
     const body = $('boxBody');
-    if (EVO_LOCK) { if (boxTab === 'vote') boxTab = 'char'; if (detTab === 'evo') detTab = 'info'; }
+    if (boxTab === 'vote') boxTab = 'char';                 // 人気投票はなし（2026-11-23）
+    if (EVO_LOCK && detTab === 'evo') detTab = 'info';
     if (boxTab === 'vote') { drawVote(); return; }
     if ((boxTab === 'char' || boxTab === 'dex') && boxDetail && unitOf(boxDetail)) { drawDetail(unitOf(boxDetail)); return; }
     if (boxTab === 'char') {
