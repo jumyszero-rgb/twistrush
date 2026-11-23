@@ -1377,7 +1377,7 @@ body.on-menu .battlemain{opacity:0;}
   #buffBar .bf.atk{color:#ff8a7a;} #buffBar .bf.def{color:#7ac8ff;} #buffBar .bf.spd{color:#ffe27a;} #buffBar .bf.slow{color:#c9a2ff;} #buffBar .bf.stop{color:#9ff;} #buffBar .bf.heal{color:#7dffb0;}
   #buffBar .bf.end{animation:bfBlink .5s steps(2) infinite;}
   @keyframes bfBlink{50%{opacity:.35}}
-  #heartTray{position:absolute;z-index:12;display:flex;gap:3px;transform:translateY(calc(-100% - 6px));}
+  #heartTray{position:absolute;z-index:12;display:flex;gap:3px;transform:translateY(calc(-100% - 6px));pointer-events:none;}
   #heartTray button{width:30px;height:30px;border:2px solid #fff;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffd1e2,#ff4f8b);font-size:15px;line-height:1;padding:0;box-shadow:0 2px 6px rgba(0,0,0,.35),0 0 8px rgba(255,90,150,.7);animation:hpop .35s cubic-bezier(.2,1.6,.4,1) both;touch-action:manipulation;}
   #heartTray button{color:#fff;font-weight:900;text-shadow:0 1px 2px rgba(0,0,0,.45);}
   #heartTray button.h{background:radial-gradient(circle at 35% 30%,#ffd9b8,#c0743a);box-shadow:0 2px 6px rgba(0,0,0,.35),0 0 8px rgba(214,128,60,.75);}
@@ -2398,7 +2398,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   // ===== 数値はここだけ触れば調整できる =====
   const N = 6;                 // 盤面 6×6
   const TYPES = 5;             // キャラ5種
-  const GHEART = 7;            // ゴールドハート：タップで全色のカラーHPを50%回復
+  const GHEART = 7;            // ゴールドハート（盤面には出ない）。技でためて、HPが半分になったら自動で全色50%回復
   const HEART = 6;             // ハートブロック：そろえても消えない。タップで全色のカラーHPを10%回復
   const HEART_MAX = 5, HEART_COL = '#ff6b9a';
   const GOLD = 5;
@@ -4985,6 +4985,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         pops.push({text: 'PRESSURE UP! ×' + inc, style: 'speed', r: 2.2, c: 2.5, row: 0, n: 1, t: t + 100, big: true}); speedFlash = t; sndSpeed(); }
       addStackAll(inc); }
     if (running && gameMode === 'story' && runItems.length) autoItems(t);
+    if (running && heartStock.length) heartAuto(t);
     if (running && gameMode === 'rank') { const L = lapSec();   // サバイバル：時間で1周が短くなった
       if (L < lapShown) { pops.push({text: 'SPEED UP!', style: 'speed', r: 2.2, c: 2.5, row: 0, n: 1, t: t + 100, big: true}); toast('1周 ' + secTxt(L) + '秒'); speedFlash = t; sndSpeed(); }
       lapShown = L; }
@@ -7515,7 +7516,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.286';
+  const APP_VER = '0.9.287';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -12818,6 +12819,13 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     return k;
   }
   function addHeart(n){ return stockHeart('h', n); }
+  // 2026-11-24 本人「ゴールドハートは押しづらいから、HPが半分になったら自動で使う」：どれか1色のカラーHPが半分まで減ったら自動で使う（ためたハートは全部同じ）
+  let heartAutoAt = 0;
+  function heartAuto(t){
+    if (pausedAt || t - heartAutoAt < 2500 || Math.max(...stacks) < CFG.STACK_MAX / 2) return;
+    const i = heartStock.indexOf('g') >= 0 ? heartStock.indexOf('g') : heartStock.indexOf('s') >= 0 ? heartStock.indexOf('s') : 0;
+    heartAutoAt = t; useHeart(i);
+  }
   function useHeart(i){
     if (!running || pausedAt) return;
     const kind = heartStock[i]; if (!kind) return;
@@ -12830,7 +12838,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     let el = $('heartTray');
     if (!el) {
       el = document.createElement('div'); el.id = 'heartTray'; canvas.parentElement.appendChild(el);
-      el.addEventListener('pointerdown', e => { const b = e.target.closest('[data-h]'); if (!b) return; e.preventDefault(); e.stopPropagation(); useHeart(+b.dataset.h); });
+      el.addEventListener('pointerdown', e => { const b = e.target.closest('[data-h]'); if (!b) return; e.preventDefault(); e.stopPropagation(); });   // 押して使うのはやめた（自動）。ここは「ためているハート」の表示だけ
     }
     const on = running && heartStock.length > 0;
     el.style.display = on ? '' : 'none'; if (!on) return;
@@ -13046,7 +13054,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     : f[0] === 'def2' ? f[1] + '秒間 防御力が2倍になる'
     : f[0] === 'tempest' ? '盤面をかき混ぜて、' + (f[1] || 30) + '%くらいをそろう並びにする'
     : f[0] === 'crit' ? 'クリティカルヒット：相手の全色に、最大HPの' + f[1] + '%のダメージ'
-    : f[0] === 'gheart' ? 'ゴールドハート（全色50%回復）を' + f[1] + '個ためる'
+    : f[0] === 'gheart' ? 'ゴールドハートを' + f[1] + '個ためる（HPが半分になったら自動で全色50%回復）'
     : f[0] === 'octaDrop' ? '次に消したとき、オクタブロックが' + f[1] + '個降ってくる'
     : f[0] === 'eslow' ? f[2] + '秒間 敵のスピードを' + f[1] + '%下げる'
     : f[0] === 'mslow' ? f[2] + '秒間 時間の流れ（外周とカラーHPの時計）を' + f[1] + '%遅くする'
@@ -13383,7 +13391,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (octa) out.push('✴ オクタブロック ×' + octa);
     if (heart) out.push('♥ ハートブロック ×' + heart);
     ['h', 's', 'g'].forEach(k => { const d = heartStock.filter(x => x === k).length - sn.hs.filter(x => x === k).length, hk = HEART_KIND[k];
-      if (d > 0) out.push('♥ ' + hk.name + ' ×' + d + '（左上にためた。タップで全色' + Math.round(hk.p * 100) + '%回復）'); });
+      if (d > 0) out.push('♥ ' + hk.name + ' ×' + d + '（HPが半分になったら自動で全色' + Math.round(hk.p * 100) + '%回復）'); });
     if (moved >= 6) out.push('🔀 盤面をかきまぜた');
     let heal = 0; const hc = [];
     sn.st.forEach((v, i) => { const d = v - stacks[i]; if (d > 0) { heal += d; hc.push(i); } });
