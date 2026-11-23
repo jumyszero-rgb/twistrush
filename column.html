@@ -16,12 +16,17 @@
 .col table{border-collapse:collapse;font-size:13px;margin:6px 0}
 .col th,.col td{border:1px solid var(--line);padding:4px 10px;text-align:center}
 .col th{background:rgba(255,255,255,.06)}
+.col .im{display:block;width:100%;height:auto;border-radius:12px;margin:10px 0 4px;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+.col .ph{width:58%;margin:10px auto 4px;border:3px solid rgba(255,255,255,.25);border-radius:18px}
+.hero{display:flex;gap:12px;align-items:center;padding:12px;border-radius:16px;background:linear-gradient(135deg,rgba(255,95,208,.25),rgba(95,211,255,.2));border:1px solid var(--line);margin:12px 0}
+.hero img{width:72px;height:72px;border-radius:50%;object-fit:cover;border:3px solid #fff;flex:none}
+.hero p{margin:0;font-size:14px}
 .top{display:block;text-align:right;font-size:12px;margin-top:6px}
 </style>
 </head><body>
 <header><a class="logo" href="/">TWIST<span>·</span>RUSH</a><a class="play" href="/">▶ あそぶ</a></header>
 <main><h1>コラム</h1>
-<p>TWIST RUSH をもっと楽しく、もっと強く遊ぶための読みものです。気になるところから読んでください。</p>
+<div class="hero"><img src="/img/intro/guide.webp" alt=""><p>TWIST RUSH をもっと楽しく、もっと強く遊ぶための読みものだよ。<br>気になるところから読んでね！</p></div>
 <ol class="toc" id="toc">
 <li><a href="#c1">まずはここから：楽しく遊ぶための5つのこと</a></li>
 <li><a href="#c2">攻略のコツ：カラーHPを守る消し方</a></li>
@@ -37,6 +42,7 @@
 
 <article class="col" id="c1"><span class="tag">はじめての人へ</span>
 <h2>まずはここから：楽しく遊ぶための5つのこと</h2>
+<img class="im" src="/img/howto/board.webp" alt="" loading="lazy">
 <h3>① 操作に合うモードを選ぶ</h3>
 <p>設定の「操作」で、<b>両手モード</b>と<b>片手モード</b>を選べます。どちらが速く回せるか、両方ためしてみてください。</p>
 <h3>② 60秒アタックで指を慣らす</h3>
@@ -52,6 +58,8 @@
 <article class="col" id="c2"><span class="tag">攻略のコツ</span>
 <h2>攻略のコツ：カラーHPを守る消し方</h2>
 <p>画面の上の5色が<b>カラーHP</b>です。モードによって、見え方が少しちがいます。</p>
+<img class="im" src="/img/howto/hpstory.webp" alt="" loading="lazy">
+<img class="im" src="/img/howto/hp60.webp" alt="" loading="lazy">
 <table><tr><th>ストーリー・キャラ対戦</th><td>数字は<b>あなたの残りHP</b>。敵の攻撃で減り、<b>どれか1色でも0</b>になったら負け</td></tr>
 <tr><th>60秒アタック・サバイバル・シンプル対戦</th><td>数字は時間とともに<b>たまっていき</b>、<b>どれか1色でも30</b>になったら終わり</td></tr></table>
 <p>どちらも、<b>ゲージがいっぱいになったら負け</b>。その色のブロックを消すと、ゲージが減って（ストーリーではHPが回復して）持ちなおせます。</p>
@@ -72,6 +80,7 @@
 
 <article class="col" id="c3"><span class="tag">攻略のコツ</span>
 <h2>オクタブロックの使い方</h2>
+<img class="im" src="/img/howto/octa.webp" alt="" loading="lazy">
 <p>八芒星の<b>オクタブロック</b>は、オクタブロック同士でだけ消えます。消すと、<b>全色のゲージが一気に減ります</b>（ストーリーではHPが一気に回復します）。60秒アタック・サバイバルでは、スピードも少し戻ります。</p>
 <table><tr><th>並べた数</th><td>3個</td><td>4個</td><td>5個</td><td>6個</td></tr><tr><th>全色のゲージ</th><td>−3</td><td>−6</td><td>−10</td><td>−15</td></tr></table>
 <h3>ピンチのときほど出やすい</h3>
@@ -84,6 +93,7 @@
 
 <article class="col" id="c4"><span class="tag">ストーリー</span>
 <h2>強敵（ボス）に勝つには</h2>
+<img class="im ph" src="/img/howto/story.webp" alt="" loading="lazy">
 <h3>まず戦闘力をくらべる</h3>
 <p>ステージの<b>必要戦闘力</b>と、マップの上の<b>チーム戦闘力</b>をくらべます。チームのほうが高ければ勝ちやすく、低ければ苦しい戦いになります。</p>
 <h3>攻撃・防御・スピードの関係</h3>
@@ -101,6 +111,7 @@
 
 <article class="col" id="c5"><span class="tag">ストーリー</span>
 <h2>氷と石のステージの戦い方</h2>
+<img class="im" src="/img/howto/obs.webp" alt="" loading="lazy">
 <p>ふつうのルートをクリアすると氷のルート、氷のルートをクリアすると石のルートが出てきます。敵は同じエリアのふつうのルートより強いので、チームを育ててから挑みましょう。</p>
 <h3>氷のブロック</h3>
 <p>中の色は見えますが、<b>そろわず、回せません</b>。<b>となりでブロックを消すと割れて</b>、元の色に戻ります。氷があると枠を置ける場所がへるので、まず氷のとなりで消して、盤面を広げるのがコツです。</p>
@@ -113,6 +124,7 @@
 <p>チームは<b>メイン1人＋サブ3人</b>の4人です。メインは必殺技と奥義の両方を使い、サブは「必殺技」か「奥義」のどちらか1つを選びます。</p>
 <h3>4つのタイプ</h3>
 <table><tr><th>HP型 ♥</th><td>カラーHPが増えにくい。長い戦いに強い</td></tr><tr><th>攻撃型 ⚔</th><td>ダメージが大きい。早く倒せる</td></tr><tr><th>防御型 ⛨</th><td>敵の攻撃に強い</td></tr><tr><th>スピード型 ➶</th><td>敵の攻撃や技が遅くなり、こちらの技が早くたまる</td></tr></table>
+<img class="im" src="/img/howto/skills.webp" alt="" loading="lazy">
 <h3>おすすめの組み方</h3>
 <ul>
 <li><b>回復の技を持つキャラを1人は必ず</b>（理由は次のコラムで）</li>
@@ -147,6 +159,7 @@
 
 <article class="col" id="c8"><span class="tag">育成</span>
 <h2>遠征とは：出かけている間に強くなる</h2>
+<img class="im ph" src="/img/howto/expd.webp" alt="" loading="lazy">
 <p>遠征は、キャラを送り出して、帰ってくるのを待つしくみです。帰ってくると、<b>経験値</b>と、装備づくりに使う<b>素材</b>などを持ち帰ります。強化石が見つかることも、ごくまれにあります。</p>
 <h3>達成率で報酬が決まる</h3>
 <p>達成率は「参加の条件をいくつ満たしたか」と「チームの戦闘力が目安にとどいているか」で決まります。100%なら報酬はそのまま、50%なら半分です。条件に合うキャラを入れると、達成率が上がります。</p>
@@ -162,12 +175,15 @@
 <article class="col" id="c9"><span class="tag">機能</span>
 <h2>各種機能の紹介</h2>
 <h3>🎰 ガチャ</h3>
+<img class="im ph" src="/img/howto/gacha.webp" alt="" loading="lazy">
 <p>新しいキャラや装備が手に入ります。シルバーコインでも引けます。</p>
 <h3>🔨 鍛冶屋</h3>
+<img class="im ph" src="/img/howto/forge.webp" alt="" loading="lazy">
 <p>遠征で集めた素材で、武器・防具・アクセを作ります。強化石で強化もでき、<b>失敗しても下がりません</b>。素材のありかは、鍛冶屋のハナが「うわさ話」で教えてくれます。</p>
 <h3>🐱 ミケの店</h3>
 <p>いらない装備や素材をミケに売ったり、ほかのプレイヤーに向けて預けたりできます。ここだけで使える「ニャンコイン」で買い物をします。</p>
 <h3>⚔ オンライン対戦</h3>
+<img class="im ph" src="/img/howto/vs.webp" alt="" loading="lazy">
 <p>パズルの腕だけで戦う<b>シンプル対戦</b>と、育てたチームで戦う<b>キャラ対戦</b>があります。ランダム対戦で相手が見つからないときは、CPUと対戦できます。部屋番号で友だちとも戦えます。</p>
 <h3>🏅 対戦メダル</h3>
 <p>オンライン対戦やオートバトルでたまります。交換所で、アイテムや<b>ここでしか手に入らないキャラ</b>と交換できます。</p>
@@ -177,6 +193,7 @@
 
 <article class="col" id="c10"><span class="tag">上達</span>
 <h2>上達するには：60秒アタックで練習</h2>
+<img class="im" src="/img/howto/hp60.webp" alt="" loading="lazy">
 <p>このゲームは、パズルの腕が上がるほど、どのモードでも強くなります。いちばんの練習は<b>60秒アタック</b>です。</p>
 <h3>練習のポイント</h3>
 <ul>
