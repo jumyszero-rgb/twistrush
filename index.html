@@ -1872,10 +1872,10 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
           <h3>オートとスキップ（ストーリー）</h3>
           <p>コンティニューもアイテムも使わずにクリアしたステージは、オートとスキップが使えます。使うのはスタミナだけです（スキップはふつうに挑戦するのと同じ量、オートはレベルで変わります）。</p>
           <p><b>SKILL CHECK</b>：オートを使うには、60秒アタックを5回遊びます。直近5回の平均点を、あなたの腕前として記録します。オートはその腕前に合わせて動きます（遊ぶほど更新されます）。</p>
-          <p><b>オートのレベル</b>：おまかせ（スタミナ×1・あなたの80%くらい）／しっかり（×1.5・あなたと同じくらい）／ガチ（×2・あなたの120%くらい）。あなたの腕前は、60秒アタックの直近5回の平均点から決まります。楽をしたいほどスタミナがかかり、自分で戦うのがいちばん安く済みます。</p>
-          <p><b>オート</b>：チームが自動で戦うのを見ます。ふつうに戦うのと同じなので、まだ取っていない<b>レインボーブロック（お題）も取れます</b>。右上の「AUTO ▶」を押すと、途中から自分で操作できます。そのかわり時間がかかり、負けることもあります。</p>
-          <p><b>スキップ</b>：戦わずに、一瞬で勝ちになります。<b>最大10回まとめて</b>できるので、レベル上げやボスの2体目集めに便利です。そのかわり、レインボーブロックは取れません。</p>
-          <p>キャラが仲間になる確率は、<b>自分で戦う ＞ オート ＞ スキップ</b>の順に高くなります（だいたい 10回に1回／15回に1回／20回に1回。運で上下します）。エリア1〜4と、つよいルートは出やすくなっています。</p>
+          <p><b>オートのレベル</b>：おまかせ（あなたの80%くらい）／しっかり（あなたと同じくらい）／ガチ（あなたの120%くらい）。スタミナはどれも同じです。あなたの腕前は、60秒アタックの直近5回の平均点から決まります。</p>
+          <p><b>オート</b>：チームが自動で戦うのを見ます。<b>ごほうびは自分で戦うのと同じ</b>（コイン・素材・アイテム・仲間になる率・レインボーブロック）。右上の「AUTO ▶」を押すと、途中から自分で操作できます。そのかわり時間がかかり、負けることもあります。</p>
+          <p><b>スキップ</b>：戦わずに、一瞬で勝ちになります。<b>最大10回まとめて</b>できるので、レベル上げやボスの2体目集めに便利です。そのかわり、もらえるのは<b>経験値と仲間</b>だけです（コイン・素材・アイテム・レインボーブロックはなし）。</p>
+          <p>キャラが仲間になる確率は、<b>自分で戦う・オート ＞ スキップ</b>です（だいたい 10回に1回／20回に1回。運で上下します）。エリア1〜4と、つよいルートは出やすくなっています。</p>
           <p><b>ボスの確定ボーナス</b>：ボスに初めて勝つと1体。さらに、そのエリアの「ふつうルートを全部クリア」「つよいルートを全部クリア」「レインボーブロックを全部ゲット」で、それぞれボス本人がもう1体ずつ（1エリアで確定4体）。</p>
         </section>
         <section>
@@ -1935,7 +1935,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       </div>
       <style>#storyStart.busyteam{background:linear-gradient(#6b6f80,#4b4f60)!important;color:#fff!important;box-shadow:none!important;line-height:1.25} #storyStart.busyteam small{display:block;font-size:11px;font-weight:600;opacity:.9}</style>
       <div class="how-foot"><button class="btn" id="storyStart">このステージに挑戦</button><div class="autobox" id="autoBox" hidden><div class="autobtns"><button class="btn gold" id="storyAuto">オート</button><button class="btn gold" id="storySkip">スキップ</button></div><small id="autoNote">コンティニュー・アイテムなしでクリアすると使えます</small></div></div>
-      <small id="autoInfo" hidden><b>オート</b>：自動で戦う・レインボーブロックも取れる・途中で手動OK<br><b>スキップ</b>：一瞬で勝ち・10回まとめてOK・レインボーブロックは取れない</small>
+      <small id="autoInfo" hidden><b>オート</b>：自動で戦う・ごほうびは自分で戦うのと同じ・途中で手動OK<br><b>スキップ</b>：一瞬で勝ち・10回まとめてOK・もらえるのは経験値と仲間だけ</small>
     </div>
 
     <!-- 練習（5段階） -->
@@ -7296,7 +7296,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.275';
+  const APP_VER = '0.9.276';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -7661,9 +7661,10 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     // 2026-11-13 3回目：ガチ＝調子の良い自分（直近5回の60秒アタックの最高点）／しっかり＝いつもの自分（平均）／おまかせ＝調子の悪い自分（最低点）
     // 60秒アタックとストーリーでは点の出方がちがうので、SK_K をかけてそろえる（オートの割合60%で本人と同じくらいだった結果から）
     // 2026-11-19 本人：ガチ＝あなたの120%／しっかり＝100%／おまかせ＝80%（あなた＝60秒アタック直近5回の平均）。ガチは速さの上限も上げる
+    // 2026-11-23 本人「オートは手動と同じ」：スタミナはどのレベルも×1、仲間になる率・素材・コイン・お題も手で遊ぶのと同じ
     omakase:  {name: 'おまかせ', mult: 1,   move: 420, rot: 560, miss: 0.5,  two: 0,   pick: 'avg', pct: 0.8, skWait: [3, 7],   heartLate: 3},
-    shikkari: {name: 'しっかり', mult: 1.5, move: 300, rot: 420, miss: 0.25, two: 0.5, pick: 'avg', pct: 1.0, skWait: [1, 3],   heartLate: 1},
-    gachi:    {name: 'ガチ',     mult: 2,   move: 170, rot: 250, miss: 0.05, two: 1,   pick: 'avg', pct: 1.2, skWait: [0, 0.8], heartLate: 0},
+    shikkari: {name: 'しっかり', mult: 1,   move: 300, rot: 420, miss: 0.25, two: 0.5, pick: 'avg', pct: 1.0, skWait: [1, 3],   heartLate: 1},
+    gachi:    {name: 'ガチ',     mult: 1,   move: 170, rot: 250, miss: 0.05, two: 1,   pick: 'avg', pct: 1.2, skWait: [0, 0.8], heartLate: 0},
   };
   // SKILL CHECK：60秒アタックの直近5回の平均点を、その人の腕前（1秒あたりの点数）にする。オートは5回遊んでから使える
   const SK_N = 5;
@@ -7685,7 +7686,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (box.hidden) return;
     const ok = autoOk(pickStage) && !exTeamBusy(teamNo);   // 遠征中のチームではオート・スキップもできない
     $('storyAuto').disabled = !ok; $('storySkip').disabled = !ok;
-    $('storyAuto').innerHTML = 'オート<small>⚡' + autoCost(pickStage, 'omakase') + '〜' + autoCost(pickStage, 'gachi') + '</small>';
+    $('storyAuto').innerHTML = 'オート<small>⚡' + autoCost(pickStage, 'omakase') + '</small>';
     $('storySkip').innerHTML = 'スキップ<small>⚡' + stamCost(pickStage) + '</small>';   // オートもスキップもスタミナだけ
     $('autoNote').hidden = ok; $('autoInfo').hidden = !ok;
   }
@@ -7769,7 +7770,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (mx < 1) { canPlayStage(i); return; }            // スタミナが足りない（回復の案内が出る）
     skipN = Math.min(skipN, mx) || 1;
     const draw = () => { const b = $('skipNum'), c = $('skipCost'); if (b) b.textContent = skipN; if (c) c.textContent = skipCostText(i, skipN); };
-    askYes('<b>スキップ</b>（戦わずに勝ち。お題は取れません）<div class="skipn"><button data-sn="-1">−</button><b id="skipNum">1</b><button data-sn="1">＋</button><button data-sn="99">最大</button></div><small id="skipCost"></small>', () => doSkip(i, skipN));
+    askYes('<b>スキップ</b>（戦わずに勝ち。もらえるのは<b>経験値と仲間</b>だけ。コイン・素材・アイテム・お題はなし）<div class="skipn"><button data-sn="-1">−</button><b id="skipNum">1</b><button data-sn="1">＋</button><button data-sn="99">最大</button></div><small id="skipCost"></small>', () => doSkip(i, skipN));
     const box = $('askBox');
     box.querySelectorAll('[data-sn]').forEach(b => b.onclick = e => { e.stopPropagation(); const d = +b.dataset.sn; skipN = d === 99 ? mx : Math.max(1, Math.min(mx, skipN + d)); draw(); });
     draw();
@@ -7784,7 +7785,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       countPlay(i); userExpAdd(stamCost(i));          // 勝ち扱い：スタミナ分の経験値をもう一度
       try { qAdd('stage'); if (st.kind === 'boss') qAdd('boss'); } catch(_) {}
       zakoNow = st.char == null ? pickZako(st) : null;
-      storyWinCoins(i, st.area, false, 0);
+      // 2026-11-23 本人「スキップは経験値とキャラゲットのみ」：コイン・素材・アイテムは出さない
       teamExp(st); exp += lastExpInfo ? lastExpInfo.gain : 0;
       zakoDrop('skip'); bossDrop('skip');
     }
@@ -9397,7 +9398,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (curVar >= 1) p *= 1.5;                             // 氷・石：仲間になりやすい
     return Math.min(0.9, p);
   }
-  const dropMode = () => autoOn ? 'auto' : 'manual';
+  const dropMode = () => 'manual';                       // 2026-11-23：オートも手で遊ぶのと同じ率（スキップは 'skip' を渡す）
   function zakoDrop(mode){
     if (!zakoNow || Math.random() >= dropRate(mode || dropMode())) return '';
     const ci = ALLC_IDX.get('z_' + zakoNow.k); if (ci == null) return '';
@@ -9521,7 +9522,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       const ex = r.exp || {gain: 0, list: []};
       const dial = v => { const s = String(Math.max(0, v | 0)); return '<span class="rsq-dial"><span class="pl">+</span>' + s.split('').map(() => '<span class="dg"><span>' + '0123456789'.repeat(3).split('').map(x => '<i>' + x + '</i>').join('') + '</span></span>').join('') + '</span>'; };
       const p = pane('<div class="rsq-ttl" style="font-size:30px">REWARD</div><div class="rsq-rows">' +
-        '<div class="rsq-row">' + coinTag() + 'シルバー ' + dial(r.coins) + '</div>' +
+        (r.skip ? '' : '<div class="rsq-row">' + coinTag() + 'シルバー ' + dial(r.coins) + '</div>') +   // スキップはシルバーなし（2026-11-23）
         '<div class="rsq-row">EXP ' + dial(ex.gain) + '</div>' + (r.extra || []).map(t => '<div class="rsq-row rsq-ex">🎉 ' + t + '</div>').join('') +
         (r.vlist || []).map(([k, n]) => '<div class="rsq-row rsq-ex rsq-vl">🎁 ' + (ITEMS[k] ? ITEMS[k].name : EX_MAT[k] ? EX_MAT[k][1] + EX_MAT[k][0] : k) + ' <em>×' + n + '</em></div>').join('') + '</div>' +
         (r.adx && !r.skip ? '<button class="rsq-ad" data-rsqad="1">📺 広告を見て ごほうび2倍<small>シルバー・経験値・報酬がぜんぶ2倍</small></button>' : '') +
@@ -9529,7 +9530,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         (r.skip ? '<div class="resbtns rsq-btns"><button class="rbtn next" data-rsq="close"><i>🗺</i><span>マップへ</span></button></div>'   // スキップはマップの上で出しているので、閉じるだけ
         : '<div class="resbtns rsq-btns"><button class="rbtn next" data-rsq="map"><i>🗺</i><span>マップへ</span></button><button class="rbtn" data-rsq="retry"><i>↻</i><span>もう一度</span></button><button class="rbtn" data-rsq="title"><i>⌂</i><span>タイトル</span></button></div>'));
       // ダイヤル
-      const vals = [r.coins, ex.gain]; let longest = 0;
+      const vals = r.skip ? [ex.gain] : [r.coins, ex.gain]; let longest = 0;
       const spinDial = (dl, v, j) => { let L = 0;
         const s = String(Math.max(0, v | 0)), cols = dl.querySelectorAll('.dg > span');
         cols.forEach((col, k) => {
