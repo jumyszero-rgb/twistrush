@@ -3,27 +3,28 @@
 // 対戦メダル：お金では買えない、対戦専用のコイン。アリーナや賭けの勝ちで手に入れ、ショップでアイテムと交換する（毎日の配布はなし）
 
 export const MEDAL = {
-  first: 0,                   // はじめての人（2026-11-13 廃止：何もしなくても入るとショップで買えてしまうため）
+  first: 300,                 // はじめての人（2026-11-23 本人「メダルがないと賭けられないので、最初の300配布に戻す」）
   daily: 0,                   // 毎日（2026-11-13 廃止。メダルはアリーナ・賭けの勝ちで手に入れる）
   bets: [0, 10, 50, 100],     // 賭けられる額（0＝賭けない）
 };
 // メダルで交換できるもの（ゲームの更新なしで変えられる）
+// 2026-11-23 本人「交換リストが適当。リフレッシュ100なし、ガチャはそのまま」：
+//   リフレッシュ100を外す／お守り（2026-11-18 になくした）を外す／スタミナポット（+50）はスタミナ+50と同じ値段にそろえる
+//   並び：バトルの道具 → スタミナ → ガチャ
 export const MEDAL_SHOP = [
   { k: 'refresh30', price: 40 },
   { k: 'refresh50', price: 70 },
   { k: 'refresh80', price: 110 },
-  { k: 'refresh100', price: 140 },
   { k: 'slow', price: 90 },
   { k: 'star3', price: 90 },
   { k: 'star6', price: 180 },
-  { k: 'charm', price: 200 },
-  { k: 'gticket', price: 150 },
-  { k: 'gticket_hi', price: 2000 },
   { k: 'stam50', price: 40 },    // スタミナ回復（ゲームの⚡の画面で買う。上限をこえてOK）
   { k: 'stam100', price: 75 },
   { k: 'stam200', price: 140 },
   { k: 'stam300', price: 200 },
-  { k: 'stampot', price: 200 },          // スタミナポット（スタミナ+50）
+  { k: 'stampot', price: 40 },           // スタミナポット（スタミナ+50 を持っておける）
+  { k: 'gticket', price: 150 },
+  { k: 'gticket_hi', price: 2000 },
 ];
 // ポットはここには並べない（アイテムガチャとゴールドの秘密のショップだけ）
 export const VS_KINDS = ['simple', 'chara'];
@@ -97,6 +98,12 @@ export async function medalDaily(env, id, t) {
     await medalLog(env, id, MEDAL.first, 'first', t);
     return MEDAL.first;
   }
+  // 2026-11-23：はじめての300を、まだもらっていない人（配布をやめていた間に始めた人）にも1回だけ
+  if (MEDAL.first) {
+    const f = await env.DB.prepare("SELECT 1 FROM medal_log WHERE account_id = ? AND reason = 'first' LIMIT 1").bind(id).first();
+    if (!f) { await env.DB.prepare('UPDATE medals SET balance = balance + ?, daily = ? WHERE account_id = ?').bind(MEDAL.first, today, id).run(); await medalLog(env, id, MEDAL.first, 'first', t); return MEDAL.first; }
+  }
+  if (!MEDAL.daily) return 0;
   if (cur.daily === today) return 0;
   const r = await env.DB.prepare('UPDATE medals SET balance = balance + ?, daily = ? WHERE account_id = ? AND daily <> ?').bind(MEDAL.daily, today, id, today).run();
   if (!r.meta.changes) return 0;
@@ -275,7 +282,8 @@ export class Room {
       this.ps.forEach(p => { out[p.id] = { res: 'draw', delta: 0, rate: p.rate, medal: 0 }; });
       for (const p of this.ps) if (bet) await medalGive(env, p.id, bet, 'draw', t);
     }
-    if (rated) for (const p of this.ps) { await rateSave(env, p.id, kind, out[p.id].rate, out[p.id].res, t); await monthSave(env, p.id, kind, out[p.id].rate, t); }
+    // 2026-11-23 本人「対戦の勝ち負けの数が変わらない」：部屋番号の対戦も勝ち・負けの数は数える（レートと月間ランキングはランダム対戦だけ）
+    for (const p of this.ps) { await rateSave(env, p.id, kind, out[p.id].rate, out[p.id].res, t); if (rated) await monthSave(env, p.id, kind, out[p.id].rate, t); }
     for (const p of this.ps) out[p.id].rated = rated;
     for (const p of this.ps) {
       const m = await medalOf(env, p.id);

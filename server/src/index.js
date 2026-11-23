@@ -558,7 +558,9 @@ async function api(env, req, url) {
   if (p === '/api/medal' && M === 'GET') {
     const m = await medalOf(env, me.id), t = nowSec();
     const today = new Date((t + TZ) * 1000).toISOString().slice(0, 10);
-    return json(env, req, { balance: m ? m.balance : 0, daily: (MEDAL.first || MEDAL.daily) ? (!m || m.daily !== today) : false, first: !m, firstN: MEDAL.first, dailyN: MEDAL.daily, bets: MEDAL.bets, shop: MEDAL_SHOP });
+    // はじめての300をまだもらっていない人には「受け取る」を出す（2026-11-23）
+    const firstDue = !!MEDAL.first && !(m && await env.DB.prepare("SELECT 1 FROM medal_log WHERE account_id = ? AND reason = 'first' LIMIT 1").bind(me.id).first());
+    return json(env, req, { balance: m ? m.balance : 0, daily: firstDue || (!!MEDAL.daily && (!m || m.daily !== today)), first: firstDue, firstN: MEDAL.first, dailyN: MEDAL.daily, bets: MEDAL.bets, shop: MEDAL_SHOP });
   }
   if (p === '/api/medal/daily' && M === 'POST') {
     const got = await medalDaily(env, me.id, nowSec()), m = await medalOf(env, me.id);
