@@ -1,5 +1,5 @@
 import { arenaHome, arenaSetDefense, arenaFight } from './arena.js';
-import { Lobby, Room, MEDAL, MEDAL_SHOP, VS_KINDS, medalOf, medalDaily, medalTake, medalMonthLeft, medalGive, vsTop, vsRewards, vsClaim } from './vs.js';
+import { Lobby, Room, MEDAL, MEDAL_SHOP, VS_KINDS, medalOf, medalDaily, medalTake, medalMonthLeft, medalGive, vsTop, vsRewards, vsClaim, vsCpuDone } from './vs.js';
 export { Lobby, Room };
 // TWIST RUSH サーバー（Cloudflare Workers + D1）
 //   ・ログイン（Google／LINE／Microsoft）  ・セーブの保存と読み込み
@@ -573,6 +573,12 @@ async function api(env, req, url) {
     if (!await medalTake(env, me.id, it.price, 'buy:' + it.k, nowSec())) return fail(env, req, '対戦メダルが足りません', 402);
     const m = await medalOf(env, me.id);
     return json(env, req, { ok: true, k: it.k, balance: m ? m.balance : 0 });
+  }
+  // ---- CPU戦の結果（レート・勝ち負けの数は変わらない。メダルだけ） ----
+  if (p === '/api/vs/cpu' && M === 'POST') {
+    const b = await req.json().catch(() => ({}));
+    const r = await vsCpuDone(env, me.id, String(b.res || ''), nowSec()), m = await medalOf(env, me.id);
+    return json(env, req, { ok: true, got: r.got, firstWin: r.firstWin || 0, balance: m ? m.balance : 0 });
   }
   // ---- 対戦の相手さがし ----
   if (p.startsWith('/api/vs/') && M === 'POST') {

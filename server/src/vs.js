@@ -30,6 +30,23 @@ export const MEDAL_SHOP = [
 // ポットはここには並べない（アイテムガチャとゴールドの秘密のショップだけ）
 export const VS_KINDS = ['simple', 'chara'];
 const VS_PLAY = { win: 10, draw: 5, lose: 3 }, VS_PLAY_DAY = 20, VS_FIRST_WIN = 30;
+// 2026-11-23 本人：CPU戦は人との対戦の半分。1日20戦の上限は人との対戦と合わせて数える。毎日の最初の1勝 +30 はCPU戦でもOK
+export const VS_CPU = { win: 5, draw: 2, lose: 1 }, VS_CPU_GAP = 40;   // 前のCPU戦から40秒より早い報告は受けつけない
+export async function vsCpuDone(env, id, res, t) {
+  if (!(res in VS_CPU)) return { got: 0 };
+  const last = await env.DB.prepare("SELECT created_at FROM medal_log WHERE account_id = ? AND reason LIKE 'vsplay:cpu-%' ORDER BY created_at DESC LIMIT 1").bind(id).first();
+  if (last && t - last.created_at < VS_CPU_GAP) return { got: 0, early: true };
+  const day0 = dayStart(t);
+  const c = await env.DB.prepare("SELECT COUNT(*) AS n FROM medal_log WHERE account_id = ? AND reason LIKE 'vsplay:%' AND created_at >= ?").bind(id, day0).first();
+  let got = 0, firstWin = 0;
+  if (((c && c.n) || 0) < VS_PLAY_DAY) { await medalGive(env, id, VS_CPU[res], 'vsplay:cpu-' + res, t); got += VS_CPU[res]; }
+  else await medalLog(env, id, 0, 'vsplay:cpu-' + res, t);           // 上限のあとも、40秒の間かくを見るために記録だけ残す
+  if (res === 'win') {
+    const f = await env.DB.prepare("SELECT 1 FROM medal_log WHERE account_id = ? AND reason = 'vsfirstwin' AND created_at >= ? LIMIT 1").bind(id, day0).first();
+    if (!f) { await medalGive(env, id, VS_FIRST_WIN, 'vsfirstwin', t); got += VS_FIRST_WIN; firstWin = VS_FIRST_WIN; }
+  }
+  return { got, firstWin };
+}
 const dayStart = t => { const d = new Date((t + TZ) * 1000); return Math.floor(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) / 1000) - TZ; };
 export const VS_LIMIT_SEC = 180;           // 3分たったら、カラーHPのいちばん高い色が低い方の勝ち
 const RATE_START = 1000, RATE_K = 32;

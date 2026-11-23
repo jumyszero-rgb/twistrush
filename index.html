@@ -6547,7 +6547,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   const flagOf = cc => /^[A-Z]{2}$/.test(cc || '') ? '<span class="flag" title="' + cc + '">' + String.fromCodePoint(...[...cc].map(c => 0x1F1E6 + c.charCodeAt(0) - 65)) + '</span>' : '';
   const olAv = (id, nm) => { const ci = id != null ? ALLC_IDX.get(id) : null; return '<span class="olav' + (ci == null ? ' nochar' : '') + '"' + (ci != null ? ' data-ci="' + ci + '"' : '') + '>' + (ci == null ? olEsc(String(nm || '？').slice(0, 1)) : '') + '</span>'; };
   function olFill(root){ root.querySelectorAll('.olav[data-ci]').forEach(el => { if (!el.firstChild) el.appendChild(charIcon(+el.dataset.ci, Math.round(el.clientWidth) || 46)); }); }
-  const onlSend = o => { try { if (onl && onl.ws && onl.ws.readyState === 1) onl.ws.send(JSON.stringify(o)); } catch (_) {} };
+  const onlSend = o => { if (onl && onl.cpu) { cpuRecv(o); return; } try { if (onl && onl.ws && onl.ws.readyState === 1) onl.ws.send(JSON.stringify(o)); } catch (_) {} };
   function myTeamInfo(){
     const ms = teamMembers(), ids = ms.map(u => u.id);
     return {lead: ids[0] || null, ids: olKind === 'chara' ? ids : undefined, st: olKind === 'chara' ? teamStats() : undefined};
@@ -6630,8 +6630,60 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => toast('コピーしました'), () => toast(txt));
     };
     $('olCancel').onclick = olCancel;
-    olTimer = setInterval(() => { const s = Math.floor((Date.now() - t0) / 1000), el = $('olWaitT'); if (el) el.textContent = Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); else clearInterval(olTimer); }, 1000);
+    olTimer = setInterval(() => { const s = Math.floor((Date.now() - t0) / 1000), el = $('olWaitT'); if (el) el.textContent = Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0') + (!code && s >= CPU_WAIT - 5 ? '　（' + Math.max(0, CPU_WAIT - s) + '秒でCPUと対戦）' : ''); else { clearInterval(olTimer); return; }
+      if (!code && s >= CPU_WAIT && onl && !onl.opp && !onl.cpu && olView === 'wait') { clearInterval(olTimer); olStartCpu(); } }, 1000);
   }
+  // ===== CPU対戦（2026-11-23 本人）：ランダム対戦で20秒さがしても相手がいなければCPUと戦う =====
+  //   強さはあなたのレートに合わせる（オートのおまかせ・しっかり・ガチの消し方）。レートと勝ち負けの数は変わらない。賭けなし
+  //   メダルは人との対戦の半分（勝ち5・引き分け2・負け1）。1日20戦の上限は人との対戦と合わせて数える。毎日の最初の1勝 +30 はCPU戦でもOK
+  const CPU_WAIT = 20;
+  const CPU_LV = {omakase: {gap: 3800, blk: 6.6}, shikkari: {gap: 3300, blk: 8.4}, gachi: {gap: 3000, blk: 11.3}};
+  async function olStartCpu(){
+    const room = onl && onl.room; onlClose();
+    if (room) api('/api/vs/cancel', {method: 'POST', body: JSON.stringify({room}), tok: rankTok()}).catch(() => {});
+    const rate = (olRate && olRate.me && olRate.me.rate) || 1000, lv = rate >= 1150 ? 'gachi' : rate >= 1030 ? 'shikkari' : 'omakase';
+    const mt = myTeamInfo(), cpuTeam = olKind === 'chara' ? Object.assign({}, mt) : {};
+    onl = {cpu: true, cpuLv: lv, room: null, kind: olKind, bet: 0, opp: {name: 'CPU（' + AUTO_LV[lv].name + '）', rate, cc: '', team: cpuTeam}, me: {rate, cc: ''}, limit: 180, seed: Math.floor(Math.random() * 2 ** 31), result: null, again: false, oppAgain: false, oppLeft: false, oppSt: [0, 0, 0, 0, 0], oppSc: 0, oppG: ''};
+    showVsIntro({kind: olKind, bet: 0, opp: onl.opp, me: onl.me, wait: 3500});
+  }
+  function cpuGrid(){ let g = ''; for (let i = 0; i < N * N; i++) g += String(Math.floor(Math.random() * TYPES)); return g; }
+  // CPUの番：消す → 自分のカラーHPが減る・あなたへ攻撃
+  function cpuTick(t){
+    const o = onl; if (!o || !o.cpu || !running || o.result) return;
+    if (!o.cpuNext) { o.cpuNext = t + 2500; o.oppG = cpuGrid(); onlDrawOpp(); }
+    const left = o.limit - (t - runStart) / 1000;
+    if (left <= 0) { const a = Math.max(...stacks), b = Math.max(...o.oppSt); return cpuEnd(a < b ? 'win' : a > b ? 'lose' : 'draw', 'time'); }
+    if (t < o.cpuNext) return;
+    const L = CPU_LV[o.cpuLv], slow = o.cpuSlow && t < o.cpuSlow[1] ? o.cpuSlow[0] : 1;
+    o.cpuNext = t + L.gap * (0.75 + Math.random() * 0.5) / slow;
+    const n = Math.max(3, Math.round(L.blk * (0.6 + Math.random() * 0.8))), dec = [0, 0, 0, 0, 0];
+    for (let i = 0; i < n; i++) dec[Math.floor(Math.random() * TYPES)]++;
+    o.oppSt = o.oppSt.map((v, i) => Math.max(0, v - dec[i]));
+    o.cpuAcc = o.cpuAcc || [0, 0, 0, 0, 0];
+    const conv = v => v * ONL_ATK;                      // CPUはあなたと同じチームなので、攻撃と防御の差はなし
+    const d = dec.map((v, i) => { o.cpuAcc[i] += conv(v); const k = Math.floor(o.cpuAcc[i]); o.cpuAcc[i] -= k; return k; });
+    o.oppSc += n * 100; o.oppG = cpuGrid(); onlDrawOpp();
+    if (d.some(v => v > 0)) onlHit(d);
+  }
+  // あなたからCPUへ
+  function cpuRecv(m){
+    const o = onl; if (!o || !o.cpu) return;
+    if (m.t === 'again') { if (o.result) olStartCpuAgain(); return; }
+    if (o.result) return;
+    if (m.t === 'atk') { (m.d || []).forEach((v, i) => { o.oppSt[i] = Math.min(CFG.STACK_MAX, o.oppSt[i] + v); }); onlDrawOpp();
+      if (o.oppSt.some(v => v >= CFG.STACK_MAX)) cpuEnd('win', 'out'); }
+    else if (m.t === 'lose') cpuEnd('lose', 'out');
+    else if (m.t === 'fx' && m.k === 'eslow') { const pct = Math.floor(m.v / 1000), sec = m.v % 1000; o.cpuSlow = [Math.max(0.2, 1 - pct / 100), now() + sec * 1000]; }
+  }
+  async function cpuEnd(res, why){
+    const o = onl; if (!o || !o.cpu || o.result) return;
+    o.result = {res, why, rate: o.me.rate, delta: 0, rated: false, cpu: true, medal: 0};
+    try { const r = await api('/api/vs/cpu', {method: 'POST', body: JSON.stringify({res}), tok: rankTok()}); if (r) { o.result.play = r.got || 0; o.result.firstWin = r.firstWin || 0; o.result.medals = r.balance; } } catch (_) {}
+    if (onl === o) onlEnd();
+  }
+  function olStartCpuAgain(){ const o = onl; if (!o || !o.cpu) return; const keep = {cpuLv: o.cpuLv, opp: o.opp, me: o.me, kind: o.kind};
+    onl = Object.assign({cpu: true, room: null, bet: 0, limit: 180, seed: Math.floor(Math.random() * 2 ** 31), result: null, again: false, oppAgain: false, oppLeft: false, oppSt: [0, 0, 0, 0, 0], oppSc: 0, oppG: ''}, keep);
+    $('onlRes').classList.add('hidden'); showVsIntro({kind: o.kind, bet: 0, opp: o.opp, me: o.me, wait: 3500}); }
   function drawOlJoin(){
     $('olBody').innerHTML = '<div class="olsec"><h3>部屋番号で入る</h3><p>相手から教えてもらった4けたの番号を入れてください。</p>' +
       '<input class="olin" id="olCode" inputmode="numeric" maxlength="4" placeholder="0000"><button class="btn" id="olJoinGo" style="margin-top:10px">入る</button><button class="btn gray" id="olBackTop" style="margin-top:6px">もどる</button></div>';
@@ -6776,6 +6828,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   // 自分の様子を相手に送る（カラーHP・点数・盤面）。盤面は36文字（0〜4 色／5 オクタ／6 ハート／9 空）
   function onlTick(t){
     if (!onl || !running || gameMode !== 'online') return;
+    if (onl.cpu) cpuTick(t);
     const left = Math.max(0, onl.limit - (t - runStart) / 1000), sec = Math.ceil(left);
     if (sec !== onl.shown) { onl.shown = sec; $('ooTime').textContent = Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0'); $('ooTime').classList.toggle('low', sec <= 30); }
     if (t - (onl.sent || 0) < 300) return;
@@ -6857,7 +6910,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       r.paid = true; const base = SILVER.online[r.res] || 0, c = Math.round(base * (r.rated === false ? SILVER.roomMul : 1));
       if (c) { addCoins(c); r.silver = c; }
       r.uexp = Math.round((UEXP.online[r.res] || 0) * (r.rated === false ? SILVER.roomMul : 1)); if (r.uexp) userExpAdd(r.uexp);
-      if (r.res === 'win') astAdd('olwin');
+      if (r.res === 'win' && !r.cpu) astAdd('olwin');   // CPU戦は勝ち負けを数えない
     }
     if (r && r.silver) $('finalNote').textContent += '　シルバー +' + r.silver;
     if (r && r.uexp) $('finalNote').textContent += '　経験値 +' + r.uexp;
@@ -6866,7 +6919,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       const from = (onl.me ? onl.me.rate : r.rate - r.delta);
       el.className = 'rkres onlres ' + (r.res === 'win' ? 't1' : r.res === 'lose' ? 'lose' : '');
       el.innerHTML = '<div class="rk-head">⚔ ' + OL_KIND[onl.kind] + '</div>' +
-        '<div class="or-row"><div class="or-box">レート<b id="orRate">' + from + '</b><span>' + (r.rated === false ? '部屋番号の対戦は変わりません' : (r.delta >= 0 ? '+' : '') + r.delta) + '</span></div>' +
+        '<div class="or-row"><div class="or-box">レート<b id="orRate">' + from + '</b><span>' + (r.cpu ? 'CPU戦はレートが変わりません' : r.rated === false ? '部屋番号の対戦は変わりません' : (r.delta >= 0 ? '+' : '') + r.delta) + '</span></div>' +
         (onl.bet || r.medal ? '<div class="or-box">対戦メダル<b class="' + (r.medal > 0 ? 'up' : r.medal < 0 ? 'down' : '') + '">' + (r.medal > 0 ? '+' : '') + r.medal + '</b><span>のこり ' + (r.medals || 0).toLocaleString() + '</span></div>' : '') + '</div>' +
         '<div class="or-btns"><button class="or-again" id="orAgain">🔁 同じ相手と再戦</button><button class="or-sub" id="orQuick">⚡ ランダムでもう一度</button><button class="or-sub" id="orTop">対戦トップへ</button></div>';
       el.classList.remove('hidden');
@@ -7308,7 +7361,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.281';
+  const APP_VER = '0.9.282';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
