@@ -1,5 +1,5 @@
 import { arenaHome, arenaSetDefense, arenaFight } from './arena.js';
-import { Lobby, Room, MEDAL, MEDAL_SHOP, VS_KINDS, medalOf, medalDaily, medalTake, medalMonthLeft, vsTop, vsRewards, vsClaim } from './vs.js';
+import { Lobby, Room, MEDAL, MEDAL_SHOP, VS_KINDS, medalOf, medalDaily, medalTake, medalMonthLeft, medalGive, vsTop, vsRewards, vsClaim } from './vs.js';
 export { Lobby, Room };
 // TWIST RUSH サーバー（Cloudflare Workers + D1）
 //   ・ログイン（Google／LINE／Microsoft）  ・セーブの保存と読み込み
@@ -736,6 +736,7 @@ function svRate(st) {
   const rate = Math.round(9.7 * Math.pow(P, 0.92) * Math.pow(dn + 0.6, 0.78) * Math.pow(Q, 1.3) + 0.37 * Math.sqrt(sc) + 3 * Math.sqrt(Math.min(T, 600)));
   return { rate, g: [svGr(T, [330, 270, 210, 150, 90]), svGr(dn, [14, 10, 7, 4.5, 2.5]), svGr(Q, [1.5, 1.35, 1.2, 1.05, 0.9])] };
 }
+const PLAY_MEDAL = { sixty: () => 10, sv: sc => sc >= 100000 ? 100 : sc >= 50000 ? 50 : sc >= 30000 ? 30 : 0 }, PLAY_MEDAL_DAY = 3;
 async function rankPost(env, req, me) {
   const t = nowSec();
   const b = await req.json().catch(() => null); if (!b) return fail(env, req, 'JSONが読めません');
@@ -763,7 +764,17 @@ async function rankPost(env, req, me) {
     const above = await env.DB.prepare('SELECT COUNT(*) AS c FROM (SELECT player, MAX(' + KEY(row.mode) + ') AS m FROM scores WHERE mode = ? AND created_at >= ? AND player <> ? GROUP BY player) WHERE m > ?').bind(row.mode, from, me.id, keyOf(row.mode, row.score, row.dur)).first();
     ranks[pd] = { rank: (above.c || 0) + 1, total: my.total, best: my.best, bestRank: my.rank };
   }
-  return json(env, req, { ok: true, ranks });
+  // 2026-11-23 本人：60秒アタック1回10メダル／サバイバルは点数で 3万以上30・5万以上50・10万以上100。どちらも1日3回まで（もらえた回だけ数える）
+  let medal = 0;
+  const pm = PLAY_MEDAL[row.mode];
+  if (pm && row.blocks > 0) {
+    const n = pm(row.mode === 'sv' ? Math.floor(Number(b.st && b.st.sc) || 0) : row.score);
+    if (n > 0) {
+      const c = await env.DB.prepare('SELECT COUNT(*) AS n FROM medal_log WHERE account_id = ? AND reason = ? AND created_at >= ?').bind(me.id, 'play:' + row.mode, since('day', t)).first();
+      if (((c && c.n) || 0) < PLAY_MEDAL_DAY) { await medalGive(env, me.id, n, 'play:' + row.mode, t); medal = n; }
+    }
+  }
+  return json(env, req, { ok: true, ranks, medal });
 }
 
 // ---------- 月間ランキングのごほうび ----------

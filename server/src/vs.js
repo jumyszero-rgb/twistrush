@@ -12,7 +12,7 @@ export const MEDAL = {
 //   リフレッシュ100を外す／お守り（2026-11-18 になくした）を外す／スタミナポット（+50）はスタミナ+50と同じ値段にそろえる
 //   並び：バトルの道具 → スタミナ → ガチャ
 export const MEDAL_SHOP = [
-  { k: 'chr_g103', price: 2000, monthly: 1 },   // メダル交換だけのキャラ：ひかる凛（SR）。月1回まで（2026-11-23 本人）
+  { k: 'chr_g103', price: 2500, monthly: 1 },   // メダル交換だけのキャラ：ひかる凛（SR）。月1回まで（2026-11-23 本人）
   { k: 'refresh30', price: 40 },
   { k: 'refresh50', price: 70 },
   { k: 'refresh80', price: 110 },
@@ -25,10 +25,12 @@ export const MEDAL_SHOP = [
   { k: 'stam300', price: 200 },
   { k: 'stampot', price: 40 },           // スタミナポット（スタミナ+50 を持っておける）
   { k: 'gticket', price: 150 },
-  { k: 'gticket_hi', price: 2000 },
+  { k: 'gticket_hi', price: 2500 },   // 2026-11-23 本人：2000→2500
 ];
 // ポットはここには並べない（アイテムガチャとゴールドの秘密のショップだけ）
 export const VS_KINDS = ['simple', 'chara'];
+const VS_PLAY = { win: 10, draw: 5, lose: 3 }, VS_PLAY_DAY = 20, VS_FIRST_WIN = 30;
+const dayStart = t => { const d = new Date((t + TZ) * 1000); return Math.floor(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) / 1000) - TZ; };
 export const VS_LIMIT_SEC = 180;           // 3分たったら、カラーHPのいちばん高い色が低い方の勝ち
 const RATE_START = 1000, RATE_K = 32;
 // 月間レートランキングのプレゼント（ランダム対戦だけで決まる。部屋番号の対戦はレートが動かない）
@@ -293,6 +295,18 @@ export class Room {
     // 2026-11-23 本人「対戦の勝ち負けの数が変わらない」：部屋番号の対戦も勝ち・負けの数は数える（レートと月間ランキングはランダム対戦だけ）
     for (const p of this.ps) { await rateSave(env, p.id, kind, out[p.id].rate, out[p.id].res, t); if (rated) await monthSave(env, p.id, kind, out[p.id].rate, t); }
     for (const p of this.ps) out[p.id].rated = rated;
+    // 2026-11-23 本人：ランダム対戦は賭けなくてもメダル（勝ち10・引き分け5・負け3、1日20戦まで）＋毎日の最初の1勝 +30
+    if (rated) for (const p of this.ps) {
+      const res = out[p.id].res, day0 = dayStart(t);
+      const c = await this.env.DB.prepare("SELECT COUNT(*) AS n FROM medal_log WHERE account_id = ? AND reason LIKE 'vsplay:%' AND created_at >= ?").bind(p.id, day0).first();
+      let got = 0;
+      if (((c && c.n) || 0) < VS_PLAY_DAY) { const n = VS_PLAY[res] || 0; if (n) { await medalGive(env, p.id, n, 'vsplay:' + res, t); got += n; } }
+      if (res === 'win') {
+        const f = await this.env.DB.prepare("SELECT 1 FROM medal_log WHERE account_id = ? AND reason = 'vsfirstwin' AND created_at >= ? LIMIT 1").bind(p.id, day0).first();
+        if (!f) { await medalGive(env, p.id, VS_FIRST_WIN, 'vsfirstwin', t); got += VS_FIRST_WIN; out[p.id].firstWin = VS_FIRST_WIN; }
+      }
+      out[p.id].play = got;
+    }
     for (const p of this.ps) {
       const m = await medalOf(env, p.id);
       this.send(p, Object.assign({ t: 'end', why, medals: m ? m.balance : 0 }, out[p.id]));
