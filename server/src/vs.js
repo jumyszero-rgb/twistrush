@@ -12,6 +12,7 @@ export const MEDAL = {
 //   リフレッシュ100を外す／お守り（2026-11-18 になくした）を外す／スタミナポット（+50）はスタミナ+50と同じ値段にそろえる
 //   並び：バトルの道具 → スタミナ → ガチャ
 export const MEDAL_SHOP = [
+  { k: 'chr_g103', price: 2000, monthly: 1 },   // メダル交換だけのキャラ：ひかる凛（SR）。月1回まで（2026-11-23 本人）
   { k: 'refresh30', price: 40 },
   { k: 'refresh50', price: 70 },
   { k: 'refresh80', price: 110 },
@@ -109,6 +110,13 @@ export async function medalDaily(env, id, t) {
   if (!r.meta.changes) return 0;
   await medalLog(env, id, MEDAL.daily, 'daily', t);
   return MEDAL.daily;
+}
+// 月の回数が決まっている品物：今月あと何回交換できるか（日本時間の月初めから数える）
+export async function medalMonthLeft(env, id, it, t) {
+  if (!it.monthly) return null;
+  const d = new Date((t + TZ) * 1000), m0 = Math.floor(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1) / 1000) - TZ;
+  const r = await env.DB.prepare('SELECT COUNT(*) AS n FROM medal_log WHERE account_id = ? AND reason = ? AND created_at >= ?').bind(id, 'buy:' + it.k, m0).first();
+  return Math.max(0, it.monthly - ((r && r.n) || 0));
 }
 export const medalLog = (env, id, delta, reason, t) => env.DB.prepare('INSERT INTO medal_log (account_id, delta, reason, created_at) VALUES (?, ?, ?, ?)').bind(id, delta, reason, t).run();
 // 減らす（足りなければ false）

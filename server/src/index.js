@@ -1,5 +1,5 @@
 import { arenaHome, arenaSetDefense, arenaFight } from './arena.js';
-import { Lobby, Room, MEDAL, MEDAL_SHOP, VS_KINDS, medalOf, medalDaily, medalTake, vsTop, vsRewards, vsClaim } from './vs.js';
+import { Lobby, Room, MEDAL, MEDAL_SHOP, VS_KINDS, medalOf, medalDaily, medalTake, medalMonthLeft, vsTop, vsRewards, vsClaim } from './vs.js';
 export { Lobby, Room };
 // TWIST RUSH サーバー（Cloudflare Workers + D1）
 //   ・ログイン（Google／LINE／Microsoft）  ・セーブの保存と読み込み
@@ -560,7 +560,7 @@ async function api(env, req, url) {
     const today = new Date((t + TZ) * 1000).toISOString().slice(0, 10);
     // はじめての300をまだもらっていない人には「受け取る」を出す（2026-11-23）
     const firstDue = !!MEDAL.first && !(m && await env.DB.prepare("SELECT 1 FROM medal_log WHERE account_id = ? AND reason = 'first' LIMIT 1").bind(me.id).first());
-    return json(env, req, { balance: m ? m.balance : 0, daily: firstDue || (!!MEDAL.daily && (!m || m.daily !== today)), first: firstDue, firstN: MEDAL.first, dailyN: MEDAL.daily, bets: MEDAL.bets, shop: MEDAL_SHOP });
+    return json(env, req, { balance: m ? m.balance : 0, daily: firstDue || (!!MEDAL.daily && (!m || m.daily !== today)), first: firstDue, firstN: MEDAL.first, dailyN: MEDAL.daily, bets: MEDAL.bets, shop: await Promise.all(MEDAL_SHOP.map(async it => it.monthly ? Object.assign({}, it, {left: await medalMonthLeft(env, me.id, it, t)}) : it)) });
   }
   if (p === '/api/medal/daily' && M === 'POST') {
     const got = await medalDaily(env, me.id, nowSec()), m = await medalOf(env, me.id);
@@ -569,6 +569,7 @@ async function api(env, req, url) {
   if (p === '/api/medal/buy' && M === 'POST') {
     const b = await req.json().catch(() => ({})), it = MEDAL_SHOP.find(x => x.k === b.k);
     if (!it) return fail(env, req, 'その品物はありません');
+    if (it.monthly && !(await medalMonthLeft(env, me.id, it, nowSec()))) return fail(env, req, '今月はもう交換しました（月' + it.monthly + '回まで）', 409);
     if (!await medalTake(env, me.id, it.price, 'buy:' + it.k, nowSec())) return fail(env, req, '対戦メダルが足りません', 402);
     const m = await medalOf(env, me.id);
     return json(env, req, { ok: true, k: it.k, balance: m ? m.balance : 0 });
