@@ -167,6 +167,30 @@ body.on-menu .battlemain{opacity:0;}
   .how-foot{flex:none;width:100%;display:flex;justify-content:center;gap:8px;
     padding:10px 16px calc(env(safe-area-inset-bottom,0px) + 14px);border-top:1px solid rgba(255,255,255,.14);}
   .demo{display:flex;gap:14px;flex-wrap:wrap;margin:2px 0 4px;}
+  /* 練習の入り口（2026-11-23 本人：イージー・ノーマル・ハード＋お手本） */
+  #prac .pr-hero{display:flex;gap:12px;align-items:center;margin-top:10px;padding:12px;border-radius:16px;background:linear-gradient(135deg,rgba(95,211,255,.25),rgba(125,255,138,.18));border:1px solid rgba(255,255,255,.18)}
+  #prac .pr-hero img{width:72px;height:72px;border-radius:50%;object-fit:cover;border:3px solid #fff;flex:none}
+  #prac .pr-hero b{font-size:16px;color:#fff}#prac .pr-hero p{margin:4px 0 0;font-size:13px;line-height:1.65;color:#eee6ff}
+  #prac .pr-card{margin-top:12px;border-radius:16px;padding:12px 14px;border:1px solid rgba(255,255,255,.18);box-shadow:0 4px 14px rgba(0,0,0,.25)}
+  #prac .pr-card.easy{background:linear-gradient(135deg,rgba(61,220,151,.30),rgba(61,220,151,.08))}
+  #prac .pr-card.normal{background:linear-gradient(135deg,rgba(79,168,255,.32),rgba(79,168,255,.08))}
+  #prac .pr-card.hard{background:linear-gradient(135deg,rgba(255,95,95,.32),rgba(255,95,95,.08))}
+  #prac .pr-top{display:flex;gap:12px;align-items:center}
+  #prac .pr-ic{font-size:34px;width:52px;height:52px;border-radius:14px;background:rgba(255,255,255,.14);display:grid;place-items:center;flex:none}
+  #prac .pr-top b{display:block;font-size:19px;color:#fff}#prac .pr-top small{font-size:12.5px;color:#eee6ff}
+  #prac .pr-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+  #prac .pr-btns button{border:none;border-radius:12px;padding:11px 6px;font:inherit;font-weight:800;font-size:14px;cursor:pointer}
+  #prac .pr-demo{background:rgba(255,255,255,.92);color:#3a2a55}
+  #prac .pr-go{background:linear-gradient(180deg,#ffe07a,#ffb83a);color:#3a2000;box-shadow:0 3px 0 #c98a1c}
+  #prac .pr-note{margin-top:14px}#prac .pr-note p{color:#eee6ff}
+  /* お手本のひとこと */
+  #demoCap{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 74px);z-index:30;width:min(92vw,380px);display:flex;gap:8px;align-items:flex-start;pointer-events:none;transition:opacity .25s}
+  #demoCap[hidden]{display:none}
+  #demoCap img{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #fff;flex:none;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+  #demoCap p{margin:0;background:#fff;color:#3a2a55;border-radius:4px 16px 16px 16px;padding:8px 12px;font-size:13.5px;line-height:1.55;font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+  #demoCap p b{color:#e0357a}
+  #demoCap.pop p{animation:dcPop .3s ease-out}
+  @keyframes dcPop{0%{transform:scale(.92)}60%{transform:scale(1.04)}100%{transform:scale(1)}}
   /* 遊び方（2026-11-23 本人「文字だけはしんどい・画像を入れて」）：タブ＋画像つきのカード */
   #howto .ht-tabs{display:flex;gap:5px;padding:8px 12px 6px;width:100%;max-width:520px;margin:0 auto;flex:none}
   #howto .ht-tabs::-webkit-scrollbar{display:none}
@@ -1753,7 +1777,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         <button class="mtile" id="shopBtn" data-tip="コインでアイテムを買う"><span class="mi"><img data-mimg="shop" alt=""></span><span class="ml">ショップ</span></button>
         <button class="mtile" id="sixtyBtn" data-tip="60秒で何点取れるか。記録はランキングに残る"><span class="mi"><img data-mimg="sixty" alt=""></span><span class="ml">60秒アタック</span></button>
         <button class="mtile" id="startBtn" data-tip="カラーHPがどれか30になるまで、どれだけ長く生き残れるか。時間がたつほど厳しくなる。壊した中身と生き残った時間から、サバイバルレートが決まる。記録あり・コンティニュー1回"><span class="mi"><img data-mimg="endless" alt=""></span><span class="ml">サバイバル</span></button>
-        <button class="mtile" id="easyBtn" data-tip="5段階の難しさで練習できる。記録なし・コンティニュー何度でも"><span class="mi"><img data-mimg="practice" alt=""></span><span class="ml">練習</span></button>
+        <button class="mtile" id="easyBtn" data-tip="イージー・ノーマル・ハードで練習。CPUのお手本も見られる。記録なし"><span class="mi"><img data-mimg="practice" alt=""></span><span class="ml">練習</span></button>
         <div class="mrow2 two">
           <button class="mtile low" id="forgeBtn" data-forge="1" data-tip="鍛冶屋：遠征で集めた素材で武器を作る。装備ガチャもここ"><span class="mi"><img data-mimg="forge" alt=""></span><span class="ml">鍛冶屋</span></button>
           <button class="mtile low" id="mktBtn" data-tip="ミケの店：いらない武器や素材をニャンコインに換える。ほかのプレイヤーと預けて売り買いもできる"><span class="mi"><img data-mimg="market" alt=""></span><span class="ml">ミケの店</span></button>
@@ -1959,7 +1983,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
           </section>
           <section class="ht-card">
             <h3>🎯 練習とチャレンジ</h3>
-            <p><b>練習</b>：5段階の難しさで練習できます。記録は残らず、何度でも続けられます。<br><b>チャレンジ</b>：毎週3つのお題。みんな同じ盤面で点数を競います。</p>
+            <p><b>練習</b>：イージー・ノーマル・ハードの3つ。CPUが遊んで見せる<b>お手本</b>もあります。記録は残らず、何度でも続けられます。<br><b>チャレンジ</b>：毎週3つのお題。みんな同じ盤面で点数を競います。</p>
           </section>
         </div>
         <!-- ===== 対戦 ===== -->
@@ -2027,6 +2051,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       <div class="resbtns">
         <button class="rbtn next hidden" id="nextBtn"><i>▶</i><span>次へ</span></button>
         <button class="rbtn hidden" id="stageBtn"><i>🗺</i><span>ステージ</span></button>
+        <button class="rbtn next hidden" id="pracSelf"><i>✋</i><span>自分でやる</span></button>
         <button class="rbtn" id="retryBtn"><i>↻</i><span>もう一度</span></button>
         <button class="rbtn" id="titleBtn"><i>⌂</i><span>タイトル</span></button>
       </div>
@@ -2057,28 +2082,25 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       <small id="autoInfo" hidden><b>オート</b>：自動で戦う・ごほうびは自分で戦うのと同じ・途中で手動OK<br><b>スキップ</b>：一瞬で勝ち・10回まとめてOK・もらえるのは経験値と仲間だけ</small>
     </div>
 
-    <!-- 練習（5段階） -->
+    <!-- 練習（イージー・ノーマル・ハード＋お手本） -->
+    <div id="demoCap" hidden><img src="img/intro/guide.webp" alt=""><p></p></div>
     <div class="overlay hidden" id="prac" role="dialog" aria-label="練習">
       <div class="how-head">
         <button class="how-back" id="pracBack" aria-label="タイトルに戻る">‹ 戻る</button>
         <h2>練習</h2>
       </div>
       <div class="how-body">
-        <section>
-          <h3>難しさ</h3>
-          <div class="modesel col" data-key="prac">
-            <button data-v="1">Lv1　いちばんやさしい</button>
-            <button data-v="3">Lv3　やさしい</button>
-            <button data-v="5">Lv5　ふつう（ランキングと同じ）</button>
-            <button data-v="8">Lv8　むずかしい</button>
-            <button data-v="12">Lv12　かなり厳しい</button>
-            <button data-v="16">Lv16　鬼</button>
-            <button data-v="20">Lv20　最高</button>
-          </div>
-          <p>記録は残りません。コンティニューは何度でも使えます。</p>
-        </section>
+        <div class="pr-hero"><img src="img/intro/guide.webp" alt=""><div><b>練習モードへようこそ！</b><p>記録は残らないから、失敗しても大丈夫。<br>まずは<b>お手本</b>を見て、マネしてみよう！</p></div></div>
+        <div class="pr-card easy"><div class="pr-top"><span class="pr-ic">🐢</span><div><b>イージー</b><small>ゆっくり。はじめての人に</small></div></div>
+          <div class="pr-btns"><button class="pr-demo" data-pdemo="1">👀 お手本を見る</button><button class="pr-go" data-pgo="1">▶ 練習する</button></div></div>
+        <div class="pr-card normal"><div class="pr-top"><span class="pr-ic">🐇</span><div><b>ノーマル</b><small>60秒アタック・サバイバルと同じ速さ</small></div></div>
+          <div class="pr-btns"><button class="pr-demo" data-pdemo="5">👀 お手本を見る</button><button class="pr-go" data-pgo="5">▶ 練習する</button></div></div>
+        <div class="pr-card hard"><div class="pr-top"><span class="pr-ic">🐆</span><div><b>ハード</b><small>速い！ 上級者向け</small></div></div>
+          <div class="pr-btns"><button class="pr-demo" data-pdemo="10">👀 お手本を見る</button><button class="pr-go" data-pgo="10">▶ 練習する</button></div></div>
+        <section class="pr-note"><h3>👀 お手本とは</h3><p>CPUが60秒間、実際に遊んで見せます。下に出る<b>ひとこと</b>で「いま何をしているか」が分かります。とちゅうで画面右上の<b>「お手本中」</b>を押すと、そこから自分で操作できます。</p>
+          <p>練習は、記録は残らず、コンティニューは何度でもできます。</p></section>
       </div>
-      <div class="how-foot"><button class="btn" id="pracStart">はじめる</button></div>
+    </div>
     </div>
 
     <!-- オンライン対戦（準備中） -->
@@ -4219,6 +4241,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (comboN > 0) labels.push({text: comboN + 'COMBO', style: 'combo'});
     if (syncN > 0)  labels.push({text: syncN + 'sync', style: 'sync'});
     labels.forEach((L, i) => pops.push({text: L.text, style: L.style, r: cr, c: cc, row: i, n: labels.length, t: t0 + i * CFG.POP_GAP_MS}));
+    if (demoOn) demoClear(lines, chain, gs.some(g => g.t === GOLD));
     // 盤面の右側を、下から上へ点数が湧き上がる
     if (gameMode !== 'story') feed.push({calc: calcTxt, pts: String(pendingGain), t: t0});   // ストーリーは点数を出さない（ダメージが主役）
     phase = 'clear'; phaseStart = now();
@@ -4805,7 +4828,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   // 2026-11-23 本人「継続スキルが盤面下に出たまま、次のゲームでも出っぱなし」：戦いが終わったら、戦い中だけの表示を全部消す
   //   流れ：終わる → ブロックが崩れる → 画面をリセット → 負け姿（勝ち姿）＋声 → ゲット画面 → REWARD
-  function endUi(){
+  function endUi(){ try { if (!demoTm) demoHide(); } catch(_) {}
     try { ['buffBar', 'heartTray', 'enSk'].forEach(id => { const el = $(id); if (el) el.style.display = 'none'; }); buffKey = ''; } catch(_) {}
     try { document.querySelectorAll('.healfx').forEach(el => el.remove()); } catch(_) {}
     try { document.body.classList.remove('tstop', 'slowmo'); } catch(_) {}
@@ -4931,6 +4954,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (running) { slowTick(t); lapHold(t); }
     if (running) skillTick(t);
     if (running && autoOn) autoTick(t);
+    if (running && demoOn && t - runStart >= DEMO_SEC * 1000) demoFinish();
     // カラーHPが警告ラインを超えている間、一定の間隔で警告音を鳴らす（危ないほど間隔が短い）
     if (running) {
       const mx = Math.max(...stacks);
@@ -5596,6 +5620,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     const stage = gameMode === 'story' ? STORY[opt.stage || 0] : null;
     if (stage) countPlay(opt.stage || 0, opt.autoGo ? AUTO_LV[autoLv].mult : 1);   // オートはレベルでスタミナが変わる
     autoOn = !!(stage && opt.autoGo); if (opt) delete opt.autoGo;
+    demoOn = gameMode === 'practice' && !!opt.demo; if (demoOn) autoOn = true; demoReset();
     lastWasAuto = autoOn;                                // 2026-11-20 本人：「もう一度」は、前がオートならオート・手動なら手動
     autoNext = 0; autoPlan = null; autoT0 = 0; autoS0 = 0; autoPace = 1; autoSkAt = 0; drawAutoBadge();
     diffLv = gameMode === 'practice' ? (opt.lv || 5) : (stage ? (stage.kind === 'boss' && stage.lvV ? stage.lvV[varOf(stage)] : stage.diff) : (gameMode === 'chal' && chCur && chCur.r.lv) || 5);   // ランキング（60秒・エンドレス）はLv5固定
@@ -5606,7 +5631,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     best = gameMode === 'chal' ? chBest() : loadBest(isRec(gameMode) ? gameMode : 'rank');
     $('hiScore').textContent = best;
     const tag = $('modeTag');
-    tag.textContent = MODE_LABEL[gameMode] + (gameMode === 'practice' ? ' Lv' + diffLv : (stage ? ' ' + stage.label : ''));
+    tag.textContent = gameMode === 'practice' ? (demoOn ? 'お手本 ' : '練習 ') + ({1: 'イージー', 5: 'ノーマル', 10: 'ハード'}[diffLv] || 'Lv' + diffLv) : MODE_LABEL[gameMode] + (stage ? ' ' + stage.label : '');
     if (gameMode === 'chal' && chCur) tag.textContent = '🎯 ' + chCur.r.n;
     chTurn = 0; rush = 0; rushFrom = 0; rushUndo = null; rushMax = 0; rushShown = '';
     runMaxBar = 0; $('resStars').classList.add('hidden');
@@ -5628,7 +5653,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     document.querySelectorAll('.stk.dead').forEach(d => d.classList.remove('dead')); canvas.style.transform = '';
     const t = now(); lapStart = t; lastStackTick = t; penaltyFlash = 0; runStart = t; reliefT = 0; lapShown = lapSec();
     pst = (gameMode === 'sixty' || gameMode === 'rank') ? {len: {3: 0, 4: 0, 5: 0, 6: 0}, col: [], gold: 0, turns: 0, sync: 0, chainT: 0, pts: 0, clears: 0, wait: 0, pen: 0, mar: 0, marN: 0, cross: 0, lastT: t} : null;
-    $('over').querySelector('h1').textContent = 'RESULT';
+    $('over').querySelector('h1').textContent = 'RESULT'; $('pracSelf').classList.add('hidden');
     running = true; refreshZone();
     bgmOn = true; bgmMode = null; bgmUnlock(); primeVoice(); bgmPlay(gameMode === 'sixty' || gameMode === 'chal' ? 'panic' : 'calm');
     updateHUD(); updateGauges();
@@ -5854,6 +5879,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     $('stageBtn').classList.toggle('hidden', gameMode !== 'story');   // 負けてもステージ選択には戻れる
     if (afterShown) return; afterShown = true;
     if (gameMode === 'online') { onlShowResult(); return; }   // オンライン対戦：コンティニューなし
+    if (demoOn) { demoHide(); $('over').querySelector('h1').textContent = 'お手本おわり'; $('finalNote').textContent = 'お手本でもゲージがいっぱいになることがあるよ。こんどは自分でやってみよう！'; $('pracSelf').classList.remove('hidden'); $('over').classList.remove('hidden'); return; }
     if (gameMode === 'sixty' || gameMode === 'chal') { $('over').classList.remove('hidden'); return; }   // 60秒アタック・チャレンジはコンティニューなし
     if (gameMode === 'story') {                          // ストーリー：広告は1ステージ3回まで
       if (autoRep && autoLoseGo && autoOn) { awardLoss(); $('over').classList.remove('hidden'); return; }   // 負けても続けるオート：コンティニューは聞かない
@@ -5875,7 +5901,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   function endGame(){ $('cont').classList.add('hidden'); awardLoss(); pracExp(); $('over').classList.remove('hidden'); }
   function pracExp(){                                    // 練習：やめたときに、遊んだ時間で経験値
-    if (gameMode !== 'practice') return;
+    if (gameMode !== 'practice' || demoOn) return;
     const ux = Math.max(UEXP.pracMin, Math.min(UEXP.pracMax, Math.round((now() - runStart) / 60000 * UEXP.pracPerMin)));
     userExpAdd(ux); $('finalNote').textContent += '　経験値 +' + ux;
   }
@@ -6072,9 +6098,14 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   // ===== 下の操作パーツ =====
   $('startBtn').addEventListener('click', () => start('rank', {}));
   $('sixtyBtn').addEventListener('click', () => start('sixty', {}));
-  $('easyBtn').addEventListener('click', () => { markSel('prac', String(pracLv)); $('prac').classList.remove('hidden'); });
+  $('easyBtn').addEventListener('click', () => { audio(); $('prac').classList.remove('hidden'); $('prac').querySelector('.how-body').scrollTop = 0; });
   $('pracBack').addEventListener('click', () => $('prac').classList.add('hidden'));
-  $('pracStart').addEventListener('click', () => { $('prac').classList.add('hidden'); start('practice', {lv: pracLv}); });
+  // 2026-11-23 本人：練習はイージー（Lv1）・ノーマル（Lv5＝60秒アタックと同じ）・ハード（Lv10）。それぞれ「お手本」と「練習する」
+  document.querySelectorAll('#prac [data-pgo],#prac [data-pdemo]').forEach(b => b.addEventListener('click', () => {
+    const demo = !!b.dataset.pdemo, lv = +(b.dataset.pgo || b.dataset.pdemo);
+    pracLv = lv; save('prac', String(lv)); $('prac').classList.add('hidden'); start('practice', {lv, demo});
+  }));
+  $('pracSelf').addEventListener('click', () => { $('over').classList.add('hidden'); $('over').classList.remove('soft', 'in'); start('practice', {lv: diffLv}); });
   // ===== スタミナ（ストーリー）：上限はユーザーグレードで決まる。時間で回復。1日の挑戦回数の上限はなし =====
   const STAM_MAX = [100, 110, 120, 135, 150, 165, 180, 200, 220, 250];   // ルーキー〜マスター、その上の5つ（仮の値。2026-11-13 に最低100へ）
   const STAM_REGEN_MIN = 5;                     // 5分で1回復
@@ -7484,7 +7515,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.285';
+  const APP_VER = '0.9.286';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -7935,10 +7966,12 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   function drawAutoBadge(){
     const b = $('autoBadge'); if (!b) return;
-    b.hidden = !autoOn; b.classList.remove('off'); b.textContent = 'AUTO ▶ ' + AUTO_LV[autoLv].name;
+    b.hidden = !autoOn; b.classList.remove('off'); b.textContent = demoOn ? '👀 お手本中　押すと自分で操作' : 'AUTO ▶ ' + AUTO_LV[autoLv].name;
   }
   $('autoBadge').addEventListener('click', () => {           // 押すと手動に切り替える
     if (!autoOn) return;
+    if (demoOn) { demoOn = false; if (lastOpt) lastOpt.demo = false; demoHide(); autoOn = false; autoPlan = null; toast('ここから自分で操作できます。がんばって！');
+      const b = $('autoBadge'); b.classList.add('off'); b.textContent = '自分で操作'; setTimeout(() => { if (!autoOn) b.hidden = true; }, 1500); return; }
     autoOn = false; autoPlan = null; toast('手動に切り替えました' + (autoRep ? '（オートの続きも止めました）' : '')); autoRep = null;
     const b = $('autoBadge'); b.classList.add('off'); b.textContent = '手動'; setTimeout(() => { if (!autoOn) b.hidden = true; }, 1500);
   });
@@ -8020,7 +8053,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   const autoBusy = (r, c) => sqFrozen(grid, r, c) || (phase === 'clear' && [[r, c], [r, c+1], [r+1, c+1], [r+1, c]].some(([a, b]) => clearSet.has(a * N + b)));
   // いちばんよい1手（なければ2手先まで見て、1手目を返す）
   function autoThink(){
-    const L = AUTO_LV[autoLv] || AUTO_LV.gachi;
+    const L = demoOn ? DEMO_AL : AUTO_LV[autoLv] || AUTO_LV.gachi;
     const base = autoScore(grid);
     let best = null; const cands = [];
     for (let r = 0; r < N - 1; r++) for (let c = 0; c < N - 1; c++) for (const d of [1, -1]) {
@@ -8055,7 +8088,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   function autoTick(t){
     if (pausedAt || bombPick) return;
     // 技：たまったら使う（ブロックが消えていないときだけ）
-    const AL0 = AUTO_LV[autoLv] || AUTO_LV.gachi;
+    const AL0 = demoOn ? DEMO_AL : AUTO_LV[autoLv] || AUTO_LV.gachi;
     if (phase === 'idle' && skillOn()) { const k = skList.findIndex(s2 => s2.ready);
       if (k < 0) autoSkAt = 0;
       else if (!autoSkAt) autoSkAt = t + 1000 * (AL0.skWait[0] + Math.random() * (AL0.skWait[1] - AL0.skWait[0]));   // レベルが低いほど、たまってから使うまでに間がある
@@ -8075,9 +8108,9 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       if (!autoPlan) { autoNext = t + 200; return; }      // 確定待ち：これ以上よくならないのでそのまま待つ
     }
     const p = autoPlan;
-    const AL = AUTO_LV[autoLv] || AUTO_LV.gachi;
+    const AL = demoOn ? DEMO_AL : AUTO_LV[autoLv] || AUTO_LV.gachi;
     // 腕前に合わせる：目標（あなたの1秒あたりの点数×レベルの割合）より速く稼いでいたら遅く、遅ければ速くする
-    const pps = skPps(AL.pick);
+    const pps = demoOn ? 0 : skPps(AL.pick);
     if (pps > 0) {
       if (!autoT0) { autoT0 = t; autoS0 = score; }
       const el = (t - autoT0) / 1000;
@@ -8087,7 +8120,50 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       moveCursor(cur.r + Math.sign(p.r - cur.r), cur.c + Math.sign(p.c - cur.c), true);
       autoNext = t + AL.move * autoPace; return;
     }
+    if (demoOn && !p.held) { p.held = true; demoPlan(p); autoNext = t + DEMO_HOLD; return; }   // お手本：回す前に少し止めて、ひとことを読ませる
     rotate(p.d, true); autoPlan = null; autoNext = t + AL.rot * autoPace;
+  }
+  // ===== お手本（練習モード）：CPUが60秒遊んで見せる。下にひとことで「いま何をしているか」を出す =====
+  const DEMO_SEC = 60, DEMO_HOLD = 380;
+  const DEMO_AL = {name: 'お手本', move: 230, rot: 520, miss: 0, two: 1, skWait: [0.5, 1], heartLate: 0};
+  let demoOn = false, demoCapAt = 0, demoConfirmSaid = 0, demoN = 0, demoWarned = false, demoTm = 0;
+  function demoReset(){ demoCapAt = 0; demoConfirmSaid = 0; demoN = 0; demoWarned = false; clearTimeout(demoTm);
+    if (demoOn) { demoSay('お手本スタート！ <b>白い枠</b>の動きをよく見ててね', true); demoCapAt = now() + 1200; } else demoHide(); }
+  function demoHide(){ const c = $('demoCap'); if (c) c.hidden = true; clearTimeout(demoTm); demoTm = 0; }
+  function demoSay(html, force){
+    if (!demoOn) return;
+    const t = now(); if (!force && t < demoCapAt) return;
+    const c = $('demoCap'); c.querySelector('p').innerHTML = html; c.hidden = false;
+    try { const g = $('stk0').getBoundingClientRect(); c.style.top = Math.round(g.bottom + 8) + 'px'; c.style.bottom = 'auto'; } catch (_) {}   // 下は「お手本中」のボタンがあるので、カラーHPのすぐ下に出す
+    c.classList.remove('pop'); void c.offsetWidth; c.classList.add('pop');
+    demoCapAt = t + (force ? 2200 : 1500);
+  }
+  const DEMO_MOVE = ['この4マスを回すと、<b>3つそろう</b>よ', '同じ色が<b>縦か横に3つ</b>並ぶ場所をさがして回す', 'なるべく<b>今の枠の近く</b>で、そろう場所をさがすよ'];
+  function demoPlan(p){
+    if (confirmUntil) { if (demoConfirmSaid !== confirmUntil) { demoConfirmSaid = confirmUntil; demoSay('そろった！ 消えるまでの<b>2秒</b>で、<b>もう1か所</b>そろえるよ', true); } return; }
+    if (!demoWarned && Math.max(...stacks) >= CFG.WARN_AT) { demoWarned = true; demoSay('ゲージが<b>赤く</b>なった！ その色を急いで消そう', true); return; }
+    if (p.two) { demoSay('すぐにはそろわないので、<b>次の手</b>でそろうように回しておくよ'); return; }
+    if (p.v > 0) demoSay(DEMO_MOVE[demoN++ % DEMO_MOVE.length]);
+    else demoSay('そろう場所がないときは、回して<b>形を変える</b>よ');
+  }
+  function demoClear(lines, chain, octa){
+    if (!demoOn) return;
+    if (octa) demoSay('<b>オクタブロック</b>！ 全色のゲージが一気に減ったよ', true);
+    else if (lines >= 2) demoSay('<b>' + lines + '列まとめて</b>消えた！ 点数がぐんと上がるよ', true);
+    else if (chain >= 2) demoSay('落ちてきたブロックで<b>続けて消えた</b>（COMBO）！', true);
+  }
+  function demoFinish(){
+    if (!running) return;
+    running = false; autoOn = false; confirmUntil = 0; refreshZone(); hideFighters(); endUi(); drawAutoBadge();
+    document.body.classList.remove('danger'); bgmStop(1.2);
+    demoSay('お手本はここまで！ こんどは<b>自分で</b>やってみよう', true); demoTm = setTimeout(demoHide, 2600);
+    $('finalScore').textContent = score;
+    $('finalNote').textContent = 'お手本は60秒で ' + score.toLocaleString() + '点。マネして遊んでみよう！';
+    $('over').querySelector('h1').textContent = 'お手本おわり';
+    $('nextBtn').classList.add('hidden'); $('stageBtn').classList.add('hidden'); $('pracSelf').classList.remove('hidden');
+    pops.push({text: 'FINISH!', style: 'speed', r: 2.5, c: 2.5, row: 0, n: 1, t: now(), big: true, long: true});
+    afterShown = true; clearTimeout(overTimer);
+    overTimer = setTimeout(() => { const ov = $('over'); ov.classList.add('soft'); ov.classList.remove('hidden'); requestAnimationFrame(() => ov.classList.add('in')); }, 1500);
   }
 
   $('vsBtn').addEventListener('click', openOnline);
@@ -13774,7 +13850,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       else if (b.dataset.p === 'quit') {
         askYes('このプレイをやめますか？<br>記録と報酬は残りません。', () => {
           box.classList.remove('on'); pausedAt = 0;
-          running = false; confirmUntil = 0; try { itemsStop(); } catch(_) {}
+          running = false; confirmUntil = 0; try { itemsStop(); } catch(_) {} try { demoOn = false; demoHide(); } catch(_) {}
           refreshZone(); document.body.classList.remove('danger', 'tstop', 'slowmo', 'bombpick');
           $('cont') && $('cont').classList.add('hidden'); $('over').classList.add('hidden'); $('over').classList.remove('soft', 'in');
           drawSkillBar(true);
