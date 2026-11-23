@@ -954,7 +954,7 @@ body.on-menu .battlemain{opacity:0;}
   .ssv b.g-S{background:linear-gradient(135deg,#ffe27a,#ff8a3d);color:#3a1a00;} .ssv b.g-A{background:#ff5d8f;} .ssv b.g-B{background:#b77bff;} .ssv b.g-C{background:#3fa7ff;} .ssv b.g-D{background:#3fbf8a;} .ssv b.g-E{background:#6b6b7a;}
   .ssb{grid-column:1/-1;height:6px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden;} .ssb i{display:block;height:100%;background:linear-gradient(90deg,#7ee8ff,#b77bff,#ffd24a);}
   .ssr{grid-column:1/-1;font-size:10px;opacity:.75;text-align:right;}
-  .alv{display:flex;gap:6px;justify-content:center;margin:8px 0 4px;}
+  .alose{display:flex;align-items:center;justify-content:center;gap:6px;margin:8px 0 2px;font-weight:800;font-size:13px;} .alose input{width:18px;height:18px;} .alv{display:flex;gap:6px;justify-content:center;margin:8px 0 4px;}
   #askBox .alv button, .alv button{flex:1;padding:8px 4px;border:2px solid rgba(255,255,255,.25);border-radius:12px;background:rgba(255,255,255,.08);color:#fff;font-weight:900;font-size:14px;}
   .alv button small{display:block;font-size:11px;color:#ffe27a;}
   #askBox .alv button{background:rgba(255,255,255,.08);color:#fff;box-shadow:none;min-width:0;}
@@ -5735,6 +5735,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (gameMode === 'online') { onlShowResult(); return; }   // オンライン対戦：コンティニューなし
     if (gameMode === 'sixty' || gameMode === 'chal') { $('over').classList.remove('hidden'); return; }   // 60秒アタック・チャレンジはコンティニューなし
     if (gameMode === 'story') {                          // ストーリー：広告は1ステージ3回まで
+      if (autoRep && autoLoseGo && autoOn) { awardLoss(); $('over').classList.remove('hidden'); return; }   // 負けても続けるオート：コンティニューは聞かない
       const ch = 0;   // お守りは 2026-11-18 になくした
       if (curVar > 0) contLeft = Math.max(contLeft, 1);
       $('contRule').textContent = curVar > 0 ? '広告を見れば何度でも続けられます' : contLeft > 0 ? 'このステージはあと' + contLeft + '回' : 'このステージの広告コンティニューは使い切りました';
@@ -7295,7 +7296,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.274';
+  const APP_VER = '0.9.275';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -7694,7 +7695,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     $('storyStart').click(); return false;           // チームの確認はふつうの挑戦と同じ
   }
   // オート：回数を選んで続けて戦う（スタミナがある分だけ・最大10回）。負けたら・手動にしたら・スタミナが切れたら止まる
-  let autoRep = null, autoN = 1;
+  // 2026-11-23 本人「負けてもオートを続ける設定のオンオフ」
+  let autoRep = null, autoN = 1, autoLoseGo = load('autolosego', '0') === '1';
   $('storyAuto').addEventListener('click', () => {
     const i = pickStage;
     if (!autoOk(i)) { toast('コンティニュー・アイテムなしでクリアしたステージだけオートで戦えます'); return; }
@@ -7712,7 +7714,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       const b = $('skipNum'), c = $('skipCost'); if (b) b.textContent = autoN; if (c) c.textContent = 'スタミナ ⚡' + autoCost(i) * autoN + '（1回 ⚡' + autoCost(i) + '・1回ずつ使います）';
       document.querySelectorAll('#askBox [data-alv]').forEach(x => { x.classList.toggle('on', x.dataset.alv === autoLv); x.disabled = Math.floor(stamNow() / autoCost(i, x.dataset.alv)) < 1; });
       const d = $('alvDesc'); if (d) d.textContent = {omakase: 'あなたの80%くらい', shikkari: 'あなたと同じくらい（100%）', gachi: 'あなたより上手い（120%）'}[autoLv]; };
-    askYes('<b>オート</b>（自動で戦う。レインボーブロックも取れる）<small style="display:block;opacity:.85">SKILL CHECK：あなたの腕前（60秒アタック直近' + SK_N + '回）<br>調子が悪いとき ' + Math.min(...skList60()).toLocaleString() + '・いつも ' + Math.round(skPps('avg') * 60).toLocaleString() + '・調子が良いとき ' + Math.max(...skList60()).toLocaleString() + ' 点</small><div class="alv">' + LVH + '</div><small id="alvDesc" style="display:block;opacity:.85"></small><div class="skipn"><button data-sn="-1">−</button><b id="skipNum">1</b><button data-sn="1">＋</button><button data-sn="99">最大</button></div><small id="skipCost"></small><small style="display:block;opacity:.8">負けたとき・手動にしたとき・スタミナが切れたときは止まります</small>', () => {
+    askYes('<b>オート</b>（自動で戦う。レインボーブロックも取れる）<small style="display:block;opacity:.85">SKILL CHECK：あなたの腕前（60秒アタック直近' + SK_N + '回）<br>調子が悪いとき ' + Math.min(...skList60()).toLocaleString() + '・いつも ' + Math.round(skPps('avg') * 60).toLocaleString() + '・調子が良いとき ' + Math.max(...skList60()).toLocaleString() + ' 点</small><div class="alv">' + LVH + '</div><small id="alvDesc" style="display:block;opacity:.85"></small><div class="skipn"><button data-sn="-1">−</button><b id="skipNum">1</b><button data-sn="1">＋</button><button data-sn="99">最大</button></div><small id="skipCost"></small><label class="alose"><input type="checkbox" id="aLose"' + (autoLoseGo ? ' checked' : '') + '> 負けてもオートを続ける</label><small id="aLoseNote" style="display:block;opacity:.8"></small>', () => {
       if (stamNow() < autoCost(i)) { canPlayStage(i); return; }
       save('autolv', autoLv);
       autoRep = {stage: i, total: autoN, done: 0};
@@ -7721,6 +7723,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     const box = $('askBox');
     box.querySelectorAll('[data-sn]').forEach(b => b.onclick = e => { e.stopPropagation(); const d = +b.dataset.sn, mx = mxOf(); autoN = d === 99 ? mx : Math.max(1, Math.min(mx, autoN + d)); draw(); });
     box.querySelectorAll('[data-alv]').forEach(b => b.onclick = e => { e.stopPropagation(); if (b.disabled) return; autoLv = b.dataset.alv; draw(); });
+    const al = $('aLose'), aln = () => { const n = $('aLoseNote'); if (n) n.textContent = autoLoseGo ? '負けても次へ進みます（手動にしたとき・スタミナが切れたときは止まります）' : '負けたとき・手動にしたとき・スタミナが切れたときは止まります'; };
+    if (al) { al.onclick = e => e.stopPropagation(); al.onchange = () => { autoLoseGo = al.checked; save('autolosego', autoLoseGo ? '1' : '0'); aln(); }; } aln();
     draw();
   });
   function autoRepNextBar(close){
@@ -13212,7 +13216,12 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     try { skProfAdd(sec); } catch(_) {}
   }
   function awardLoss(){
-    if (autoRep) { autoRep = null; setTimeout(() => toast('負けたので、オートを止めました'), 600); }
+    if (autoRep && autoLoseGo && autoOn && gameMode === 'story' && STORY[autoRep.stage] === curStage) {   // 負けても続ける設定：数えて次へ
+      autoRep.done++;
+      if (autoRep.done < autoRep.total) setTimeout(() => autoRepNextBar(() => { $('over').classList.add('hidden'); }), 800);
+      else { autoRep = null; setTimeout(() => toast('オートおわりました'), 600); }
+    }
+    else if (autoRep) { autoRep = null; setTimeout(() => toast('負けたので、オートを止めました'), 600); }
     if (gameMode !== 'story' || lossPaid) return;
     lossPaid = true; addCoins(LOSE_COIN);
     const ls = (+load('lstreak', '0') || 0) + 1; save('lstreak', String(ls));
