@@ -13,7 +13,12 @@ export const FRIEND_SCHEMA = [
   "CREATE TABLE IF NOT EXISTS fblock ( a TEXT NOT NULL, b TEXT NOT NULL, created_at INTEGER NOT NULL, PRIMARY KEY (a, b) )",
   "CREATE TABLE IF NOT EXISTS fmsg ( id INTEGER PRIMARY KEY AUTOINCREMENT, from_id TEXT NOT NULL, to_id TEXT NOT NULL, m INTEGER NOT NULL, created_at INTEGER NOT NULL )",
   "CREATE INDEX IF NOT EXISTS idx_fmsg_to ON fmsg(to_id, id)",
+  // ②対戦のさそい：部屋番号を相手に届ける。status：'wait'＝返事待ち／'no'＝ことわられた（さそった人がまだ見ていない）
+  "CREATE TABLE IF NOT EXISTS finv ( id INTEGER PRIMARY KEY AUTOINCREMENT, from_id TEXT NOT NULL, to_id TEXT NOT NULL, room TEXT NOT NULL, kind TEXT NOT NULL, status TEXT NOT NULL, created_at INTEGER NOT NULL )",
+  "CREATE INDEX IF NOT EXISTS idx_finv_to ON finv(to_id, status)",
+  "CREATE INDEX IF NOT EXISTS idx_finv_from ON finv(from_id, status)",
 ];
+export const FINV_SEC = 90;                          // さそいの有効時間（秒）
 // friends の status：'ok'＝フレンド（a→b と b→a の2行）／'req'＝a から b への申請（1行）
 
 const rnd8 = () => { const a = crypto.getRandomValues(new Uint32Array(1))[0] % 90000000; return String(10000000 + a); };
@@ -87,6 +92,15 @@ export async function friendAct(env, me, op, b, t) {
     return { ok: true };
   }
   if (op === 'unblock') { await env.DB.prepare('DELETE FROM fblock WHERE a = ? AND b = ?').bind(me.id, other).run(); return { ok: true }; }
+  if (op === 'invite') {                                // ②対戦にさそう（部屋はさそう人が先に作っておく）
+    const room = String(b.room || '').replace(/\D/g, ''), kind = b.kind === 'chara' ? 'chara' : 'simple';
+    if (room.length !== 4) return { error: '部屋が作れませんでした' };
+    if (!(await has(me.id, other, 'ok'))) return { error: 'フレンドにだけさそえます' };
+    await env.DB.batch([
+      env.DB.prepare('DELETE FROM finv WHERE from_id = ? OR created_at < ?').bind(me.id, t - 3600),
+      env.DB.prepare("INSERT INTO finv (from_id, to_id, room, kind, status, created_at) VALUES (?, ?, ?, ?, 'wait', ?)").bind(me.id, other, room, kind, t)]);
+    return { ok: true, sec: FINV_SEC };
+  }
   if (op === 'msg') {
     const m = Math.floor(+b.m);
     if (!(m >= 0 && m < FMSG_N)) return { error: 'ひとことを選んでください' };
@@ -107,4 +121,25 @@ export const friendForget = (env, id) => [
   env.DB.prepare('DELETE FROM friends WHERE a = ? OR b = ?').bind(id, id),
   env.DB.prepare('DELETE FROM fblock WHERE a = ? OR b = ?').bind(id, id),
   env.DB.prepare('DELETE FROM fmsg WHERE from_id = ? OR to_id = ?').bind(id, id),
+  env.DB.prepare('DELETE FROM finv WHERE from_id = ? OR to_id = ?').bind(id, id),
 ];
+
+// ゲームを開いているあいだ、15秒ごとに見に来る（さそい・ことわられた知らせ・赤い丸の数）
+export async function friendPoll(env, me, t) {
+  const q = (sql, ...b) => env.DB.prepare(sql).bind(...b).all().then(r => r.results || []);
+  const inv = await q("SELECT i.id AS id, i.room AS room, i.kind AS kind, i.created_at AS t, a.name AS name, c.code AS code FROM finv i JOIN accounts a ON a.id = i.from_id JOIN fcode c ON c.account_id = i.from_id WHERE i.to_id = ? AND i.status = 'wait' AND i.created_at >= ? ORDER BY i.id DESC LIMIT 3", me.id, t - FINV_SEC);
+  const no = await q("SELECT i.id AS id, i.room AS room, a.name AS name FROM finv i JOIN accounts a ON a.id = i.to_id WHERE i.from_id = ? AND i.status = 'no'", me.id);
+  if (no.length) await env.DB.prepare("DELETE FROM finv WHERE from_id = ? AND status = 'no'").bind(me.id).run();
+  const req = await env.DB.prepare("SELECT COUNT(*) AS n FROM friends WHERE b = ? AND status = 'req'").bind(me.id).first();
+  const last = await env.DB.prepare('SELECT MAX(id) AS id FROM fmsg WHERE to_id = ?').bind(me.id).first();
+  return { inv, no, req: (req && req.n) || 0, lastMsg: (last && last.id) || 0, sec: FINV_SEC };
+}
+// さそいへの返事：ok＝受ける（部屋番号で入るのはゲームの側）／ことわる
+export async function friendAnswer(env, me, b) {
+  const id = Math.floor(+b.id);
+  if (b.ok) await env.DB.prepare('DELETE FROM finv WHERE id = ? AND to_id = ?').bind(id, me.id).run();
+  else await env.DB.prepare("UPDATE finv SET status = 'no' WHERE id = ? AND to_id = ? AND status = 'wait'").bind(id, me.id).run();
+  return { ok: true };
+}
+// さそった人が部屋をやめたとき
+export const friendInviteCancel = (env, me) => env.DB.prepare('DELETE FROM finv WHERE from_id = ?').bind(me.id).run();

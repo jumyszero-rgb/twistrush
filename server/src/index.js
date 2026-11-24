@@ -1,5 +1,5 @@
 import { arenaHome, arenaSetDefense, arenaFight } from './arena.js';
-import { FRIEND_SCHEMA, friendHome, friendAct, friendForget } from './friends.js';
+import { FRIEND_SCHEMA, friendHome, friendAct, friendForget, friendPoll, friendAnswer, friendInviteCancel } from './friends.js';
 import { Lobby, Room, MEDAL, MEDAL_SHOP, VS_KINDS, medalOf, medalDaily, medalTake, medalMonthLeft, medalGive, vsTop, vsRewards, vsClaim, vsCpuDone } from './vs.js';
 export { Lobby, Room };
 // TWIST RUSH サーバー（Cloudflare Workers + D1）
@@ -579,6 +579,9 @@ async function api(env, req, url) {
   // ---- CPU戦の結果（レート・勝ち負けの数は変わらない。メダルだけ） ----
   // ---- フレンド（2026-11-24）----
   if (p === '/api/friend' && M === 'GET') return json(env, req, await friendHome(env, me));
+  if (p === '/api/friend/poll' && M === 'GET') return json(env, req, await friendPoll(env, me, nowSec()));
+  if (p === '/api/friend/answer' && M === 'POST') return json(env, req, await friendAnswer(env, me, await req.json().catch(() => ({}))));
+  if (p === '/api/friend/uninvite' && M === 'POST') { await friendInviteCancel(env, me); return json(env, req, { ok: true }); }
   if (p.startsWith('/api/friend/') && M === 'POST') {
     const b = await req.json().catch(() => ({}));
     const r = await friendAct(env, me, p.slice(12), b, nowSec());
