@@ -18,7 +18,7 @@ export const FRIEND_SCHEMA = [
   "CREATE INDEX IF NOT EXISTS idx_finv_to ON finv(to_id, status)",
   "CREATE INDEX IF NOT EXISTS idx_finv_from ON finv(from_id, status)",
 ];
-export const FINV_SEC = 90;                          // さそいの有効時間（秒）
+export const FINV_SEC = 180;                         // さそいの有効時間（秒）。さそわれた人は、画面に出てから60秒のあいだに返事（2026-11-24 本人）
 // friends の status：'ok'＝フレンド（a→b と b→a の2行）／'req'＝a から b への申請（1行）
 
 const rnd8 = () => { const a = crypto.getRandomValues(new Uint32Array(1))[0] % 90000000; return String(10000000 + a); };
