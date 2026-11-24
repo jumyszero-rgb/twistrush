@@ -743,6 +743,26 @@ body.on-menu .battlemain{opacity:0;}
   .vn{font-weight:900;font-size:16px;} .vn small{font-size:10px;margin-left:2px;}
   .vbtns{width:100%;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;} .vbtns button{padding:8px 2px;border-radius:10px;border:0;font-weight:900;font-size:12px;background:#ff7fb0;color:#fff;} .vbtns button.g{background:#ffcc33;color:#3a2600;} .vbtns button small{display:block;font-size:10px;} .vbtns button:disabled{opacity:.4;}
   .evoreq{list-style:none;padding:0;margin:8px 0;font-size:12px;} .evoreq li{padding:4px 0;border-bottom:1px solid rgba(255,255,255,.08);} .evoreq li.ok{color:#9dffb0;}
+  .evogain{margin:4px 0 6px;font-size:13px;line-height:1.6;color:#ffe9a8}
+  .dsec.psk ul{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:5px}
+  .dsec.psk li{display:grid;grid-template-columns:52px 1fr;column-gap:6px;padding:6px 8px;border-radius:10px;background:rgba(255,255,255,.05);opacity:.5}
+  .dsec.psk li.on{opacity:1;background:rgba(255,211,77,.12);border:1px solid rgba(255,211,77,.35)}
+  .dsec.psk li i{font-style:normal;font-weight:900;font-size:12px;color:#ffd34d;grid-row:span 2;align-self:center}
+  .dsec.psk li b{font-size:14px} .dsec.psk li small{font-size:12px;line-height:1.5;color:#eee6ff} .dsec.psk li em{font-style:normal;color:#ff9fd0;font-weight:800}
+  .evotag{display:inline-block;margin-right:4px;padding:1px 7px;border-radius:7px;font-size:12px;vertical-align:2px;color:#3a2a00;background:linear-gradient(135deg,#fff1a8,#ffc83d)}
+  .evotag.e2{color:#fff;background:linear-gradient(90deg,#ff5f8f,#ffbf1f,#3ddc97,#4fa8ff,#9b5cf0);text-shadow:0 1px 2px rgba(0,0,0,.4)}
+  .dtop.evo1 .dimg{box-shadow:0 0 0 2px #ffc83d,0 0 18px rgba(255,200,61,.55)}
+  .dtop.evo2 .dimg{box-shadow:0 0 0 2px #fff,0 0 0 4px #ff5f8f,0 0 22px rgba(155,92,240,.7)}
+  .evoshow{position:fixed;inset:0;z-index:80;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 45%,rgba(255,240,200,.35),rgba(10,5,30,.92) 70%);animation:evIn .4s ease}
+  .evoshow .evpillar{position:absolute;left:50%;top:0;bottom:0;width:40%;transform:translateX(-50%);background:linear-gradient(90deg,transparent,rgba(255,236,160,.85),transparent);filter:blur(6px);animation:evPil 1.4s ease forwards}
+  .evoshow.e2 .evpillar{background:linear-gradient(90deg,transparent,rgba(255,95,143,.6),rgba(255,236,160,.9),rgba(79,168,255,.6),transparent)}
+  .evoshow{overflow-y:auto} .evoshow img{position:relative;width:min(60vw,280px);opacity:0;animation:evImg .8s .7s ease forwards;filter:drop-shadow(0 0 18px rgba(255,220,120,.8))}
+  .evoshow .evtxt{position:relative;text-align:center;color:#fff;opacity:0;animation:evImg .6s 1.2s ease forwards}
+  .evoshow .evtxt b{display:block;font-size:40px;letter-spacing:.2em;color:#ffd34d;text-shadow:0 0 14px rgba(255,200,60,.9)}
+  .evoshow.e2 .evtxt b{background:linear-gradient(90deg,#ff5f8f,#ffbf1f,#3ddc97,#4fa8ff,#9b5cf0);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .evoshow .evtxt span{display:block;font-size:20px;font-weight:900} .evoshow .evtxt small{display:block;margin-top:4px;font-size:13px;color:#ffe9a8}
+  .evoshow ul{list-style:none;margin:8px 0 0;padding:0;font-size:14px;font-weight:800} .evoshow em{display:block;margin-top:10px;font-style:normal;font-size:12px;opacity:.7}
+  @keyframes evIn{from{opacity:0}to{opacity:1}} @keyframes evPil{0%{opacity:0;height:0}40%{opacity:1}100%{opacity:.35}} @keyframes evImg{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:none}}
   .evobtns{display:flex;flex-direction:column;gap:8px;margin-top:8px;} .evobtns button{padding:11px;border-radius:12px;border:0;font-weight:900;font-size:14px;} .evogo{background:linear-gradient(#ffe27a,#f0a800);color:#3a2600;} .evogo:disabled{opacity:.5;} .evovote{background:rgba(255,255,255,.14);color:#fff;}
   .rsq-ad{margin:10px auto 0;display:block;padding:12px 18px;border:0;border-radius:14px;background:linear-gradient(90deg,#ffcf3d,#ff8a3d);color:#3a2210;font-weight:900;font-size:15px;box-shadow:0 4px 0 #b25a10;}
   .rsq-ad:disabled{opacity:.85;} .rsq-ad.done{background:#3fc67a;color:#fff;box-shadow:0 4px 0 #1f7a47;}
@@ -7854,15 +7874,16 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   const FIG_BOX = {"stand/kagura":[0.005, 0.497, 0.993, 0.996],"stand/ciel":[0.005, 0.398, 0.993, 0.996],"stand/nefer":[0.005, 0.38, 0.993, 0.996],"stand/joker":[0.005, 0.396, 0.993, 0.996],"stand/chronoa":[0.048, 0.5, 0.945, 0.999],"t/g68":[0.145,0.018,0.814,0.977],"t/g69":[0.244,0.018,0.781,0.984],"t/g70":[0.008,0.0,0.986,0.994],"t/g71":[0.021,0.01,0.99,0.992],"t/g72":[0.02,0.0,0.98,1.0],"t/g73":[0.172,0.002,0.807,0.994],"t/g74":[0.152,0.023,0.814,0.98],"t/g75":[0.143,0.004,0.836,0.996],"t/g76":[0.051,0.004,0.953,0.994],"t/g77":[0.061,0.006,0.906,0.984],"t/g78":[0.23,0.016,0.797,0.988],"t/g79":[0.088,0.006,1.0,0.986],"t/g80":[0.051,0.0,0.969,0.99],"t/g81":[0.004,0.006,0.979,0.99],"t/g82":[0.0,0.006,1.0,0.992],"t/g83":[0.0,0.0,0.994,0.994],"t/g84":[0.0,0.0,1.0,0.992],"t/g85":[0.016,0.0,0.99,1.0],"t/g86":[0.021,0.008,0.982,0.982],"t/g87":[0.008,0.006,0.99,0.99],"t/g88":[0.008,0.049,1.0,0.967],"t/g89":[0.008,0.01,0.99,0.984],"t/g90":[0.102,0.014,0.9,0.988],"t/g91":[0.02,0.006,0.971,0.996],"t/g92":[0.039,0.002,0.98,0.994],"t/g93":[0.018,0.006,0.994,1.0],"t/g94":[0.076,0.0,0.893,0.992],"t/g95":[0.102,0.0,0.902,0.984],"t/g96":[0.029,0.002,0.99,0.992],"t/g97":[0.008,0.012,0.992,0.988],"t/g98":[0.189,0.004,0.82,0.996],"t/g99":[0.045,0.01,0.934,0.992],"t/g100":[0.0,0.0,1.0,0.994],"t/g101":[0.004,0.006,1.0,0.992],"t/g102":[0.131,0.0,0.938,0.996],"stand/busy":[0.0,0.025,0.998,0.965],"stand/rinpan":[0.0,0.004,0.998,0.999],"stand/camilla":[0.018,0.044,0.988,0.991],"stand/chiyo":[0.015,0.236,0.998,0.994],"stand/gilbert":[0.012,0.246,0.998,0.994],"stand/titan":[0.078,0.031,0.985,0.991],"stand/windy":[0.0,0.294,0.99,0.994],"stand/ichigo":[0.0,0.001,0.998,0.996],"stand/mocha":[0.03,0.004,0.99,0.991],"t/g48":[0.039,0.008,0.967,0.986],"t/g32":[0.244,0.014,0.715,0.979],"t/g26":[0.051,0.025,0.951,0.967],"t/g35":[0.1,0.023,0.832,0.973],"t/g14":[0.186,0.023,0.795,0.977],"t/g25":[0.02,0.006,0.98,0.98],"t/g28":[0.178,0.004,0.785,0.992],"t/g56":[0.098,0.018,0.963,0.969],"t/g50":[0.031,0.01,0.834,0.988],"t/g24":[0.115,0.025,0.928,0.98],"t/g13":[0.125,0.025,0.805,0.975],"t/g03":[0.225,0.008,0.818,0.982],"t/g53":[0.021,0.004,0.984,0.992],"t/g12":[0.172,0.025,0.801,0.979],"t/g46":[0.078,0.012,0.949,0.98],"t/g57":[0.033,0.006,0.971,0.992],"t/g43":[0.23,0.004,0.766,0.99],"t/g23":[0.184,0.012,0.809,0.979],"t/g45":[0.246,0.014,0.729,0.984],"t/g63":[0.166,0.006,0.824,0.986],"t/g11":[0.25,0.018,0.738,0.979],"t/g55":[0.123,0.012,0.812,0.98],"t/g21":[0.09,0.012,0.91,0.982],"t/g20":[0.033,0.008,0.965,0.988],"t/g33":[0.127,0.023,0.771,0.979],"t/g19":[0.061,0.01,0.934,0.979],"t/g22":[0.035,0.014,0.943,0.984],"t/g49":[0.01,0.014,0.859,0.984],"t/g29":[0.156,0.027,0.883,0.975],"t/g52":[0.021,0.0,0.895,0.99],"t/g17":[0.17,0.021,0.738,0.975],"t/g34":[0.084,0.057,0.891,0.949],"t/g44":[0.055,0.016,0.775,0.965],"t/g06":[0.09,0.035,0.957,0.973],"t/g02":[0.213,0.016,0.764,0.973],"t/g27":[0.021,0.039,0.986,0.961],"t/g67":[0.006,0.012,0.982,0.986],"t/g40":[0.141,0.0,0.781,0.988],"t/g09":[0.043,0.016,0.977,0.98],"t/g31":[0.027,0.016,0.934,0.979],"t/g04":[0.129,0.021,0.869,0.973],"t/g08":[0.02,0.031,0.979,0.971],"t/g30":[0.207,0.01,0.789,0.988],"t/g58":[0.113,0.008,0.883,0.988],"t/g42":[0.168,0.018,0.838,0.979],"t/g01":[0.014,0.059,0.986,0.951],"t/g15":[0.193,0.029,0.781,0.979],"t/g51":[0.213,0.0,0.781,0.99],"t/g05":[0.045,0.057,0.92,0.951],"t/g18":[0.016,0.012,0.982,0.984],"t/g64":[0.02,0.006,0.975,0.992],"t/g16":[0.059,0.039,0.938,0.961],"t/g38":[0.199,0.027,0.947,0.969],"t/g39":[0.205,0.016,0.891,0.986],"t/g61":[0.068,0.014,0.898,0.98],"t/g62":[0.012,0.01,0.973,0.984],"t/g59":[0.018,0.037,0.98,0.963],"t/g66":[0.035,0.016,0.955,0.984],"t/g47":[0.213,0.02,0.764,0.977],"t/g10":[0.219,0.021,0.77,0.982],"t/g54":[0.029,0.008,0.967,0.99],"t/g36":[0.148,0.014,0.883,0.98],"t/g41":[0.104,0.053,0.91,0.967],"t/g37":[0.166,0.006,0.863,0.992],"t/g60":[0.082,0.0,0.92,0.988],"t/g07":[0.178,0.023,0.744,0.967],"t/g65":[0.191,0.0,0.785,0.984],"a4_10":[0.129,0.008,0.869,0.99],"a2_04":[0.168,0.008,0.83,0.99],"a8_10":[0.041,0.02,0.957,0.979],"sky":[0.104,0.09,0.9,0.896],"a5_07":[0.1,0.01,0.898,0.988],"a7_01":[0.189,0.02,0.809,0.98],"yellow":[0.104,0.092,0.9,0.896],"a5_09":[0.268,0.008,0.73,0.99],"a5_01":[0.25,0.008,0.748,0.99],"a8_06":[0.221,0.02,0.777,0.977],"a7_10":[0.035,0.02,0.963,0.98],"a3_03":[0.016,0.154,0.99,0.844],"black":[0.104,0.092,0.902,0.895],"a7_08":[0.02,0.027,0.98,0.973],"a7_03":[0.139,0.02,0.861,0.98],"a9_08":[0.264,0.02,0.682,0.912],"a5_04":[0.25,0.008,0.746,0.99],"a8_02":[0.137,0.02,0.861,0.977],"a8_07":[0.105,0.021,0.893,0.977],"a4_02":[0.023,0.008,0.977,0.99],"a6_05":[0.205,0.02,0.795,0.979],"a1_05":[0.217,0.008,0.781,0.99],"a7_04":[0.207,0.02,0.791,0.979],"a9_02":[0.146,0.02,0.85,0.979],"orange":[0.104,0.09,0.9,0.896],"a8_09":[0.133,0.02,0.865,0.977],"a1_01":[0.172,0.008,0.826,0.99],"a6_07":[0.172,0.021,0.824,0.977],"a3_02":[0.096,0.01,0.861,0.988],"a4_08":[0.088,0.008,0.91,0.99],"a5_02":[0.021,0.01,0.975,0.988],"a6_09":[0.127,0.023,0.871,0.98],"pink":[0.104,0.09,0.9,0.896],"a1_10":[0.197,0.008,0.801,0.99],"a1_06":[0.287,0.008,0.711,0.99],"a2_01":[0.203,0.008,0.793,0.99],"a7_09":[0.072,0.02,0.928,0.979],"a3_10":[0.098,0.008,0.9,0.988],"a7_06":[0.059,0.02,0.939,0.98],"a1_04":[0.232,0.008,0.777,0.99],"purple":[0.104,0.09,0.9,0.896],"a9_04":[0.031,0.02,0.967,0.979],"a6_04":[0.047,0.02,0.949,0.98],"blue":[0.104,0.09,0.902,0.896],"a2_06":[0.26,0.008,0.738,0.99],"a9_05":[0.094,0.02,0.906,0.977],"a4_06":[0.17,0.008,0.828,0.99],"a3_08":[0.172,0.01,0.824,0.99],"a3_04":[0.008,0.129,0.99,0.871],"a9_01":[0.168,0.02,0.828,0.979],"a3_09":[0.082,0.01,0.916,0.988],"a3_07":[0.146,0.008,0.811,0.99],"a9_07":[0.09,0.02,0.863,0.977],"a5_05":[0.23,0.01,0.768,0.99],"a9_06":[0.094,0.02,0.902,0.977],"a2_07":[0.07,0.008,0.928,0.99],"a6_06":[0.07,0.02,0.932,0.98],"a2_08":[0.268,0.008,0.73,0.99],"a3_05":[0.141,0.01,0.855,0.988],"a1_02":[0.145,0.008,0.854,0.99],"a4_07":[0.189,0.008,0.807,0.99],"a2_02":[0.23,0.008,0.768,0.99],"a6_10":[0.072,0.02,0.924,0.98],"a6_01":[0.223,0.02,0.775,0.979],"a6_02":[0.117,0.02,0.879,0.98],"a1_03":[0.229,0.008,0.77,0.988],"a9_03":[0.152,0.02,0.844,0.977],"a5_06":[0.229,0.01,0.77,0.99],"a5_10":[0.086,0.008,0.912,0.99],"a4_03":[0.219,0.008,0.779,0.99],"a5_08":[0.137,0.008,0.861,0.99],"a8_01":[0.201,0.02,0.797,0.977],"a7_02":[0.133,0.096,0.924,0.896],"a9_10":[0.244,0.02,0.754,0.979],"a2_09":[0.09,0.008,0.908,0.963],"white":[0.104,0.092,0.9,0.896],"a8_03":[0.109,0.02,0.889,0.979],"a1_09":[0.211,0.01,0.787,0.99],"a2_05":[0.246,0.008,0.752,0.99],"a6_03":[0.221,0.021,0.773,0.979],"a1_08":[0.203,0.008,0.795,0.99],"a2_10":[0.209,0.008,0.789,0.99],"a3_01":[0.152,0.01,0.846,0.988],"a3_06":[0.09,0.01,0.908,0.99],"a4_05":[0.221,0.008,0.775,0.99],"a8_05":[0.121,0.02,0.889,0.969],"a4_09":[0.152,0.008,0.844,0.99],"red":[0.104,0.092,0.9,0.896],"a8_04":[0.158,0.02,0.84,0.977],"a8_08":[0.02,0.033,0.979,0.963],"a2_03":[0.275,0.008,0.707,0.99],"a4_01":[0.096,0.008,0.902,0.99],"a7_05":[0.023,0.021,0.975,0.979],"a6_08":[0.02,0.039,0.98,0.959],"a4_04":[0.1,0.01,0.902,0.99],"a9_09":[0.158,0.02,0.838,0.975],"a1_07":[0.242,0.008,0.879,0.99],"a5_03":[0.168,0.008,0.83,0.99],"a7_07":[0.031,0.02,0.971,0.98]};
   Object.assign(FIG_BOX, {"t/g103": [0.037, 0.004, 0.969, 0.994]});
   // 全身の絵：ボス＝立ち絵、ガチャキャラ＝背景をぬいた絵、住人＝元の絵
-  function charFullUrl(ci){
-    if (ci < CHARS.length) return 'img/stand/' + CHARS[ci].id + '.webp';
+  const evoArt = u => { const e = evoOf(u); return e && EVO2[u.id].art[e - 1] ? '_e' + e : ''; };
+  function charFullUrl(ci, u){
+    if (ci < CHARS.length) return 'img/stand/' + CHARS[ci].id + (u ? evoArt(u) : '') + '.webp';
     const zk = ALLC[ci] && ALLC[ci].zk; if (!zk) return null;
     return /^g\d+$/.test(zk) ? 'img/zako/t/' + zk + '.webp' : zakoImgOf(zk);
   }
   function menuMainUrl(){
     const t = (typeof teams !== 'undefined' && teams[teamNo]) || [], u = t[0] && unitOf(t[0]); if (!u) return null;
     const ci = ALLC.findIndex(c => c.id === u.id); if (ci < 0) return null;
-    if (ci < CHARS.length) { const id = CHARS[ci].id; return {url: 'img/stand/' + id + '.webp', key: 'stand/' + id}; }   // ストーリーのキャラ：立ち絵（全身）
+    if (ci < CHARS.length) { const id = CHARS[ci].id + evoArt(u); return {url: 'img/stand/' + id + '.webp', key: 'stand/' + id}; }   // ストーリーのキャラ：立ち絵（全身）
     const zk = ALLC[ci].zk; if (!zk) return null;
     if (/^g\d+$/.test(zk)) return {url: 'img/zako/t/' + zk + '.webp', key: 't/' + zk};   // ガチャキャラは背景をぬいた絵
     const url = zakoImgOf(zk); return url ? {url, key: zk} : null;
@@ -7888,7 +7909,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.300';
+  const APP_VER = '0.9.301';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -9802,15 +9823,46 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     .concat(GACHA_CREW.map(z => ({id: 'x_' + z.k, name: z.name, title: GACHA_TITLE[z.k] || '', zk: z.k})));
   ALLC.forEach(c => { const z = c.zk && ZAKO_STAT[c.zk]; if (z) CHAR_STAT[c.id] = {type: z.type, grade: z.grade, base: z.base}; });
   const isZakoId = id => typeof id === 'string' && id.startsWith('z_');
+  // ===== 2段階の進化（2026-11-25 本人と決めた。まず いちご・モカ）=====
+  //   覚醒（進化）：LV上限+20・★上限+2・ステータスはLR相当（基本値×1.6）。表示は「LR」＋名前の前に「覚醒」・金の枠
+  //   極（究極進化）：さらにLV上限+30・★上限+3（SRなら LV100・★9）・LR5段くらい（基本値×1.8）。表示は「LR」＋「極・」・虹の枠
+  //   LV10ごとに常時スキル（技の発動ではなく、いつでも効く）。チームの4人全員に効く（ストーリー・遠征）
+  //   art：進化後の立ち絵ができたら true にする（それまでは今の絵を使う）
+  const EVO2 = {ichigo: {art: [false, false]}, mocha: {art: [false, false]}};
+  const EVO2_COST = [{mat: 'evo_c', n: 20, orb: 5, silver: 30000}, {mat: 'evo_g', n: 20, orb: 10, silver: 100000}];
+  const EVO2_LV = [0, 20, 50], EVO2_STAR = [0, 2, 5], EVO2_ST = [1, 1.6, 1.8], EVO2_TAG = ['', '覚醒', '極・'];
+  const evoOf = u => (u && EVO2[u.id] && u.evo) || 0;
+  const gradeU = u => evoOf(u) ? 'LR' : CHAR_STAT[u.id].grade;
+  const evoName = u => EVO2_TAG[evoOf(u)] + ALLC[ciOf(u)].name;
+  // 常時スキル：[LV, 名前, 効果]。効果のキーは装備の効果（EQ_FX）と同じ。hpP・atkP・defP・spdP はステータス+%（チーム全員）
+  const PSK = {
+    ichigo: [[10, 'いちごダッシュ', {chgSp: 5}], [20, '赤のときめき', {atkP: 3}], [30, 'はじまりの勇気', {chgOg: 5}], [40, '苺のおまもり', {heart: 10}],
+             [50, 'くるくる上手', {chainP: 10}], [60, '紅苺の加護', {cut: 5}], [70, '疾風の足どり', {spdP: 5}], [80, 'レインボーハート', {heart: 15}],
+             [90, 'みんなのリーダー', {atkP: 5}], [100, '虹色の奇跡', {octa: 3, crit: 5}]],
+    mocha:  [[10, '騎士のかまえ', {defP: 3}], [20, '黄の剣すじ', {sync: 10}], [30, '鉄壁', {cut: 5}], [40, 'おやつタイム', {regen: 1}],
+             [50, '十字の守り', {low: 15}], [60, '聖騎士の誓い', {defP: 5}], [70, '光の盾', {cut: 10}], [80, '甘いごほうび', {heart: 15}],
+             [90, '黄金の砦', {hpP: 10}], [100, '聖剣の加護', {guard: 1}]],
+  };
+  const pskOn = u => (PSK[u.id] || []).filter(x => u.lv >= x[0]);
+  function pskTeam(us){ const T = {}; us.forEach(u => pskOn(u).forEach(x => Object.keys(x[2]).forEach(k => T[k] = (T[k] || 0) + x[2][k]))); return T; }
+  const PSK_TXT = {hpP: '体力', atkP: '攻撃', defP: '防御', spdP: 'スピード'};
+  function pskLine(f){ const L = [];
+    Object.keys(PSK_TXT).forEach(k => { if (f[k]) L.push('チーム全員の' + PSK_TXT[k] + '+' + f[k] + '%'); });
+    if (f.chgSp) L.push('必殺技のチャージ−' + f.chgSp + '%'); if (f.chgOg) L.push('奥義のチャージ−' + f.chgOg + '%');
+    if (f.heart) L.push('ハートの回復量+' + f.heart + '%'); if (f.chainP) L.push('COMBO（2回目から）のダメージ+' + f.chainP + '%');
+    if (f.cut) L.push('受けるダメージ−' + f.cut + '%'); if (f.octa) L.push('オクタブロックの出る率+' + f.octa + '%'); if (f.crit) L.push('クリティカル率+' + f.crit + '%');
+    if (f.sync) L.push('2色以上いっしょに消したときのダメージ+' + f.sync + '%'); if (f.regen) L.push('10秒ごとに全色のカラーHPを' + f.regen + '%回復');
+    if (f.low) L.push('ピンチ（カラーHPが半分をこえた）とき攻撃+' + f.low + '%'); if (f.guard) L.push('1回の戦いで1度だけ、負けそうなときカラーHPを全回復');
+    return L.join('・'); }
   const LV_MAX = {N: 30, R: 40, SR: 50, MR: 60, LR: 70};      // グレードごとの最大レベル（★を最大まで上げたとき）
   const STAR_MAX = {N: 2, R: 3, SR: 4, MR: 5, LR: 6};         // 限界突破できる★の数
   // レベルの上限：★0でLV10、★1つごとに+10
   // LRの中の段（LR1〜LR5）。表示はどれも「LR」。段が上がるごとに★上限+1・レベル上限+10
   const LR_TIER = {};                                          // 例：LR_TIER['x_g99'] = 3（LR3）
   const tierOf = id => (CHAR_STAT[id] && CHAR_STAT[id].grade === 'LR') ? (LR_TIER[id] || CHAR_STAT[id].tier || 0) : 0;
-  const lvMaxOf = u => (LV_MAX[CHAR_STAT[u.id].grade] || 50) + 10 * tierOf(u.id);
+  const lvMaxOf = u => (LV_MAX[CHAR_STAT[u.id].grade] || 50) + 10 * tierOf(u.id) + EVO2_LV[evoOf(u)];
   const capOf = u => Math.min(lvMaxOf(u), 10 + 10 * (u.star || 0));
-  const starMaxOf = u => (STAR_MAX[CHAR_STAT[u.id].grade] || 4) + tierOf(u.id);
+  const starMaxOf = u => (STAR_MAX[CHAR_STAT[u.id].grade] || 4) + tierOf(u.id) + EVO2_STAR[evoOf(u)];
   const starsHTMLu = u => { let h = ''; for (let k = 0; k < starMaxOf(u); k++) h += k < (u.star || 0) ? '★' : '☆'; return '<span class="ustar">' + h + '</span>'; };
   const expNeed = lv => Math.round(20 * Math.pow(lv, 1.6));   // 次のレベルまでに必要な経験値
   // ---- 持ちキャラは1体ずつ（同じキャラでも別々。レベルも1体ごと） ----
@@ -9869,16 +9921,16 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     return out;
   }
   setTimeout(() => { try { const bb = bossBonus(); if (bb.length) toast('🎁 ボスの確定ボーナス：' + bb.map(x => CHARS[x.ci].name + '（' + x.why + '）').join('、') + ' が仲間になりました'); } catch(_) {} }, 1500);
-  function statsOf(ci, lvOver){
+  function statsOf(ci, lvOver, evo){
     const c = ALLC[ci], cs = c && CHAR_STAT[c.id]; if (!cs) return [10, 10, 10, 10];
-    const lv = lvOver || 1, ti = TYPE_INFO[cs.type].i;
-    return cs.base.map((b, k) => {
+    const lv = lvOver || 1, ti = TYPE_INFO[cs.type].i, em = EVO2_ST[evo || 0] || 1;
+    return cs.base.map(b0 => Math.round(b0 * em)).map((b, k) => {
       if (k === ti) return b + 2 * (lv - 1);
       let add = 0; for (let L = 2; L <= lv; L++) add += ((L + k + ci) % 2) ? 2 : 1;   // +1と+2が交互（平均1.5）
       return b + add;
     });
   }
-  const unitStats = u => { const b = statsOf(ciOf(u), u.lv); try { const w = gearBonus(u), pc = eqPctOf(eqItemsOf(u), u); return b.map((v, k) => Math.round((v + w[k]) * (1 + pc[k] / 100))); } catch(_) { return b; } };
+  const unitStats = u => { const b = statsOf(ciOf(u), u.lv, evoOf(u)); try { const w = gearBonus(u), pc = eqPctOf(eqItemsOf(u), u); return b.map((v, k) => Math.round((v + w[k]) * (1 + pc[k] / 100))); } catch(_) { return b; } };
   // ---- チーム（1人目がメイン）。4つまで保存して切りかえられる ----
   let teams = loadJ('teams', null), teamNo = +load('teamno', '0') || 0;
   if (!Array.isArray(teams) || teams.length !== 4) teams = [0, 1, 2, 3].map(() => [null, null, null, null]);   // 最初は空。自分で選んで入れる
@@ -9905,8 +9957,9 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   const teamMembers = () => { fixTeam(); return curTeam().map(unitOf).filter(Boolean); };
   function teamStats(){
     const sum = [0, 0, 0, 0];
-    teamMembers().forEach(u => unitStats(u).forEach((v, k) => sum[k] += v));
-    return sum;
+    const ms = teamMembers(); ms.forEach(u => unitStats(u).forEach((v, k) => sum[k] += v));
+    const ps = pskTeam(ms), pk = ['hpP', 'atkP', 'defP', 'spdP'];        // 常時スキルのステータス+%（チーム全員）
+    return sum.map((v, k) => ps[pk[k]] ? Math.round(v * (1 + ps[pk[k]] / 100)) : v);
   }
   // 敵のステータス：エリアと種類で決める。ボスは型の得意ステータス+20%、苦手−20%
   // 想定：最初の無料10連で、はじめから4人チーム（SRとN・Rの混ざったLV1で、1つのステータスの合計45前後）
@@ -9952,8 +10005,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   //   1人ぶん：グレードの重み × (★0で0.5〜★MAXで1.0)。4人の合計を掛ける（LRの★MAX4人で×1.64）
   const SK_POW_W = {N: 0.03, R: 0.05, SR: 0.09, MR: 0.13, LR: 0.16};
   function teamSkillMul(){
-    let m = 1; teamMembers().forEach(u => { const g = CHAR_STAT[u.id] && CHAR_STAT[u.id].grade, smax = starMaxOf(u) || 1;
-      m += (SK_POW_W[g] || 0) * (0.5 + 0.5 * Math.min(1, (u.star || 0) / smax)); });
+    let m = 1; teamMembers().forEach(u => { const g = CHAR_STAT[u.id] && gradeU(u), smax = starMaxOf(u) || 1;
+      m += (evoOf(u) === 2 ? 0.2 : SK_POW_W[g] || 0) * (0.5 + 0.5 * Math.min(1, (u.star || 0) / smax)); });
     return m;
   }
   // ===== 戦闘力 v3（2026-11-22 本人と決めた）：ステータス4つだけ・敵もこちらも同じ式 =====
@@ -10448,7 +10501,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
    ['mat_feather', '怪鳥の羽（旧）'], ['mat_fire', '火炎石（旧）'], ['mat_herb', '霊草（旧）'], ['mat_wood', '古木の枝（旧）'], ['mat_bone', '悪霊の骨（旧）']].forEach(([k, n]) => EX_MAT[k] = [n, '📦', '', 0]);
   const EX_MAT_CAT = {w: '武器素材', a: '防具素材', x: 'アクセ素材', s: '属性石', l: '伝説素材', e: '進化素材', u: '強化素材'};
   // 2026-11-23 本人「進化は今は鍵つきにして伏せておく」：タブ・投票は🔒で押せない。進化素材は遠征・アイテムガチャで出さない
-  const EVO_LOCK = true;
+  const EVO_LOCK = false;   // 2026-11-25：いちご・モカの2段階の進化を入れたので、進化素材を出す
   EX_MAT.evo_c = ['進化の結晶', '💠', 'e', 2]; EX_MAT.evo_g = ['進化の宝玉', '🔮', 'e', 3];
   // 2026-11-16 本人：強化石にグレード（N〜LR）をつけ、武器と同じグレードの強化石しか使えない
   const GN = ['N', 'R', 'SR', 'MR', 'LR'];
@@ -10983,6 +11036,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   // チームでまとめた効果（ストーリーの戦いで使う）。上限をつける
   function eqTeamFx(us){
     const T = {}; us.forEach(u => eqItemsOf(u).forEach(e => { const f = EQ_FX[e.id]; if (!f) return; Object.keys(f).forEach(k => { if (typeof f[k] === 'number') T[k] = (T[k] || 0) + f[k]; }); }));
+    const ps = pskTeam(us); Object.keys(ps).forEach(k => { if (!/^(hp|atk|def|spd)P$/.test(k)) T[k] = (T[k] || 0) + ps[k]; });   // 常時スキル（ステータス+%は teamStats で入れる）
     ['cut', 'chgSp', 'chgOg'].forEach(k => { if (T[k]) T[k] = Math.min(50, T[k]); }); if (T.crit) T.crit = Math.min(60, T.crit); if (T.regen) T.regen = Math.min(10, T.regen);
     return T;
   }
@@ -11456,7 +11510,46 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   //   進化のしくみ（グレードが上がる・絵が変わる・技が強くなる）は、最初のキャラの絵ができたときに入れる
   const EVO_GR = {SR: {to: 'MR', mat: 'evo_c', n: 20, orb: 5, silver: 30000}, MR: {to: 'LR', mat: 'evo_g', n: 20, orb: 10, silver: 100000}};
   const EVO_OPEN = {};                                    // 例：EVO_OPEN['x_g05'] = {month: '2026-12'}（進化が解放されたキャラ）
+  function pskHTML(u){
+    const L = PSK[u.id]; if (!L) return '';
+    return '<div class="dsec psk"><h4>常時スキル <span>LV10ごとに覚える・チーム全員に効く</span></h4><ul>' + L.map(([lv, n, f]) => {
+      const on = u.lv >= lv, need = lv > lvMaxOf(u) ? (lv > (LV_MAX[CHAR_STAT[u.id].grade] || 50) + EVO2_LV[1] ? '極で解放' : '覚醒で解放') : '';
+      return '<li class="' + (on ? 'on' : '') + '"><i>LV' + lv + '</i><b>' + n + '</b><small>' + pskLine(f) + (need && !on ? '　<em>' + need + '</em>' : '') + '</small></li>'; }).join('') +
+      '</ul><p class="dnote">ストーリー・遠征で効きます（60秒アタックなどのランキングや対戦では、みんな同じ条件にするため効きません）。</p></div>';
+  }
+  function evo2HTML(u){
+    const ev = evoOf(u); if (ev >= 2) return '<div class="dsec evo"><h4>進化 <span>極</span></h4><p>いちばん上まで進化しました。LV' + lvMaxOf(u) + '・★' + starMaxOf(u) + 'まで育てられます。</p></div>';
+    const e = EVO2_COST[ev], at = attrOf(u.id), orb = 'st_' + at + '_2';
+    const ok = [u.lv >= lvMaxOf(u), (u.star || 0) >= starMaxOf(u), own(e.mat) >= e.n, own(orb) >= e.orb, coins >= e.silver], all = ok.every(Boolean);
+    const it = (b, t) => '<li class="' + (b ? 'ok' : '') + '">' + (b ? '✔' : '□') + ' ' + t + '</li>';
+    const to = ev ? '極（究極進化）' : '覚醒（進化）', gain = ev ? 'LV上限+30（LV' + (lvMaxOf(u) + 30) + '）・★上限+3・LR5段くらいの強さ・常時スキルLV80〜100' : 'LV上限+20（LV' + (lvMaxOf(u) + 20) + '）・★上限+2・LR相当の強さ・常時スキルLV60〜70';
+    return '<div class="dsec evo"><h4>進化 <span>' + (ev ? '覚醒 → 極' : gradeU(u) + ' → 覚醒（LR）') + '</span></h4>' +
+      '<p class="evogain">' + to + '：' + gain + '・新しい立ち絵</p>' +
+      '<ul class="evoreq">' + it(ok[0], 'レベル最大（LV' + u.lv + ' / ' + lvMaxOf(u) + '）') + it(ok[1], '★最大（★' + (u.star || 0) + ' / ' + starMaxOf(u) + '）') +
+        it(ok[2], EX_MAT[e.mat][1] + EX_MAT[e.mat][0] + ' ×' + e.n + '（所持 ' + own(e.mat) + '）') +
+        it(ok[3], (EX_MAT[orb] ? EX_MAT[orb][1] + EX_MAT[orb][0] : ATTR[at].n + 'の宝珠') + ' ×' + e.orb + '（所持 ' + own(orb) + '）') +
+        it(ok[4], 'シルバー ' + e.silver.toLocaleString() + '（所持 ' + coins.toLocaleString() + '）') + '</ul>' +
+      '<div class="evobtns"><button class="evogo" data-evo2="' + u.u + '"' + (all ? '' : ' disabled') + '>' + (ev ? '🌈 極める' : '✨ 覚醒する') + '</button></div></div>';
+  }
+  function doEvo2(u){
+    const ev = evoOf(u), e = EVO2_COST[ev], orb = 'st_' + attrOf(u.id) + '_2';
+    if (ev >= 2 || u.lv < lvMaxOf(u) || (u.star || 0) < starMaxOf(u) || own(e.mat) < e.n || own(orb) < e.orb || coins < e.silver) return;
+    useMat(e.mat, e.n); useMat(orb, e.orb); addCoins(-e.silver); saveInv();
+    u.evo = ev + 1; saveUnits();
+    msgLog('get', (ev ? '🌈 ' : '✨ ') + evoName(u) + ' に進化しました');
+    evoShow(u); drawBox();
+  }
+  function evoShow(u){                                      // 進化の演出：光の柱 → 新しい立ち絵 → 覚えたスキル
+    const ev = evoOf(u), d = document.createElement('div'); d.className = 'evoshow e' + ev;
+    const news = (PSK[u.id] || []).filter(x => x[0] > lvMaxOf(u) - EVO2_LV[ev] + EVO2_LV[ev - 1] && x[0] <= lvMaxOf(u));
+    d.innerHTML = '<div class="evpillar"></div><img alt="" src="' + charFullUrl(ciOf(u), u) + '"><div class="evtxt"><b>' + (ev === 2 ? '極' : '覚醒') + '</b><span>' + evoName(u) + '</span>' +
+      '<small>LV上限 ' + lvMaxOf(u) + '・★上限 ' + starMaxOf(u) + '</small><ul>' + news.map(x => '<li>LV' + x[0] + '　' + x[1] + '</li>').join('') + '</ul><em>タップでとじる</em></div>';
+    d.onclick = () => d.remove(); document.body.appendChild(d);
+    try { const a = audio(), t = a ? a.currentTime : 0; if (a) [523, 659, 784, 1047, 1319].forEach((f, k) => tone(f, t + k * 0.12, 0.5, 'triangle', 0.09)); } catch(_) {}
+  }
+  $('boxBody').addEventListener('click', e => { const b = e.target.closest('[data-evo2]'); if (!b) return; e.stopPropagation(); const u = unitOf(b.dataset.evo2); if (u) doEvo2(u); });
   function evoHTML(u){
+    if (EVO2[u.id]) return evo2HTML(u);
     const cs = CHAR_STAT[u.id], e = EVO_GR[cs.grade], at = attrOf(u.id), orb = 'st_' + at + '_2';
     const ok = [!!EVO_OPEN[u.id], u.lv >= lvMaxOf(u), (u.star || 0) >= starMaxOf(u), own(e.mat) >= e.n, own(orb) >= e.orb, coins >= e.silver];
     const it = (b, t) => '<li class="' + (b ? 'ok' : '') + '">' + (b ? '✔' : '□') + ' ' + t + '</li>';
@@ -12365,14 +12458,14 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   });
   function drawDetail(u){
     const body = $('boxBody'), ci = ciOf(u), c = ALLC[ci], cs = CHAR_STAT[c.id], tp = TYPE_INFO[cs.type], st = unitStats(u);
-    const ti = curTeam().indexOf(u.u), atCap = u.lv >= capOf(u);
+    const ti = curTeam().indexOf(u.u), atCap = u.lv >= capOf(u), ev = evoOf(u);
     let h = '<div class="dhead" style="display:flex;align-items:center"><button data-act="back" class="dback">‹ ' + (boxTab === 'dex' ? '図鑑へ' : '一覧へ') + '</button><button data-act="dlock" class="dlock' + (u.lock ? ' on' : '') + '">' + (u.lock ? '🔒 ロック中' : '🔓 ロックする') + '</button></div>' +
-      '<div class="dtop g-' + cs.grade + '"><span class="dimg" data-ci="' + ci + '"></span><div class="dinfo">' +
-      '<div class="dname">' + (c.title ? '<small class="dttl">' + c.title + '</small>' : '') + c.name + (ti >= 0 ? ' <span class="cno">' + '①②③④'[ti] + '</span>' : '') + '</div>' +
-      '<div class="dsub"><i class="dgr">' + cs.grade + '</i> ' + typeBadge(c.id).replace('tbadge', 'tbadge inl') + ' ' + tp.name + '　' + attrBadge(c.id, true) + ' ' + ATTR[attrOf(c.id)].n + '属性</div>' +
+      '<div class="dtop g-' + gradeU(u) + (ev ? ' evo' + ev : '') + '"><span class="dimg" data-ci="' + ci + '"></span><div class="dinfo">' +
+      '<div class="dname">' + (c.title ? '<small class="dttl">' + c.title + '</small>' : '') + (ev ? '<b class="evotag e' + ev + '">' + EVO2_TAG[ev].replace('・', '') + '</b>' : '') + c.name + (ti >= 0 ? ' <span class="cno">' + '①②③④'[ti] + '</span>' : '') + '</div>' +
+      '<div class="dsub"><i class="dgr">' + gradeU(u) + '</i> ' + typeBadge(c.id).replace('tbadge', 'tbadge inl') + ' ' + tp.name + '　' + attrBadge(c.id, true) + ' ' + ATTR[attrOf(c.id)].n + '属性</div>' +
       '<div class="dlv">LV <b>' + u.lv + '</b> / ' + capOf(u) + '</div>' + starsHTMLu(u).replace('ustar', 'ustar big') +
       '<div class="dexp">' + (atCap ? 'レベル上限です（限界突破で上限が上がります）' : '次のレベルまで ' + Math.max(0, expNeed(u.lv) - u.exp).toLocaleString()) + '</div></div></div>' +
-      '<div class="dtabs">' + [['info', 'ステータス・技'], ['equip', '装備'], ['feed', 'LVアップ'], ['lb', '限界突破'], ['evo', '進化']].filter(([k]) => (k !== 'equip' || featOk('forge')) && (k !== 'evo' || EVO_GR[cs.grade])).map(([k, n]) => k === 'evo' && EVO_LOCK ? '<button class="lock" disabled>🔒 ' + n + '</button>' : '<button data-ftab="' + k + '" class="' + (detTab === k ? 'on' : '') + '">' + n + '</button>').join('') + '</div>';
+      '<div class="dtabs">' + [['info', 'ステータス・技'], ['equip', '装備'], ['feed', 'LVアップ'], ['lb', '限界突破'], ['evo', '進化']].filter(([k]) => (k !== 'equip' || featOk('forge')) && (k !== 'evo' || EVO_GR[cs.grade] || EVO2[c.id])).map(([k, n]) => k === 'evo' && EVO_LOCK ? '<button class="lock" disabled>🔒 ' + n + '</button>' : '<button data-ftab="' + k + '" class="' + (detTab === k ? 'on' : '') + '">' + n + '</button>').join('') + '</div>';
     if (detTab === 'info') {
       h += '<div class="dsec"><div class="stt">' + ST_NAME.map((n, k) => '<div>' + n + '<b>' + st[k] + '</b></div>').join('') + '</div></div>' +
         (isZakoId(c.id) ? '<div class="dsec"><h4>必殺技 <span>' + (SPECIAL_NAME[c.id] || '').replace('！', '') + '</span><em>基準' + skBaseSec(c.id, 'sp') + '秒（スピードで変わる）</em></h4><p>' + skDescU(c.id, 'sp', u) + '</p>' +
@@ -12381,7 +12474,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         '<h4>奥義 <span>' + (OUGI_NAME[c.id] || '') + '</span><em>基準' + skBaseSec(c.id, 'ougi') + '秒（スピードで変わる）</em></h4><p>' + skDescU(c.id, 'ougi', u) + '</p>' +
         '<p class="dnote">チームのメインは必殺技と奥義の両方、サブはどちらか1つを使います。</p></div>'
         : '<div class="dsec"><h4>技</h4><p>このキャラは、まだ技を持っていません。サブ（②〜④）に入れて、ステータスでチームを強くします。メイン（①）にはなれません。</p></div>') +
-        voiceSecHTML(c.id) +
+        pskHTML(u) + voiceSecHTML(c.id) +
         '<div class="dsec"><h4>プロフィール</h4><p>' + (CHAR_BIO[c.id] || '') + '</p></div>';
     } else if (detTab === 'evo') {
       h += evoHTML(u);
@@ -12435,7 +12528,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     body.innerHTML = h;
     body.querySelectorAll('.tic').forEach(el => el.appendChild(charIcon(+el.dataset.ci, 40)));
     const di = body.querySelector('.dimg'); if (di) {        // 2026-11-19 本人：詳細は顔アイコンではなく全身の絵
-      const fu = charFullUrl(ci);
+      const fu = charFullUrl(ci, u);
       if (fu) { const im = new Image(); im.className = 'dfull'; im.alt = '';
         // 2026-11-22 本人「キャラによって大きさが違う。横幅に合わせて上基準に」：横幅いっぱい・絵の上の透明な余白を詰めて上そろえ（下ははみ出た分を切る）
         im.onload = () => { try { const w = im.naturalWidth, h = im.naturalHeight, cv = document.createElement('canvas'); cv.width = w; cv.height = h; const cx = cv.getContext('2d'); cx.drawImage(im, 0, 0); const d = cx.getImageData(0, 0, w, h).data; let top = 0;
