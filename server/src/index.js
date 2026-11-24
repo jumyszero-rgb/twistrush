@@ -1,4 +1,5 @@
 import { arenaHome, arenaSetDefense, arenaFight } from './arena.js';
+import { FRIEND_SCHEMA, friendHome, friendAct, friendForget } from './friends.js';
 import { Lobby, Room, MEDAL, MEDAL_SHOP, VS_KINDS, medalOf, medalDaily, medalTake, medalMonthLeft, medalGive, vsTop, vsRewards, vsClaim, vsCpuDone } from './vs.js';
 export { Lobby, Room };
 // TWIST RUSH サーバー（Cloudflare Workers + D1）
@@ -478,6 +479,7 @@ async function api(env, req, url) {
       env.DB.prepare('DELETE FROM scores WHERE player = ?').bind(me.id),
       env.DB.prepare("UPDATE ledger SET account_id = 'deleted' WHERE account_id = ?").bind(me.id),
       env.DB.prepare('DELETE FROM accounts WHERE id = ?').bind(me.id),
+      ...friendForget(env, me.id),
     ]);
     return json(env, req, { ok: true });
   }
@@ -575,6 +577,13 @@ async function api(env, req, url) {
     return json(env, req, { ok: true, k: it.k, balance: m ? m.balance : 0 });
   }
   // ---- CPU戦の結果（レート・勝ち負けの数は変わらない。メダルだけ） ----
+  // ---- フレンド（2026-11-24）----
+  if (p === '/api/friend' && M === 'GET') return json(env, req, await friendHome(env, me));
+  if (p.startsWith('/api/friend/') && M === 'POST') {
+    const b = await req.json().catch(() => ({}));
+    const r = await friendAct(env, me, p.slice(12), b, nowSec());
+    return r.error ? fail(env, req, r.error) : json(env, req, r);
+  }
   if (p === '/api/vs/cpu' && M === 'POST') {
     const b = await req.json().catch(() => ({}));
     const r = await vsCpuDone(env, me.id, String(b.res || ''), nowSec()), m = await medalOf(env, me.id);
@@ -1059,7 +1068,7 @@ async function dummyRank(env) {
 }
 function prepared(env) {
   if (!ready) ready = (async () => {
-    await env.DB.batch(SCHEMA.map(q => env.DB.prepare(q)));
+    await env.DB.batch(SCHEMA.concat(FRIEND_SCHEMA).map(q => env.DB.prepare(q)));
     // あとから足した列（すでにあればエラーになるので無視）
     for (const q of ["ALTER TABLE accounts ADD COLUMN country TEXT NOT NULL DEFAULT ''", "ALTER TABLE ents ADD COLUMN pass_tier TEXT NOT NULL DEFAULT 'silver'"]) { try { await env.DB.prepare(q).run(); } catch (e) {} }
     let secret = env.SESSION_SECRET;

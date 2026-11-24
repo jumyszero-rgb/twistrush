@@ -317,6 +317,30 @@ body.on-menu .battlemain{opacity:0;}
   .olbets button:disabled{opacity:.35;}
   .olbig{width:100%;margin-top:12px;padding:16px;border:0;border-radius:16px;font-size:20px;font-weight:900;color:#fff;background:linear-gradient(90deg,#ff5f9e,#7a5cff);box-shadow:0 4px 0 #4a2a9a,0 0 18px rgba(255,95,158,.5);}
   .olrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+  /* フレンド（2026-11-24） */
+  .olfr{position:relative;width:100%;margin-top:8px;padding:12px 4px;border-radius:14px;border:2px solid rgba(125,200,255,.55);background:rgba(95,180,255,.16);color:#fff;font-weight:900;font-size:15px;}
+  .frbadge{position:absolute;top:-7px;right:-4px;min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:#ff3b5c;color:#fff;font-size:12px;line-height:22px;box-shadow:0 2px 6px rgba(0,0,0,.35);}
+  .frbadge[hidden]{display:none;}
+  .frid{display:flex;align-items:center;gap:10px;justify-content:center;margin-top:6px}
+  .frid b{font-size:28px;letter-spacing:3px;font-variant-numeric:tabular-nums;color:#ffd24a}
+  .frid button,.frrow button,.frreq button{border:none;border-radius:10px;padding:7px 10px;font:inherit;font-size:12.5px;font-weight:800;background:rgba(255,255,255,.9);color:#3a2a55;cursor:pointer}
+  .frreq{display:flex;gap:8px;margin-top:8px}
+  .frreq input{flex:1;min-width:0;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.3);background:rgba(0,0,0,.25);color:#fff;font:inherit;font-size:16px;letter-spacing:2px}
+  .frreq button{background:linear-gradient(180deg,#ffe07a,#ffb83a);color:#3a2000;padding:0 16px;font-size:14px}
+  .frrow{display:flex;align-items:center;gap:8px;padding:9px 4px;border-top:1px solid rgba(255,255,255,.1)}
+  .frrow:first-of-type{border-top:none}
+  .frrow .frn{flex:1;min-width:0;text-align:left}
+  .frrow .frn b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .frrow .frn small{font-size:11px;color:#cbbfe8}
+  .frrow .ok{background:linear-gradient(180deg,#ffe07a,#ffb83a);color:#3a2000}
+  .frrow .ng{background:rgba(255,255,255,.18);color:#fff}
+  .frmsgs{margin-top:6px;text-align:left}
+  .frmsg{display:flex;gap:8px;align-items:baseline;padding:5px 2px;font-size:13px}
+  .frmsg b{color:#ffd24a;flex:none}.frmsg span{flex:1}.frmsg small{color:#cbbfe8;font-size:11px;flex:none}
+  .frmsg.new span{font-weight:900;color:#fff}
+  .frpick{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:6px 0 4px;padding:8px;border-radius:12px;background:rgba(0,0,0,.25)}
+  .frpick button{border:none;border-radius:10px;padding:9px 4px;font:inherit;font-size:13px;font-weight:800;background:#fff;color:#3a2a55;cursor:pointer}
+
   .olrow button{padding:12px 4px;border-radius:14px;border:2px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;font-weight:900;font-size:14px;}
   .olteam{display:flex;gap:6px;align-items:center;margin-top:8px;}
   .olav{display:inline-block;width:46px;height:46px;border-radius:10px;overflow:hidden;border:2px solid #fff;background:#2b2147;flex:none;}
@@ -6739,6 +6763,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (olView === 'shop') return drawOlShop();
     if (olKind === 'auto' && olView === 'top') return drawArena();
     if (olView === 'rank') return drawOlRank();
+    if (olView === 'friend') return drawFriends();
     if (olView === 'join') return drawOlJoin();
     body.innerHTML = '<div class="olwait"><div class="olspin"></div>読み込み中…</div>';
     try {
@@ -6759,6 +6784,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       '<p style="margin:6px 0 0;font-size:12px">' + (olBet ? '勝つと相手の分ももらえて +' + olBet * 2 + '。負けると −' + olBet + '。' : '賭けずに対戦します（レートは変わります）。') + '</p></div>' +
       '<button class="olbig" id="olQuick">⚡ ランダム対戦</button>' +
       '<div class="olrow"><button id="olCreate">🏠 部屋を作る</button><button id="olJoin">🔢 番号で入る</button><button id="olRank">🏆 対戦ランキング</button><button id="olShop">🛒 メダル交換</button></div>' +
+      '<button class="olfr" id="olFriend">👥 フレンド<span class="frbadge" id="frBadge" hidden></span></button>' +
       '<p style="font-size:12px;margin-top:10px">🎁 ランダム対戦のレート順で、毎月プレゼントがもらえます（' + (olKind === 'simple' ? 'シンプル対戦のほうが豪華' : 'キャラ対戦はシンプル対戦の半分くらい') + '）。くわしくは「対戦ランキング」。<br>3分たったら、カラーHPのいちばん高い色が低いほうの勝ち。対戦中は一時停止できません。途中で抜けると負けになります。</p>';
     olFill(body);
     if ($('olDaily')) $('olDaily').onclick = async () => { try { const r = await api('/api/medal/daily', {method: 'POST', body: '{}', tok: rankTok()}); toast('対戦メダル +' + r.got); drawOnline(); } catch (_) { toast('サーバーにつながりませんでした'); } };
@@ -6769,6 +6795,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     $('olCreate').onclick = olCreate;
     $('olJoin').onclick = () => { olView = 'join'; drawOnline(); };
     $('olRank').onclick = () => { olView = 'rank'; drawOnline(); };
+    $('olFriend').onclick = () => { olView = 'friend'; drawOnline(); };
+    frBadgeLoad();
     $('olShop').onclick = () => { olView = 'shop'; drawOnline(); };
   }
   const OL_TABS = {simple: 'シンプル', chara: 'キャラ', auto: 'オート'};
@@ -6881,6 +6909,72 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         else { giveItem(r.k, 1); toast(itemLabel(r.k) + ' を交換しました'); }
         olInfo.balance = r.balance; drawOlShop(); }
       catch (e) { toast(e.message || 'サーバーにつながりませんでした'); b.disabled = false; }
+    });
+  }
+  // ===== フレンド（2026-11-24 本人：①フレンドID・申請・承認／チャットはなし、決まったひとことを選んで送る）=====
+  //   ひとことの文はここだけに持つ（サーバーは番号だけ）。順番を変えると、前に送ったものの文も変わるので、足すときは最後に
+  const FMSG = ['よろしくね！', 'ありがとう！', '対戦しよう！', 'いい勝負だった！', 'つよすぎる…！', 'また遊ぼう！', 'おはよう！', 'おやすみ〜',
+                'ドンマイ！', 'おめでとう！', 'がんばろう！', 'ごめんね！', 'いま遊べる？', 'あとでね！', 'ナイス！', '👍'];
+  let frData = null, frPick = '';
+  const frAgo = t => { const d = Math.max(0, Date.now() / 1000 - t); return d < 60 ? 'いま' : d < 3600 ? Math.floor(d / 60) + '分前' : d < 86400 ? Math.floor(d / 3600) + '時間前' : Math.floor(d / 86400) + '日前'; };
+  const frSeen = () => +load('fmsg_seen', '0') || 0;
+  function frBadgeSet(d){
+    const n = d ? d.incoming.length + d.msgs.filter(m => m.id > frSeen()).length : 0, b = $('frBadge');
+    if (b) { b.hidden = !n; b.textContent = n > 99 ? '99+' : n; }
+  }
+  async function frBadgeLoad(){ if (!rankTok()) return; try { frData = await api('/api/friend', {tok: rankTok()}); frBadgeSet(frData); } catch (_) {} }
+  async function frDo(op, code, extra, okMsg){
+    try { const r = await api('/api/friend/' + op, {method: 'POST', body: JSON.stringify(Object.assign({code}, extra || {})), tok: rankTok()});
+      if (r.error) { toast(r.error); return false; }
+      if (okMsg) toast(typeof okMsg === 'function' ? okMsg(r) : okMsg); return true; }
+    catch (e) { toast(e.message && !/^HTTP/.test(e.message) ? e.message : 'サーバーにつながりませんでした'); return false; }
+  }
+  async function drawFriends(reload){
+    const body = $('olBody');
+    if (reload !== false || !frData) {
+      body.innerHTML = '<div class="olwait"><div class="olspin"></div>読み込み中…</div>';
+      try { frData = await api('/api/friend', {tok: rankTok()}); } catch (_) { body.innerHTML = '<div class="olsec">サーバーにつながりませんでした<button class="btn gray" id="olBackTop" style="margin-top:12px">もどる</button></div>'; $('olBackTop').onclick = () => { olView = 'top'; drawOnline(); }; return; }
+    }
+    const d = frData, seen = frSeen(), E = olEsc;
+    const who = x => '<div class="frn"><b>' + E(x.name || 'ななし') + '</b><small>ID ' + x.code + (x.rate ? '　レート ' + x.rate : '') + (x.seen ? '　' + frAgo(x.seen) : '') + '</small></div>';
+    body.innerHTML =
+      '<div class="olsec"><h3>👥 フレンド</h3><div style="font-size:12px;color:#cbbfe8">あなたのフレンドID</div>' +
+        '<div class="frid"><b>' + d.code + '</b><button id="frCopy">コピー</button></div>' +
+        '<p style="font-size:12px;margin:6px 0 0">このIDを友だちに教えると、フレンド申請が届きます。</p></div>' +
+      '<div class="olsec"><b>IDでフレンド申請</b><div class="frreq"><input id="frCode" inputmode="numeric" maxlength="8" placeholder="8けたのID"><button id="frSend">申請</button></div></div>' +
+      (d.incoming.length ? '<div class="olsec"><b>📩 届いた申請（' + d.incoming.length + '）</b>' + d.incoming.map(x => '<div class="frrow">' + who(x) + '<button class="ok" data-fa="accept" data-c="' + x.code + '">承認</button><button class="ng" data-fa="decline" data-c="' + x.code + '">ことわる</button></div>').join('') + '</div>' : '') +
+      (d.msgs.length ? '<div class="olsec"><b>💬 とどいたひとこと</b><div class="frmsgs">' + d.msgs.slice(0, 12).map(m => '<div class="frmsg' + (m.id > seen ? ' new' : '') + '"><b>' + E(m.name || 'ななし') + '</b><span>' + E(FMSG[m.m] || '…') + '</span><small>' + frAgo(m.t) + '</small></div>').join('') + '</div></div>' : '') +
+      '<div class="olsec"><b>フレンド（' + d.friends.length + '／' + d.max + '人）</b>' +
+        (d.friends.length ? d.friends.map(x => '<div class="frrow">' + who(x) + '<button class="ok" data-fs="' + x.code + '">💬</button><button class="ng" data-fm="' + x.code + '" data-n="' + E(x.name) + '">…</button></div>' +
+          (frPick === x.code ? '<div class="frpick">' + FMSG.map((t, i) => '<button data-fmsg="' + i + '" data-c="' + x.code + '">' + t + '</button>').join('') + '</div>' : '')).join('')
+          : '<p style="font-size:12.5px;margin:6px 0 0">まだフレンドがいません。IDを教え合って、申請してみよう！</p>') + '</div>' +
+      (d.outgoing.length ? '<div class="olsec"><b>📤 出した申請（返事待ち）</b>' + d.outgoing.map(x => '<div class="frrow">' + who(x) + '<button class="ng" data-fa="cancel" data-c="' + x.code + '">取り消す</button></div>').join('') + '</div>' : '') +
+      (d.blocked.length ? '<details class="olsec"><summary style="cursor:pointer;font-weight:800">🚫 ブロック中（' + d.blocked.length + '）</summary>' + d.blocked.map(x => '<div class="frrow">' + who(x) + '<button class="ng" data-fa="unblock" data-c="' + x.code + '">外す</button></div>').join('') + '</details>' : '') +
+      '<button class="btn gray" id="olBackTop" style="margin-top:12px">もどる</button>';
+    if (d.msgs.length) { save('fmsg_seen', String(Math.max(seen, d.msgs[0].id))); }
+    frBadgeSet(Object.assign({}, d, {incoming: d.incoming, msgs: []}));
+    $('olBackTop').onclick = () => { frPick = ''; olView = 'top'; drawOnline(); };
+    $('frCopy').onclick = () => { try { navigator.clipboard.writeText(d.code); toast('コピーしました：' + d.code); } catch (_) { toast('フレンドID：' + d.code); } };
+    $('frSend').onclick = async () => {
+      const c = $('frCode').value.replace(/\D/g, ''); if (c.length !== 8) { toast('8けたのIDを入れてください'); return; }
+      if (await frDo('req', c, null, r => r.linked ? 'フレンドになりました！' : '申請しました')) drawFriends();
+    };
+    body.querySelectorAll('[data-fa]').forEach(b => b.onclick = async () => {
+      const op = b.dataset.fa, msg = {accept: 'フレンドになりました！', decline: 'ことわりました', cancel: '申請を取り消しました', unblock: 'ブロックを外しました'}[op];
+      if (await frDo(op, b.dataset.c, null, msg)) drawFriends();
+    });
+    body.querySelectorAll('[data-fs]').forEach(b => b.onclick = () => { frPick = frPick === b.dataset.fs ? '' : b.dataset.fs; drawFriends(false); });
+    body.querySelectorAll('[data-fmsg]').forEach(b => b.onclick = async () => {
+      if (await frDo('msg', b.dataset.c, {m: +b.dataset.fmsg}, '「' + FMSG[+b.dataset.fmsg] + '」を送りました')) { frPick = ''; drawFriends(false); }
+    });
+    body.querySelectorAll('[data-fm]').forEach(b => b.onclick = () => {
+      const c = b.dataset.fm, n = b.dataset.n || 'この人';
+      askYes('<b>' + n + '</b>（ID ' + c + '）<br>フレンドから外しますか？<small style="display:block;opacity:.8;margin-top:6px">ブロックしたいときは、外したあとに「ブロック」を選べます</small>', async () => {
+        if (await frDo('remove', c, null, 'フレンドから外しました')) {
+          setTimeout(() => askYes('<b>' + n + '</b> をブロックしますか？<br><small>ブロックすると、この人からの申請とひとことが届かなくなります</small>', async () => { if (await frDo('block', c, null, 'ブロックしました')) drawFriends(); }), 300);
+          drawFriends();
+        }
+      });
     });
   }
   async function drawOlRank(){
@@ -7528,7 +7622,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.293';
+  const APP_VER = '0.9.294';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
