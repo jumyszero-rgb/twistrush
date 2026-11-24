@@ -29,7 +29,7 @@
   html.iospwa .stagebg,html.iospwa .intro,html.iospwa #askBox,html.iospwa #tapStart,
   html.iospwa #menu.overlay,html.iospwa #settings.overlay,html.iospwa #rank.overlay,html.iospwa #howto.overlay,html.iospwa #news.overlay,html.iospwa #achv.overlay,html.iospwa #story.overlay,
   html.iospwa #prac.overlay,html.iospwa #online.overlay,html.iospwa #vs.overlay,html.iospwa #gacha.overlay,html.iospwa #box.overlay,
-  html.iospwa #shop.overlay,html.iospwa #chal.overlay,html.iospwa #daily.overlay{bottom:auto!important;height:var(--fullh)!important;}
+  html.iospwa #shop.overlay,html.iospwa #chal.overlay,html.iospwa #dmis.overlay,html.iospwa #daily.overlay{bottom:auto!important;height:var(--fullh)!important;}
 .appver{position:absolute;right:10px;bottom:6px;font-size:10px;opacity:.45;color:#fff;pointer-events:none;z-index:1}
 .appver2{font-size:12px;opacity:.7;margin:0 0 10px;text-align:right}
 .battlemain{position:fixed;left:0;top:100%;max-width:none;z-index:0;pointer-events:none;
@@ -133,7 +133,7 @@ body.on-menu .battlemain{opacity:0;}
 
   .btn.vs{background:#6f7cff;color:#fff;box-shadow:0 5px 0 #3b45b8;}
   .btn.vs:active{box-shadow:0 2px 0 #3b45b8;}
-  #settings.overlay,#rank.overlay,#howto.overlay,#news.overlay,#achv.overlay,#story.overlay,#prac.overlay,#online.overlay,#skprof.overlay,#chal.overlay{position:fixed;inset:0;z-index:22;border-radius:0;padding:0;gap:0;justify-content:flex-start;text-align:left;color:#f6f0ff;
+  #settings.overlay,#rank.overlay,#howto.overlay,#news.overlay,#achv.overlay,#story.overlay,#prac.overlay,#online.overlay,#skprof.overlay,#chal.overlay,#dmis.overlay{position:fixed;inset:0;z-index:22;border-radius:0;padding:0;gap:0;justify-content:flex-start;text-align:left;color:#f6f0ff;
     background:linear-gradient(180deg, rgba(22,10,44,.92), rgba(22,10,44,.96)),
       var(--title-img, url('img/title.jpg')) center / cover no-repeat, #1f1236;}
   #story .modesel,#prac .modesel{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.25);}
@@ -175,6 +175,11 @@ body.on-menu .battlemain{opacity:0;}
   #prac .pr-card.easy{background:linear-gradient(135deg,rgba(61,220,151,.30),rgba(61,220,151,.08))}
   #prac .pr-card.normal{background:linear-gradient(135deg,rgba(79,168,255,.32),rgba(79,168,255,.08))}
   #prac .pr-card.hard{background:linear-gradient(135deg,rgba(255,95,95,.32),rgba(255,95,95,.08))}
+  #prac .pr-gim{margin-top:12px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15)}
+  #prac .pr-gim>b{font-size:14px;color:#fff}#prac .pr-gim small{display:block;margin-top:6px;font-size:12px;color:#eee6ff;line-height:1.5}
+  #prac .pr-seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}
+  #prac .pr-seg button{border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:9px 4px;font:inherit;font-weight:800;font-size:14px;background:rgba(0,0,0,.25);color:#fff;cursor:pointer}
+  #prac .pr-seg button.on{background:#ffd34d;color:#3a2a00;border-color:#ffd34d}
   #prac .pr-top{display:flex;gap:12px;align-items:center}
   #prac .pr-ic{font-size:34px;width:52px;height:52px;border-radius:14px;background:rgba(255,255,255,.14);display:grid;place-items:center;flex:none}
   #prac .pr-top b{display:block;font-size:19px;color:#fff}#prac .pr-top small{font-size:12.5px;color:#eee6ff}
@@ -716,9 +721,11 @@ body.on-menu .battlemain{opacity:0;}
   .mnode.ice{box-shadow:0 0 0 3px #9fe8ff,0 4px 10px rgba(0,0,0,.4);} .mnode.stone{box-shadow:0 0 0 3px #b9aea0,0 4px 10px rgba(0,0,0,.4);}
   .bvar{display:flex;gap:6px;margin:6px 0;} .bvar button{flex:1;padding:7px 4px;border-radius:10px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.3);color:#fff;font-weight:900;font-size:13px;}
   .bvar button.on{background:#ff7fb0;border-color:#ffd0e2;} .bvar button[data-bvar="1"].on{background:#3fb8e8;} .bvar button[data-bvar="2"].on{background:#8a7d6e;}
-  #chal .how-body{padding:12px 14px 30px;}
+  #chal .how-body,#dmis .how-body{padding:12px 14px 30px;}
   .chhead{font-size:14px;margin-bottom:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;} .chhead span{margin-left:auto;font-size:12px;color:#ffd36b;font-weight:800;}
   .chnote{font-size:12px;opacity:.85;margin:0 0 10px;}
+  #dmis .chcard.dm{border-color:rgba(255,211,77,.6)} .dmtags{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0} .dmtags span{background:rgba(255,211,77,.18);border:1px solid rgba(255,211,77,.45);border-radius:999px;padding:3px 10px;font-size:13px;font-weight:800;color:#ffe9a8}
+  #dmis .pr-note{margin:10px 0;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.06)} #dmis .pr-note h3{margin:0 0 4px;font-size:14px} #dmis .pr-note p{margin:0;font-size:13px;line-height:1.6;color:#eee6ff}
   .chcard{background:rgba(255,255,255,.07);border:2px solid rgba(255,122,200,.45);border-radius:16px;padding:12px;margin-bottom:12px;}
   .chtop{display:flex;align-items:baseline;gap:8px;} .chn{font-size:20px;font-weight:900;color:#ff9ad6;letter-spacing:.5px;} .chbest{margin-left:auto;font-size:12px;} .chbest b{font-size:16px;}
   .chd{font-size:12px;margin:4px 0 8px;line-height:1.5;} .chcol{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:4px;}
@@ -1817,7 +1824,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
           <button class="mtile low" id="forgeBtn" data-forge="1" data-tip="鍛冶屋：遠征で集めた素材で武器を作る。装備ガチャもここ"><span class="mi"><img data-mimg="forge" alt=""></span><span class="ml">鍛冶屋</span></button>
           <button class="mtile low" id="mktBtn" data-tip="ミケの店：いらない武器や素材をニャンコインに換える。ほかのプレイヤーと預けて売り買いもできる"><span class="mi"><img data-mimg="market" alt=""></span><span class="ml">ミケの店</span></button>
         </div>
-        <div class="mrow2 one"><button class="mtile low passbtn" id="passBtn" data-tip="パス：無料・シルバー・ゴールドをくらべる。毎日の受け取りもここ"><span class="mi"><img data-mimg="pass" alt=""></span><span class="ml">パス<small>無料・シルバー・ゴールド</small></span></button></div>
+        <div class="mrow2 two"><button class="mtile low" id="dmBtn" data-tip="今日の崩しミッション：毎日かわる。みんな同じ盤面で、決まった手数で点数を競う"><span class="mi"><img data-mimg="chal" alt=""></span><span class="ml">今日の崩し</span></button><button class="mtile low passbtn" id="passBtn" data-tip="パス：無料・シルバー・ゴールドをくらべる。毎日の受け取りもここ"><span class="mi"><img data-mimg="pass" alt=""></span><span class="ml">パス<small>無料・シルバー・ゴールド</small></span></button></div>
         <div class="mrow2 three">
           <button class="mtile low" id="chalBtn" data-tip="毎週3つのお題：みんな同じ盤面・同じ条件で点数を競う。週間ランキングの順位でごほうび"><span class="mi"><img data-mimg="chal" alt=""></span><span class="ml">チャレンジ</span></button>
           <button class="mtile low" id="vsBtn" data-tip="ほかの人と対戦する（準備中）"><span class="mi"><img data-mimg="online" alt=""></span><span class="ml">オンライン対戦</span></button>
@@ -1830,6 +1837,13 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     </div>
 
     <!-- 遊び方ページ -->
+    <div class="overlay hidden" id="dmis" role="dialog" aria-label="今日の崩しミッション">
+      <div class="how-head">
+        <button class="how-back" id="dmBack" aria-label="タイトルに戻る">‹ 戻る</button>
+        <h2>今日の崩し</h2>
+      </div>
+      <div class="how-body" id="dmBody"></div>
+    </div>
     <div class="overlay hidden" id="chal" role="dialog" aria-label="チャレンジ">
       <div class="how-head">
         <button class="how-back" id="chalBack" aria-label="タイトルに戻る">‹ 戻る</button>
@@ -2126,6 +2140,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       </div>
       <div class="how-body">
         <div class="pr-hero"><img src="img/intro/guide.webp" alt=""><div><b>練習モードへようこそ！</b><p>記録は残らないから、失敗しても大丈夫。<br>まずは<b>お手本</b>を見て、マネしてみよう！</p></div></div>
+        <div class="pr-gim"><b>盤面</b><div class="pr-seg"><button data-pgim="0">ふつう</button><button data-pgim="1">🧊 氷</button><button data-pgim="2">🪨 石</button></div><small id="prGimNote"></small></div>
         <div class="pr-card easy"><div class="pr-top"><span class="pr-ic">🐢</span><div><b>イージー</b><small>ゆっくり。はじめての人に</small></div></div>
           <div class="pr-btns"><button class="pr-demo" data-pdemo="1">👀 お手本を見る</button><button class="pr-go" data-pgo="1">▶ 練習する</button></div></div>
         <div class="pr-card normal"><div class="pr-top"><span class="pr-ic">🐇</span><div><b>ノーマル</b><small>60秒アタック・サバイバルと同じ速さ</small></div></div>
@@ -4232,7 +4247,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   function randType(allowGold){ return (allowGold && rng() < goldRate()) ? GOLD : Math.floor(rng() * TYPES); }
   // 補充用：盤面に少ない色ほど少し出やすく、多い色ほど少し出にくくする（極端な色の偏りを防ぐ。ランダム感は残す）
   // CHALLENGE：列ごとに決まった順番でブロックが降る（その列の何個目に何が来るかは全員同じ。盤面の状態やカラーHPでは変わらない）
-  let colRng = null;
+  let colRng = null, obsRng = null, stoneRng = null;
+  const obsR = () => obsRng ? obsRng() : Math.random();   // 今日の崩し：おじゃまの場所もみんな同じ
   const CH_GOLD = 0.05;                                   // チャレンジのオクタの出る率（固定。OCTA RAINは×2）
   function refillType(c){
     if (colRng && colRng[c]) { const g = colRng[c], a = g(), b = g(); return a < CH_GOLD * ((chCur && chCur.r.gold) || 1) ? GOLD : Math.floor(b * TYPES); }
@@ -4280,7 +4296,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   function placeObs(k, n){
     const cells = []; for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if (isNormal(grid[r][c])) cells.push([r, c]);
-    for (let i = cells.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [cells[i], cells[j]] = [cells[j], cells[i]]; }
+    for (let i = cells.length - 1; i > 0; i--) { const j = Math.floor(obsR() * (i + 1)); [cells[i], cells[j]] = [cells[j], cells[i]]; }
     cells.slice(0, n).forEach(([r, c]) => { grid[r][c] = k === 'ice' ? ICE + grid[r][c] : STONE3; });
   }
   const sqFrozen = (g, r, c) => [[r, c], [r, c + 1], [r + 1, c + 1], [r + 1, c]].some(([a, b]) => isIce(g[a][b]));
@@ -4294,6 +4310,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       else if (v === STONE2) { hit.add(k); grid[a][b] = STONE1; st++; }
       else if (v === STONE1) { hit.add(k); grid[a][b] = null; st++; if (dec) for (let i = 0; i < TYPES; i++) dec[i] += 0.4; }
     }));
+    if ((ice || st) && demoOn && !demoObsSaid) { demoObsSaid = true; demoSay(ice ? '<b>氷</b>は、となりで消すと割れるよ。凍ったブロックは回せないので注意！' : '<b>石</b>は、となりで3回消すとこわれるよ', true); }
     if (ice || st) { try { tone(1400, T(), 0.06, 'triangle', 0.05); tone(2100, T() + 0.04, 0.05, 'triangle', 0.035); } catch(_) {}
       pops.push({text: ice ? 'ICE BREAK' : 'CRACK', style: 'sync', r: 2.5, c: 2.5, row: 3, n: 1, t: now() + 120}); }
     return ice + st;
@@ -4499,8 +4516,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       const fresh = r + 1;
       for (let k = 0; k < fresh; k++) grid[k][c] = null;   // 上の空きを先に空にしてから数える
       for (let k = 0; k < fresh; k++) { grid[k][c] = octaPend > 0 ? (octaPend--, GOLD) : refillType(c); fallDist[k][c] = fresh; }
-      if (gameMode === 'story' && curVar === 2) for (let k = 0; k < fresh; k++)        // 石のルート：落ちてくるブロックがときどき石
-        if (isNormal(grid[k][c]) && Math.random() < STONE_P(obsArea) && obsCount(isStone) < STONE_CAP(obsArea)) grid[k][c] = STONE3;
+      if (gimVar === 2) for (let k = 0; k < fresh; k++)        // 石のルート：落ちてくるブロックがときどき石
+        if (isNormal(grid[k][c]) && (stoneRng ? stoneRng[c]() : Math.random()) < STONE_P(obsArea) && obsCount(isStone) < STONE_CAP(obsArea)) grid[k][c] = STONE3;
     }
     fallStart = t0; phase = 'fall'; phaseStart = t0;
   }
@@ -4538,19 +4555,24 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   const STONE_CAP = a => 5 + Math.floor(a / 2);                         // 盤面の石の上限
   const obsCount = f => { let n = 0; for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if (f(grid[r][c])) n++; return n; };
   function iceTick(t){
-    if (gameMode !== 'story' || curVar !== 1 || !running) return;
+    if (gimVar !== 1 || !running) return;
+    if (gameMode === 'chal' && chCur && chCur.r.turns) {   // 今日の崩し（手数の勝負）：時間ではなく3手ごとに凍る
+      if (chTurn < iceNext + 3 || phase !== 'idle' || rotAnim || confirmUntil) return;
+      iceNext = chTurn;
+    } else {
     if (!iceNext) { iceNext = t + ICE_EVERY(obsArea); return; }
     if (t < iceNext || phase !== 'idle' || rotAnim || confirmUntil) return;
     iceNext = t + ICE_EVERY(obsArea);
+    }
     const room = ICE_CAP(obsArea) - obsCount(isIce); if (room <= 0) return;
     const cells = []; for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if (isNormal(grid[r][c])) cells.push([r, c]);
-    for (let i = cells.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [cells[i], cells[j]] = [cells[j], cells[i]]; }
+    for (let i = cells.length - 1; i > 0; i--) { const j = Math.floor(obsR() * (i + 1)); [cells[i], cells[j]] = [cells[j], cells[i]]; }
     const pick = cells.slice(0, Math.min(room, ICE_N(obsArea))); if (!pick.length) return;
     pick.forEach(([r, c]) => { grid[r][c] = ICE + grid[r][c]; flashes.push({r, c, v: grid[r][c] - ICE, t}); });
     enemySay('こおれ！'); pops.push({text: 'FREEZE!', style: 'speed', r: 2.5, c: 2.5, row: 0, n: 1, t: t + 60});
     try { tone(2600, T(), 0.08, 'sine', 0.05); tone(1900, T() + 0.06, 0.12, 'sine', 0.04); } catch (_) {}
   }
-  let enemyHP = 30, goalColor = -1, curVar = 0, obsWant = null, lastVarList = [], lastAdx = false;
+  let enemyHP = 30, goalColor = -1, curVar = 0, gimVar = 0, obsWant = null, lastVarList = [], lastAdx = false;
   const isZako = () => !!(curStage && curStage.char == null);   // 暴走ブロック（立ち絵なし）
   // ===== お題の進み具合 =====
   let mis = [], misPen = 0;
@@ -4641,8 +4663,10 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     curVar = gameMode === 'story' ? varOf(stage) : 0;
     if (stage && stage.kind === 'boss' && curVar > 0 && stage.hpV) enemyHP = stage.hpV[curVar];   // ボスの氷・石の盤面は、ずらしたエリアの体力
     if (gameMode === 'story' && stage && goalColor < 0) enemyHP = EN_HP_H;                          // 戦い v3：HPは体力×同じ数（ボスもザコも）
-    obsWant = gameMode === 'story' && curVar > 0 ? {k: curVar === 1 ? 'ice' : 'stone', n: Math.min(8, 3 + Math.floor((stage.area || 0) / 2))} : null;
-    obsArea = stage ? (stage.area || 0) : 0; iceNext = 0;
+    // 2026-11-25 本人「練習モードに石、氷も追加」：練習でも氷・石の盤面を選べる（強さは イージー＝エリア1／ノーマル＝エリア5／ハード＝エリア9 くらい）
+    gimVar = gameMode === 'story' ? curVar : gameMode === 'practice' ? pracGim : gameMode === 'chal' && chCur ? (chCur.r.gim || 0) : 0;
+    obsArea = stage ? (stage.area || 0) : gameMode === 'practice' ? ({1: 0, 5: 4, 10: 8}[lv || diffLv] ?? 4) : gameMode === 'chal' ? 4 : 0; iceNext = 0;
+    obsWant = gimVar > 0 ? {k: gimVar === 1 ? 'ice' : 'stone', n: Math.min(8, 3 + Math.floor(obsArea / 2))} : null;
     cpuSpec = stage ? {every: stage.every, burst: stage.burst} : {every: 4600, burst: [3, 5]};
     cpus = [];
     for (let i = 1; i < count; i++) {
@@ -5814,15 +5838,15 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     lastWasAuto = autoOn;                                // 2026-11-20 本人：「もう一度」は、前がオートならオート・手動なら手動
     autoNext = 0; autoPlan = null; autoT0 = 0; autoS0 = 0; autoPace = 1; autoSkAt = 0; drawAutoBadge();
     diffLv = gameMode === 'practice' ? (opt.lv || 5) : (stage ? (stage.kind === 'boss' && stage.lvV ? stage.lvV[varOf(stage)] : stage.diff) : (gameMode === 'chal' && chCur && chCur.r.lv) || 5);   // ランキング（60秒・エンドレス）はLv5固定
-    vsInit(stage ? 2 : 1, null, stage);
+    vsInit(stage ? 2 : 1, gameMode === 'practice' ? (opt.lv || 5) : null, stage);
     Object.assign(CFG, diffOf(diffLv));                  // 難易度の数値を当てる
     endlessIncShown = 1;
     if (gameMode === 'story') { CFG.LAP_SEC = 10; CFG.LAP_MIN = 4; }   // ストーリーだけ：外周は10秒から4秒まで（難しさに関係なく）
     best = gameMode === 'chal' ? chBest() : loadBest(isRec(gameMode) ? gameMode : 'rank');
     $('hiScore').textContent = best;
     const tag = $('modeTag');
-    tag.textContent = gameMode === 'practice' ? (demoOn ? 'お手本 ' : '練習 ') + ({1: 'イージー', 5: 'ノーマル', 10: 'ハード'}[diffLv] || 'Lv' + diffLv) : MODE_LABEL[gameMode] + (stage ? ' ' + stage.label : '');
-    if (gameMode === 'chal' && chCur) tag.textContent = '🎯 ' + chCur.r.n;
+    tag.textContent = gameMode === 'practice' ? (demoOn ? 'お手本 ' : '練習 ') + ({1: 'イージー', 5: 'ノーマル', 10: 'ハード'}[diffLv] || 'Lv' + diffLv) + ['', '・氷', '・石'][pracGim] : MODE_LABEL[gameMode] + (stage ? ' ' + stage.label : '');
+    if (gameMode === 'chal' && chCur) tag.textContent = (chCur.daily ? '🧩 ' : '🎯 ') + chCur.r.n;
     chTurn = 0; rush = 0; rushFrom = 0; rushUndo = null; rushMax = 0; rushShown = '';
     runMaxBar = 0; $('resStars').classList.add('hidden');
     setStageBg(stage ? stage.area : (gameMode === 'rank' || gameMode === 'sixty' || gameMode === 'chal' || gameMode === 'practice' || gameMode === 'online' ? 'free' : null));   // ストーリーはエリアの背景、60秒・エンドレス・練習は20枚からランダム
@@ -5836,6 +5860,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (gameMode !== 'online') { $('onlOpp').classList.add('hidden'); $('onlRes').classList.add('hidden'); }
     rng = mulberry32(seed); srng = mulberry32(seed ^ 0x9e3779b9);
     colRng = gameMode === 'chal' ? Array.from({length: N}, (_, c) => mulberry32((seed ^ Math.imul(c + 1, 0x85ebca6b)) >>> 0)) : null;
+    obsRng = gameMode === 'chal' ? mulberry32((seed ^ 0x51ed27) >>> 0) : null;
+    stoneRng = gameMode === 'chal' ? Array.from({length: N}, (_, c) => mulberry32((seed ^ Math.imul(c + 7, 0x27d4eb2f)) >>> 0)) : null;
     newBoard();
     cur = {r: 2, c: 2}; curFrom = null; vis = {r: 2, c: 2}; dragFrac = {r:0, c:0};
     stacks = Array(TYPES).fill(0); score = 0; chain = 0; confirmUntil = 0; comboShowUntil = 0;
@@ -6316,6 +6342,11 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   $('sixtyBtn').addEventListener('click', () => start('sixty', {}));
   $('easyBtn').addEventListener('click', () => { audio(); $('prac').classList.remove('hidden'); $('prac').querySelector('.how-body').scrollTop = 0; });
   $('pracBack').addEventListener('click', () => $('prac').classList.add('hidden'));
+  let pracGim = Math.min(2, Math.max(0, +load('pracg', '0') || 0));
+  const PR_GIM_NOTE = ['いつもの盤面。まずはここから。', '氷のルートと同じ。ときどきブロックが凍って回せなくなる。となりで消すと割れる。', '石のルートと同じ。上から石が落ちてくる。となりで3回消すとこわれる。'];
+  function pracGimDraw(){ document.querySelectorAll('#prac [data-pgim]').forEach(b => b.classList.toggle('on', +b.dataset.pgim === pracGim)); $('prGimNote').textContent = PR_GIM_NOTE[pracGim]; }
+  document.querySelectorAll('#prac [data-pgim]').forEach(b => b.addEventListener('click', () => { pracGim = +b.dataset.pgim; save('pracg', String(pracGim)); pracGimDraw(); }));
+  pracGimDraw();
   // 2026-11-23 本人：練習はイージー（Lv1）・ノーマル（Lv5＝60秒アタックと同じ）・ハード（Lv10）。それぞれ「お手本」と「練習する」
   document.querySelectorAll('#prac [data-pgo],#prac [data-pdemo]').forEach(b => b.addEventListener('click', () => {
     const demo = !!b.dataset.pdemo, lv = +(b.dataset.pgo || b.dataset.pdemo);
@@ -6829,7 +6860,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (!overVisible()) { whenOverShown(sendScore); return; }   // 広告で続けたら、最後のスコアだけを送る
     awardPlay();
     if (score <= 0) return;
-    if (!chalLive()) return;                               // 世界ランキングは利用者が増えてから
+    if (!chalLive() && !(gameMode === 'chal' && chCur && chCur.daily)) return;   // 世界ランキングは利用者が増えてから（今日の崩しは最初から）
     const b = {mode: gameMode === 'rank' ? 'sv' : gameMode === 'chal' ? chCur.id : gameMode, score, blocks: broken, dur: Math.round((now() - runStart) / 1000), ver: GAME_VER};
     if (gameMode === 'rank' && svLast) b.st = svLast.st;   // サバイバル：点数はサーバーがレートを計算しなおす   // エンドレスはサバイバル（ta）として送る：時間→点数で順位
     if (rankTok()) { postScore(b); return; }
@@ -6847,7 +6878,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   // 結果画面：世界ランキングの順位カード。数字が回って止まり、上位ほど派手に光る
   function showRankRes(R, b, welcome){
-    const isCh = /^ch/.test(b.mode), el = $('rankRes'), d = isCh ? R.all : R.day, rank = d.rank, total = d.total;
+    const isCh = /^(ch|dm)/.test(b.mode), isDm = /^dm/.test(b.mode), el = $('rankRes'), d = isCh ? R.all : R.day, rank = d.rank, total = d.total;
     const tier = rank === 1 ? 't1' : rank === 2 ? 't2' : rank === 3 ? 't3' : rank <= 10 ? 't10' : '';
     const medal = rank === 1 ? '👑' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank <= 10 ? '🏅' : '';
     const best = R.all && R.all.best != null && b.score >= R.all.best;
@@ -6855,13 +6886,13 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     const msg = rank === 1 ? (isCh ? 'このお題で世界1位！' : '今日の世界1位！') : rank <= 3 ? '表彰台！' : rank <= 10 ? 'トップ10入り！' : best ? '自己ベスト更新！' : (rank <= Math.ceil(total / 2) ? '上位' + Math.max(1, Math.round(rank / total * 100)) + '%！' : 'もっと上をめざそう！');
     const sub = [['今週', R.week], ['今月', R.month], ['全期間', R.all]].filter(x => x[1] && x[1].rank).map(x => '<span>' + x[0] + ' <b>' + x[1].rank + '</b>位</span>').join('');
     el.className = 'rkres ' + tier;
-    el.innerHTML = '<div class="rk-head">🌏 WORLD RANKING</div><div class="rk-mode">' + (b.mode === 'sv' ? '⏳ サバイバル ' + taFmt(b.dur) : isCh ? '🎯 CHALLENGE ' + (chCur ? chCur.r.n : '') : '⏱ 60秒アタック') + '</div>' +
+    el.innerHTML = '<div class="rk-head">🌏 WORLD RANKING</div><div class="rk-mode">' + (b.mode === 'sv' ? '⏳ サバイバル ' + taFmt(b.dur) : isDm ? '🧩 ' + (chCur ? chCur.r.n : '') : isCh ? '🎯 CHALLENGE ' + (chCur ? chCur.r.n : '') : '⏱ 60秒アタック') + '</div>' +
       (welcome ? '<div class="rk-wel">ようこそ、<b>' + String(welcome).replace(/[<>&]/g, '') + '</b> さん！ 登録しました</div>' : '') +
       '<div class="rk-medal">' + medal + '</div>' +
       '<div class="rk-main"><span class="rk-lbl">今日</span><span class="rk-num">' + Math.max(rank, total) + '</span><span class="rk-i">位</span><span class="rk-of">/ ' + total.toLocaleString() + '人</span></div>' +
       '<div class="rk-sub">' + sub + '</div><div class="rk-msg">' + msg + '</div>' + bestNote +
       '<button class="rk-see">ランキングを見る ›</button>';
-    el.querySelector('.rk-see').addEventListener('click', () => { rankMode = b.mode === 'sv' ? 'ta' : 'sixty'; wPeriod = 'day'; drawRank(); $('rank').classList.remove('hidden'); $('rank').querySelector('.how-body').scrollTop = 0; });
+    el.querySelector('.rk-see').addEventListener('click', () => { if (isDm) { openDaily(); return; } rankMode = b.mode === 'sv' ? 'ta' : 'sixty'; wPeriod = 'day'; drawRank(); $('rank').classList.remove('hidden'); $('rank').querySelector('.how-body').scrollTop = 0; });
     // 数字が大きい方から回って、自分の順位で止まる
     const num = el.querySelector('.rk-num'), from = Math.max(rank, Math.min(total, rank + 40)), t0 = performance.now(), dur = rank === from ? 300 : 1300;
     try { sndShine(T(), rank <= 3); } catch (_) {}
@@ -7857,7 +7888,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.299';
+  const APP_VER = '0.9.300';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -8474,9 +8505,10 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   const DEMO_SEC = 60, DEMO_HOLD = 380;
   const DEMO_AL = {name: 'お手本', move: 230, rot: 520, miss: 0, two: 1, skWait: [0.5, 1], heartLate: 0};
   let demoOn = false, demoCapAt = 0, demoConfirmSaid = 0, demoN = 0, demoWarned = false, demoTm = 0;
-  function demoReset(){ demoCapAt = 0; demoConfirmSaid = 0; demoN = 0; demoWarned = false; clearTimeout(demoTm);
+  function demoReset(){ demoObsSaid = false; demoCapAt = 0; demoConfirmSaid = 0; demoN = 0; demoWarned = false; clearTimeout(demoTm);
     if (demoOn) { demoSay('お手本スタート！ <b>白い枠</b>の動きをよく見ててね', true); demoCapAt = now() + 1200; } else demoHide(); }
   function demoHide(){ const c = $('demoCap'); if (c) c.hidden = true; clearTimeout(demoTm); demoTm = 0; }
+  let demoObsSaid = false;
   function demoSay(html, force){
     if (!demoOn) return;
     const t = now(); if (!force && t < demoCapAt) return;
@@ -11346,7 +11378,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   function openChal(){ drawChal(); $('chal').classList.remove('hidden'); $('chalBody').scrollTop = 0; }
   $('chalBtn').addEventListener('click', openChal);
   $('chalBack').addEventListener('click', () => $('chal').classList.add('hidden'));
-  $('titleBtn').addEventListener('click', () => { if (gameMode === 'chal') openChal(); });   // チャレンジのあとは、お題の画面へ戻る
+  $('titleBtn').addEventListener('click', () => { if (gameMode === 'chal') (chCur && chCur.daily ? openDaily() : openChal()); });   // チャレンジのあとは、お題の画面へ戻る
   $('chalBody').addEventListener('click', async e => {
     const p = e.target.closest('[data-chplay]');
     if (p) { chCur = chWeek()[+p.dataset.chplay]; $('chal').classList.add('hidden'); start('chal', {}); return; }
@@ -11361,6 +11393,62 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         (r.me && r.me.rank && !top.some(x => x.me) ? '<div class="wrow me"><span class="rk">' + r.me.rank + '</span><span class="nm2">あなた</span><span class="sc">' + r.me.best.toLocaleString() + '</span></div>' : '');
     } catch (_) { box.innerHTML = '<div class="wrow"><span class="nm2">サーバーにつながりませんでした</span></div>'; }
   });
+  // ===== 今日の崩しミッション（2026-11-25 本人「同じ盤面で○手で得点を競うやつ」）=====
+  //   毎日（日本時間0時）かわる。全員同じ盤面・同じブロックの順番・同じおじゃまの場所。15〜25手で何点取れるか（時間は止まっている）
+  //   盤面は ふつう・氷・石 が日がわり。何回でも挑戦できる。前の日の順位でごほうび（サーバーの /api/daily/reward）
+  const DM_TURNS = [15, 20, 25], DM_GIM = ['ふつう', '氷', '石'], DM_GIM_IC = ['🟦', '🧊', '🪨'];
+  const dmKey = (ms) => new Date((ms || Date.now()) + JST).toISOString().slice(0, 10).replace(/-/g, '');
+  function dmOf(day){
+    const h = chHash('dm' + day), turns = DM_TURNS[h % 3], gim = (h >>> 4) % 3, seed = chHash('dmS' + day) % 2 ** 31;
+    const d = turns + '手で何点取れるか。時間は止まっているので、じっくり考えてOK' + (gim === 1 ? '。3手ごとにブロックが凍る（となりで消すと割れる）' : gim === 2 ? '。石が落ちてくる（となりで3回消すとこわれる）' : '');
+    return {id: 'dm' + day, day, daily: true, r: {k: 'daily', n: '今日の崩し ' + turns + '手', d, turns, gim}, seed, col: 0};
+  }
+  const DM_RANK_REW = [['1位', 'ガチャチケット×3'], ['2〜3位', 'ガチャチケット×2'], ['4〜10位', 'ガチャチケット×1'], ['11〜100位', 'スタミナポット×1']];
+  function dmLeftTxt(){ const d = new Date(Date.now() + JST), end = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1) - JST, ms = end - Date.now(); return 'あと' + Math.floor(ms / 36e5) + '時間' + Math.floor(ms % 36e5 / 6e4) + '分'; }
+  function drawDaily(){
+    const c = dmOf(dmKey()), b = chState().best[c.id] || 0, d = new Date(Date.now() + JST);
+    $('dmBody').innerHTML = '<div class="chhead"><b>今日の崩しミッション</b>　' + (d.getUTCMonth() + 1) + '/' + d.getUTCDate() + '<span>' + dmLeftTxt() + '</span></div>' +
+      '<p class="chnote">全員同じ盤面・同じブロックの順番。限られた手数で、どれだけ点数を取れるか。何回でも挑戦できます。</p>' +
+      '<div class="chcard dm"><div class="chtop"><span class="chn">' + c.r.turns + '手勝負</span><span class="chbest">BEST <b>' + b.toLocaleString() + '</b></span></div>' +
+        '<div class="dmtags"><span>✋ ' + c.r.turns + '手</span><span>' + DM_GIM_IC[c.r.gim] + ' ' + DM_GIM[c.r.gim] + 'の盤面</span></div>' +
+        '<div class="chd">' + c.r.d + '</div>' +
+        '<div class="chbtns"><button class="chplay" data-dmplay="1">▶ 挑戦する</button><button class="chrk" data-dmrk="1">🌏 今日の順位</button></div>' +
+        '<div class="chlist hidden" id="dml"></div></div>' +
+      '<section class="pr-note"><h3>💡 コツ</h3><p>1手で1か所だけ消すより、<b>2か所同時</b>や<b>落ちてきたブロックで続けて消える（COMBO）</b>をねらうと点数が大きくなるよ。オクタブロックは逃さずに。</p></section>' +
+      '<div class="chrew"><b>🏆 ごほうび（前の日の順位で、次の日に受け取れる）</b>' + DM_RANK_REW.map(x => '<div><span>' + x[0] + '</span>' + x[1] + '</div>').join('') + '</div>';
+  }
+  function openDaily(){ drawDaily(); $('dmis').classList.remove('hidden'); $('dmBody').scrollTop = 0; }
+  $('dmBtn').addEventListener('click', openDaily);
+  $('dmBack').addEventListener('click', () => $('dmis').classList.add('hidden'));
+  $('dmBody').addEventListener('click', async e => {
+    if (e.target.closest('[data-dmplay]')) { chCur = dmOf(dmKey()); $('dmis').classList.add('hidden'); start('chal', {}); return; }
+    if (!e.target.closest('[data-dmrk]')) return;
+    const box = $('dml'), c = dmOf(dmKey());
+    if (!box.classList.contains('hidden')) { box.classList.add('hidden'); return; }
+    box.classList.remove('hidden'); box.innerHTML = '<div class="wrow"><span class="nm2">読み込み中…</span></div>';
+    try {
+      const r = await api('/api/top?mode=' + c.id + '&limit=20&period=all', {tok: rankTok()}), top = r.top || [], esc = v => String(v).replace(/[<>&]/g, '');
+      box.innerHTML = (top.length ? top.map(x => '<div class="wrow' + (x.me ? ' me' : '') + '"><span class="rk">' + x.rank + '</span><span class="nm2">' + flagOf(x.cc) + esc(x.name) + '</span><span class="sc">' + x.score.toLocaleString() + '</span></div>').join('')
+        : '<div class="wrow"><span class="nm2">まだ記録がありません。一番乗りをめざそう！</span></div>') +
+        (r.me && r.me.rank && !top.some(x => x.me) ? '<div class="wrow me"><span class="rk">' + r.me.rank + '</span><span class="nm2">あなた</span><span class="sc">' + r.me.best.toLocaleString() + '</span></div>' : '');
+    } catch (_) { box.innerHTML = '<div class="wrow"><span class="nm2">サーバーにつながりませんでした</span></div>'; }
+  });
+  async function checkDmRewards(){
+    if (!rankTok()) return;
+    try {
+      const r = await api('/api/daily/reward', {tok: rankTok()});
+      const x = ((r && r.rewards) || [])[0]; if (!x) return;
+      const its = Object.entries(x.items).map(([k, n]) => itemLabel(k) + ' ×' + n).join('<br>');
+      askChoice('🧩 きのうの「今日の崩し」<br><b>' + x.rank + '位</b>（' + x.total + '人中・' + x.best.toLocaleString() + '点）<br><small>ごほうび（' + x.label + '）</small><br>' + its,
+        '受け取る', 'あとで',
+        async () => {
+          try { const c = await api('/api/daily/reward/claim', {method: 'POST', body: JSON.stringify({mode: x.mode}), tok: rankTok()});
+            Object.entries(c.reward.items).forEach(([k, n]) => giveItem(k, n)); saveInv(); toast('ごほうびを受け取りました'); msgLog('get', '🧩 今日の崩し（' + x.rank + '位）：' + its.replace(/<br>/g, '・')); }
+          catch (e) { toast(e.status === 409 ? 'もう受け取っています' : 'サーバーにつながりませんでした'); }
+        }, () => {});
+    } catch (_) {}
+  }
+  setTimeout(checkDmRewards, 9000);
   // ===== キャラ進化（2026-11-15）：SR→MR、MR→LR。人気投票の上位から少しずつ解放していく =====
   //   毎月の人気投票（無料1日1票＋ゴールドで追加）で上位3体を決める → 進化後の絵・声を作って、次の更新で EVO_OPEN に入れる
   //   2026-11-23 本人「ランキング上位（人気投票）はなし。進化後の絵・声ができたキャラから順に解放していく流れ」→ 投票は使わない
@@ -11439,6 +11527,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   });
   const FEAT = [
     {k: 'ta', n: 'サバイバル', ok: () => bossesBeaten() >= 1, need: 'エリア1のボスを倒す', how: '時間がたつほど厳しくなる中で、どれだけ長く生き残れるかを競うモードだよ。壊した中身と生き残った時間から「サバイバルレート」が決まるよ。ランキングにも残るから挑戦してね！'},
+    {k: 'daily', n: '今日の崩しミッション', ok: () => bossesBeaten() >= 1, need: 'エリア1のボスを倒す', how: '毎日かわるお題だよ。みんな同じ盤面で、決まった手数でどれだけ点数を取れるかを競うの。前の日の順位でごほうびがもらえるよ！'},
     {k: 'chal', n: 'チャレンジ', ok: () => chalLive() && bossesBeaten() >= 1, need: () => chalLive() ? 'エリア1のボスを倒す' : '', how: '毎週3つのお題が出るよ。みんな同じ盤面・同じブロックの順番で点数を競うの。週間ランキングの順位でごほうびがもらえるよ！'},
     {k: 'rank', n: 'ランキング', ok: () => chalLive() && bossesBeaten() >= 1, need: () => chalLive() ? 'エリア1のボスを倒す' : '', how: '60秒アタックとサバイバルの世界ランキングが見られるよ。月の順位でプレゼントももらえるの！'},
     {k: 'online', n: 'オンライン対戦', ok: () => userLv() >= 5, need: 'ユーザーLV5', how: 'ほかの人とリアルタイムで対戦できるよ。まずは「シンプル」から遊んでみてね。'},
@@ -11701,7 +11790,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       if (cc) askYes('預けるのを取り消して、品を戻しますか？<br><small>今日預けた数は戻りません。</small>', go); else go();
       return; }
   });
-  const FEAT_BTN = {ta: 'startBtn', chal: 'chalBtn', rank: 'rankBtn', online: 'vsBtn', forge: 'forgeBtn'};
+  const FEAT_BTN = {ta: 'startBtn', daily: 'dmBtn', chal: 'chalBtn', rank: 'rankBtn', online: 'vsBtn', forge: 'forgeBtn'};
   Object.keys(FEAT_BTN).forEach(k => { const b = $(FEAT_BTN[k]); if (!b) return;
     b.addEventListener('click', e => { if (featOk(k)) return; e.preventDefault(); e.stopImmediatePropagation(); featLockMsg(k); }, true); });
   document.addEventListener('click', e => {

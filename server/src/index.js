@@ -635,6 +635,15 @@ async function api(env, req, url) {
     if (!res.meta.changes) return fail(env, req, 'もう受け取りました', 409);
     return json(env, req, { ok: true, reward: r });
   }
+  if (p === '/api/daily/reward' && M === 'GET') return json(env, req, { rewards: await dmRewards(env, me.id) });
+  if (p === '/api/daily/reward/claim' && M === 'POST') {
+    const b = await req.json().catch(() => ({}));
+    const r = (await dmRewards(env, me.id)).find(x => x.mode === b.mode);
+    if (!r) return fail(env, req, '受け取れるごほうびがありません', 404);
+    const res = await env.DB.prepare('INSERT OR IGNORE INTO reward_claims (account_id, month, mode, created_at) VALUES (?, ?, ?, ?)').bind(me.id, 'd', r.mode, nowSec()).run();
+    if (!res.meta.changes) return fail(env, req, 'もう受け取りました', 409);
+    return json(env, req, { ok: true, reward: r });
+  }
   // ---- 課金（Stripe）----
   if (p === '/api/pay/status' && M === 'GET') return json(env, req, await payStatus(env, me.id));
   if (p === '/api/pay/checkout' && M === 'POST') return payCheckout(env, req, me);
@@ -884,6 +893,25 @@ async function chRewards(env, player) {
     out.push({ week: wk, mode, k, rank, total: total.c || 0, best: best.s, label: tier.label, items: tier.items });
   }
   return out;
+}
+
+// ---------- 今日の崩しミッション（2026-11-25）：前の日（日本時間）の順位のごほうび ----------
+const DM_REWARDS = [
+  { upTo: 1,   label: '1位',       items: { gticket: 3 } },
+  { upTo: 3,   label: '2〜3位',    items: { gticket: 2 } },
+  { upTo: 10,  label: '4〜10位',   items: { gticket: 1 } },
+  { upTo: 100, label: '11〜100位', items: { stampot: 1 } },
+];
+async function dmRewards(env, player) {
+  const to = since('day', nowSec()), mode = 'dm' + jstDay(to - 3600).replace(/-/g, '');
+  const best = await env.DB.prepare('SELECT MAX(score) AS s FROM scores WHERE mode = ? AND player = ?').bind(mode, player).first();
+  if (!best || best.s == null || best.s <= 0) return [];
+  if (await env.DB.prepare('SELECT 1 FROM reward_claims WHERE account_id = ? AND month = ? AND mode = ?').bind(player, 'd', mode).first()) return [];
+  const above = await env.DB.prepare('SELECT COUNT(*) AS c FROM (SELECT player, MAX(score) AS b FROM scores WHERE mode = ? GROUP BY player) WHERE b > ?').bind(mode, best.s).first();
+  const total = await env.DB.prepare('SELECT COUNT(DISTINCT player) AS c FROM scores WHERE mode = ?').bind(mode).first();
+  const rank = (above.c || 0) + 1, tier = DM_REWARDS.find(x => rank <= x.upTo);
+  if (!tier) return [];
+  return [{ mode, rank, total: total.c || 0, best: best.s, label: tier.label, items: tier.items }];
 }
 
 // ---------- 課金（Stripe）----------
