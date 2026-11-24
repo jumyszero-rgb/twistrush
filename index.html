@@ -933,7 +933,7 @@ body.on-menu .battlemain{opacity:0;}
   @media (max-height:760px){ .fightline .art{height:177px;} .mefight .art{height:120px;} }
   .art{position:relative;}
   .art[hidden]{display:none;}
-  .art span{position:absolute;inset:0;background-repeat:no-repeat;will-change:opacity;}
+  .art span{position:absolute;inset:0;background-repeat:no-repeat;will-change:opacity;transform:scale(var(--z,1));transform-origin:50% 100%;}
   .vsrow .nm{font-size:10px;font-weight:800;min-width:44px;color:var(--muted);}
   .vsrow .bars{display:flex;gap:4px;flex:1;}
   .vsrow .cbar{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;}
@@ -2559,14 +2559,35 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
      introId: 'fa75855e449b9f284d3a2f470d2d957d', introLocal: 'video/intro_chiyo.mp4',
      loseList: [['734a865cf4e3c7ab6611204e04e2144d', 'img/lose_chiyo1.webp'], ['3cdf96933bc4e9779aaaf3de1b1251af', 'img/lose_chiyo2.webp'], ['c1f898eaf8b9a500bef88e47047a8c7d', 'img/lose_chiyo3.webp'], ['c56c2d6ef1b4c2ea5f6ceda4809fa53a', 'img/lose_chiyo4.webp'], ['e87bebe51e44d003ba8aa0f30bce7cb2', 'img/lose_chiyo5.webp']],
      winList: [['5d68b2efcfc9d0789cba7cecb0f630b2', 'img/win_chiyo1.webp'], ['b431722418aa80397d032e8cf9b01bb5', 'img/win_chiyo2.webp'], ['12925f8e0ae15568f7c23a57479fd67a', 'img/win_chiyo3.webp'], ['292b6c548c1489d808ad968520c08062', 'img/win_chiyo4.webp'], ['1ec87c74bc3d9c7b05ecc4fc1e8aef45', 'img/win_chiyo5.webp']]},
-    {id: 'gilbert', name: 'ギルバート',   desc: '銀の騎士',             color: '#a9b4c6', lv: 9, every: 3300, burst: [5, 7], sheetId: '171671cdf3b7e6e7eb44e21350904952', sheetLocal: 'img/gilbert_sheet.webp',
+    {id: 'gilbert', name: 'ギルバート',   desc: '銀の騎士',             color: '#a9b4c6', lv: 14, every: 3300, burst: [5, 7], sheetId: '171671cdf3b7e6e7eb44e21350904952', sheetLocal: 'img/gilbert_sheet.webp',
      introId: 'e04f7acd1d1f0948c24704c6f307a743', introLocal: 'video/intro_gilbert.mp4',
      loseList: [['abafed2fa99b8fdc500a0571a5d4f273', 'img/lose_gilbert1.webp'], ['ab94ff5f08029032676f131485fae6f1', 'img/lose_gilbert2.webp'], ['fc19a08f5cfeda17df7fb2e21afc6fcf', 'img/lose_gilbert3.webp'], ['ee07e1bab9d8f4585b049bd13646f7a4', 'img/lose_gilbert4.webp'], ['52590e07e7f01ac7eb905a513d0706bf', 'img/lose_gilbert5.webp']],
      winList: [['bf9259e7860a8072ee2e7518c0ca817d', 'img/win_gilbert1.webp'], ['eaf3641814d56d16a3df91b4ba5c0304', 'img/win_gilbert2.webp'], ['bc9d2b2815d218fc46415b9c64e75f80', 'img/win_gilbert3.webp'], ['70f1a1d60e2aa87023f9a3fa32333c5a', 'img/win_gilbert4.webp'], ['426ea1c4fa5fc77382b9bd0c9e76125d', 'img/win_gilbert5.webp']]},
+    // 2026-11-25：新しい5エリアのボス（番号 9〜13）。16コマの絵は立ち絵から作った（バトルでは立ち絵を少し動かして見せる。zoom＝表示の大きさ）
+    {id: 'kagura', name: 'カグラ', desc: '炎の竜人の娘', color: '#ff5a36', lv: 9, every: 3540, burst: [4, 6], sheetId: 'local', sheetLocal: 'img/kagura_sheet.webp', zoom: 1.5,
+     introId: 'local', introLocal: 'video/intro_kagura.mp4',
+     loseList: [['', 'img/lose_kagura1.webp'], ['', 'img/lose_kagura2.webp'], ['', 'img/lose_kagura3.webp'], ['', 'img/lose_kagura4.webp'], ['', 'img/lose_kagura5.webp']],
+     winList: [['', 'img/win_kagura1.webp'], ['', 'img/win_kagura2.webp'], ['', 'img/win_kagura3.webp'], ['', 'img/win_kagura4.webp'], ['', 'img/win_kagura5.webp']]},
+    {id: 'ciel', name: 'シエル', desc: '人魚の海賊船長', color: '#3ec7e6', lv: 10, every: 3480, burst: [4, 6], sheetId: 'local', sheetLocal: 'img/ciel_sheet.webp', zoom: 1.3,
+     introId: 'local', introLocal: 'video/intro_ciel.mp4',
+     loseList: [['', 'img/lose_ciel1.webp'], ['', 'img/lose_ciel2.webp'], ['', 'img/lose_ciel3.webp'], ['', 'img/lose_ciel4.webp'], ['', 'img/lose_ciel5.webp']],
+     winList: [['', 'img/win_ciel1.webp'], ['', 'img/win_ciel2.webp'], ['', 'img/win_ciel3.webp'], ['', 'img/win_ciel4.webp'], ['', 'img/win_ciel5.webp']]},
+    {id: 'nefer', name: 'ネフェル', desc: '砂の女王', color: '#e0b84a', lv: 11, every: 3420, burst: [5, 6], sheetId: 'local', sheetLocal: 'img/nefer_sheet.webp', zoom: 1.3,
+     introId: 'local', introLocal: 'video/intro_nefer.mp4',
+     loseList: [['', 'img/lose_nefer1.webp'], ['', 'img/lose_nefer2.webp'], ['', 'img/lose_nefer3.webp'], ['', 'img/lose_nefer4.webp'], ['', 'img/lose_nefer5.webp']],
+     winList: [['', 'img/win_nefer1.webp'], ['', 'img/win_nefer2.webp'], ['', 'img/win_nefer3.webp'], ['', 'img/win_nefer4.webp'], ['', 'img/win_nefer5.webp']]},
+    {id: 'joker', name: 'ジョーカー', desc: '夜のサーカスの道化師', color: '#a35cff', lv: 12, every: 3380, burst: [5, 6], sheetId: 'local', sheetLocal: 'img/joker_sheet.webp', zoom: 1.3,
+     introId: 'local', introLocal: 'video/intro_joker.mp4',
+     loseList: [['', 'img/lose_joker1.webp'], ['', 'img/lose_joker2.webp'], ['', 'img/lose_joker3.webp'], ['', 'img/lose_joker4.webp'], ['', 'img/lose_joker5.webp']],
+     winList: [['', 'img/win_joker1.webp'], ['', 'img/win_joker2.webp'], ['', 'img/win_joker3.webp'], ['', 'img/win_joker4.webp'], ['', 'img/win_joker5.webp']]},
+    {id: 'chronoa', name: 'クロノア', desc: '時の魔女', color: '#6f7bd8', lv: 13, every: 3340, burst: [5, 7], sheetId: 'local', sheetLocal: 'img/chronoa_sheet.webp', zoom: 1.5,
+     introId: 'local', introLocal: 'video/intro_chronoa.mp4',
+     loseList: [['', 'img/lose_chronoa1.webp'], ['', 'img/lose_chronoa2.webp'], ['', 'img/lose_chronoa3.webp'], ['', 'img/lose_chronoa4.webp'], ['', 'img/lose_chronoa5.webp']],
+     winList: [['', 'img/win_chronoa1.webp'], ['', 'img/win_chronoa2.webp'], ['', 'img/win_chronoa3.webp'], ['', 'img/win_chronoa4.webp'], ['', 'img/win_chronoa5.webp']]}
   ];
   // 相手の強さの呼び名（間隔から自動で付ける）
   const cpuName = every => every >= 6000 ? '弱' : (every >= 4800 ? 'やや弱' : (every >= 4000 ? '中' : (every >= 3400 ? 'やや強' : (every >= 2600 ? '強' : '最強'))));
-  // ===== ストーリー：9エリア×10ステージ＝90ステージ =====
+  // ===== ストーリー：14エリア（2026-11-25 にギルバートの前へ5エリアを足した。ギルバートはエリア14）=====
   // 1〜8面＝暴走ブロック（ザコ）、9面＝中ボス（大きな暴走ブロック）、10面＝ボス（いまの9キャラ）
   // ボスに勝つと、そのキャラが自分のキャラとして使えるようになる
   // col＝エリアの色（0レッド 1イエロー 2ブルー 3パープル 4グリーン）
@@ -2579,12 +2600,18 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     {name: '機械工場', boss: 5, col: 1, zako: 'orange'},
     {name: '空の島',   boss: 6, col: 2, zako: 'sky'},
     {name: '忍びの里', boss: 7, col: 3, zako: 'black'},
+    {name: '灼熱の火山', boss: 9, col: 0, zako: 'orange'},     // 2026-11-25 追加
+    {name: '海底の沈没船', boss: 10, col: 2, zako: 'blue'},
+    {name: '砂漠のピラミッド', boss: 11, col: 1, zako: 'yellow'},
+    {name: '真夜中の遊園地', boss: 12, col: 3, zako: 'purple'},
+    {name: '時計塔の天文台', boss: 13, col: 2, zako: 'sky'},
     {name: '銀の城',   boss: 8, col: 4, zako: 'white'},
   ];
   // 暴走ブロック（ザコ）の顔。エリアごとに1つ。green はまだ未使用（裏ステージ用に取っておく）
   // エリアの背景（ストーリーのバトルとマップに使う）
   const AREA_BG = ['53e43e1050883ee5c316530d7d150a6b', '175b02a60ec1f3c10e16431b07e571b3', 'e9e64355bcbc083564ff9925ac326bd4', 'f81c4a7665d6f7f1a3d7c7ae1f89e26e', '140c3388224c2b1dde707c876d736a8a', '59e506e9921a00ec88fff03198a21142', '197fdc0483cd48eaea3dc01a7aad2f32', 'a4c29b8a04978ad3b8911db82ca51cde', 'd2c5cb5a5fcd52a8314094ee66fe8d52'];
-  const areaBgOf = a => AREA_BG[a] ? (true ? 'img/bg/area' + (a + 1) + '.webp' : blobU(AREA_BG[a])) : null;
+  const AREA_BG_FILE = ['area1', 'area2', 'area3', 'area4', 'area5', 'area6', 'area7', 'area8', 'area_volcano', 'area_sunken', 'area_pyramid', 'area_park', 'area_clock', 'area9'];
+  const areaBgOf = a => AREA_BG_FILE[a] ? 'img/bg/' + AREA_BG_FILE[a] + '.webp' : null;
   // 60秒・エンドレス・練習の背景（20枚から毎回ランダム。直前と同じものは出さない）
   const FREE_BG = [
     ['ebde9fd8ad0ae79af1b1c2c6e30f383f', 'img/bg/free01.webp'],
@@ -2689,6 +2716,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     a7_07: '80cf5578b7c7334333ace9231639bc8a', a7_08: 'e88f6a92805d75dea0a4ddb7af093f80', a7_09: 'e49da948375fe7dd187b0ef88b523b80',
     a7_10: '653d004dab139725b626449fdbefe1ee',
     a8_01: '4167aaaf92132234845a1a1a0ea75584', a8_02: '502d4dd6b8ba41490f4fa725763d8db3', a8_03: 'ba0f449c9eb9db4e2ef9701513dff0f1', a8_04: 'bd65e369a1043f108d6dbeb1989e50c4', a8_05: '17799ab7d27319bc5554398f309049c9', a8_06: '5ae26c81bcfb2f1c72025a0ff6812936', a8_07: '8bdb042e7a5b7b8d4f42e0fd0dbdf84c', a8_08: '1d52017e7b9b7977384de7cf9b42f9a0', a8_09: '60f087202e9c0eb9e895fb1acf01e988', a8_10: 'f36ae39f31ea30c0baf86fc4a54a023e',
+    // 2026-11-25：新しい5エリアの住人（ファイルは img/zako/○○.webp）
+    vol_01: 'local', vol_02: 'local', vol_03: 'local', vol_04: 'local', vol_05: 'local', vol_06: 'local', vol_07: 'local', vol_08: 'local', vol_09: 'local', vol_10: 'local', sea_01: 'local', sea_02: 'local', sea_03: 'local', sea_04: 'local', sea_05: 'local', sea_06: 'local', sea_07: 'local', sea_08: 'local', sea_09: 'local', sea_10: 'local', pyr_01: 'local', pyr_02: 'local', pyr_03: 'local', pyr_04: 'local', pyr_05: 'local', pyr_06: 'local', pyr_07: 'local', pyr_08: 'local', pyr_09: 'local', pyr_10: 'local', park_01: 'local', park_02: 'local', park_03: 'local', park_04: 'local', park_05: 'local', park_06: 'local', park_07: 'local', park_08: 'local', park_09: 'local', park_10: 'local', clk_01: 'local', clk_02: 'local', clk_03: 'local', clk_04: 'local', clk_05: 'local', clk_06: 'local', clk_07: 'local', clk_08: 'local', clk_09: 'local', clk_10: 'local',
     a9_01: '6b88cb61c183d229e7eac904852f1761', a9_02: '790828df01e016c3900d15c99c5d402d', a9_03: '58d59b6f0147760c18610620a1e94e70', a9_04: 'eb8ba348bc216208026cbc98465d3f11', a9_05: '1d3f3a65bb1bc28d2a11c3ad1b945b97', a9_06: '00394b7d07109995c0ed314708bb4123', a9_07: 'e15035c71bdabb4205d95c11e3044c77', a9_08: '75d4ffb75ac92837dfabc4a69e3e7f3a', a9_09: '5a6abc3c51774700151a98836e57a858', a9_10: '1486ae181214fd87dba81807ee54f01c',
   };
   const zakoImgOf = key => key && ZAKO_IMG[key] ? (true ? 'img/zako/' + key + '.webp' : blobU(ZAKO_IMG[key])) : null;
@@ -2791,7 +2820,67 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       {k: 'a8_09', name: 'クサリ'},   // 猫の忍者
       {k: 'a8_10', name: 'ムササビ'}   // ムササビ忍者
     ],
-    8: [   // エリア9：銀の城
+    8: [   // エリア9：灼熱の火山
+      {k: 'vol_01', name: 'トカゲラ'},   // 溶岩トカゲの子
+      {k: 'vol_02', name: 'ポッポ'},   // 火の玉ぼうや
+      {k: 'vol_03', name: 'モグスミ'},   // 石炭もぐら
+      {k: 'vol_04', name: 'マグぷる'},   // マグマスライム
+      {k: 'vol_05', name: 'ヒヨフェニ'},   // 火の鳥のひな
+      {k: 'vol_06', name: 'ユザル'},   // 温泉ざる
+      {k: 'vol_07', name: 'コクヨー'},   // 黒曜石のカメ
+      {k: 'vol_08', name: 'ホムラ'},   // 竜の巫女見習い
+      {k: 'vol_09', name: 'ガンゴレ'},   // 溶岩ゴーレム
+      {k: 'vol_10', name: 'ドルガン'},   // 火山のかじ屋ドワーフ
+    ],
+    9: [   // エリア10：海底の沈没船
+      {k: 'sea_01', name: 'クラリン'},   // ちびクラゲ
+      {k: 'sea_02', name: 'カリヘイ'},   // ヤドカリ兵
+      {k: 'sea_03', name: 'プクフー'},   // ふぐ風船
+      {k: 'sea_04', name: 'タッツー'},   // タツノオトシゴの子
+      {k: 'sea_05', name: 'ミミバコ'},   // 宝箱ミミック
+      {k: 'sea_06', name: 'マンボー'},   // ねぼすけマンボウ
+      {k: 'sea_07', name: 'チョーチン'},   // ちょうちんアンコウ
+      {k: 'sea_08', name: 'マリナ'},   // 見習い水兵
+      {k: 'sea_09', name: 'ホネキチ'},   // ゆうれい船のガイコツ水夫
+      {k: 'sea_10', name: 'オクトン'},   // タコの航海士
+    ],
+    10: [   // エリア11：砂漠のピラミッド
+      {k: 'pyr_01', name: 'スカラン'},   // スカラベの子
+      {k: 'pyr_02', name: 'サボたん'},   // サボテンぼうや
+      {k: 'pyr_03', name: 'ミイにゃ'},   // ミイラねこ
+      {k: 'pyr_04', name: 'スナーク'},   // 砂ヘビ
+      {k: 'pyr_05', name: 'ラクダン'},   // ラクダの子
+      {k: 'pyr_06', name: 'スフィー'},   // スフィンクスの子
+      {k: 'pyr_07', name: 'スナぷる'},   // 砂だんごスライム
+      {k: 'pyr_08', name: 'アヌビ'},   // 王家の墓守
+      {k: 'pyr_09', name: 'サハラ'},   // 砂の魔術師
+      {k: 'pyr_10', name: 'ゴルドン'},   // 黄金のゴーレム
+    ],
+    11: [   // エリア12：真夜中の遊園地
+      {k: 'park_01', name: 'フワゴー'},   // ゆうれい風船
+      {k: 'park_02', name: 'ツギクマ'},   // つぎはぎテディ
+      {k: 'park_03', name: 'メリー'},   // メリーゴーランドの木馬
+      {k: 'park_04', name: 'ポプゴー'},   // ポップコーンおばけ
+      {k: 'park_05', name: 'ビックン'},   // びっくり箱
+      {k: 'park_06', name: 'ワタモリ'},   // わたあめこうもり
+      {k: 'park_07', name: 'チケチュー'},   // チケットねずみ
+      {k: 'park_08', name: 'ピエタ'},   // 綱渡りの道化
+      {k: 'park_09', name: 'カンラン'},   // 観覧車の番人
+      {k: 'park_10', name: 'スペード'},   // トランプの兵隊
+    ],
+    12: [   // エリア13：時計塔の天文台
+      {k: 'clk_01', name: 'ギアチュー'},   // 歯車ねずみ
+      {k: 'clk_02', name: 'ホーリン'},   // ふくろうの子
+      {k: 'clk_03', name: 'キラリ'},   // 星くずの精
+      {k: 'clk_04', name: 'スナどけい'},   // 砂時計スライム
+      {k: 'clk_05', name: 'ゼンマイ'},   // ぜんまい人形
+      {k: 'clk_06', name: 'ツキミ'},   // 月うさぎ
+      {k: 'clk_07', name: 'フリペン'},   // 振り子ペンギン
+      {k: 'clk_08', name: 'ステラ'},   // 天文学者見習い
+      {k: 'clk_09', name: 'クロック'},   // 時計仕掛けの騎士
+      {k: 'clk_10', name: 'ミネルヴァ'},   // 時の番人フクロウ
+    ],
+    13: [   // エリア14：銀の城（2026-11-25 まではエリア9）
       {k: 'a9_01', name: 'ヨロイン'},   // ウサギの見張り兵,
       {k: 'a9_02', name: 'ワンナイト'},   // 子犬の騎士,
       {k: 'a9_03', name: 'カラッポ'},   // 中身のない鎧,
@@ -2842,6 +2931,11 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     [0, 'ice', 0, 'ice', 0],
     [0, 0, 0, 'ice', 0],
     [0, 0, 0, 'stone', 0],
+    [0, 0, 'stone', 0, 'stone'],
+    [0, 0, 'stone', 0, 'stone'],
+    [0, 0, 'stone', 0, 'stone'],
+    [0, 0, 'stone', 0, 'stone'],
+    [0, 0, 'stone', 0, 'stone'],
     [0, 0, 'stone', 0, 'stone'],
     [0, 0, 'stone', 0, 'stone'],
     [0, 0, 'stone', 0, 'stone'],
@@ -2917,9 +3011,13 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   AREAS.forEach((ar, a) => {
     for (let i = 0; i < PER; i++) {
       const route = i === BOSS_I ? -1 : Math.floor(i / 5), step = i === BOSS_I ? 5 : i % 5;
-      const g = a * PER + i + 1, k = (a * 6 + step) / (AREA_REF * 6 - 1);   // 通し番号と、その進み具合（ルートの何面目か）
-      const kOf = sh => ((a + sh) * 6 + step) / (AREA_REF * 6 - 1);        // 氷・石：エリアをずらした進み具合
-      const gOld = a * 11 + (i === BOSS_I ? 10 : i) + 1;                     // 前の番号（お題の種を変えないため）
+      // 2026-11-25：5エリアを足した。強さの物差し（aR）は、エリア1〜8とギルバート（8）は前のまま、新しい5エリアはチヨ（7）とギルバート（8）の間
+      //   お題の種（aS）も前のまま（ギルバートは8）。新しい5エリアは重ならない番号
+      const last = AREAS.length - 1, aR = a <= 7 ? a : a === last ? 8 : 7 + (a - 7) / 6, aS = a === last ? 8 : a >= 8 ? 100 + a : a;
+      const g = a * PER + i + 1, k = (aR * 6 + step) / (AREA_REF * 6 - 1);   // 通し番号と、その進み具合（ルートの何面目か）
+      const gS = aS * PER + i + 1;                                            // お題の種用の通し番号
+      const kOf = sh => ((aR + sh) * 6 + step) / (AREA_REF * 6 - 1);        // 氷・石：エリアをずらした進み具合
+      const gOld = aS * 11 + (i === BOSS_I ? 10 : i) + 1;                    // 前の番号（お題の種を変えないため）
       const kind = i === BOSS_I ? 'boss' : 'normal';
       const big = kind === 'boss' || kind === 'mid';
       // HP：ザコは少なめでテンポよく。中ボスはザコの1.5倍、ボスは強め
@@ -2947,7 +3045,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         diff: lv, every: boss.every, burst: boss.burst, face: ar.col,
         hp, goal: -1, count: hp, hpV: V.map(x => x[0]), lvV: V.map(x => x[1]),
         ready: true, gim: route === 1 ? 'ice' : route === 2 ? 'stone' : null,
-        missions: makeMissions(route === 1 ? 1000 + gOld : route === 2 ? 2000 + g : a * 6 + step + 1, a, hp, kind, k),
+        missions: makeMissions(route === 1 ? 1000 + gOld : route === 2 ? 2000 + gS : aS * 6 + step + 1, a, hp, kind, k),
       });
     }
   });
@@ -2993,9 +3091,10 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     return LOCAL_ART ? c.sheetLocal : blobU(c.sheetId);
   };
   // 9人のアイコン（1枚に横並び・192px角）
-  const ICONS = LOCAL_ART ? 'img/icons.webp' : '/_blob/4fcdb7c51098c4f2aa73d3e6716d8847';
+  const ICONS = 'img/icons14.webp';   // 2026-11-25：14人（前の9人＋新しい5人の顔は立ち絵から切り出した）
   const ICON_PX = 192;
   const SHEET = SHEET_DEFAULT;
+  const SHEET_ZOOM = {}; CHARS.forEach(c => { if (c.zoom && c.sheetLocal) SHEET_ZOOM[c.sheetLocal] = c.zoom; });
   const FRAME_W = 400, FRAME_H = 800, FRAME_N = 16;   // 1コマの元サイズ（高解像度版）
   // コマ番号は1始まり。1〜6=待機、7〜11=攻撃、12〜13=勝利、14〜15=被弾、16=敗北
   const ANIM = {
@@ -3108,6 +3207,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     }
     const L = el.children;
     const src = sheet || SHEET_DEFAULT;
+    el.style.setProperty('--z', el.classList.contains('wide') ? 1 : (SHEET_ZOOM[src] || 1));
     if (el.__w !== w || el.__src !== src) {
       el.__w = w; el.__src = src;
       if (!el.classList.contains('wide')) el.style.width = w.toFixed(1) + 'px';
@@ -3426,6 +3526,47 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     title_song14: {local: 'bgm/title_song14.mp3', blob: '/_blob/7de93631fe802cd6f9ce2746fa0a77b7'},   // Team Up!
     title_song15: {local: 'bgm/title_song15.mp3', blob: '/_blob/667663e9119e98dbe7e15b45250197b4'},   // Level Up Days
     title_song16: {local: 'bgm/title_song16.mp3', blob: '/_blob/8f6fcf64e1f7a571c4faf34ac2661ff2'},   // Little Steps, Big Dreams
+    // 2026-11-25：新しい5エリアのボスの曲
+    kagura_calm1: {local: 'bgm/kagura_calm1.mp3', blob: ''},
+    kagura_calm2: {local: 'bgm/kagura_calm2.mp3', blob: ''},
+    kagura_calm3: {local: 'bgm/kagura_calm3.mp3', blob: ''},
+    kagura_calm4: {local: 'bgm/kagura_calm4.mp3', blob: ''},
+    kagura_fast1: {local: 'bgm/kagura_fast1.mp3', blob: ''},
+    kagura_fast2: {local: 'bgm/kagura_fast2.mp3', blob: ''},
+    kagura_fast3: {local: 'bgm/kagura_fast3.mp3', blob: ''},
+    kagura_fast4: {local: 'bgm/kagura_fast4.mp3', blob: ''},
+    ciel_calm1: {local: 'bgm/ciel_calm1.mp3', blob: ''},
+    ciel_calm2: {local: 'bgm/ciel_calm2.mp3', blob: ''},
+    ciel_calm3: {local: 'bgm/ciel_calm3.mp3', blob: ''},
+    ciel_calm4: {local: 'bgm/ciel_calm4.mp3', blob: ''},
+    ciel_fast1: {local: 'bgm/ciel_fast1.mp3', blob: ''},
+    ciel_fast2: {local: 'bgm/ciel_fast2.mp3', blob: ''},
+    ciel_fast3: {local: 'bgm/ciel_fast3.mp3', blob: ''},
+    ciel_fast4: {local: 'bgm/ciel_fast4.mp3', blob: ''},
+    nefer_calm1: {local: 'bgm/nefer_calm1.mp3', blob: ''},
+    nefer_calm2: {local: 'bgm/nefer_calm2.mp3', blob: ''},
+    nefer_calm3: {local: 'bgm/nefer_calm3.mp3', blob: ''},
+    nefer_calm4: {local: 'bgm/nefer_calm4.mp3', blob: ''},
+    nefer_fast1: {local: 'bgm/nefer_fast1.mp3', blob: ''},
+    nefer_fast2: {local: 'bgm/nefer_fast2.mp3', blob: ''},
+    nefer_fast3: {local: 'bgm/nefer_fast3.mp3', blob: ''},
+    nefer_fast4: {local: 'bgm/nefer_fast4.mp3', blob: ''},
+    joker_calm1: {local: 'bgm/joker_calm1.mp3', blob: ''},
+    joker_calm2: {local: 'bgm/joker_calm2.mp3', blob: ''},
+    joker_calm3: {local: 'bgm/joker_calm3.mp3', blob: ''},
+    joker_calm4: {local: 'bgm/joker_calm4.mp3', blob: ''},
+    joker_fast1: {local: 'bgm/joker_fast1.mp3', blob: ''},
+    joker_fast2: {local: 'bgm/joker_fast2.mp3', blob: ''},
+    joker_fast3: {local: 'bgm/joker_fast3.mp3', blob: ''},
+    joker_fast4: {local: 'bgm/joker_fast4.mp3', blob: ''},
+    chronoa_calm1: {local: 'bgm/chronoa_calm1.mp3', blob: ''},
+    chronoa_calm2: {local: 'bgm/chronoa_calm2.mp3', blob: ''},
+    chronoa_calm3: {local: 'bgm/chronoa_calm3.mp3', blob: ''},
+    chronoa_calm4: {local: 'bgm/chronoa_calm4.mp3', blob: ''},
+    chronoa_fast1: {local: 'bgm/chronoa_fast1.mp3', blob: ''},
+    chronoa_fast2: {local: 'bgm/chronoa_fast2.mp3', blob: ''},
+    chronoa_fast3: {local: 'bgm/chronoa_fast3.mp3', blob: ''},
+    chronoa_fast4: {local: 'bgm/chronoa_fast4.mp3', blob: ''},
     smith_bgm1: {local: 'bgm/smith_bgm1.mp3', blob: ''},   // 鍛冶屋（2026-11-15）
     smith_bgm2: {local: 'bgm/smith_bgm2.mp3', blob: ''},
     shop_bgm1: {local: 'bgm/shop_bgm1.mp3', blob: ''},     // ミケの店（2026-11-17）
@@ -3542,6 +3683,11 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       calm: ['chiyo_calm1', 'chiyo_calm2', 'chiyo_calm3', 'chiyo_calm4'],
       fast: ['chiyo_fast1', 'chiyo_fast2', 'chiyo_fast3', 'chiyo_fast4'],
     },
+    kagura: {calm: ['kagura_calm1', 'kagura_calm2', 'kagura_calm3', 'kagura_calm4'], fast: ['kagura_fast1', 'kagura_fast2', 'kagura_fast3', 'kagura_fast4']},
+    ciel: {calm: ['ciel_calm1', 'ciel_calm2', 'ciel_calm3', 'ciel_calm4'], fast: ['ciel_fast1', 'ciel_fast2', 'ciel_fast3', 'ciel_fast4']},
+    nefer: {calm: ['nefer_calm1', 'nefer_calm2', 'nefer_calm3', 'nefer_calm4'], fast: ['nefer_fast1', 'nefer_fast2', 'nefer_fast3', 'nefer_fast4']},
+    joker: {calm: ['joker_calm1', 'joker_calm2', 'joker_calm3', 'joker_calm4'], fast: ['joker_fast1', 'joker_fast2', 'joker_fast3', 'joker_fast4']},
+    chronoa: {calm: ['chronoa_calm1', 'chronoa_calm2', 'chronoa_calm3', 'chronoa_calm4'], fast: ['chronoa_fast1', 'chronoa_fast2', 'chronoa_fast3', 'chronoa_fast4']},
   };
   // いま戦っている相手の曲セット（なければ null）
   function bgmSetOf(){
@@ -3922,6 +4068,15 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
               special: ['busy_sp'],
               ougi:    ['busy_ougi']},
   };
+  // 2026-11-25：新しい5エリアのボス（ファイルは voice/○○.mp3）
+  Object.assign(VOICE_SETS, {
+    kagura: {attack: ['kagura_atk1', 'kagura_atk2', 'kagura_atk3', 'kagura_atk4', 'kagura_atk5'], lose: ['kagura_lose1', 'kagura_lose2', 'kagura_lose3', 'kagura_lose4', 'kagura_lose5'], win: ['kagura_win1', 'kagura_win2', 'kagura_win3', 'kagura_win4', 'kagura_win5'], intro: ['kagura_intro1', 'kagura_intro2'], special: ['kagura_sp'], ougi: ['kagura_ougi']},
+    ciel: {attack: ['ciel_atk1', 'ciel_atk2', 'ciel_atk3', 'ciel_atk4', 'ciel_atk5'], lose: ['ciel_lose1', 'ciel_lose2', 'ciel_lose3', 'ciel_lose4', 'ciel_lose5'], win: ['ciel_win1', 'ciel_win2', 'ciel_win3', 'ciel_win4', 'ciel_win5'], intro: ['ciel_intro1', 'ciel_intro2'], special: ['ciel_sp'], ougi: ['ciel_ougi']},
+    nefer: {attack: ['nefer_atk1', 'nefer_atk2', 'nefer_atk3', 'nefer_atk4', 'nefer_atk5'], lose: ['nefer_lose1', 'nefer_lose2', 'nefer_lose3', 'nefer_lose4', 'nefer_lose5'], win: ['nefer_win1', 'nefer_win2', 'nefer_win3', 'nefer_win4', 'nefer_win5'], intro: ['nefer_intro2'], special: ['nefer_sp'], ougi: ['nefer_ougi']},
+    joker: {attack: ['joker_atk1', 'joker_atk2', 'joker_atk3', 'joker_atk4', 'joker_atk5'], lose: ['joker_lose1', 'joker_lose2', 'joker_lose3', 'joker_lose4', 'joker_lose5'], win: ['joker_win1', 'joker_win2', 'joker_win3', 'joker_win4', 'joker_win5'], intro: ['joker_intro1', 'joker_intro2'], special: ['joker_sp'], ougi: ['joker_ougi']},
+    chronoa: {attack: ['chronoa_atk1', 'chronoa_atk2', 'chronoa_atk3', 'chronoa_atk4', 'chronoa_atk5'], lose: ['chronoa_lose1', 'chronoa_lose2', 'chronoa_lose3', 'chronoa_lose4', 'chronoa_lose5'], win: ['chronoa_win1', 'chronoa_win2', 'chronoa_win3', 'chronoa_win4', 'chronoa_win5'], intro: ['chronoa_intro1', 'chronoa_intro2'], special: ['chronoa_sp'], ougi: ['chronoa_ougi']},
+  });
+  ['kagura', 'ciel', 'nefer', 'joker', 'chronoa'].forEach(b => Object.values(VOICE_SETS[b]).flat().forEach(id => { VOICE_CLIPS[id] = {local: 'voice/' + id + '.mp3', blob: ''}; }));
   // ガチャキャラ（SR以上）の技ボイス：届いたキャラから足していく。ファイルは voice/gXX_sp.mp3（必殺技）・voice/gXX_ougi.mp3（奥義）。音量はファイルの時点でそろえてある
   const GACHA_VOICE = Array.from({length: 27}, (_, i) => 'g' + String(i + 1).padStart(2, '0')).concat(['g70', 'g71', 'g72', 'g76', 'g80', 'g81', 'g82', 'g83', 'g84', 'g85', 'g86', 'g87', 'g88', 'g89', 'g90', 'g91', 'g92', 'g93', 'g94', 'g95', 'g96', 'g97', 'g98', 'g99', 'g100', 'g101', 'g102']);   // g01〜g27 全員＋新SR・MR（2026-11-19）
   GACHA_VOICE.forEach(k => {
@@ -3929,7 +4084,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     VOICE_SETS['x_' + k] = {special: [k + '_sp'], ougi: [k + '_ougi']};
   });
   // ボスの必殺技の名前（大技のときに吹き出しで出す）
-  const SPECIAL_NAME = {ichigo: 'キラキラビーム！', mocha: '聖剣エクスカリバー！', rinpan: 'ブリザード！', busy: 'メテオストライク！', titan: 'ギャラクシー・ストーム！', camilla: '王爪乱舞！', windy: 'ハリケーン・ワルツ！', chiyo: '紅月乱舞！', gilbert: 'シルバー・ジャッジメント！'};
+  const SPECIAL_NAME = {ichigo: 'キラキラビーム！', mocha: '聖剣エクスカリバー！', rinpan: 'ブリザード！', busy: 'メテオストライク！', titan: 'ギャラクシー・ストーム！', camilla: '王爪乱舞！', windy: 'ハリケーン・ワルツ！', chiyo: '紅月乱舞！', gilbert: 'シルバー・ジャッジメント！', kagura: '紅蓮の薙刀！', ciel: '珊瑚の刃！', nefer: '黄金の呪い！', joker: 'びっくり箱！', chronoa: '時の針！'};
   const VOICE_VOL = 0.9;
   let voiceForce = null;           // 次に鳴らす声を指定するとき（必殺技の技名と声を合わせる）
   const VOICE_GAP = 1100;          // 同じ場面の声が続けて鳴るときの最短あいだ（ミリ秒）
@@ -5848,6 +6003,21 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     } catch(e) {}
     save('map16', '1');
   }
+  // 2026-11-25：ギルバートの前に5エリアを足した → エリア9（ギルバート）の記録をエリア14へ移す（1回だけ）
+  if (load('map14', '') !== '1') {
+    try {
+      const OLD = 8, NEW = 13, mv = i => (i >= OLD * PER && i < (OLD + 1) * PER) ? i + (NEW - OLD) * PER : i;
+      ['clears16', 'mask16', 'nc16'].forEach(f => { const a = JSON.parse(load(f, 'null')); if (!Array.isArray(a)) return;
+        const o = Array(AREAS.length * PER).fill(0); a.forEach((v, i) => { const n = mv(i); if (n < o.length) o[n] = v; }); save(f, JSON.stringify(o)); });
+      const sg = load('stage', ''); if (sg !== '') save('stage', String(mv(+sg || 0)));
+      const g = JSON.parse(load('storygiven', 'null'));
+      if (Array.isArray(g)) save('storygiven', JSON.stringify(g.map(k => k === 'boss8' ? 'boss13' : k === 'refill8' ? 'refill13' : /^bb\w+_8$/.test(k) ? k.replace(/_8$/, '_13') : k)));
+      const d = JSON.parse(load('dexgot', 'null'));
+      if (d && typeof d === 'object' && d.area8) { d.area13 = d.area8; delete d.area8; save('dexgot', JSON.stringify(d)); }
+      const zm = JSON.parse(load('zakomap', 'null')); if (zm && zm[8]) { zm[13] = zm[8]; delete zm[8]; save('zakomap', JSON.stringify(zm)); }
+    } catch(e) {}
+    save('map14', '1');
+  }
   try { const a = JSON.parse(load('clears16', '[]')); if (Array.isArray(a)) storyClr = STORY.map((_, i) => a[i] ? 1 : 0); } catch(e) {}
   try { const a = JSON.parse(load('mask16', '[]')); if (Array.isArray(a)) storyMask = STORY.map((_, i) => (+a[i] || 0) & 7); } catch(e) {}
   let storyStars = storyMask.map(bits);
@@ -5955,9 +6125,10 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   //   ③ ルートごとに出やすいもの・出にくいもの（どのルートでも全部出る。濃い・薄いだけ）
   //   ④ 何か落とす率は面ごと（ザコは奥の面ほど高い・ボスは高い）
   //   MR・LR・伝説はストーリーでは出さない（遠征の意味をなくさないため）。仕上げ剤・属性のかけら・アイテムは前のまま
+  // 2026-11-25：14エリアに。エリア1〜6の軸はそのまま、後ろの軸を広げた（前の 6→9・7→11・8→13）
   const MAT_AXIS = {            // [N の軸, R の軸, SR の軸]（エリア番号：0＝エリア1）
-    metal: [0, 1, 5], wood: [0, 3, 7], beast: [2, 3, 6], mech: [3, 5, 8],
-    hide: [0, 1, 7], cloth: [0, 4, 7], gem: [1, 2, 6], craft: [2, 4, 8],
+    metal: [0, 1, 5], wood: [0, 3, 11], beast: [2, 3, 9], mech: [3, 5, 13],
+    hide: [0, 1, 11], cloth: [0, 4, 11], gem: [1, 2, 9], craft: [2, 4, 13],
   };
   const AXIS_FALL = [1, 0.5, 0.25, 0.1];
   const ROUTE_BIAS = {          // 種類：w＝武器素材・a＝防具・x＝アクセ／グレード：N・R・SR
@@ -7648,7 +7819,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   // キャラのアイコン（バストアップの1枚絵から切り出す）
   // ===== ストーリーの対戦：チームのメイン（①）を、左下に大きく出す（背景と盤面・ボタンのあいだ）=====
   // 絵の中の体の範囲（左, 上, 右, 下：絵の幅・高さに対する割合）。これで体の高さをそろえて、同じくらいの大きさで出す
-  const FIG_BOX = {"t/g68":[0.145,0.018,0.814,0.977],"t/g69":[0.244,0.018,0.781,0.984],"t/g70":[0.008,0.0,0.986,0.994],"t/g71":[0.021,0.01,0.99,0.992],"t/g72":[0.02,0.0,0.98,1.0],"t/g73":[0.172,0.002,0.807,0.994],"t/g74":[0.152,0.023,0.814,0.98],"t/g75":[0.143,0.004,0.836,0.996],"t/g76":[0.051,0.004,0.953,0.994],"t/g77":[0.061,0.006,0.906,0.984],"t/g78":[0.23,0.016,0.797,0.988],"t/g79":[0.088,0.006,1.0,0.986],"t/g80":[0.051,0.0,0.969,0.99],"t/g81":[0.004,0.006,0.979,0.99],"t/g82":[0.0,0.006,1.0,0.992],"t/g83":[0.0,0.0,0.994,0.994],"t/g84":[0.0,0.0,1.0,0.992],"t/g85":[0.016,0.0,0.99,1.0],"t/g86":[0.021,0.008,0.982,0.982],"t/g87":[0.008,0.006,0.99,0.99],"t/g88":[0.008,0.049,1.0,0.967],"t/g89":[0.008,0.01,0.99,0.984],"t/g90":[0.102,0.014,0.9,0.988],"t/g91":[0.02,0.006,0.971,0.996],"t/g92":[0.039,0.002,0.98,0.994],"t/g93":[0.018,0.006,0.994,1.0],"t/g94":[0.076,0.0,0.893,0.992],"t/g95":[0.102,0.0,0.902,0.984],"t/g96":[0.029,0.002,0.99,0.992],"t/g97":[0.008,0.012,0.992,0.988],"t/g98":[0.189,0.004,0.82,0.996],"t/g99":[0.045,0.01,0.934,0.992],"t/g100":[0.0,0.0,1.0,0.994],"t/g101":[0.004,0.006,1.0,0.992],"t/g102":[0.131,0.0,0.938,0.996],"stand/busy":[0.0,0.025,0.998,0.965],"stand/rinpan":[0.0,0.004,0.998,0.999],"stand/camilla":[0.018,0.044,0.988,0.991],"stand/chiyo":[0.015,0.236,0.998,0.994],"stand/gilbert":[0.012,0.246,0.998,0.994],"stand/titan":[0.078,0.031,0.985,0.991],"stand/windy":[0.0,0.294,0.99,0.994],"stand/ichigo":[0.0,0.001,0.998,0.996],"stand/mocha":[0.03,0.004,0.99,0.991],"t/g48":[0.039,0.008,0.967,0.986],"t/g32":[0.244,0.014,0.715,0.979],"t/g26":[0.051,0.025,0.951,0.967],"t/g35":[0.1,0.023,0.832,0.973],"t/g14":[0.186,0.023,0.795,0.977],"t/g25":[0.02,0.006,0.98,0.98],"t/g28":[0.178,0.004,0.785,0.992],"t/g56":[0.098,0.018,0.963,0.969],"t/g50":[0.031,0.01,0.834,0.988],"t/g24":[0.115,0.025,0.928,0.98],"t/g13":[0.125,0.025,0.805,0.975],"t/g03":[0.225,0.008,0.818,0.982],"t/g53":[0.021,0.004,0.984,0.992],"t/g12":[0.172,0.025,0.801,0.979],"t/g46":[0.078,0.012,0.949,0.98],"t/g57":[0.033,0.006,0.971,0.992],"t/g43":[0.23,0.004,0.766,0.99],"t/g23":[0.184,0.012,0.809,0.979],"t/g45":[0.246,0.014,0.729,0.984],"t/g63":[0.166,0.006,0.824,0.986],"t/g11":[0.25,0.018,0.738,0.979],"t/g55":[0.123,0.012,0.812,0.98],"t/g21":[0.09,0.012,0.91,0.982],"t/g20":[0.033,0.008,0.965,0.988],"t/g33":[0.127,0.023,0.771,0.979],"t/g19":[0.061,0.01,0.934,0.979],"t/g22":[0.035,0.014,0.943,0.984],"t/g49":[0.01,0.014,0.859,0.984],"t/g29":[0.156,0.027,0.883,0.975],"t/g52":[0.021,0.0,0.895,0.99],"t/g17":[0.17,0.021,0.738,0.975],"t/g34":[0.084,0.057,0.891,0.949],"t/g44":[0.055,0.016,0.775,0.965],"t/g06":[0.09,0.035,0.957,0.973],"t/g02":[0.213,0.016,0.764,0.973],"t/g27":[0.021,0.039,0.986,0.961],"t/g67":[0.006,0.012,0.982,0.986],"t/g40":[0.141,0.0,0.781,0.988],"t/g09":[0.043,0.016,0.977,0.98],"t/g31":[0.027,0.016,0.934,0.979],"t/g04":[0.129,0.021,0.869,0.973],"t/g08":[0.02,0.031,0.979,0.971],"t/g30":[0.207,0.01,0.789,0.988],"t/g58":[0.113,0.008,0.883,0.988],"t/g42":[0.168,0.018,0.838,0.979],"t/g01":[0.014,0.059,0.986,0.951],"t/g15":[0.193,0.029,0.781,0.979],"t/g51":[0.213,0.0,0.781,0.99],"t/g05":[0.045,0.057,0.92,0.951],"t/g18":[0.016,0.012,0.982,0.984],"t/g64":[0.02,0.006,0.975,0.992],"t/g16":[0.059,0.039,0.938,0.961],"t/g38":[0.199,0.027,0.947,0.969],"t/g39":[0.205,0.016,0.891,0.986],"t/g61":[0.068,0.014,0.898,0.98],"t/g62":[0.012,0.01,0.973,0.984],"t/g59":[0.018,0.037,0.98,0.963],"t/g66":[0.035,0.016,0.955,0.984],"t/g47":[0.213,0.02,0.764,0.977],"t/g10":[0.219,0.021,0.77,0.982],"t/g54":[0.029,0.008,0.967,0.99],"t/g36":[0.148,0.014,0.883,0.98],"t/g41":[0.104,0.053,0.91,0.967],"t/g37":[0.166,0.006,0.863,0.992],"t/g60":[0.082,0.0,0.92,0.988],"t/g07":[0.178,0.023,0.744,0.967],"t/g65":[0.191,0.0,0.785,0.984],"a4_10":[0.129,0.008,0.869,0.99],"a2_04":[0.168,0.008,0.83,0.99],"a8_10":[0.041,0.02,0.957,0.979],"sky":[0.104,0.09,0.9,0.896],"a5_07":[0.1,0.01,0.898,0.988],"a7_01":[0.189,0.02,0.809,0.98],"yellow":[0.104,0.092,0.9,0.896],"a5_09":[0.268,0.008,0.73,0.99],"a5_01":[0.25,0.008,0.748,0.99],"a8_06":[0.221,0.02,0.777,0.977],"a7_10":[0.035,0.02,0.963,0.98],"a3_03":[0.016,0.154,0.99,0.844],"black":[0.104,0.092,0.902,0.895],"a7_08":[0.02,0.027,0.98,0.973],"a7_03":[0.139,0.02,0.861,0.98],"a9_08":[0.264,0.02,0.682,0.912],"a5_04":[0.25,0.008,0.746,0.99],"a8_02":[0.137,0.02,0.861,0.977],"a8_07":[0.105,0.021,0.893,0.977],"a4_02":[0.023,0.008,0.977,0.99],"a6_05":[0.205,0.02,0.795,0.979],"a1_05":[0.217,0.008,0.781,0.99],"a7_04":[0.207,0.02,0.791,0.979],"a9_02":[0.146,0.02,0.85,0.979],"orange":[0.104,0.09,0.9,0.896],"a8_09":[0.133,0.02,0.865,0.977],"a1_01":[0.172,0.008,0.826,0.99],"a6_07":[0.172,0.021,0.824,0.977],"a3_02":[0.096,0.01,0.861,0.988],"a4_08":[0.088,0.008,0.91,0.99],"a5_02":[0.021,0.01,0.975,0.988],"a6_09":[0.127,0.023,0.871,0.98],"pink":[0.104,0.09,0.9,0.896],"a1_10":[0.197,0.008,0.801,0.99],"a1_06":[0.287,0.008,0.711,0.99],"a2_01":[0.203,0.008,0.793,0.99],"a7_09":[0.072,0.02,0.928,0.979],"a3_10":[0.098,0.008,0.9,0.988],"a7_06":[0.059,0.02,0.939,0.98],"a1_04":[0.232,0.008,0.777,0.99],"purple":[0.104,0.09,0.9,0.896],"a9_04":[0.031,0.02,0.967,0.979],"a6_04":[0.047,0.02,0.949,0.98],"blue":[0.104,0.09,0.902,0.896],"a2_06":[0.26,0.008,0.738,0.99],"a9_05":[0.094,0.02,0.906,0.977],"a4_06":[0.17,0.008,0.828,0.99],"a3_08":[0.172,0.01,0.824,0.99],"a3_04":[0.008,0.129,0.99,0.871],"a9_01":[0.168,0.02,0.828,0.979],"a3_09":[0.082,0.01,0.916,0.988],"a3_07":[0.146,0.008,0.811,0.99],"a9_07":[0.09,0.02,0.863,0.977],"a5_05":[0.23,0.01,0.768,0.99],"a9_06":[0.094,0.02,0.902,0.977],"a2_07":[0.07,0.008,0.928,0.99],"a6_06":[0.07,0.02,0.932,0.98],"a2_08":[0.268,0.008,0.73,0.99],"a3_05":[0.141,0.01,0.855,0.988],"a1_02":[0.145,0.008,0.854,0.99],"a4_07":[0.189,0.008,0.807,0.99],"a2_02":[0.23,0.008,0.768,0.99],"a6_10":[0.072,0.02,0.924,0.98],"a6_01":[0.223,0.02,0.775,0.979],"a6_02":[0.117,0.02,0.879,0.98],"a1_03":[0.229,0.008,0.77,0.988],"a9_03":[0.152,0.02,0.844,0.977],"a5_06":[0.229,0.01,0.77,0.99],"a5_10":[0.086,0.008,0.912,0.99],"a4_03":[0.219,0.008,0.779,0.99],"a5_08":[0.137,0.008,0.861,0.99],"a8_01":[0.201,0.02,0.797,0.977],"a7_02":[0.133,0.096,0.924,0.896],"a9_10":[0.244,0.02,0.754,0.979],"a2_09":[0.09,0.008,0.908,0.963],"white":[0.104,0.092,0.9,0.896],"a8_03":[0.109,0.02,0.889,0.979],"a1_09":[0.211,0.01,0.787,0.99],"a2_05":[0.246,0.008,0.752,0.99],"a6_03":[0.221,0.021,0.773,0.979],"a1_08":[0.203,0.008,0.795,0.99],"a2_10":[0.209,0.008,0.789,0.99],"a3_01":[0.152,0.01,0.846,0.988],"a3_06":[0.09,0.01,0.908,0.99],"a4_05":[0.221,0.008,0.775,0.99],"a8_05":[0.121,0.02,0.889,0.969],"a4_09":[0.152,0.008,0.844,0.99],"red":[0.104,0.092,0.9,0.896],"a8_04":[0.158,0.02,0.84,0.977],"a8_08":[0.02,0.033,0.979,0.963],"a2_03":[0.275,0.008,0.707,0.99],"a4_01":[0.096,0.008,0.902,0.99],"a7_05":[0.023,0.021,0.975,0.979],"a6_08":[0.02,0.039,0.98,0.959],"a4_04":[0.1,0.01,0.902,0.99],"a9_09":[0.158,0.02,0.838,0.975],"a1_07":[0.242,0.008,0.879,0.99],"a5_03":[0.168,0.008,0.83,0.99],"a7_07":[0.031,0.02,0.971,0.98]};
+  const FIG_BOX = {"stand/kagura":[0.005, 0.497, 0.993, 0.996],"stand/ciel":[0.005, 0.398, 0.993, 0.996],"stand/nefer":[0.005, 0.38, 0.993, 0.996],"stand/joker":[0.005, 0.396, 0.993, 0.996],"stand/chronoa":[0.048, 0.5, 0.945, 0.999],"t/g68":[0.145,0.018,0.814,0.977],"t/g69":[0.244,0.018,0.781,0.984],"t/g70":[0.008,0.0,0.986,0.994],"t/g71":[0.021,0.01,0.99,0.992],"t/g72":[0.02,0.0,0.98,1.0],"t/g73":[0.172,0.002,0.807,0.994],"t/g74":[0.152,0.023,0.814,0.98],"t/g75":[0.143,0.004,0.836,0.996],"t/g76":[0.051,0.004,0.953,0.994],"t/g77":[0.061,0.006,0.906,0.984],"t/g78":[0.23,0.016,0.797,0.988],"t/g79":[0.088,0.006,1.0,0.986],"t/g80":[0.051,0.0,0.969,0.99],"t/g81":[0.004,0.006,0.979,0.99],"t/g82":[0.0,0.006,1.0,0.992],"t/g83":[0.0,0.0,0.994,0.994],"t/g84":[0.0,0.0,1.0,0.992],"t/g85":[0.016,0.0,0.99,1.0],"t/g86":[0.021,0.008,0.982,0.982],"t/g87":[0.008,0.006,0.99,0.99],"t/g88":[0.008,0.049,1.0,0.967],"t/g89":[0.008,0.01,0.99,0.984],"t/g90":[0.102,0.014,0.9,0.988],"t/g91":[0.02,0.006,0.971,0.996],"t/g92":[0.039,0.002,0.98,0.994],"t/g93":[0.018,0.006,0.994,1.0],"t/g94":[0.076,0.0,0.893,0.992],"t/g95":[0.102,0.0,0.902,0.984],"t/g96":[0.029,0.002,0.99,0.992],"t/g97":[0.008,0.012,0.992,0.988],"t/g98":[0.189,0.004,0.82,0.996],"t/g99":[0.045,0.01,0.934,0.992],"t/g100":[0.0,0.0,1.0,0.994],"t/g101":[0.004,0.006,1.0,0.992],"t/g102":[0.131,0.0,0.938,0.996],"stand/busy":[0.0,0.025,0.998,0.965],"stand/rinpan":[0.0,0.004,0.998,0.999],"stand/camilla":[0.018,0.044,0.988,0.991],"stand/chiyo":[0.015,0.236,0.998,0.994],"stand/gilbert":[0.012,0.246,0.998,0.994],"stand/titan":[0.078,0.031,0.985,0.991],"stand/windy":[0.0,0.294,0.99,0.994],"stand/ichigo":[0.0,0.001,0.998,0.996],"stand/mocha":[0.03,0.004,0.99,0.991],"t/g48":[0.039,0.008,0.967,0.986],"t/g32":[0.244,0.014,0.715,0.979],"t/g26":[0.051,0.025,0.951,0.967],"t/g35":[0.1,0.023,0.832,0.973],"t/g14":[0.186,0.023,0.795,0.977],"t/g25":[0.02,0.006,0.98,0.98],"t/g28":[0.178,0.004,0.785,0.992],"t/g56":[0.098,0.018,0.963,0.969],"t/g50":[0.031,0.01,0.834,0.988],"t/g24":[0.115,0.025,0.928,0.98],"t/g13":[0.125,0.025,0.805,0.975],"t/g03":[0.225,0.008,0.818,0.982],"t/g53":[0.021,0.004,0.984,0.992],"t/g12":[0.172,0.025,0.801,0.979],"t/g46":[0.078,0.012,0.949,0.98],"t/g57":[0.033,0.006,0.971,0.992],"t/g43":[0.23,0.004,0.766,0.99],"t/g23":[0.184,0.012,0.809,0.979],"t/g45":[0.246,0.014,0.729,0.984],"t/g63":[0.166,0.006,0.824,0.986],"t/g11":[0.25,0.018,0.738,0.979],"t/g55":[0.123,0.012,0.812,0.98],"t/g21":[0.09,0.012,0.91,0.982],"t/g20":[0.033,0.008,0.965,0.988],"t/g33":[0.127,0.023,0.771,0.979],"t/g19":[0.061,0.01,0.934,0.979],"t/g22":[0.035,0.014,0.943,0.984],"t/g49":[0.01,0.014,0.859,0.984],"t/g29":[0.156,0.027,0.883,0.975],"t/g52":[0.021,0.0,0.895,0.99],"t/g17":[0.17,0.021,0.738,0.975],"t/g34":[0.084,0.057,0.891,0.949],"t/g44":[0.055,0.016,0.775,0.965],"t/g06":[0.09,0.035,0.957,0.973],"t/g02":[0.213,0.016,0.764,0.973],"t/g27":[0.021,0.039,0.986,0.961],"t/g67":[0.006,0.012,0.982,0.986],"t/g40":[0.141,0.0,0.781,0.988],"t/g09":[0.043,0.016,0.977,0.98],"t/g31":[0.027,0.016,0.934,0.979],"t/g04":[0.129,0.021,0.869,0.973],"t/g08":[0.02,0.031,0.979,0.971],"t/g30":[0.207,0.01,0.789,0.988],"t/g58":[0.113,0.008,0.883,0.988],"t/g42":[0.168,0.018,0.838,0.979],"t/g01":[0.014,0.059,0.986,0.951],"t/g15":[0.193,0.029,0.781,0.979],"t/g51":[0.213,0.0,0.781,0.99],"t/g05":[0.045,0.057,0.92,0.951],"t/g18":[0.016,0.012,0.982,0.984],"t/g64":[0.02,0.006,0.975,0.992],"t/g16":[0.059,0.039,0.938,0.961],"t/g38":[0.199,0.027,0.947,0.969],"t/g39":[0.205,0.016,0.891,0.986],"t/g61":[0.068,0.014,0.898,0.98],"t/g62":[0.012,0.01,0.973,0.984],"t/g59":[0.018,0.037,0.98,0.963],"t/g66":[0.035,0.016,0.955,0.984],"t/g47":[0.213,0.02,0.764,0.977],"t/g10":[0.219,0.021,0.77,0.982],"t/g54":[0.029,0.008,0.967,0.99],"t/g36":[0.148,0.014,0.883,0.98],"t/g41":[0.104,0.053,0.91,0.967],"t/g37":[0.166,0.006,0.863,0.992],"t/g60":[0.082,0.0,0.92,0.988],"t/g07":[0.178,0.023,0.744,0.967],"t/g65":[0.191,0.0,0.785,0.984],"a4_10":[0.129,0.008,0.869,0.99],"a2_04":[0.168,0.008,0.83,0.99],"a8_10":[0.041,0.02,0.957,0.979],"sky":[0.104,0.09,0.9,0.896],"a5_07":[0.1,0.01,0.898,0.988],"a7_01":[0.189,0.02,0.809,0.98],"yellow":[0.104,0.092,0.9,0.896],"a5_09":[0.268,0.008,0.73,0.99],"a5_01":[0.25,0.008,0.748,0.99],"a8_06":[0.221,0.02,0.777,0.977],"a7_10":[0.035,0.02,0.963,0.98],"a3_03":[0.016,0.154,0.99,0.844],"black":[0.104,0.092,0.902,0.895],"a7_08":[0.02,0.027,0.98,0.973],"a7_03":[0.139,0.02,0.861,0.98],"a9_08":[0.264,0.02,0.682,0.912],"a5_04":[0.25,0.008,0.746,0.99],"a8_02":[0.137,0.02,0.861,0.977],"a8_07":[0.105,0.021,0.893,0.977],"a4_02":[0.023,0.008,0.977,0.99],"a6_05":[0.205,0.02,0.795,0.979],"a1_05":[0.217,0.008,0.781,0.99],"a7_04":[0.207,0.02,0.791,0.979],"a9_02":[0.146,0.02,0.85,0.979],"orange":[0.104,0.09,0.9,0.896],"a8_09":[0.133,0.02,0.865,0.977],"a1_01":[0.172,0.008,0.826,0.99],"a6_07":[0.172,0.021,0.824,0.977],"a3_02":[0.096,0.01,0.861,0.988],"a4_08":[0.088,0.008,0.91,0.99],"a5_02":[0.021,0.01,0.975,0.988],"a6_09":[0.127,0.023,0.871,0.98],"pink":[0.104,0.09,0.9,0.896],"a1_10":[0.197,0.008,0.801,0.99],"a1_06":[0.287,0.008,0.711,0.99],"a2_01":[0.203,0.008,0.793,0.99],"a7_09":[0.072,0.02,0.928,0.979],"a3_10":[0.098,0.008,0.9,0.988],"a7_06":[0.059,0.02,0.939,0.98],"a1_04":[0.232,0.008,0.777,0.99],"purple":[0.104,0.09,0.9,0.896],"a9_04":[0.031,0.02,0.967,0.979],"a6_04":[0.047,0.02,0.949,0.98],"blue":[0.104,0.09,0.902,0.896],"a2_06":[0.26,0.008,0.738,0.99],"a9_05":[0.094,0.02,0.906,0.977],"a4_06":[0.17,0.008,0.828,0.99],"a3_08":[0.172,0.01,0.824,0.99],"a3_04":[0.008,0.129,0.99,0.871],"a9_01":[0.168,0.02,0.828,0.979],"a3_09":[0.082,0.01,0.916,0.988],"a3_07":[0.146,0.008,0.811,0.99],"a9_07":[0.09,0.02,0.863,0.977],"a5_05":[0.23,0.01,0.768,0.99],"a9_06":[0.094,0.02,0.902,0.977],"a2_07":[0.07,0.008,0.928,0.99],"a6_06":[0.07,0.02,0.932,0.98],"a2_08":[0.268,0.008,0.73,0.99],"a3_05":[0.141,0.01,0.855,0.988],"a1_02":[0.145,0.008,0.854,0.99],"a4_07":[0.189,0.008,0.807,0.99],"a2_02":[0.23,0.008,0.768,0.99],"a6_10":[0.072,0.02,0.924,0.98],"a6_01":[0.223,0.02,0.775,0.979],"a6_02":[0.117,0.02,0.879,0.98],"a1_03":[0.229,0.008,0.77,0.988],"a9_03":[0.152,0.02,0.844,0.977],"a5_06":[0.229,0.01,0.77,0.99],"a5_10":[0.086,0.008,0.912,0.99],"a4_03":[0.219,0.008,0.779,0.99],"a5_08":[0.137,0.008,0.861,0.99],"a8_01":[0.201,0.02,0.797,0.977],"a7_02":[0.133,0.096,0.924,0.896],"a9_10":[0.244,0.02,0.754,0.979],"a2_09":[0.09,0.008,0.908,0.963],"white":[0.104,0.092,0.9,0.896],"a8_03":[0.109,0.02,0.889,0.979],"a1_09":[0.211,0.01,0.787,0.99],"a2_05":[0.246,0.008,0.752,0.99],"a6_03":[0.221,0.021,0.773,0.979],"a1_08":[0.203,0.008,0.795,0.99],"a2_10":[0.209,0.008,0.789,0.99],"a3_01":[0.152,0.01,0.846,0.988],"a3_06":[0.09,0.01,0.908,0.99],"a4_05":[0.221,0.008,0.775,0.99],"a8_05":[0.121,0.02,0.889,0.969],"a4_09":[0.152,0.008,0.844,0.99],"red":[0.104,0.092,0.9,0.896],"a8_04":[0.158,0.02,0.84,0.977],"a8_08":[0.02,0.033,0.979,0.963],"a2_03":[0.275,0.008,0.707,0.99],"a4_01":[0.096,0.008,0.902,0.99],"a7_05":[0.023,0.021,0.975,0.979],"a6_08":[0.02,0.039,0.98,0.959],"a4_04":[0.1,0.01,0.902,0.99],"a9_09":[0.158,0.02,0.838,0.975],"a1_07":[0.242,0.008,0.879,0.99],"a5_03":[0.168,0.008,0.83,0.99],"a7_07":[0.031,0.02,0.971,0.98]};
   Object.assign(FIG_BOX, {"t/g103": [0.037, 0.004, 0.969, 0.994]});
   // 全身の絵：ボス＝立ち絵、ガチャキャラ＝背景をぬいた絵、住人＝元の絵
   function charFullUrl(ci){
@@ -7685,7 +7856,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.296';
+  const APP_VER = '0.9.297';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -7890,7 +8061,12 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
                        titan:   [['titan_intro1', 0.2], ['titan_intro2', 3.7]],
                        windy:   [['windy_intro1', 0.2]],   // 2026-11-21 本人「声が長すぎて動画が止まってもしゃべる」：1本目（5.3秒）で動画（6秒）がうまるので2本目はなし
                        chiyo:   [['chiyo_intro1', 0.3], ['chiyo_intro2', 3.3]],
-                       gilbert: [['gilbert_intro1', 0.2]]};   // ウィンディと同じ（1本目5.4秒）
+                       gilbert: [['gilbert_intro1', 0.2]],
+                       kagura: [['kagura_intro1', 0.2]],     // 5.7秒（動画6秒）
+                       ciel: [['ciel_intro2', 1.5]],         // 1本目は6.8秒で動画（6秒）より長いので、2本目だけ
+                       nefer: [['nefer_intro2', 1.5]],       // 1本目はまだ届いていない
+                       joker: [['joker_intro2', 1.5]],       // 1本目は7.6秒で長い
+                       chronoa: [['chronoa_intro1', 0.05]]}; // 7.9秒（動画8秒）   // ウィンディと同じ（1本目5.4秒）
   // 動画そのものの音を鳴らすキャラ（AIが入れた音はボイスとぶつかるので、基本は消す）
   const INTRO_SOUND = {};
   function playIntroVoice(id){
@@ -9294,6 +9470,11 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     windy:   {type: 'atk', grade: 'SR', base: [11, 20, 11, 18]},
     chiyo:   {type: 'spd', grade: 'SR', base: [12, 16, 12, 20]},
     gilbert: {type: 'def', grade: 'SR', base: [16, 15, 20, 12]},
+    kagura: {type: 'atk', grade: 'SR', base: [12, 20, 12, 16]},
+    ciel: {type: 'hp', grade: 'SR', base: [20, 14, 13, 13]},
+    nefer: {type: 'def', grade: 'SR', base: [15, 13, 20, 12]},
+    joker: {type: 'atk', grade: 'SR', base: [11, 20, 12, 17]},
+    chronoa: {type: 'spd', grade: 'SR', base: [13, 15, 12, 20]},
   };
   // ===== ザコキャラ（N・R）：エリアの住人90人。グレード・タイプ・LV1のステータス・プロフィール =====
   // 1エリア10人のうち、見た目が強そうな4人をR、6人をN。ステータスはN 1〜10／R 5〜15（タイプの数値がいちばん高い）
@@ -9378,6 +9559,56 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     'a8_08': {grade: 'R', type: 'hp', base: [13, 5, 12, 5], bio: '里の古い沼にすむ忍者がま。巻物をくわえて、大事な術を守っている。大きな体は、まるで岩のようにどっしり。'},
     'a8_09': {grade: 'R', type: 'spd', base: [7, 12, 6, 15], bio: '猫の忍者。くさりを使った術が得意で、音もなく相手に近づく。肉球のおかげで、足音がまったくしない。'},
     'a8_10': {grade: 'N', type: 'spd', base: [5, 1, 2, 9], bio: 'ムササビの忍者。手足を広げて、木から木へ滑空する。夜の見張り役で、里の空はすべて見わたしている。'},
+    'vol_01': {grade: 'N', type: 'spd', base: [4, 5, 3, 9], bio: '溶岩の上をちょろちょろ走りまわるトカゲの子。熱いところが大好きで、冷たい水はちょっと苦手。しっぽの先がいつも赤く光っている。'},
+    'vol_02': {grade: 'N', type: 'atk', base: [3, 9, 2, 6], bio: 'ふわふわ浮かぶ火の玉の男の子。うれしいと炎が大きくなり、びっくりすると小さくしぼむ。夜は火山のランプ代わり。'},
+    'vol_03': {grade: 'N', type: 'def', base: [6, 3, 9, 2], bio: '石炭を掘るのが得意なもぐら。体じゅうすすだらけだけど、本人は気にしていない。掘った石炭は、かじ屋のドワーフに届けている。'},
+    'vol_04': {grade: 'N', type: 'hp', base: [9, 4, 5, 2], bio: 'あつあつのマグマでできたスライム。さわるとやけどしそうだが、性格はとてもおだやか。冷えると固まって昼寝をする。'},
+    'vol_05': {grade: 'N', type: 'spd', base: [3, 6, 2, 10], bio: '火の鳥のひな。まだうまく飛べないが、羽ばたくと火の粉が舞う。いつか空いっぱいに炎の翼を広げるのが夢。'},
+    'vol_06': {grade: 'N', type: 'hp', base: [10, 3, 4, 4], bio: '火山のふもとの温泉に住むおさる。頭にタオルをのせて、一日じゅう湯につかっている。のんびり屋だが、湯の熱さにはきびしい。'},
+    'vol_07': {grade: 'N', type: 'def', base: [7, 2, 10, 1], bio: 'つやつや光る黒曜石の甲羅を持つカメ。とてもかたく、溶岩の流れもへっちゃら。歩くのはゆっくりだが、決して止まらない。'},
+    'vol_08': {grade: 'R', type: 'atk', base: [9, 14, 7, 11], bio: 'カグラにあこがれる竜の巫女の見習い。小さな角と炎の扇を持ち、毎日舞の練習をしている。失敗すると、ちょっぴり火をふいてしまう。'},
+    'vol_09': {grade: 'R', type: 'def', base: [12, 9, 15, 5], bio: '冷えた溶岩が集まってできたゴーレム。体のすき間から赤い光がもれている。無口だが、火山を守る気持ちはだれにも負けない。'},
+    'vol_10': {grade: 'R', type: 'atk', base: [11, 15, 10, 6], bio: '火山の熱で鉄を打つドワーフのかじ屋。腕は一流で、カグラの薙刀も手入れしている。ハナとは、ときどき技をくらべ合う仲。'},
+    'sea_01': {grade: 'N', type: 'hp', base: [9, 3, 3, 5], bio: '沈没船のまわりをふわふわただよう小さなクラゲ。光る体で、暗い海の底をやさしく照らす。さわってもしびれないので安心。'},
+    'sea_02': {grade: 'N', type: 'def', base: [5, 4, 10, 2], bio: '貝がらのかぶとをかぶったヤドカリの兵隊。シエル船長に忠実で、船の見張りをしている。大きくなるたびに、新しい貝がらをさがしている。'},
+    'sea_03': {grade: 'N', type: 'def', base: [7, 3, 9, 3], bio: 'びっくりすると、まんまるにふくらむフグ。トゲトゲになるので、だれも近づけない。ふくらむのに疲れると、すぐしぼむ。'},
+    'sea_04': {grade: 'N', type: 'spd', base: [3, 5, 3, 10], bio: 'くるんとしたしっぽのタツノオトシゴの子。海藻にしっぽを巻きつけて、流されないようにしている。泳ぎは小さいけれどすばやい。'},
+    'sea_05': {grade: 'N', type: 'atk', base: [5, 9, 6, 2], bio: '宝箱のふりをしているミミック。開けようとすると、ぱくっとかみつく。中には本当に金貨がつまっているらしい。'},
+    'sea_06': {grade: 'N', type: 'hp', base: [10, 2, 5, 1], bio: 'いつも眠そうなマンボウ。大きな体で海面をただよい、日なたぼっこをしている。起こされると、ちょっとだけ機嫌が悪い。'},
+    'sea_07': {grade: 'N', type: 'atk', base: [4, 9, 4, 4], bio: '頭のちょうちんで、暗い海の底を照らすアンコウ。光にさそわれて近づいた相手を、大きな口でおどろかせる。'},
+    'sea_08': {grade: 'R', type: 'spd', base: [8, 10, 7, 15], bio: 'シエル船長の船で働く見習いの水兵。セーラー服と大きなモップがトレードマーク。いつか自分の船を持つのが夢。'},
+    'sea_09': {grade: 'R', type: 'atk', base: [9, 15, 8, 9], bio: 'ゆうれい船で長く働いてきたガイコツの水夫。陽気な歌が得意で、骨をカタカタ鳴らしてリズムをとる。'},
+    'sea_10': {grade: 'R', type: 'hp', base: [15, 8, 10, 8], bio: '8本の足で地図とコンパスと望遠鏡を同時にあつかうタコの航海士。船の進む道は、いつも彼が決めている。'},
+    'pyr_01': {grade: 'N', type: 'def', base: [5, 4, 10, 3], bio: '砂の玉を転がすのが大好きなスカラベの子。転がした玉は、いつの間にか自分より大きくなっている。背中の甲羅は金色に光る。'},
+    'pyr_02': {grade: 'N', type: 'def', base: [6, 3, 9, 2], bio: '砂漠に立つサボテンの男の子。トゲトゲだけど、頭に咲いた花はとてもかわいい。水を少し飲むだけで、何日も元気。'},
+    'pyr_03': {grade: 'N', type: 'spd', base: [3, 6, 2, 10], bio: '包帯をぐるぐる巻いたねこ。ミイラのふりをしているが、本当はただの寒がり。ほどけた包帯で遊ぶのが好き。'},
+    'pyr_04': {grade: 'N', type: 'atk', base: [4, 9, 3, 5], bio: '砂の中にもぐって、するすると進むヘビ。砂から顔を出して、通りかかる旅人をおどかすのが得意。'},
+    'pyr_05': {grade: 'N', type: 'hp', base: [10, 3, 5, 3], bio: 'こぶに水をたくさんためたラクダの子。のんびり歩くが、何日でも歩き続けられる。荷物運びが得意。'},
+    'pyr_06': {grade: 'N', type: 'hp', base: [9, 5, 4, 3], bio: 'ピラミッドを守るスフィンクスの子。なぞなぞを出すのが大好きだが、答えを自分で忘れてしまうこともある。'},
+    'pyr_07': {grade: 'N', type: 'def', base: [7, 2, 9, 3], bio: '砂がまざってざらざらになったスライム。形をかえて、砂の城を作るのが得意。雨の日は、少しやわらかくなる。'},
+    'pyr_08': {grade: 'R', type: 'def', base: [10, 9, 15, 7], bio: 'ジャッカルの頭を持つ王家の墓守。ネフェル女王の眠りを、何千年も守ってきた。きびしいが、まじめな者にはやさしい。'},
+    'pyr_09': {grade: 'R', type: 'atk', base: [8, 15, 7, 11], bio: '砂をあやつる魔術師。砂で動物を作って見せるのが得意で、子どもたちに人気。本気を出すと砂嵐を起こす。'},
+    'pyr_10': {grade: 'R', type: 'hp', base: [15, 10, 11, 5], bio: '金でできたゴーレム。ピラミッドの宝物庫の門番をしている。体がまぶしく光るので、夜でもすぐ見つかる。'},
+    'park_01': {grade: 'N', type: 'spd', base: [3, 5, 3, 10], bio: 'ゆうれいの顔がついた風船。真夜中の遊園地を、ひもを引きずってふわふわ飛ぶ。割れそうで割れない、ふしぎな風船。'},
+    'park_02': {grade: 'N', type: 'hp', base: [10, 4, 4, 2], bio: 'あちこちつぎはぎだらけのクマのぬいぐるみ。遊園地の落とし物だったが、夜になると動き出した。ぎゅっとされるのが好き。'},
+    'park_03': {grade: 'N', type: 'spd', base: [4, 5, 4, 9], bio: 'メリーゴーランドから抜け出した木馬。音楽が鳴ると、くるくる回りながら走り出す。金色のポールがお気に入り。'},
+    'park_04': {grade: 'N', type: 'atk', base: [4, 9, 3, 4], bio: 'ポップコーンのカップから生まれたおばけ。おどかすたびに、ポップコーンがポンポンはじける。キャラメル味が好き。'},
+    'park_05': {grade: 'N', type: 'atk', base: [5, 9, 5, 2], bio: 'ふたを開けると飛び出すびっくり箱。人をおどかすのが生きがい。おどかすのに失敗すると、しょんぼり箱に戻る。'},
+    'park_06': {grade: 'N', type: 'spd', base: [3, 6, 2, 10], bio: 'わたあめのような、ふわふわの毛のこうもり。夜の遊園地を飛びまわり、あまい香りをふりまく。'},
+    'park_07': {grade: 'N', type: 'spd', base: [4, 4, 4, 9], bio: 'チケットを集めるのが大好きなねずみ。遊園地じゅうのチケットを拾って、巣にためこんでいる。'},
+    'park_08': {grade: 'R', type: 'spd', base: [8, 11, 6, 15], bio: 'サーカスの綱渡りの名人。細い綱の上で、ボールを5つ同時にあやつる。ジョーカーの一番弟子を名のっている。'},
+    'park_09': {grade: 'R', type: 'def', base: [11, 8, 15, 6], bio: '真夜中の観覧車を見守る番人。大きなカギを持ち、ゴンドラが止まらないように見回っている。てっぺんからの夜景が自慢。'},
+    'park_10': {grade: 'R', type: 'atk', base: [9, 15, 9, 8], bio: 'トランプから飛び出した兵隊。スペードのやりを持ち、ジョーカーの命令にしたがう。トランプの手品が得意。'},
+    'clk_01': {grade: 'N', type: 'spd', base: [3, 5, 3, 10], bio: '背中にぜんまいのカギがついた、歯車の耳のねずみ。ぜんまいを巻くと、時計塔じゅうを走りまわる。止まると、ちょっとさびしそう。'},
+    'clk_02': {grade: 'N', type: 'hp', base: [9, 3, 5, 3], bio: '丸いめがねをかけた、ふわふわのふくろうの子。夜ふかしは得意だが、昼はいつも眠そう。星の名前をたくさん知っている。'},
+    'clk_03': {grade: 'N', type: 'atk', base: [3, 9, 2, 6], bio: '空から落ちてきた小さな星の精。キラキラの星くずを残しながら飛ぶ。元気いっぱいで、いつも笑っている。'},
+    'clk_04': {grade: 'N', type: 'def', base: [6, 2, 10, 2], bio: '砂時計の中に住むスライム。落ちてくる砂を浴びながら、うとうとするのが好き。ひっくり返されると、目を回す。'},
+    'clk_05': {grade: 'N', type: 'atk', base: [5, 9, 5, 3], bio: 'ぜんまい仕掛けの兵隊人形。ぜんまいが切れるまで、元気に行進を続ける。止まったら、だれかに巻いてもらうのを待っている。'},
+    'clk_06': {grade: 'N', type: 'hp', base: [10, 3, 4, 4], bio: '小さな三日月を大事に抱えた白いうさぎ。月の光を浴びると、耳がほんのり光る。クロノアのお気に入り。'},
+    'clk_07': {grade: 'N', type: 'spd', base: [4, 5, 3, 9], bio: '時計の振り子にしがみついて遊ぶペンギン。右へ左へゆれるたびに、楽しそうに笑う。蝶ネクタイがトレードマーク。'},
+    'clk_08': {grade: 'R', type: 'atk', base: [8, 15, 7, 11], bio: '時計塔の天文台で星を調べる見習いの天文学者。望遠鏡と星図をいつも持ち歩く。新しい星を見つけて、名前をつけるのが夢。'},
+    'clk_09': {grade: 'R', type: 'def', base: [11, 9, 15, 6], bio: '歯車で動く小さな騎士。盾には時計がついていて、正確に時をきざむ。時計塔の門を、一秒も休まず守っている。'},
+    'clk_10': {grade: 'R', type: 'hp', base: [15, 8, 10, 8], bio: '片めがねをかけた、ものしりの大フクロウ。古い本の山の上に住み、時計塔の歴史をすべて知っている。クロノアの相談役。'},
     'a9_01': {grade: 'N', type: 'def', base: [5, 3, 10, 1], bio: '銀の城のウサギの見張り兵。大きなかぶとから耳を出して、門の前に立っている。こわがりだけど、持ち場は守る。'},
     'a9_02': {grade: 'N', type: 'atk', base: [4, 8, 7, 4], bio: '子犬の騎士。小さな剣をかかげて、ギルバートのあとをついて回る。しっぽをふると、勇気がわいてくるらしい。'},
     'a9_03': {grade: 'R', type: 'def', base: [11, 6, 15, 8], bio: '中身のない鎧。だれも着ていないのに、ひとりでに動いて城を守る。とてもがんじょうで、剣も槍もはね返す。'},
@@ -9390,7 +9621,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     'a9_10': {grade: 'R', type: 'hp', base: [14, 6, 7, 10], bio: '城に住むおばけのお姫さま。昔からずっと城にいるらしい。体がすけているので、どんな攻撃もすり抜けてしまう。'},
   };
   // ボックスの顔アイコン用：512px画像のどこを切り出すか [x, y, 大きさ]
-  const ZAKO_FACE = {a1_01: [78, 44, 364], a1_02: [70, 44, 364], a1_03: [74, 44, 364], a1_04: [74, 44, 364], a1_05: [74, 44, 364], a1_06: [72, 44, 364], a1_07: [110, 44, 364], a1_08: [74, 44, 364], a1_09: [86, 44, 364], a1_10: [70, 44, 364], a2_01: [90, 44, 364], a2_02: [76, 44, 364], a2_03: [78, 44, 364], a2_04: [56, 44, 364], a2_05: [62, 44, 364], a2_06: [70, 44, 364], a2_07: [128, 135, 254], a2_08: [72, 44, 364], a2_09: [118, 44, 364], a2_10: [70, 44, 364], a3_01: [78, 44, 364], a3_02: [111, 132, 362], a3_03: [124, 106, 262], a3_04: [30, 95, 275], a3_05: [76, 44, 364], a3_06: [58, 44, 364], a3_07: [62, 44, 364], a3_08: [86, 44, 364], a3_09: [74, 44, 364], a3_10: [70, 44, 364], a4_01: [48, 44, 364], a4_02: [72, 44, 364], a4_03: [78, 44, 364], a4_04: [42, 44, 364], a4_05: [64, 44, 364], a4_06: [70, 44, 364], a4_07: [70, 44, 364], a4_08: [72, 44, 364], a4_09: [72, 44, 364], a4_10: [52, 44, 364], a5_01: [64, 44, 364], a5_02: [54, 45, 364], a5_03: [82, 44, 364], a5_04: [64, 44, 364], a5_05: [64, 44, 364], a5_06: [78, 44, 364], a5_07: [46, 44, 364], a5_08: [84, 44, 364], a5_09: [72, 44, 364], a5_10: [18, 44, 364], a6_01: [88, 48, 356], a6_02: [82, 49, 356], a6_03: [72, 49, 356], a6_04: [80, 49, 356], a6_05: [56, 48, 356], a6_06: [58, 49, 356], a6_07: [72, 49, 356], a6_08: [91, 57, 341], a6_09: [78, 49, 356], a6_10: [78, 48, 356], a7_01: [80, 49, 356], a7_02: [68, 49, 356], a7_03: [27, 74, 320], a7_04: [134, 128, 285], a7_05: [86, 49, 355], a7_06: [112, 49, 356], a7_07: [58, 49, 356], a7_08: [65, 52, 350], a7_09: [98, 49, 356], a7_10: [68, 49, 356], a8_01: [78, 49, 355], a8_02: [68, 49, 355], a8_03: [62, 48, 356], a8_04: [82, 49, 355], a8_05: [84, 48, 352], a8_06: [66, 49, 355], a8_07: [50, 49, 355], a8_08: [94, 55, 345], a8_09: [64, 49, 355], a8_10: [82, 49, 355], a9_01: [86, 48, 356], a9_02: [88, 48, 356], a9_03: [52, 48, 356], a9_04: [38, 49, 355], a9_05: [70, 49, 355], a9_06: [78, 48, 355], a9_07: [74, 49, 355], a9_08: [64, 48, 355], a9_09: [82, 48, 355], a9_10: [82, 49, 355]};
+  const ZAKO_FACE = {vol_01: [99, 35, 348], vol_02: [132, 4, 259], vol_03: [66, 0, 316], vol_04: [93, 17, 327], vol_05: [85, 0, 342], vol_06: [84, 27, 348], vol_07: [97, 25, 322], vol_08: [105, 0, 306], vol_09: [75, 0, 359], vol_10: [53, 0, 304], sea_01: [100, 23, 308], sea_02: [113, 72, 286], sea_03: [97, 48, 317], sea_04: [135, 27, 220], sea_05: [105, 36, 316], sea_06: [108, 64, 296], sea_07: [105, 61, 300], sea_08: [90, 36, 302], sea_09: [90, 38, 296], sea_10: [86, 35, 336], pyr_01: [128, 28, 267], pyr_02: [96, 6, 311], pyr_03: [114, 4, 318], pyr_04: [122, 18, 281], pyr_05: [122, 0, 266], pyr_06: [122, 2, 316], pyr_07: [84, 34, 344], pyr_08: [130, 0, 232], pyr_09: [90, 0, 335], pyr_10: [65, 10, 383], park_01: [113, 25, 280], park_02: [102, 6, 288], park_03: [124, 0, 299], park_04: [96, 0, 325], park_05: [110, 0, 280], park_06: [68, 0, 380], park_07: [96, 1, 303], park_08: [111, 0, 291], park_09: [90, 0, 294], park_10: [101, 0, 268], clk_01: [95, 11, 316], clk_02: [114, 7, 264], clk_03: [99, 18, 269], clk_04: [143, 0, 227], clk_05: [158, 0, 220], clk_06: [77, 9, 352], clk_07: [135, 0, 220], clk_08: [136, 0, 228], clk_09: [55, 0, 376], clk_10: [146, 0, 220], a1_01: [78, 44, 364], a1_02: [70, 44, 364], a1_03: [74, 44, 364], a1_04: [74, 44, 364], a1_05: [74, 44, 364], a1_06: [72, 44, 364], a1_07: [110, 44, 364], a1_08: [74, 44, 364], a1_09: [86, 44, 364], a1_10: [70, 44, 364], a2_01: [90, 44, 364], a2_02: [76, 44, 364], a2_03: [78, 44, 364], a2_04: [56, 44, 364], a2_05: [62, 44, 364], a2_06: [70, 44, 364], a2_07: [128, 135, 254], a2_08: [72, 44, 364], a2_09: [118, 44, 364], a2_10: [70, 44, 364], a3_01: [78, 44, 364], a3_02: [111, 132, 362], a3_03: [124, 106, 262], a3_04: [30, 95, 275], a3_05: [76, 44, 364], a3_06: [58, 44, 364], a3_07: [62, 44, 364], a3_08: [86, 44, 364], a3_09: [74, 44, 364], a3_10: [70, 44, 364], a4_01: [48, 44, 364], a4_02: [72, 44, 364], a4_03: [78, 44, 364], a4_04: [42, 44, 364], a4_05: [64, 44, 364], a4_06: [70, 44, 364], a4_07: [70, 44, 364], a4_08: [72, 44, 364], a4_09: [72, 44, 364], a4_10: [52, 44, 364], a5_01: [64, 44, 364], a5_02: [54, 45, 364], a5_03: [82, 44, 364], a5_04: [64, 44, 364], a5_05: [64, 44, 364], a5_06: [78, 44, 364], a5_07: [46, 44, 364], a5_08: [84, 44, 364], a5_09: [72, 44, 364], a5_10: [18, 44, 364], a6_01: [88, 48, 356], a6_02: [82, 49, 356], a6_03: [72, 49, 356], a6_04: [80, 49, 356], a6_05: [56, 48, 356], a6_06: [58, 49, 356], a6_07: [72, 49, 356], a6_08: [91, 57, 341], a6_09: [78, 49, 356], a6_10: [78, 48, 356], a7_01: [80, 49, 356], a7_02: [68, 49, 356], a7_03: [27, 74, 320], a7_04: [134, 128, 285], a7_05: [86, 49, 355], a7_06: [112, 49, 356], a7_07: [58, 49, 356], a7_08: [65, 52, 350], a7_09: [98, 49, 356], a7_10: [68, 49, 356], a8_01: [78, 49, 355], a8_02: [68, 49, 355], a8_03: [62, 48, 356], a8_04: [82, 49, 355], a8_05: [84, 48, 352], a8_06: [66, 49, 355], a8_07: [50, 49, 355], a8_08: [94, 55, 345], a8_09: [64, 49, 355], a8_10: [82, 49, 355], a9_01: [86, 48, 356], a9_02: [88, 48, 356], a9_03: [52, 48, 356], a9_04: [38, 49, 355], a9_05: [70, 49, 355], a9_06: [78, 48, 355], a9_07: [74, 49, 355], a9_08: [64, 48, 355], a9_09: [82, 48, 355], a9_10: [82, 49, 355]};
   // ===== ガチャ用キャラ（SR17・MR5・LR5）。絵は1枚、必殺技と奥義の両方を持つ =====
   const GACHA_CREW = [
     {k: "g01", name: "トリオン", grade: "SR", type: "atk", base: [16, 20, 14, 11], bio: "炎・氷・雷の3つの首を持つワイバーン。3つの首はいつも言い争っているが、戦いになると息がぴったり合う。", sp: {n: "トライブレス", fx: [["clr", 9]]}, ougi: {n: "三竜の咆哮", fx: [["cross", 12], ["octa", 5], ["crit", 10], ["heart", 2]]}},
@@ -9528,8 +9759,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   Object.assign(ZAKO_FACE, {"g01": [38, 0, 406], "g02": [94, 0, 314], "g03": [118, 0, 306], "g04": [80, 0, 338], "g05": [135, 9, 340], "g06": [106, 0, 289], "g07": [136, 9, 289], "g08": [34, 0, 427], "g09": [80, 0, 289], "g10": [112, 0, 272], "g11": [107, 0, 272], "g12": [105, 0, 286], "g13": [93, 0, 311], "g14": [104, 0, 298], "g15": [103, 0, 272], "g16": [62, 13, 306], "g17": [103, 0, 272], "g18": [28, 0, 439], "g19": [53, 0, 394], "g20": [46, 0, 423], "g21": [80, 0, 372], "g22": [100, 61, 323], "g23": [138, 78, 298], "g24": [60, 0, 389], "g25": [114, 23, 298], "g26": [150, 0, 230], "g27": [40, 4, 340]});
   GACHA_CREW.forEach(z => { ZAKO_STAT[z.k] = {grade: z.grade, type: z.type, base: z.base, bio: z.bio}; });
   // ===== 名前は「肩書き　名前」で出す（名前だけでは使わない）=====
-  const BOSS_TITLE = {"ichigo": "紅苺の少女", "mocha": "黄金の剣士", "rinpan": "双子の氷術師", "busy": "紫星の魔女", "camilla": "猫神の申し子", "titan": "機甲の歌姫", "windy": "そよ風の妖精", "chiyo": "紅月のくノ一", "gilbert": "銀の城の騎士"};
-  const ZAKO_TITLE = {"a1_01": "いちご農家の娘", "a1_02": "いちごの妖精", "a1_03": "いちごずきん", "a1_04": "ハチの子", "a1_05": "かかし", "a1_06": "テントウムシの子", "a1_07": "花かんむりの子", "a1_08": "うさみみの子", "a1_09": "ジャムのシェフ", "a1_10": "農家の少年", "a2_01": "見習い剣士", "a2_02": "見習い騎士", "a2_03": "門番", "a2_04": "弓使い", "a2_05": "お城のメイド", "a2_06": "鍛冶屋の見習い", "a2_07": "旗持ち", "a2_08": "太鼓の少年", "a2_09": "木馬の騎士", "a2_10": "見習い魔法使い", "a3_01": "氷のスライム", "a3_02": "青い火の玉", "a3_03": "かみつく魔導書", "a3_04": "氷のコウモリ", "a3_05": "氷のゴーレム", "a3_06": "泡の小悪魔", "a3_07": "雪の精", "a3_08": "いたずら鏡", "a3_09": "星のクラゲ", "a3_10": "月のうさぎ魔導士", "a4_01": "ほうき乗りの見習い魔女", "a4_02": "むらさきキノコ", "a4_03": "森のエルフ", "a4_04": "魔女の黒猫", "a4_05": "薬づくりの子", "a4_06": "フクロウの魔法使い", "a4_07": "かぼちゃランタン", "a4_08": "蝶の妖精", "a4_09": "切り株おばけ", "a4_10": "見習い魔導士", "a5_01": "魚屋の猫娘", "a5_02": "コックの白猫", "a5_03": "どろぼう猫", "a5_04": "猫カフェのメイド", "a5_05": "郵便屋のトラ猫", "a5_06": "猫耳おまわりさん", "a5_07": "あくびの子猫", "a5_08": "招き猫", "a5_09": "アコーディオン弾き", "a5_10": "ペルシャ猫の女王", "a6_01": "宇宙飛行士の男の子", "a6_02": "整備士の女の子", "a6_03": "宇宙人の女の子", "a6_04": "ガードロボ", "a6_05": "宇宙博士", "a6_06": "ジェットパックの女の子", "a6_07": "ホログラム案内係", "a6_08": "大型作業ロボ", "a6_09": "宇宙のペット", "a6_10": "宇宙艦長の女の子", "a7_01": "小鳥の女の子", "a7_02": "雲のひつじ", "a7_03": "凧あげの男の子", "a7_04": "風船の女の子", "a7_05": "風の精霊", "a7_06": "小さな天馬", "a7_07": "風使いの少年剣士", "a7_08": "空飛ぶクジラ", "a7_09": "虹の女の子", "a7_10": "羽の騎士", "a8_01": "忍者見習いの男の子", "a8_02": "白狐の女の子", "a8_03": "カラス天狗", "a8_04": "から傘おばけ", "a8_05": "ちょうちんおばけ", "a8_06": "からくり人形の忍者", "a8_07": "たぬき", "a8_08": "忍者がま", "a8_09": "猫の忍者", "a8_10": "ムササビ忍者", "a9_01": "ウサギの見張り兵", "a9_02": "子犬の騎士", "a9_03": "中身のない鎧", "a9_04": "銀のスライム", "a9_05": "お城のメイド", "a9_06": "石のガーゴイル", "a9_07": "銀の子ドラゴン", "a9_08": "チェスの騎士", "a9_09": "フクロウの近衛兵", "a9_10": "おばけのお姫さま"};
+  const BOSS_TITLE = {"kagura": "炎の竜人の娘", "ciel": "人魚の海賊船長", "nefer": "砂の女王", "joker": "夜のサーカスの道化師", "chronoa": "時の魔女", "ichigo": "紅苺の少女", "mocha": "黄金の剣士", "rinpan": "双子の氷術師", "busy": "紫星の魔女", "camilla": "猫神の申し子", "titan": "機甲の歌姫", "windy": "そよ風の妖精", "chiyo": "紅月のくノ一", "gilbert": "銀の城の騎士"};
+  const ZAKO_TITLE = {"vol_01": "溶岩トカゲの子", "vol_02": "火の玉ぼうや", "vol_03": "石炭もぐら", "vol_04": "マグマスライム", "vol_05": "火の鳥のひな", "vol_06": "温泉ざる", "vol_07": "黒曜石のカメ", "vol_08": "竜の巫女見習い", "vol_09": "溶岩ゴーレム", "vol_10": "火山のかじ屋ドワーフ", "sea_01": "ちびクラゲ", "sea_02": "ヤドカリ兵", "sea_03": "ふぐ風船", "sea_04": "タツノオトシゴの子", "sea_05": "宝箱ミミック", "sea_06": "ねぼすけマンボウ", "sea_07": "ちょうちんアンコウ", "sea_08": "見習い水兵", "sea_09": "ゆうれい船のガイコツ水夫", "sea_10": "タコの航海士", "pyr_01": "スカラベの子", "pyr_02": "サボテンぼうや", "pyr_03": "ミイラねこ", "pyr_04": "砂ヘビ", "pyr_05": "ラクダの子", "pyr_06": "スフィンクスの子", "pyr_07": "砂だんごスライム", "pyr_08": "王家の墓守", "pyr_09": "砂の魔術師", "pyr_10": "黄金のゴーレム", "park_01": "ゆうれい風船", "park_02": "つぎはぎテディ", "park_03": "メリーゴーランドの木馬", "park_04": "ポップコーンおばけ", "park_05": "びっくり箱", "park_06": "わたあめこうもり", "park_07": "チケットねずみ", "park_08": "綱渡りの道化", "park_09": "観覧車の番人", "park_10": "トランプの兵隊", "clk_01": "歯車ねずみ", "clk_02": "ふくろうの子", "clk_03": "星くずの精", "clk_04": "砂時計スライム", "clk_05": "ぜんまい人形", "clk_06": "月うさぎ", "clk_07": "振り子ペンギン", "clk_08": "天文学者見習い", "clk_09": "時計仕掛けの騎士", "clk_10": "時の番人フクロウ", "a1_01": "いちご農家の娘", "a1_02": "いちごの妖精", "a1_03": "いちごずきん", "a1_04": "ハチの子", "a1_05": "かかし", "a1_06": "テントウムシの子", "a1_07": "花かんむりの子", "a1_08": "うさみみの子", "a1_09": "ジャムのシェフ", "a1_10": "農家の少年", "a2_01": "見習い剣士", "a2_02": "見習い騎士", "a2_03": "門番", "a2_04": "弓使い", "a2_05": "お城のメイド", "a2_06": "鍛冶屋の見習い", "a2_07": "旗持ち", "a2_08": "太鼓の少年", "a2_09": "木馬の騎士", "a2_10": "見習い魔法使い", "a3_01": "氷のスライム", "a3_02": "青い火の玉", "a3_03": "かみつく魔導書", "a3_04": "氷のコウモリ", "a3_05": "氷のゴーレム", "a3_06": "泡の小悪魔", "a3_07": "雪の精", "a3_08": "いたずら鏡", "a3_09": "星のクラゲ", "a3_10": "月のうさぎ魔導士", "a4_01": "ほうき乗りの見習い魔女", "a4_02": "むらさきキノコ", "a4_03": "森のエルフ", "a4_04": "魔女の黒猫", "a4_05": "薬づくりの子", "a4_06": "フクロウの魔法使い", "a4_07": "かぼちゃランタン", "a4_08": "蝶の妖精", "a4_09": "切り株おばけ", "a4_10": "見習い魔導士", "a5_01": "魚屋の猫娘", "a5_02": "コックの白猫", "a5_03": "どろぼう猫", "a5_04": "猫カフェのメイド", "a5_05": "郵便屋のトラ猫", "a5_06": "猫耳おまわりさん", "a5_07": "あくびの子猫", "a5_08": "招き猫", "a5_09": "アコーディオン弾き", "a5_10": "ペルシャ猫の女王", "a6_01": "宇宙飛行士の男の子", "a6_02": "整備士の女の子", "a6_03": "宇宙人の女の子", "a6_04": "ガードロボ", "a6_05": "宇宙博士", "a6_06": "ジェットパックの女の子", "a6_07": "ホログラム案内係", "a6_08": "大型作業ロボ", "a6_09": "宇宙のペット", "a6_10": "宇宙艦長の女の子", "a7_01": "小鳥の女の子", "a7_02": "雲のひつじ", "a7_03": "凧あげの男の子", "a7_04": "風船の女の子", "a7_05": "風の精霊", "a7_06": "小さな天馬", "a7_07": "風使いの少年剣士", "a7_08": "空飛ぶクジラ", "a7_09": "虹の女の子", "a7_10": "羽の騎士", "a8_01": "忍者見習いの男の子", "a8_02": "白狐の女の子", "a8_03": "カラス天狗", "a8_04": "から傘おばけ", "a8_05": "ちょうちんおばけ", "a8_06": "からくり人形の忍者", "a8_07": "たぬき", "a8_08": "忍者がま", "a8_09": "猫の忍者", "a8_10": "ムササビ忍者", "a9_01": "ウサギの見張り兵", "a9_02": "子犬の騎士", "a9_03": "中身のない鎧", "a9_04": "銀のスライム", "a9_05": "お城のメイド", "a9_06": "石のガーゴイル", "a9_07": "銀の子ドラゴン", "a9_08": "チェスの騎士", "a9_09": "フクロウの近衛兵", "a9_10": "おばけのお姫さま"};
   const GACHA_TITLE = {"g103": "光速の回線ランナー", "g83": "炎の城塞騎士", "g84": "光速の天馬騎士", "g85": "冥府の門番", "g86": "深海の甲殻王", "g87": "風の大精霊", "g88": "雷電の機械巨兵", "g89": "白銀のゴーレム", "g90": "夜の聖女", "g91": "岩豹の狩人", "g92": "氷海の剣士", "g93": "大地の斧戦士", "g94": "陽だまりの聖職者", "g95": "かまどの料理長", "g96": "波乗りの風雲児", "g97": "竜巻の盾使い", "g98": "森のくすり屋", "g99": "雷雲の羊飼い", "g100": "火の鳥の踊り子", "g101": "疾風の忍", "g102": "流浪の剣士", "g68": "電池の子", "g69": "かみなり太鼓の子", "g70": "雷鳴の拳闘士", "g71": "雷鳥の巫女", "g72": "雷神", "g73": "こうもりの子", "g74": "かげぼうしの子", "g75": "夜の人形使い", "g76": "吸血姫", "g77": "焼きいも屋の子", "g78": "マッチ売りの少女", "g79": "火吹きの大道芸人", "g80": "海神の巫女", "g81": "大地の巨人王", "g82": "風竜の竜騎士", "g28": "見習いパン職人", "g29": "きのこの子", "g30": "ねむねむ羊", "g31": "紙ひこうきの少年", "g32": "ろうそくの精", "g33": "つり好きの少年", "g34": "もぐらの庭師", "g35": "カタツムリの騎士", "g36": "わたあめ雲の精", "g37": "見習い絵かき", "g38": "どんぐりリス", "g39": "折り鶴の少女", "g40": "見習い手品師", "g41": "ティーカップのハムスター", "g42": "ほたるの子", "g43": "本の虫", "g44": "ペンギンのコック", "g45": "あわぶろの子", "g46": "たこあげの少年", "g47": "サボテンの子", "g48": "オオカミ耳の狩人", "g49": "いなずまの精", "g50": "カブトムシの騎士", "g51": "水晶の小鹿", "g52": "海賊の少女", "g53": "砂漠のサソリ戦士", "g54": "からくりフクロウの発明家", "g55": "氷上のスケーター", "g56": "溶岩サラマンダー", "g57": "カードの勝負師", "g58": "獅子舞の少年", "g59": "グリフォンの雛騎士", "g60": "仮面の怪盗", "g61": "苔亀の賢者", "g62": "月うさぎ", "g63": "深海の潜水士", "g64": "いばらの剣士", "g65": "ちびメカの整備士", "g66": "ひまわりの騎士", "g67": "嵐のハーピー", "g01": "三つ首の飛竜", "g02": "苔むす土魔神", "g03": "森の射手", "g04": "炎花の妖精", "g05": "月なき夜の双剣", "g06": "光盾の守護機", "g07": "桜下の流れ侍", "g08": "双斧の鍛冶娘", "g09": "白馬の槍騎士", "g10": "果実の歌姫", "g11": "果実の元気印", "g12": "果実の踊り手", "g13": "星詠みの見習い", "g14": "旋風の拳士", "g15": "いたずら小悪魔", "g16": "泡沫の歌姫", "g17": "荒野の早撃ち", "g18": "火山の炎竜", "g19": "天上の奏者", "g20": "魔界の紫炎公", "g21": "白銀の聖盾", "g22": "千年の大魔導", "g23": "光剣の勇者", "g24": "万象の賢者", "g25": "熾天使", "g26": "天才メカニック", "g27": "災厄の嵐獣"};
   CHARS.forEach(c => { c.title = BOSS_TITLE[c.id] || ''; });
   const fullName = c => c ? ((c.title ? c.title + '\u3000' : '') + c.name) : '';
@@ -9701,7 +9932,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   const myStoryPow = () => Math.round(powOf(teamStats()));
   // 敵＝そのキャラ4人。ボスは★5、ザコはグレードの★上限。必要戦闘力になるLvを出す（Lvの上限はなし）
   //   ボスの必要戦闘力（本人が決めた曲線のまま）：[ふつう, 氷, 石]
-  const BOSS_NEED = [[829, 2389, 5972], [1177, 3032, 7839], [1607, 3996, 9803], [2128, 5342, 11053], [2839, 7326, 12676], [3798, 9301, 13952], [4948, 10227, 14777], [6478, 11209, 15663], [8498, 12751, 17377]];
+  const BOSS_NEED = [[829, 2389, 5972], [1177, 3032, 7839], [1607, 3996, 9803], [2128, 5342, 11053], [2839, 7326, 12676], [3798, 9301, 13952], [4948, 10227, 14777], [6478, 11209, 15663], [6778, 11452, 15936], [7091, 11701, 16215], [7420, 11955, 16498], [7763, 12215, 16786], [8122, 12480, 17079], [8498, 12751, 17377]];
+  // 2026-11-25：ギルバートの前に5エリア。チヨ→ギルバートの間を、同じ割合ずつなだらかに上げる（ギルバートは前のまま）
   const ZAKO1_NEED = [474, 493, 517, 529, 560];        // エリア1のザコ（前のボスがいないので決め打ち）
   const bossNeed = (a, v) => (BOSS_NEED[Math.max(0, Math.min(BOSS_NEED.length - 1, a))] || [0])[v] || 0;
   function needTarget(st, v){
@@ -9745,12 +9977,13 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     thunder: {n: '雷', col: '#e8a800'}, none: {n: '無', col: '#8a8a99'}, dark: {n: '闇', col: '#7a3cc8'}, light: {n: '光', col: '#f5c400'}};
   const ATTR_BEATS = {fire: 'wind', wind: 'earth', earth: 'thunder', thunder: 'water', water: 'fire'};
   const ATTR_GACHA = {'ひかる凛': 'light', 'トリオン': 'fire', 'ヒノカ': 'fire', 'ミカン': 'fire', 'ヴォルカ': 'fire', 'ロウ': 'fire', 'マグ': 'fire', 'シシマル': 'fire', 'モモ': 'water', 'シェル': 'water', 'ナギ': 'water', 'ペンタ': 'water', 'アワコ': 'water', 'シズク': 'water', 'マリーナ': 'water', 'セツナ': 'water', 'アンコ': 'water', 'ガイアロ': 'earth', 'ガルナ': 'earth', 'ポルチ': 'earth', 'モグル': 'earth', 'カラコ': 'earth', 'クルミ': 'earth', 'サボ': 'earth', 'カブトン': 'earth', 'サーラ': 'earth', 'モスじい': 'earth', 'ローザ': 'earth', 'シルヴィ': 'wind', 'マスカ': 'wind', 'シャオ': 'wind', 'ソラタ': 'wind', 'フワリ': 'wind', 'ツルハ': 'wind', 'ヒュウ': 'wind', 'ギン': 'wind', 'グリフ': 'wind', 'フェザ': 'wind', 'ポッピー': 'thunder', 'ボルテクス': 'thunder', 'ボルティ': 'thunder', 'ギア': 'thunder', 'ネジ': 'thunder', 'ソウマ': 'none', 'ダスティ': 'none', 'オルドリン': 'none', 'ソフィア': 'none', 'ミルフィ': 'none', 'メリー': 'none', 'パレ': 'none', 'マジロ': 'none', 'モチ': 'none', 'シオリ': 'none', 'ヴェイル': 'dark', 'リリ': 'dark', 'ノワール': 'dark', 'ノクス': 'dark', 'セラ': 'light', 'リディア': 'light', 'ルカ': 'light', 'セレナ': 'light', 'アリシア': 'light', 'アルト': 'light', 'ルミエル': 'light', 'ヒカリ': 'light', 'ディーラ': 'light', 'ウサミ': 'light', 'ヒマリ': 'light', 'デンコ': 'thunder', 'ゴロゴ': 'thunder', 'ライガ': 'thunder', 'ツバキ': 'thunder', 'ナルカミ': 'thunder', 'キキ': 'dark', 'カゲロウ': 'dark', 'マリオン': 'dark', 'エリザ': 'dark', 'ホクホ': 'fire', 'ルシア': 'fire', 'ボーボ': 'fire', 'ネレイダ': 'water', 'グランディオ': 'earth', 'ゼファー': 'wind', 'ブレイズガルド': 'fire', 'ペガシア': 'light', 'ケルベロ': 'dark', 'アビスシェル': 'water', 'シルフィード': 'wind', 'ボルトガード': 'thunder', 'シルバ': 'none', 'ルナリア': 'dark', 'ガロウ': 'earth', 'ヒョウガ': 'water', 'ゴルダ': 'earth', 'ソレイユ': 'light', 'グラタ': 'fire', 'ナミ': 'water', 'ゲイル': 'wind', 'ハーブ': 'earth', 'メェル': 'thunder', 'フェニア': 'fire', 'カザキリ': 'wind', 'ジン': 'none'};
-  const ATTR_BOSS = {ichigo: 'fire', mocha: 'light', rinpan: 'water', busy: 'earth', camilla: 'none', titan: 'thunder', windy: 'wind', chiyo: 'dark', gilbert: 'light'};
-  const ATTR_AREA = ['earth', 'none', 'water', 'dark', 'none', 'thunder', 'wind', 'dark', 'light'];   // ザコ：エリアごとの基本
+  const ATTR_BOSS = {kagura: 'fire', ciel: 'water', nefer: 'earth', joker: 'dark', chronoa: 'none', ichigo: 'fire', mocha: 'light', rinpan: 'water', busy: 'earth', camilla: 'none', titan: 'thunder', windy: 'wind', chiyo: 'dark', gilbert: 'light'};
+  const ATTR_AREA = ['earth', 'none', 'water', 'dark', 'none', 'thunder', 'wind', 'dark', 'fire', 'water', 'earth', 'dark', 'none', 'light'];   // 2026-11-25：9〜13番目に新しい5エリア   // ザコ：エリアごとの基本
   const ATTR_ZAKO_EX = [{'ハニー': 'wind', 'ドット': 'wind', 'フレーズ': 'fire'}, {'ルーミ': 'light', 'ハンス': 'fire', 'ロビン': 'wind'},
     {'アオビ': 'fire', 'グリモア': 'dark', 'アワリン': 'dark', 'ホシクラゲ': 'light', 'ルナピョン': 'light'},
     {'リーフ': 'wind', 'ムスカ': 'earth', 'ミュール': 'wind', 'キリカブ': 'earth', 'ポーラ': 'water'}, {'マネキ': 'light', 'ドロネコ': 'dark'},
     {'ゼータ': 'none', 'プルト': 'none'}, {'ニジカ': 'light', 'モコ': 'water'}, {'コンコ': 'fire', 'ポン吉': 'earth', 'ガマ太': 'water'},
+    {}, {'ホネキチ':  'dark'}, {'ミイにゃ':  'dark', 'サボたん':  'wind'}, {}, {'キラリ':  'light', 'ツキミ':  'light'},
     {'カラッポ': 'dark', 'シャルロ': 'dark', 'ガーゴ': 'earth'}];
   let attrCache = null;
   function attrOf(id){
@@ -11942,6 +12175,11 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     titan: '機械工場で目覚めた、白とエメラルドのアンドロイドの少女。感情はまだ勉強中で、言葉づかいは少しかため。人の役に立つことを何より大切にしていて、全身に積んだ兵器も、仲間を守るためだけに使う。',
     windy: '空の島に住む、気まぐれでいたずら好きな風の妖精。浮島から浮島へ風に乗って飛びまわり、人の帽子を飛ばしてはクスクス笑っている。悪気はないけれど、怒らせると嵐を呼ぶので要注意。',
     chiyo: '忍びの里の若きくのいち。月夜の屋根を音もなく駆け、手裏剣の腕は里でも指折り。クールにふるまっているが、本当は甘いものとかわいいものが大好き。任務のあとは、こっそりお団子を食べに行く。',
+    kagura: '灼熱の火山に住む、炎の竜人の娘。金の角と火のついたしっぽを持ち、炎の薙刀で舞うように戦う。元気で勝ち気、強い相手を見るとわくわくが止まらない。',
+    ciel: '海底の沈没船をねぐらにする、人魚の海賊船長。陽気な姉御肌で、子分たちからとても慕われている。珊瑚のカトラスで、どんな大波も切りひらく。',
+    nefer: '砂漠のピラミッドに眠っていた、気高い砂の女王。金のアンク杖で砂をあやつる。「わらわ」と名のり、ていねいだが少しわがまま。',
+    joker: '真夜中の遊園地でサーカスをひらく道化師。光るトランプとステッキで、相手をびっくりさせるのが大好き。芝居がかったいたずら好きだが、お客さんを楽しませる心は本物。',
+    chronoa: '星空にそびえる時計塔の天文台に住む、時の魔女。砂時計の杖で時の流れをあやつる。落ち着いた大人の女性で、いつも余裕の笑みをうかべている。',
     gilbert: '雲の上の銀の城を守る、気高く優しい騎士。礼儀正しく、どんな相手にも敬意を忘れない。旅の最後に立ちはだかるのは、城と、そこに眠る大切なものを守るという誓いがあるから。',
   };
   ALLC.forEach(c => { if (c.zk && ZAKO_STAT[c.zk]) CHAR_BIO[c.id] = ZAKO_STAT[c.zk].bio; });
@@ -12713,7 +12951,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     return Math.round(base * clampF((en + me) / (2 * en), 0.5, 1.5));
   }
   const OUGI_NAME = {ichigo: 'レインボースラッシュ', mocha: 'ホーリークロス', rinpan: 'アイスバーグ・フォール', busy: 'グラビティ・クラッシュ',
-    camilla: '猫神連爪', titan: 'オメガ・イレイザー', windy: '天空神風・スカイテンペスト', chiyo: '朧月・紅蓮桜', gilbert: '聖銀剣・アストラル・クロス'};
+    camilla: '猫神連爪', titan: 'オメガ・イレイザー', windy: '天空神風・スカイテンペスト', chiyo: '朧月・紅蓮桜', gilbert: '聖銀剣・アストラル・クロス', kagura: '灼熱・竜神楽', ciel: '大渦・メイルシュトローム', nefer: 'サンドストーム・ジャッジメント', joker: '狂宴・ミッドナイトカーニバル', chronoa: 'クロノスタシス'};
   // 試合で使える技の一覧：メインは必殺技と奥義の2つ、サブはそれぞれ選んだ1つ
   let skList = [], skLast = 0, skShown = '';
   // ブロックが動いている間に押した技は「予約」して、止まったら順番に自動で出す
@@ -13195,6 +13433,56 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     a8_08: {n: '大がまの術', fx: [['buf', 'def', 5, 180], ['heal', 4]]},
     a8_09: {n: '鎖しばり', fx: [['eslow', 30, 4], ['clr', 3]]},
     a8_10: {n: '夜空の滑空', fx: [['buf', 'spd', 4, 150]]},
+    vol_01: {n: 'ちょろちょろダッシュ', fx: [['buf', 'spd', 3, 150]]},
+    vol_02: {n: 'ぽっぽ火の玉', fx: [['dmg', 8]]},
+    vol_03: {n: '石炭の壁', fx: [['buf', 'def', 4, 150]]},
+    vol_04: {n: 'ぷるぷる溶岩', fx: [['heal', 8]]},
+    vol_05: {n: 'ひなの火の粉', fx: [['clr', 4]]},
+    vol_06: {n: 'いい湯だな', fx: [['heal', 9]]},
+    vol_07: {n: '黒曜石の甲羅', fx: [['cut', 30]]},
+    vol_08: {n: '炎の扇の舞', fx: [['clr', 6], ['buf', 'atk', 4, 160]]},
+    vol_09: {n: 'マグマの鉄壁', fx: [['buf', 'def', 5, 180], ['cut', 20]]},
+    vol_10: {n: '炎の鍛冶打ち', fx: [['dmg', 10], ['octa', 2]]},
+    sea_01: {n: 'ゆらゆらライト', fx: [['heal', 8]]},
+    sea_02: {n: '貝がらガード', fx: [['buf', 'def', 4, 150]]},
+    sea_03: {n: 'ぷくっと防御', fx: [['cut', 30]]},
+    sea_04: {n: 'くるくる泳ぎ', fx: [['buf', 'spd', 3, 150]]},
+    sea_05: {n: 'ぱっくんちょ', fx: [['dmg', 8]]},
+    sea_06: {n: 'ひなたぼっこ', fx: [['heal', 9]]},
+    sea_07: {n: 'ちょうちんフラッシュ', fx: [['clr', 4]]},
+    sea_08: {n: 'デッキそうじ', fx: [['shuf', 20], ['buf', 'spd', 4, 160]]},
+    sea_09: {n: 'ホネホネ海賊歌', fx: [['clr', 6], ['eslow', 30, 4]]},
+    sea_10: {n: 'すみはき航海術', fx: [['heal', 10], ['eslow', 30, 4]]},
+    pyr_01: {n: '砂玉ころがし', fx: [['buf', 'def', 4, 150]]},
+    pyr_02: {n: 'トゲトゲガード', fx: [['cut', 30]]},
+    pyr_03: {n: '包帯ぐるぐる', fx: [['eslow', 30, 3]]},
+    pyr_04: {n: '砂からガブリ', fx: [['dmg', 8]]},
+    pyr_05: {n: 'こぶの水', fx: [['heal', 9]]},
+    pyr_06: {n: 'なぞなぞタイム', fx: [['heal', 7], ['clr', 2]]},
+    pyr_07: {n: '砂のおしろ', fx: [['octa', 2]]},
+    pyr_08: {n: '墓守の審判', fx: [['buf', 'def', 5, 180], ['clr', 3]]},
+    pyr_09: {n: '砂嵐の術', fx: [['clr', 6], ['buf', 'atk', 4, 160]]},
+    pyr_10: {n: '黄金のかがやき', fx: [['heal', 10], ['octa', 2]]},
+    park_01: {n: 'ふわふわおどかし', fx: [['eslow', 30, 3]]},
+    park_02: {n: 'ぎゅっとハグ', fx: [['heal', 9]]},
+    park_03: {n: 'くるくる木馬', fx: [['buf', 'spd', 3, 150]]},
+    park_04: {n: 'ポンポンはじけ', fx: [['clr', 4]]},
+    park_05: {n: 'びっくりパンチ', fx: [['dmg', 8]]},
+    park_06: {n: 'わたあめバサバサ', fx: [['shuf', 20]]},
+    park_07: {n: 'チケットぱらぱら', fx: [['octa', 2]]},
+    park_08: {n: '綱渡りジャグリング', fx: [['clr', 5], ['buf', 'spd', 4, 160]]},
+    park_09: {n: 'てっぺんの見張り', fx: [['buf', 'def', 5, 180], ['cut', 20]]},
+    park_10: {n: 'スペードの突撃', fx: [['clr', 6], ['buf', 'atk', 4, 160]]},
+    clk_01: {n: 'ぜんまいダッシュ', fx: [['buf', 'spd', 3, 150]]},
+    clk_02: {n: 'ほうほう子守歌', fx: [['heal', 9]]},
+    clk_03: {n: 'きらきら星くず', fx: [['clr', 4]]},
+    clk_04: {n: 'さらさら砂時計', fx: [['eslow', 30, 3]]},
+    clk_05: {n: 'ぜんまい行進', fx: [['dmg', 8]]},
+    clk_06: {n: 'お月さまの光', fx: [['heal', 8]]},
+    clk_07: {n: 'ゆらゆら振り子', fx: [['shuf', 20]]},
+    clk_08: {n: '流れ星の観測', fx: [['clr', 6], ['octa', 2]]},
+    clk_09: {n: '歯車の盾', fx: [['buf', 'def', 5, 180], ['cut', 20]]},
+    clk_10: {n: '知恵の時計', fx: [['heal', 10], ['eslow', 30, 4]]},
     a9_01: {n: '見張りの構え', fx: [['buf', 'def', 3, 150]]},
     a9_02: {n: 'わんわん突撃', fx: [['buf', 'atk', 3, 150]]},
     a9_03: {n: '空っぽの鉄壁', fx: [['buf', 'def', 5, 200], ['cut', 20]]},
@@ -13495,6 +13783,11 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     windy: {sp: [['heart', 3], ['shuf', 20]], ougi: [['tempest', 40], ['eslow', 40, 5], ['heart', 3], ['sheart', 1]]},
     chiyo: {sp: [['clr', 8], ['heal', 5]], ougi: [['clr', 12], ['crit', 10], ['heart', 3]]},
     gilbert: {sp: [['heart', 3], ['buf', 'def', 6, 200]], ougi: [['octaRect', 3, 3], ['cut', 40], ['heart', 3], ['sheart', 1]]},
+    kagura: {sp: [['rows', 1], ['clr', 4]], ougi: [['rows', 2], ['atk2', 8], ['heart', 2]]},
+    ciel: {sp: [['rect', 2, 3], ['eslow', 30, 4]], ougi: [['tempest', 40], ['clr', 8], ['heart', 3]]},
+    nefer: {sp: [['bestCol', 4], ['cut', 20]], ougi: [['octaRect', 3, 3], ['def2', 8], ['heart', 2]]},
+    joker: {sp: [['shuf', 30], ['clr', 6]], ougi: [['clr', 12], ['crit', 10], ['octa', 4], ['heart', 2]]},
+    chronoa: {sp: [['eslow', 40, 5], ['clr', 5]], ougi: [['octaCol', 6], ['diag', 10], ['eslow', 50, 6], ['heart', 3], ['sheart', 1]]},
   };
   Object.keys(BOSS_FX).forEach(id => { BOSS_FX[id].sp = fxTune(BOSS_FX[id].sp, 'sp'); BOSS_FX[id].ougi = fxTune(BOSS_FX[id].ougi, 'ougi'); });
   Object.keys(BOSS_FX).forEach(id => {
