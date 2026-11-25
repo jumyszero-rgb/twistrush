@@ -786,15 +786,20 @@ body.on-menu .battlemain{opacity:0;}
   .evoshop{display:block;width:100%;margin-top:8px;border:1px solid rgba(255,211,77,.6);border-radius:10px;padding:7px;background:rgba(255,211,77,.12);color:#ffe9a8;font:inherit;font-weight:800;font-size:13px;cursor:pointer} .evoshop small{margin-left:6px}
   .ss-pack{display:block;width:100%;margin:6px 0;border:1px solid rgba(255,211,77,.6);border-radius:10px;padding:7px;background:rgba(255,211,77,.12);color:#ffe9a8;font:inherit;font-weight:800;font-size:13px;cursor:pointer} .ss-pack small{display:block;font-size:11px;font-weight:400}
   .dpass{margin:6px 0 0;font-size:12px;color:#ffe9a8} .dpass small{display:block;opacity:.8}
-  .hub .hubgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;width:100%;max-width:420px;margin:0 auto;padding:12px 14px 24px;box-sizing:border-box;overflow-y:auto}
-  .hub .mtile{min-height:112px} .hub .mtile .ml{font-size:14px;font-weight:900} .hub .mtile .ml small.hd{display:block;font-size:10.5px;font-weight:700;opacity:.85;margin-top:2px}
-  .hub .mtile.wide{min-height:92px} .hub .mtile.wide .ml{font-size:20px}
-  .mtile.dmwide{background:linear-gradient(90deg,rgba(79,168,255,.85),rgba(155,92,240,.85));border-color:#cfe0ff}
-  .hub .mtile .mie,.mtile .mie{font-size:44px} .mtile.low .mie{font-size:28px}
-  #hubStoryBtn,#hubChalBtn,#vsBtn,#gachaBtn,#boxBtn{position:relative}
-  #hubStoryBtn.dot::after,#hubChalBtn.dot::after,.hub .mtile.dot::after{content:'';position:absolute;top:8px;right:10px;width:12px;height:12px;border-radius:50%;background:#ff4f7b;box-shadow:0 0 0 2px #fff}
-  .hub.overlay{position:fixed;inset:0;z-index:21;border-radius:0;padding:0;gap:0;justify-content:flex-start;color:#f6f0ff;background:radial-gradient(circle at 50% 0%,#3b2470,#140a2c 70%);display:flex;flex-direction:column;overflow-y:auto} .hub.hidden{display:none}
-  html.iospwa .hub.overlay{bottom:auto!important;height:var(--fullh)!important}
+  #menu .mview{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;width:100%;max-width:380px;position:relative;margin:0 auto} #menu .mview.hidden{display:none}
+  #mvTop{grid-template-columns:repeat(2,minmax(0,1fr))!important} #mvTop .mtile:not(.wide){min-height:110px} #mvTop .mtile:not(.wide) .ml{font-size:16px;font-weight:900}
+  .mvhead{grid-column:1/-1;display:flex;align-items:center;gap:10px} .mvhead b{font-size:18px;font-weight:900;color:#fff;background:rgba(20,10,40,.7);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:5px 16px;text-shadow:0 1px 3px #000}
+  .mvback{border:0;border-radius:999px;padding:7px 14px;font:inherit;font-weight:900;font-size:14px;color:#3a2a00;background:#ffd34d;box-shadow:0 2px 0 #c98a00;cursor:pointer}
+  .mtile.dmwide{background:linear-gradient(90deg,rgba(79,168,255,.88),rgba(155,92,240,.88));border-color:#cfe0ff}
+  .mtile.vswide{background:linear-gradient(90deg,rgba(255,79,123,.88),rgba(79,120,255,.88));border-color:#ffd0e0}
+  .mtile .mie{font-style:normal;font-size:46px;line-height:1.1;filter:drop-shadow(0 3px 4px rgba(0,0,0,.5))}
+  #hubStoryBtn,#hubChalBtn,#hubVsBtn,#gachaBtn,#boxBtn{position:relative}
+  #hubStoryBtn.dot::after,#hubChalBtn.dot::after,#hubVsBtn.dot::after,.mview .mtile.dot:not(.passbtn)::after{content:'';position:absolute;top:8px;right:10px;width:12px;height:12px;border-radius:50%;background:#ff4f7b;box-shadow:0 0 0 2px #fff}
+  #menu.overlay.v-chal{background:linear-gradient(rgba(10,20,60,.55),rgba(10,10,40,.75)),radial-gradient(circle at 50% 30%,#3b6fd8,#141a4a 75%)}
+  #menu.overlay.v-vs{background:linear-gradient(rgba(20,8,40,.45),rgba(20,8,40,.8)),url(img/howto/vsintro.webp) center/cover no-repeat,#24103f}
+  #menu.v-chal .logo,#menu.v-vs .logo{opacity:.9}
+  #mvFall{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:-1} #mvFall img{position:absolute;top:-90px;opacity:.85;animation:mvFall linear forwards;filter:drop-shadow(0 4px 6px rgba(0,0,0,.4))}
+  @keyframes mvFall{to{transform:translateY(calc(100vh + 120px)) rotate(var(--r))}}
   .evogain{margin:4px 0 6px;font-size:13px;line-height:1.6;color:#ffe9a8}
   .dsec.psk ul{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:5px}
   .dsec.psk li{display:grid;grid-template-columns:52px 1fr;column-gap:6px;padding:6px 8px;border-radius:10px;background:rgba(255,255,255,.05);opacity:.5}
@@ -1884,46 +1889,27 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         <button class="mtile mini" id="achvBtn" data-tip="実績：達成するとユーザー経験値がもらえる"><span class="mi"><img data-mimg="achv" alt=""></span><span class="ml">実績</span></button>
         <button class="mtile mini" id="menuMute" data-tip="音のオン・オフ（BGM・効果音・ボイスすべて）"><span class="mi"><img data-mimg="sound_on" alt=""></span><span class="ml">サウンド</span></button>
       </div>
-      <div class="menu-bottom mgrid">
-        <button class="mtile wide story" id="hubStoryBtn" data-tip="メインのモード。冒険（マップ）・遠征・鍛冶屋・ショップ・ミケの店・わたしの街"><span class="mi"><img data-mimg="story" alt=""></span><span class="ml">ストーリー<small>冒険・遠征・鍛冶屋・ショップ</small></span></button>
-        <button class="mtile" id="hubChalBtn" data-tip="ストーリーをしなくても遊べる。60秒アタック・サバイバル・今日の崩し・週のお題・練習・ランキング"><span class="mi"><img data-mimg="sixty" alt=""></span><span class="ml">チャレンジ</span></button>
-        <button class="mtile" id="vsBtn" data-tip="ほかの人と対戦する（準備中）"><span class="mi"><img data-mimg="online" alt=""></span><span class="ml">対戦</span></button>
-        <button class="mtile" id="gachaBtn" data-tip="虹の祭壇でガチャを引いて、仲間のキャラを呼ぶ"><span class="mi"><img data-gimg="cube" alt=""></span><span class="ml">ガチャ</span></button>
-        <div class="mrow2 two"><button class="mtile low" id="boxBtn" data-tip="持っているキャラとアイテムを見る。チームの4人と、持っていくアイテムをセットする"><span class="mi"><img data-mimg="box" alt=""></span><span class="ml">ボックス</span></button><button class="mtile low passbtn" id="passBtn" data-tip="パス：無料・シルバー・ゴールドをくらべる。毎日の受け取りもここ"><span class="mi"><img data-mimg="pass" alt=""></span><span class="ml">パス<small>無料・シルバー・ゴールド</small></span></button></div>
+      <div class="menu-bottom">
+<div class="mgrid mview" id="mvTop">
+<button class="mtile wide story" id="hubStoryBtn" data-tip="メインのモード。冒険（マップ）・遠征・鍛冶屋・ショップ・ミケの店・わたしの街"><span class="mi"><img data-mimg="story" alt=""></span><span class="ml">ストーリー<small>冒険・遠征・鍛冶屋・ショップ</small></span></button>
+<button class="mtile" id="hubChalBtn" data-tip="ストーリーをしなくても遊べる。60秒アタック・サバイバル・今日の崩し・週のお題・練習・ランキング"><span class="mi"><img data-mimg="sixty" alt=""></span><span class="ml">チャレンジ</span></button>
+<button class="mtile" id="hubVsBtn" data-tip="ほかのプレイヤーと対戦。ランダム対戦・アリーナ・キャラ対戦・フレンド"><span class="mi"><img data-mimg="online" alt=""></span><span class="ml">対戦</span></button>
+</div>
+<div class="mgrid mview hidden" id="mvStory">
+<div class="mvhead"><button class="mvback" data-mvback="1">‹ もどる</button><b>ストーリー</b></div><button class="mtile wide story" id="storyBtn" data-tip="CPUと1対1で戦うメインのモード。ボスに勝つとキャラが仲間になる"><span class="mi"><img data-mimg="story" alt=""></span><span class="ml">冒険に出る<small></small></span></button><button class="mtile" id="gachaBtn" data-tip="虹の祭壇でガチャを引いて、仲間のキャラを呼ぶ"><span class="mi"><img data-gimg="cube" alt=""></span><span class="ml">ガチャ</span></button><button class="mtile" id="boxBtn" data-tip="持っているキャラとアイテムを見る。チームの4人と、持っていくアイテムをセットする"><span class="mi"><img data-mimg="box" alt=""></span><span class="ml">ボックス</span></button><button class="mtile passbtn" id="passBtn" data-tip="パス：無料・シルバー・ゴールドをくらべる。毎日の受け取りもここ"><span class="mi"><img data-mimg="pass" alt=""></span><span class="ml">パス</span></button><button class="mtile" id="expdHubBtn" data-tip="遠征：チームを送り出して、時間がたつと素材を持って帰ってくる"><span class="mi"><b class="mie">🧭</b></span><span class="ml">遠征</span></button><button class="mtile" id="forgeBtn" data-forge="1" data-tip="鍛冶屋：遠征で集めた素材で武器を作る。装備ガチャもここ"><span class="mi"><img data-mimg="forge" alt=""></span><span class="ml">鍛冶屋</span></button><button class="mtile" id="shopBtn" data-tip="コインでアイテムを買う"><span class="mi"><img data-mimg="shop" alt=""></span><span class="ml">ショップ</span></button><button class="mtile" id="mktBtn" data-tip="ミケの店：いらない武器や素材をニャンコインに換える。ほかのプレイヤーと預けて売り買いもできる"><span class="mi"><img data-mimg="market" alt=""></span><span class="ml">ミケの店</span></button><button class="mtile" id="townBtn" data-tip="わたしの街：建物を建てて、キャラを置いて運営させる。シルバーと鍛冶屋の素材がたまる"><span class="mi"><b class="mie">🏡</b></span><span class="ml">わたしの街</span></button>
+</div>
+<div class="mgrid mview hidden" id="mvChal">
+<div class="mvhead"><button class="mvback" data-mvback="1">‹ もどる</button><b>チャレンジ</b></div><button class="mtile wide dmwide" id="dmBtn" data-tip="今日の崩しミッション：毎日かわる。みんな同じ盤面で、決まった手数で点数を競う"><span class="mi"><img data-mimg="chal" alt=""></span><span class="ml">今日の崩し<small>毎日かわる・みんな同じ盤面で点数を競う</small></span></button><button class="mtile" id="sixtyBtn" data-tip="60秒で何点取れるか。記録はランキングに残る"><span class="mi"><img data-mimg="sixty" alt=""></span><span class="ml">60秒アタック</span></button><button class="mtile" id="startBtn" data-tip="カラーHPがどれか30になるまで、どれだけ長く生き残れるか。時間がたつほど厳しくなる。壊した中身と生き残った時間から、サバイバルレートが決まる。記録あり・コンティニュー1回"><span class="mi"><img data-mimg="endless" alt=""></span><span class="ml">サバイバル</span></button><button class="mtile" id="chalBtn" data-tip="毎週3つのお題：みんな同じ盤面・同じ条件で点数を競う。週間ランキングの順位でごほうび"><span class="mi"><img data-mimg="chal" alt=""></span><span class="ml">週のお題</span></button><button class="mtile" id="easyBtn" data-tip="イージー・ノーマル・ハードで練習。CPUのお手本も見られる。記録なし"><span class="mi"><img data-mimg="practice" alt=""></span><span class="ml">練習</span></button><button class="mtile" id="rankBtn" data-tip="60秒アタックとサバイバルの順位を見る"><span class="mi"><img data-mimg="ranking" alt=""></span><span class="ml">ランキング</span></button>
+</div>
+<div class="mgrid mview hidden" id="mvVs">
+<div class="mvhead"><button class="mvback" data-mvback="1">‹ もどる</button><b>対戦</b></div><button class="mtile wide vswide" id="vsBtn" data-tip="ほかの人と対戦する（準備中）"><span class="mi"><img data-mimg="online" alt=""></span><span class="ml">対戦する<small>ランダム対戦・部屋を作る</small></span></button><button class="mtile" id="olArenaBtn" data-tip="アリーナ：オートで戦う。相手のチームと勝負"><span class="mi"><b class="mie">🛡</b></span><span class="ml">アリーナ</span></button><button class="mtile" id="olCharaBtn" data-tip="チームのキャラで対戦する"><span class="mi"><b class="mie">⚔️</b></span><span class="ml">キャラ対戦</span></button><button class="mtile" id="olFrBtn" data-tip="フレンドの申請・招待・ひとこと"><span class="mi"><b class="mie">👥</b></span><span class="ml">フレンド</span></button><button class="mtile" id="olRankBtn" data-tip="対戦のレートの順位"><span class="mi"><b class="mie">🏆</b></span><span class="ml">対戦ランキング</span></button><button class="mtile" id="olShopBtn" data-tip="対戦メダルでアイテムと交換"><span class="mi"><b class="mie">🏅</b></span><span class="ml">メダル交換</span></button><button class="mtile" id="olJoinBtn" data-tip="友だちの部屋の番号で入る"><span class="mi"><b class="mie">🔢</b></span><span class="ml">番号で入る</span></button>
+</div>
         <div class="mtip hidden" id="menuTip"></div>
         <p class="mhint">長押しで説明が出ます</p>
         <nav class="mlegal"><a href="/guide.html">遊び方</a><a href="/column.html">コラム</a><a href="/faq.html">よくある質問</a><a href="/terms.html">利用規約</a><a href="/privacy.html">プライバシーポリシー</a><a href="/law.html">特定商取引法に基づく表記</a><a href="/payment.html">ゴールドコインについて</a><a href="/contact.html">お問い合わせ</a></nav>
       </div>
     </div>
 
-    <div class="overlay hidden hub" id="hubStory" role="dialog" aria-label="ストーリー">
-      <div class="how-head">
-        <button class="how-back" data-hubback="1" aria-label="タイトルに戻る">‹ 戻る</button>
-        <h2>ストーリー</h2>
-      </div>
-      <div class="hubgrid">
-        <button class="mtile wide story" id="storyBtn" data-tip="CPUと1対1で戦うメインのモード。ボスに勝つとキャラが仲間になる"><span class="mi"><img data-mimg="story" alt=""></span><span class="ml">冒険に出る<small></small></span></button>
-        <button class="mtile" id="expdHubBtn" data-tip="遠征：チームを送り出して、時間がたつと素材を持って帰ってくる"><span class="mi"><b class="mie">🧭</b></span><span class="ml">遠征<small class="hd">素材を集める</small></span></button>
-        <button class="mtile" id="forgeBtn" data-forge="1" data-tip="鍛冶屋：遠征で集めた素材で武器を作る。装備ガチャもここ"><span class="mi"><img data-mimg="forge" alt=""></span><span class="ml">鍛冶屋<small class="hd">武器を作る・強くする</small></span></button>
-        <button class="mtile" id="shopBtn" data-tip="コインでアイテムを買う"><span class="mi"><img data-mimg="shop" alt=""></span><span class="ml">ショップ<small class="hd">アイテムを買う</small></span></button>
-        <button class="mtile" id="mktBtn" data-tip="ミケの店：いらない武器や素材をニャンコインに換える。ほかのプレイヤーと預けて売り買いもできる"><span class="mi"><img data-mimg="market" alt=""></span><span class="ml">ミケの店<small class="hd">売る・買う</small></span></button>
-        <button class="mtile" id="townBtn" data-tip="わたしの街：建物を建てて、キャラを置いて運営させる。シルバーと鍛冶屋の素材がたまる"><span class="mi"><b class="mie">🏡</b></span><span class="ml">わたしの街<small class="hd">街を育てる</small></span></button>
-      </div>
-    </div>
-    <div class="overlay hidden hub" id="hubChal" role="dialog" aria-label="チャレンジ">
-      <div class="how-head">
-        <button class="how-back" data-hubback="1" aria-label="タイトルに戻る">‹ 戻る</button>
-        <h2>チャレンジ</h2>
-      </div>
-      <div class="hubgrid">
-        <button class="mtile wide dmwide" id="dmBtn" data-tip="今日の崩しミッション：毎日かわる。みんな同じ盤面で、決まった手数で点数を競う"><span class="mi"><img data-mimg="chal" alt=""></span><span class="ml">今日の崩し<small>毎日かわる・みんな同じ盤面で点数を競う</small></span></button>
-        <button class="mtile" id="sixtyBtn" data-tip="60秒で何点取れるか。記録はランキングに残る"><span class="mi"><img data-mimg="sixty" alt=""></span><span class="ml">60秒アタック<small class="hd">60秒で何点？</small></span></button>
-        <button class="mtile" id="startBtn" data-tip="カラーHPがどれか30になるまで、どれだけ長く生き残れるか。時間がたつほど厳しくなる。壊した中身と生き残った時間から、サバイバルレートが決まる。記録あり・コンティニュー1回"><span class="mi"><img data-mimg="endless" alt=""></span><span class="ml">サバイバル<small class="hd">どこまで生き残れる？</small></span></button>
-        <button class="mtile" id="chalBtn" data-tip="毎週3つのお題：みんな同じ盤面・同じ条件で点数を競う。週間ランキングの順位でごほうび"><span class="mi"><img data-mimg="chal" alt=""></span><span class="ml">週のお題<small class="hd">毎週3つ</small></span></button>
-        <button class="mtile" id="easyBtn" data-tip="イージー・ノーマル・ハードで練習。CPUのお手本も見られる。記録なし"><span class="mi"><img data-mimg="practice" alt=""></span><span class="ml">練習<small class="hd">お手本つき</small></span></button>
-        <button class="mtile" id="rankBtn" data-tip="60秒アタックとサバイバルの順位を見る"><span class="mi"><img data-mimg="ranking" alt=""></span><span class="ml">ランキング<small class="hd">世界の順位</small></span></button>
-      </div>
-    </div>
     <!-- 遊び方ページ -->
     <div class="overlay hidden" id="town" role="dialog" aria-label="わたしの街">
       <div class="how-head">
@@ -7991,7 +7977,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.307';
+  const APP_VER = '0.9.308';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -12191,7 +12177,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       if (cc) askYes('預けるのを取り消して、品を戻しますか？<br><small>今日預けた数は戻りません。</small>', go); else go();
       return; }
   });
-  const FEAT_BTN = {ta: 'startBtn', town: 'townBtn', daily: 'dmBtn', chal: 'chalBtn', rank: 'rankBtn', online: 'vsBtn', forge: 'forgeBtn'};
+  const FEAT_BTN = {ta: 'startBtn', town: 'townBtn', daily: 'dmBtn', chal: 'chalBtn', rank: 'rankBtn', online: 'hubVsBtn', forge: 'forgeBtn', arena: 'olArenaBtn', chara: 'olCharaBtn'};
   Object.keys(FEAT_BTN).forEach(k => { const b = $(FEAT_BTN[k]); if (!b) return;
     b.addEventListener('click', e => { if (featOk(k)) return; e.preventDefault(); e.stopImmediatePropagation(); featLockMsg(k); }, true); });
   document.addEventListener('click', e => {
@@ -12615,7 +12601,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     howto: '73a4d64b5558976440aaed070d1f7a4e', ranking: 'b71c73e70346a871a33570f7971bd732'};
   document.querySelectorAll('#menu [data-mimg], .hub [data-mimg]').forEach(im => { const k = im.dataset.mimg === 'sound_on' && muted ? 'sound_off' : im.dataset.mimg; im.src = LOCAL_ART ? 'img/menu/' + k + '.webp' : blobU(MENU_BLOB[k]); });
   (() => {
-    const grid = $('menu'), tip = $('menuTip'), gbox = document.querySelector('#menu .mgrid');
+    const grid = $('menu'), tip = $('menuTip'), gbox = document.querySelector('#menu .menu-bottom');
     let timer = null, longed = false, cur = null;
     const hide = () => { tip.classList.add('hidden'); if (cur) cur.classList.remove('press'); cur = null; };
     grid.addEventListener('pointerdown', e => {
@@ -12635,21 +12621,45 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     grid.addEventListener('contextmenu', e => e.preventDefault());
     grid.addEventListener('click', e => { if (longed) { e.stopPropagation(); e.preventDefault(); longed = false; } }, true);
   })();
-  // ===== メニューのまとめ（2026-11-26 本人「アイコンが増えた。ストーリー・チャレンジにまとめる。サブメニューのページにしたら？」）=====
-  //   トップ：ストーリー・チャレンジ・対戦・ガチャ・ボックス・パス。中のボタンは今までと同じもの（id もそのまま）
-  //   中に何かあるとき（受け取り・新しい機能など）は、トップのボタンに赤い点
-  const HUBS = {hubStoryBtn: 'hubStory', hubChalBtn: 'hubChal'};
-  Object.keys(HUBS).forEach(b => $(b).addEventListener('click', () => { audio(); $(HUBS[b]).classList.remove('hidden'); hubDots(); }));
-  document.querySelectorAll('.hub [data-hubback]').forEach(b => b.addEventListener('click', () => b.closest('.hub').classList.add('hidden')));
-  const hubClose = () => document.querySelectorAll('.hub').forEach(h => h.classList.add('hidden'));
-  // ゲームが始まるボタンは、押したらサブメニューを閉じる（戻ってきたときはトップ）
-  ['sixtyBtn', 'startBtn'].forEach(id => $(id).addEventListener('click', () => setTimeout(() => { if (running) hubClose(); }, 50)));
+  // ===== メニューのまとめ（2026-11-26 本人「アイコンが増えた。まとめる。上と下はそのままで、まん中だけサブページに」）=====
+  //   トップ：ストーリー（大）・チャレンジ・対戦。ストーリーの中にガチャ・ボックス・パス・遠征・鍛冶屋・ショップ・ミケの店・わたしの街
+  //   中のボタンは今までと同じもの（id もそのまま）。中に何かあるとき（受け取り・新しい機能など）は、トップのボタンに赤い点
+  //   背景：ストーリーはトップと同じ・チャレンジはブロックが落ちてくる・対戦は対戦の絵
+  const MVIEW = {hubStoryBtn: 'story', hubChalBtn: 'chal', hubVsBtn: 'vs'}, MV_ID = {top: 'mvTop', story: 'mvStory', chal: 'mvChal', vs: 'mvVs'};
+  let mView = 'top';
+  function setMView(v){
+    mView = v; Object.keys(MV_ID).forEach(k => $(MV_ID[k]).classList.toggle('hidden', k !== v));
+    const m = $('menu'); ['story', 'chal', 'vs'].forEach(k => m.classList.toggle('v-' + k, k === v));
+    m.scrollTop = 0; mvFall(v === 'chal'); hubDots();
+  }
+  Object.keys(MVIEW).forEach(b => $(b).addEventListener('click', () => { audio(); setMView(MVIEW[b]); }));
+  document.querySelectorAll('[data-mvback]').forEach(b => b.addEventListener('click', () => setMView('top')));
   $('expdHubBtn').addEventListener('click', () => { if (!featOk('expd')) { featLockMsg('expd'); return; } openExpd(); });
+  // 対戦のサブページ：対戦の画面を、そのタブ・その場所で開く
+  function openOnlineAt(kind, view){ if (kind) { olKind = kind; save('ol_kind', kind); } openOnline(); if (view) { olView = view; drawOnline(); } }
+  $('olArenaBtn').addEventListener('click', () => openOnlineAt('auto'));
+  $('olCharaBtn').addEventListener('click', () => openOnlineAt('chara'));
+  $('olFrBtn').addEventListener('click', () => openOnlineAt(null, 'friend'));
+  $('olRankBtn').addEventListener('click', () => openOnlineAt(null, 'rank'));
+  $('olShopBtn').addEventListener('click', () => openOnlineAt(null, 'shop'));
+  $('olJoinBtn').addEventListener('click', () => openOnlineAt(null, 'join'));
+  // チャレンジの背景：ブロックが上から落ちてくる
+  let fallT = 0;
+  function mvFall(on){
+    let L = document.getElementById('mvFall');
+    if (!on) { if (L) L.remove(); clearInterval(fallT); return; }
+    if (L) return;
+    L = document.createElement('div'); L.id = 'mvFall'; $('menu').prepend(L);
+    const add = () => { if (!L.isConnected) return; const b = document.createElement('img'); b.src = 'img/menu/blk_' + 'rygbp'[Math.floor(Math.random() * 5)] + '.webp'; b.alt = '';
+      const sz = 34 + Math.random() * 38, d = 5 + Math.random() * 6; b.style.cssText = 'left:' + (Math.random() * 100) + '%;width:' + sz + 'px;height:' + sz + 'px;animation-duration:' + d + 's;--r:' + ((Math.random() - .5) * 220) + 'deg';
+      L.appendChild(b); setTimeout(() => b.remove(), d * 1000 + 100); };
+    for (let i = 0; i < 8; i++) setTimeout(add, i * 250); clearInterval(fallT); fallT = setInterval(add, 520);
+  }
   function hubDots(){
-    Object.keys(HUBS).forEach(b => { const h = $(HUBS[b]); if (!h) return;
-      let on = !!h.querySelector('.mtile.dot, .mtile .nbadge');
+    Object.keys(MVIEW).forEach(b => { const h = $(MV_ID[MVIEW[b]]); if (!h) return;
+      let on = !!h.querySelector('.mtile.dot, .mtile .nbadge, .mtile .frbadge:not([hidden])');
       if (b === 'hubStoryBtn') try { on = on || exData.active.some(a => exLeft(a) <= 0); } catch (_) {}
-      if (b === 'hubChalBtn') try { on = on || !(chState().best[dmOf(dmKey()).id]); } catch (_) {}   // 今日の崩しをまだやっていない
+      if (b === 'hubChalBtn') try { on = on || (featOk('daily') && !(chState().best[dmOf(dmKey()).id])); } catch (_) {}   // 今日の崩しをまだやっていない
       $(b).classList.toggle('dot', on); });
   }
   setInterval(() => { try { if (document.body.classList.contains('on-menu')) hubDots(); } catch(_) {} }, 3000); setTimeout(() => { try { hubDots(); } catch(_) {} }, 1500);
@@ -14833,7 +14843,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       if (step === 'story' || step === 'battle') {
         if (vis('box')) return show({target: () => $('boxBack'), text: '「‹ 戻る」で戻ろう。'});
         if (vis('gacha')) return show({target: () => $('gachaBack'), text: '「‹ 戻る」でトップに戻ろう。'});
-        if (!vis('story') && !vis('hubStory')) return show({target: () => $('hubStoryBtn'), text: 'いよいよ<b>ストーリーモード</b>！<br>「ストーリー」を押そう！'});
+        if (!vis('story') && !vis('mvStory')) return show({target: () => $('hubStoryBtn'), text: 'いよいよ<b>ストーリーモード</b>！<br>「ストーリー」を押そう！'});
         if (!vis('story')) return show({target: () => $('storyBtn'), text: '「<b>冒険に出る</b>」を押そう！<br><small>遠征・鍛冶屋・ショップもここにあるよ</small>'});
         // はじめての人は 1-1 を選んでもらう。案内をもう一度見ている人（もう進んでいる人）は、選んでいるステージのままでOK
         if (pickStage !== 0 && !storyClr.some(v => v > 0) && stageOpen(0)) return show({target: firstNode, text: '<b>ふつうルート</b>の最初のステージを選ぼう！'});
