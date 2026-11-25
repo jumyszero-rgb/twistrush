@@ -24,10 +24,21 @@ alpha[edge] = 255 * (1 - 0.85 * whiteness[edge])
 rgba = np.dstack([rgb.astype(np.uint8), alpha.clip(0, 255).astype(np.uint8)])
 nc, cl, st, cen = cv2.connectedComponentsWithStats(fg, connectivity=8)
 cells = {k: np.zeros((H, W), bool) for k in range(len(ids))}
+# 大きいかたまり（体）はマスで決める。小さいかけら（炎・玉・きらきら）は、いちばん近い体のものにする（となりのキャラのかけらが混ざらないように）
+boxes = {}
 for i in range(1, nc):
-    if st[i, cv2.CC_STAT_AREA] < 40: continue
+    if st[i, cv2.CC_STAT_AREA] < 5000: continue
     cx, cy = cen[i]; c = min(cols - 1, int(cx * cols / W)); r = min(rows - 1, int(cy * rows / H)); k = r * cols + c
-    if k < len(ids): cells[k] |= cl == i
+    if k >= len(ids): continue
+    cells[k] |= cl == i
+    x, y, w, h = st[i, 0], st[i, 1], st[i, 2], st[i, 3]
+    bx = boxes.get(k); boxes[k] = (x, y, x + w, y + h) if bx is None else (min(bx[0], x), min(bx[1], y), max(bx[2], x + w), max(bx[3], y + h))
+for i in range(1, nc):
+    a = st[i, cv2.CC_STAT_AREA]
+    if a < 40 or a >= 5000 or not boxes: continue
+    cx, cy = cen[i]
+    d = {k: np.hypot(max(b[0] - cx, 0, cx - b[2]), max(b[1] - cy, 0, cy - b[3])) for k, b in boxes.items()}
+    cells[min(d, key=d.get)] |= cl == i
 sheet = Image.new('RGBA', (cols * 200, rows * 200), (60, 60, 70, 255))
 for k, gid in enumerate(ids):
     if gid == '-' or not cells[k].any(): continue
