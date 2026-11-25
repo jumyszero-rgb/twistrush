@@ -6857,6 +6857,25 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       () => { syncRev = r.rev; save('sync_rev', String(syncRev)); applySave(r.data); },
       () => { syncRev = r.rev; save('sync_rev', String(syncRev)); syncUp(true); toast('この端末のデータをクラウドに保存しました'); });
   }
+  // ベータ版からの引き継ぎ（2026-11-26）：本番で、テスト版と同じGoogleなどでログインしたら、テスト版の進み具合をそのまま使える（1回だけ）
+  //   本番のデータがまだないときは自動で引き継ぐ。もう本番で遊んでいるときは、どちらにするか聞く
+  //   ゴールド・パス・ランキング・アリーナは引き継がない（サーバー側の別のデータ）。お礼は称号とゴールド
+  async function betaTry(me){
+    if (/^staging\./.test(location.hostname) || me.beta || load('beta_chk', '') === me.id) return false;
+    let b; try { b = await api('/api/beta/check'); } catch (e) { return false; }
+    if (!b || !b.found) { if (b) save('beta_chk', me.id); return false; }
+    const go = async () => {
+      try {
+        const r = await api('/api/beta/claim', {method: 'POST', body: '{}'});
+        if (!r.ok) throw new Error(r.error || '');
+        syncRev = r.rev; save('sync_rev', String(r.rev)); save('sync_acct', me.id); save('beta_thx', String(r.gift || 0));
+        applySave(r.data);
+      } catch (e) { toast((e && e.message) || '引き継げませんでした。もう一度ためしてください'); }
+    };
+    if (!b.hasSave && !(+load('uexp', '0') > 0)) { toast('ベータ版のデータを引き継いでいます…'); await go(); return true; }
+    askChoice('ベータ版で遊んだデータが見つかりました。<br>本番に引き継ぎますか？<br><small>いまの本番（この端末）のデータは、ベータ版のデータに置きかわります（元には戻せません）</small>', '引き継ぐ', '引き継がない', go, () => { save('beta_chk', me.id); toast('引き継ぎませんでした'); });
+    return false;
+  }
   async function acctRefresh(){
     if (!acctToken) { drawAcct(); return; }
     try {
@@ -6866,6 +6885,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       if (load('sync_acct', '') !== me.id) { syncRev = 0; save('sync_rev', '0'); save('sync_acct', me.id); }   // 別のアカウントに変わった
       gold = me.gold ? me.gold.total : 0; goldW = me.gold || null; refreshCoins();
       drawAcct();
+      if (me.beta && load('beta_thx', '')) { const g = load('beta_thx', ''); save('beta_thx', ''); setTimeout(() => askChoice('ベータ版のデータを引き継ぎました。<br>テストに協力してくれて、ありがとう！<br><small>お礼：称号「ベータテスター」・ゴールドコイン ' + g + '枚</small>', 'OK', 'とじる', () => {}, () => {}), 700); }
+      if (await betaTry(me)) return;
       const sv = await api('/api/save');
       if (!sv.rev) { await syncUp(true); if (window.__justLoggedIn) toast('ログインしました。この端末のデータをクラウドに保存しました'); }
       else if (sv.rev === syncRev) { if (syncDirty) syncUp(); }
@@ -6915,7 +6936,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     $('acctLogin').classList.toggle('hidden', !!acctToken);
     if (acctToken) {
       const lg = acct ? (acct.logins || []) : [];
-      st.textContent = acct ? 'ログイン中（' + (lg.length ? lg.map(x => ({google: 'Google', line: 'LINE', microsoft: 'Microsoft', dev: 'テスト', guest: 'ゲスト'})[x] || x).join('・') : 'ゲスト') + '）　アカウントID：' + acct.id : (err || 'ログイン中');
+      st.textContent = acct ? 'ログイン中（' + (lg.length ? lg.map(x => ({google: 'Google', line: 'LINE', microsoft: 'Microsoft', dev: 'テスト', guest: 'ゲスト'})[x] || x).join('・') : 'ゲスト') + '）　アカウントID：' + acct.id + (acct.beta ? '　🏅ベータテスター' : '') : (err || 'ログイン中');
       if (!srvLogins) { try { const r = await api('/api/ping'); srvLogins = r.logins || []; } catch (e) { srvLogins = []; } }
       let anyLink = false;
       document.querySelectorAll('[data-link]').forEach(b => { const on = !!acct && srvLogins.includes(b.dataset.link) && !lg.includes(b.dataset.link); b.classList.toggle('hidden', !on); anyLink = anyLink || on; });
@@ -7887,7 +7908,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   })();
   // 設定の保存と、押されているボタンの見た目
   // クラウドに送らないもの（この端末だけの設定・ログイン情報・サーバーが持つゴールドコイン）
-  var SYNC_SKIP = /^(acct_|sync_|vol_|api$|theme$|side$|gold$|pid$|pname$|lite$|liteauto$|did$|httab$)/;   // var：上の方の行から save() が呼ばれても大丈夫なように
+  var SYNC_SKIP = /^(acct_|sync_|vol_|api$|theme$|side$|gold$|pid$|pname$|lite$|liteauto$|did$|httab$|beta_thx$)/;   // var：上の方の行から save() が呼ばれても大丈夫なように
   var syncDirty = false;
   function save(k, v){ try { localStorage.setItem('twistrush.' + k, v); } catch(e) {} if (SYNC_SKIP && !SYNC_SKIP.test(k)) syncDirty = true; }
   function load(k, def){ try { return localStorage.getItem('twistrush.' + k) || def; } catch(e) { return def; } }
@@ -7977,7 +7998,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.308';
+  const APP_VER = '0.9.309';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');

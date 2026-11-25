@@ -66,7 +66,9 @@ const SCHEMA = [
   // 不具合報告・お問い合わせ（ゲームの中のフォームから）2026-11-19。見るときは Cloudflare の D1 で SELECT * FROM reports ORDER BY created_at DESC
   "CREATE TABLE IF NOT EXISTS reports ( id INTEGER PRIMARY KEY AUTOINCREMENT, account_id TEXT NOT NULL DEFAULT '', name TEXT NOT NULL DEFAULT '', cat TEXT NOT NULL, body TEXT NOT NULL, email TEXT NOT NULL DEFAULT '', meta TEXT NOT NULL DEFAULT '', ip TEXT NOT NULL DEFAULT '', status TEXT NOT NULL DEFAULT 'new', created_at INTEGER NOT NULL )",
   "CREATE INDEX IF NOT EXISTS idx_reports ON reports(created_at)",
-  "CREATE INDEX IF NOT EXISTS idx_reports_ip ON reports(ip, created_at)"
+  "CREATE INDEX IF NOT EXISTS idx_reports_ip ON reports(ip, created_at)",
+  // ベータ版からの引き継ぎ（2026-11-26）：本番のアカウントごとに1回。src はテスト版のログイン（provider:sub）で、同じベータのデータは1つのアカウントにしか入らない
+  "CREATE TABLE IF NOT EXISTS beta_claims ( account_id TEXT PRIMARY KEY, src TEXT NOT NULL UNIQUE, created_at INTEGER NOT NULL )"
   ];
 
 // ---------- 小さな道具 ----------
@@ -226,6 +228,61 @@ async function finishLogin(env, req, p, sub, name, ret, link) {
   if (!acc || acc.banned) return backTo(ret, { tr_error: 'banned' });
   await env.DB.prepare('UPDATE accounts SET last_login = ? WHERE id = ?').bind(t, accountId).run();
   return backTo(ret, { tr_token: await makeSession(env, accountId), tr_new: isNew ? '1' : '0', tr_p: p });
+}
+
+// ---------- ベータ版からの引き継ぎ（2026-11-26） ----------
+// テスト版（staging）で遊んだ人が、本番で同じGoogleなどでログインすると、進み具合（キャラ・装備・素材・ストーリー・シルバーなど）をそのまま使える
+// 引き継がないもの：ゴールド（テスト版の課金はテスト用のお金）・パス・ランキング・アリーナ（これらはサーバー側の別の表なので、セーブには入っていない）
+// お礼：称号「ベータテスター」と無償ゴールド BETA_GIFT 枚（1回だけ）
+const BETA_GIFT = 500;
+const sameKey = (a, b) => { a = String(a || ''); b = String(b || ''); if (!a || a.length !== b.length) return false; let d = 0; for (let i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i); return d === 0; };
+async function betaExport(env, req) {
+  if (env.BETA_EXPORT !== '1' || !env.BETA_KEY) return new Response('not found', { status: 404 });
+  if (!sameKey(req.headers.get('X-Beta-Key'), env.BETA_KEY)) return new Response('forbidden', { status: 403 });
+  const b = await req.json().catch(() => ({}));
+  const until = Number(env.BETA_UNTIL) || 0;   // 入れておくと、その時刻より後に作ったテスト版のアカウントは対象外
+  for (const it of (Array.isArray(b.ids) ? b.ids : []).slice(0, 6)) {
+    const pv = String(it && it.p || ''), sub = String(it && it.sub || '');
+    if (!pv || !sub || pv === 'guest' || pv === 'dev') continue;
+    const r = await env.DB.prepare('SELECT a.id, a.name, a.created_at, a.banned, s.rev, s.data, s.updated_at FROM identities i JOIN accounts a ON a.id = i.account_id LEFT JOIN saves s ON s.account_id = a.id WHERE i.provider = ? AND i.sub = ?').bind(pv, sub).first();
+    if (!r || r.banned || !r.data) continue;
+    if (until && r.created_at > until) continue;
+    return Response.json({ found: true, src: pv + ':' + sub, name: r.name, since: r.created_at, updated: r.updated_at, data: JSON.parse(r.data) });
+  }
+  return Response.json({ found: false });
+}
+async function betaFetch(env, me) {
+  if (!env.BETA_SRC || !env.BETA_KEY) return null;
+  const { results } = await env.DB.prepare("SELECT provider, sub FROM identities WHERE account_id = ? AND provider NOT IN ('guest', 'dev')").bind(me.id).all();
+  if (!results || !results.length) return null;
+  const r = await fetch(env.BETA_SRC.replace(/\/+$/, '') + '/api/beta/export', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Beta-Key': env.BETA_KEY }, body: JSON.stringify({ ids: results.map(x => ({ p: x.provider, sub: x.sub })) }) });
+  if (!r.ok) return null;
+  const j = await r.json().catch(() => null);
+  return j && j.found ? j : null;
+}
+async function betaCheck(env, me) {
+  if (await env.DB.prepare('SELECT 1 FROM beta_claims WHERE account_id = ?').bind(me.id).first()) return { claimed: true };
+  const j = await betaFetch(env, me).catch(() => null);
+  if (!j) return { found: false };
+  if (await env.DB.prepare('SELECT 1 FROM beta_claims WHERE src = ?').bind(j.src).first()) return { found: false, used: true };
+  const sv = await env.DB.prepare('SELECT rev FROM saves WHERE account_id = ?').bind(me.id).first();
+  return { found: true, name: j.name, updated: j.updated, hasSave: !!sv, gift: BETA_GIFT };
+}
+async function betaClaim(env, me) {
+  if (await env.DB.prepare('SELECT 1 FROM beta_claims WHERE account_id = ?').bind(me.id).first()) return { error: 'もう引き継ぎました', status: 409 };
+  const j = await betaFetch(env, me).catch(() => null);
+  if (!j) return { error: 'ベータ版のデータが見つかりませんでした', status: 404 };
+  const t = nowSec();
+  const ins = await env.DB.prepare('INSERT OR IGNORE INTO beta_claims (account_id, src, created_at) VALUES (?, ?, ?)').bind(me.id, j.src, t).run();
+  if (!ins.meta.changes) return { error: 'このベータ版のデータは、ほかのアカウントに引き継ぎ済みです', status: 409 };
+  const cur = await env.DB.prepare('SELECT rev FROM saves WHERE account_id = ?').bind(me.id).first();
+  const rev = (cur ? cur.rev : 0) + 1, data = JSON.stringify(j.data || {});
+  if (data.length > SAVE_MAX_BYTES) return { error: 'セーブが大きすぎます', status: 413 };
+  const q = [env.DB.prepare("INSERT INTO saves (account_id, rev, data, device, updated_at) VALUES (?, ?, ?, 'beta', ?) ON CONFLICT(account_id) DO UPDATE SET rev = excluded.rev, data = excluded.data, device = excluded.device, updated_at = excluded.updated_at").bind(me.id, rev, data, t)];
+  if (me.name === 'ななし' && j.name && j.name !== 'ななし') q.push(env.DB.prepare('UPDATE accounts SET name = ? WHERE id = ?').bind(cleanName(j.name), me.id));
+  await env.DB.batch(q);
+  await addGold(env, me.id, 'free', BETA_GIFT, 'beta:thanks', 'beta-thanks');
+  return { ok: true, rev, updated: t, data: j.data, gift: BETA_GIFT, gold: await walletOf(env, me.id) };
 }
 
 // ---------- ログインが必要なAPI ----------
@@ -404,6 +461,8 @@ async function api(env, req, url) {
   // Stripe の通知（署名を確かめてから、買ったものを渡す）。ログインなしで届く
   if (p === '/api/pay/webhook' && M === 'POST') return payWebhook(env, req);
   if (p === '/api/sv/rate' && M === 'POST') { const b = await req.json().catch(() => ({})); const r = svRate(b.st); return r ? json(env, req, r) : fail(env, req, '記録の値が不正です'); }
+  // ベータ版のデータを本番のサーバーにだけ渡す（テスト用サーバーだけで動く・合い言葉 BETA_KEY はCloudflareのシークレット）
+  if (p === '/api/beta/export' && M === 'POST') return betaExport(env, req);
   if (p === '/api/ping') return json(env, req, { ok: true, now: nowSec(), pay: !!env.STRIPE_SECRET_KEY, logins: Object.keys(PROVIDERS).filter(k => PROVIDERS[k].id(env)).concat(env.DEV_LOGIN === '1' ? ['dev'] : []) });
 
   // 毎日の利用者（端末ごとの乱数ID。名前やアカウントとはつながない）＋ 機能のオン・オフ
@@ -456,8 +515,10 @@ async function api(env, req, url) {
   if (p === '/api/me' && M === 'GET') {
     const { results } = await env.DB.prepare('SELECT provider FROM identities WHERE account_id = ?').bind(me.id).all();
     const sv = await env.DB.prepare('SELECT rev, updated_at, device FROM saves WHERE account_id = ?').bind(me.id).first();
-    return json(env, req, { id: me.id, name: me.name, since: me.created_at, logins: (results || []).map(r => r.provider), gold: await walletOf(env, me.id), save: sv ? { rev: sv.rev, updated: sv.updated_at, device: sv.device } : null });
+    return json(env, req, { id: me.id, name: me.name, since: me.created_at, logins: (results || []).map(r => r.provider), gold: await walletOf(env, me.id), save: sv ? { rev: sv.rev, updated: sv.updated_at, device: sv.device } : null, beta: !!(await env.DB.prepare('SELECT 1 FROM beta_claims WHERE account_id = ?').bind(me.id).first()) });
   }
+  if (p === '/api/beta/check' && M === 'GET') return json(env, req, await betaCheck(env, me));
+  if (p === '/api/beta/claim' && M === 'POST') { const r = await betaClaim(env, me); return r.error ? fail(env, req, r.error, r.status || 400) : json(env, req, r); }
   if (p === '/api/me/name' && M === 'POST') {
     const b = await req.json().catch(() => ({}));
     const name = cleanName(b.name);

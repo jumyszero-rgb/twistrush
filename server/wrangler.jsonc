@@ -22,7 +22,9 @@
     "DEV_LOGIN": "0",
     // ゲスト登録（ログインなしでランキングに載る）。本番でログインだけにするときは "0" にする
     "GUEST_SIGNUP": "1",
-    "DUMMY_RANK": "0"
+    "DUMMY_RANK": "0",
+    // ベータ版からの引き継ぎ：テスト用サーバーからデータをもらう（合い言葉 BETA_KEY はシークレットで入れる）
+    "BETA_SRC": "https://api-staging.twistrush.com"
   },
   // テスト用サーバー（staging ブランチ → api-staging.twistrush.com）。データベースも本番とは別
   // 公開コマンド：npx wrangler deploy --env staging
@@ -44,6 +46,8 @@
         "DUMMY_RANK": "0",
         // テスト環境だけ：端末のゴールド（テスト用）での人気投票を受け付ける
         "VOTE_TEST": "1",
+        // ベータ版からの引き継ぎ：本番のサーバーにだけ、テスト版のセーブを渡す（合い言葉 BETA_KEY はシークレットで入れる）
+        "BETA_EXPORT": "1",
         "PAY_TEST": "1"
       }
     }
