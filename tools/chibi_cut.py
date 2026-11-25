@@ -9,7 +9,8 @@ n, lab = cv2.connectedComponents(wh.astype(np.uint8), connectivity=4)
 border = set(np.unique(np.concatenate([lab[0], lab[-1], lab[:, 0], lab[:, -1]]))) - {0}
 bg = np.isin(lab, list(border))
 # 大きい白の穴（キャラのすき間）も背景：面積が大きく、ほぼ真っ白
-for i in range(1, n):
+import os
+for i in range(1 if os.environ.get('KEEP_HOLES') != '1' else n, n):   # KEEP_HOLES=1：白い雲など、キャラの中の白を残す
     if i in border: continue
     m = lab == i
     if m.sum() > 2500 and rgb[m].min(axis=1).mean() > 245: bg |= m
