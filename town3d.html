@@ -3,170 +3,178 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>わたしの街 3D試作</title>
 <style>
-  html,body{margin:0;height:100%;overflow:hidden;background:#8fd3f4;font-family:system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:#fff;-webkit-user-select:none;user-select:none;touch-action:none}
+  html,body{margin:0;height:100%;overflow:hidden;background:#7fc8e8;font-family:system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:#fff;-webkit-user-select:none;user-select:none;touch-action:none}
   canvas{display:block}
-  .bar{position:fixed;left:0;right:0;top:0;display:flex;align-items:center;gap:8px;padding:10px 12px;padding-top:max(10px,env(safe-area-inset-top));background:linear-gradient(rgba(20,12,40,.6),rgba(20,12,40,0));pointer-events:none}
-  .bar b{font-size:17px;flex:1;text-shadow:0 1px 3px rgba(0,0,0,.5)}
-  .bar button{pointer-events:auto;border:0;border-radius:999px;padding:7px 12px;font:inherit;font-weight:800;font-size:13px;color:#3a2a00;background:#ffd34d;box-shadow:0 2px 0 #c98a00}
-  .hint{position:fixed;left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));padding:9px 12px;border-radius:14px;background:rgba(20,12,40,.7);font-size:12.5px;line-height:1.6;text-align:center;pointer-events:none}
-  #fps{position:fixed;right:10px;bottom:70px;font-size:11px;background:rgba(0,0,0,.45);padding:2px 6px;border-radius:6px}
+  .bar{position:fixed;left:0;right:0;top:0;display:flex;align-items:center;gap:8px;padding:10px 12px;padding-top:max(10px,env(safe-area-inset-top));background:linear-gradient(rgba(20,12,40,.55),rgba(20,12,40,0));pointer-events:none}
+  .bar b{font-size:16px;flex:1;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+  .bar button{pointer-events:auto;border:0;border-radius:999px;padding:7px 11px;font:inherit;font-weight:800;font-size:12.5px;color:#3a2a00;background:#ffd34d;box-shadow:0 2px 0 #c98a00}
+  .hint{position:fixed;left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));padding:8px 12px;border-radius:14px;background:rgba(20,12,40,.6);font-size:12px;line-height:1.6;text-align:center;pointer-events:none}
+  #fps{position:fixed;right:10px;bottom:64px;font-size:11px;background:rgba(0,0,0,.4);padding:2px 6px;border-radius:6px}
   .say{position:fixed;transform:translate(-50%,-100%);padding:4px 10px;border-radius:12px;background:#fff;color:#4a3520;font-size:12px;font-weight:800;white-space:nowrap;pointer-events:none;box-shadow:0 2px 6px rgba(0,0,0,.25)}
 </style></head><body>
-<div class="bar"><b>🏝 わたしの街（3D試作）</b><button id="tm">🕒 時間</button></div>
-<div class="hint">ドラッグで移動・2本指（ホイール）で拡大／建物・木・地面は3D、キャラは2Dのちび絵の板（ペーパーマリオ風）</div>
+<div class="bar"><b>🏝 わたしの街（3D試作2）</b><button id="ts">ぼかし ON</button><button id="tm">🕒 時間</button></div>
+<div class="hint">ドラッグで移動・2本指（ホイール）で拡大／地面は3D、家・木・キャラは画像AIの絵を立たせている（ジオラマ風）</div>
 <div id="fps"></div>
 <script type="importmap">{"imports":{"three":"./lib/three.module.min.js"}}</script>
 <script type="module">
-/* 2026-11-25 3Dの街の試作（本人「建物・木・地面は3D、キャラは2Dのちび絵を板にして立たせる。ペーパーマリオ風」）
-   ・奥が丸く下がる地平線（シェーダーで頂点を曲げる）・トゥーンのぬり＋ふちどり・斜め上の固定カメラ
-   ・建物と木は仮にコードで作った形。本番はAIで3D化してBlenderで軽くしたモデル（GLB）に差し替える */
+/* 2026-11-25 3Dの街の試作2（本人「しょぼい」→ 画像AIの絵を立たせる方式に）
+   ・地面＝3D（丸い島・砂浜・海。道と川と花は地面の絵に描く）・家/木/キャラ＝画像AIの絵の板（絵と同じ45度のカメラ）
+   ・ミニチュア風のぼかし（ティルトシフト）・やわらかい影・奥が丸く下がる地平線・時間で色が変わる */
 import * as THREE from 'three';
-const renderer = new THREE.WebGLRenderer({antialias: true});
-renderer.setPixelRatio(Math.min(2, devicePixelRatio || 1)); renderer.setSize(innerWidth, innerHeight);
-renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-document.body.prepend(renderer.domElement);
+const renderer = new THREE.WebGLRenderer({antialias: false});
+const DPR = Math.min(2, devicePixelRatio || 1);
+renderer.setPixelRatio(DPR); renderer.setSize(innerWidth, innerHeight); document.body.prepend(renderer.domElement);
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(32, innerWidth / innerHeight, 0.1, 200);
-addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); });
-
-// ---- 丸い地平線：全部の材質に「カメラから遠いほど下げる」を入れる
-const BEND = { value: 0.004 };
+const camera = new THREE.PerspectiveCamera(30, innerWidth / innerHeight, 0.5, 200);
+const PITCH = Math.PI / 4;
+const BEND = {value: 0.0035};
 function bend(m){ m.onBeforeCompile = sh => { sh.uniforms.uBend = BEND; sh.vertexShader = 'uniform float uBend;\n' + sh.vertexShader.replace('#include <project_vertex>', '#include <project_vertex>\n  mvPosition.y -= mvPosition.z * mvPosition.z * uBend;\n  gl_Position = projectionMatrix * mvPosition;'); }; return m; }
-const grad = (() => { const d = new Uint8Array([90, 170, 255]); const t = new THREE.DataTexture(d, 3, 1, THREE.RedFormat); t.minFilter = t.magFilter = THREE.NearestFilter; t.needsUpdate = true; return t; })();
-const toon = c => bend(new THREE.MeshToonMaterial({color: c, gradientMap: grad}));
-const lineMat = bend(new THREE.MeshBasicMaterial({color: 0x3b2a1e, side: THREE.BackSide}));
-function outline(mesh, k = 1.06){ const o = new THREE.Mesh(mesh.geometry, lineMat); o.scale.setScalar(k); mesh.add(o); return mesh; }
 
-// ---- 光
-const hemi = new THREE.HemisphereLight(0xffffff, 0x88aa66, 0.9); scene.add(hemi);
-const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(12, 20, 8); sun.castShadow = true;
-sun.shadow.mapSize.set(1024, 1024); Object.assign(sun.shadow.camera, {left: -22, right: 22, top: 22, bottom: -22, near: 1, far: 60}); scene.add(sun); scene.add(sun.target);
+// ---- 島の形・川・道
+const R = a => 15 + 1.3 * Math.sin(3 * a + .4) + .8 * Math.cos(5 * a + 1) + .4 * Math.sin(8 * a);
+function shapeOf(off){ const s = new THREE.Shape(); for (let i = 0; i <= 120; i++) { const a = i / 120 * Math.PI * 2, r = R(a) + off; const x = Math.cos(a) * r, y = Math.sin(a) * r; i ? s.lineTo(x, y) : s.moveTo(x, y); } return s; }
+const inIsland = (x, z, m = 0) => Math.hypot(x, z) < R(Math.atan2(-z, x)) - m;
+const RIVER = []; for (let i = 0; i <= 40; i++) { const t = i / 40; RIVER.push([-6 + Math.sin(t * 5) * 2.2, -20 + t * 40]); }
+const BRIDGE = {x: -6 + Math.sin(.5 * 5) * 2.2, z: 0};
+const PATHS = [[[BRIDGE.x + 2, 0], [2, 1], [6, 2.5], [10, 3]], [[2, 1], [3, -4], [4, -9]], [[6, 2.5], [7, 7], [6, 11]], [[BRIDGE.x - 2, 0], [-10, -1], [-12, 3]]];
+const distSeg = (px, pz, ax, az, bx, bz) => { const dx = bx - ax, dz = bz - az, t = Math.max(0, Math.min(1, ((px - ax) * dx + (pz - az) * dz) / (dx * dx + dz * dz))); return Math.hypot(px - ax - dx * t, pz - az - dz * t); };
+const distLine = (px, pz, L) => { let d = 1e9; for (let i = 1; i < L.length; i++) d = Math.min(d, distSeg(px, pz, L[i - 1][0], L[i - 1][1], L[i][0], L[i][1])); return d; };
+const onRiver = (x, z) => distLine(x, z, RIVER) < 1.3 && !(Math.abs(z - BRIDGE.z) < 1.1);
 
-// ---- 地面：島（2段の高さ・川・砂浜）
-const N = 40, S = 1;                                   // 40×40マス
-const H = [];                                          // 0海 1砂 2草(下) 3草(上の段) 4川
-for (let z = 0; z < N; z++) { H.push([]); for (let x = 0; x < N; x++) {
-  const dx = (x - N / 2 + .5) / (N / 2), dz = (z - N / 2 + .5) / (N / 2), d = Math.hypot(dx, dz * 1.05) + Math.sin(x * .7) * .02 + Math.cos(z * .9) * .02;
-  H[z].push(d > .95 ? 0 : d > .84 ? 1 : (dz < -.25 && d < .78) ? 3 : 2); } }
-for (let z = 0; z < N; z++) { const x = Math.round(12 + Math.sin(z / 4) * 2); for (const k of [x, x + 1]) if (H[z][k] >= 2) H[z][k] = 4; }
-const tileY = t => t === 0 ? -0.6 : t === 1 ? 0 : t === 2 ? 0.15 : t === 3 ? 1.15 : -0.25;
-const COL = {1: 0xf3e2a6, 2: 0x7cc95a, 3: 0x86d264, 4: 0x6fb6d0};
-const box = new THREE.BoxGeometry(1, 1, 1);
-const groundMats = {}; [1, 2, 3, 4].forEach(k => groundMats[k] = toon(COL[k]));
-const cliffMat = toon(0xb98a5a);
-const counts = {1: 0, 2: 0, 3: 0, 4: 0}; for (const r of H) for (const t of r) if (t) counts[t]++;
-const inst = {}; [1, 2, 3, 4].forEach(k => { inst[k] = new THREE.InstancedMesh(box, groundMats[k], counts[k]); inst[k].receiveShadow = true; scene.add(inst[k]); counts[k] = 0; });
-const cliffs = []; const m4 = new THREE.Matrix4();
-const wx = x => (x - N / 2 + .5) * S, wz = z => (z - N / 2 + .5) * S;
-for (let z = 0; z < N; z++) for (let x = 0; x < N; x++) { const t = H[z][x]; if (!t) continue;
-  const top = tileY(t), hgt = top + 1; m4.compose(new THREE.Vector3(wx(x), top - hgt / 2, wz(z)), new THREE.Quaternion(), new THREE.Vector3(S, hgt, S)); inst[t].setMatrixAt(counts[t]++, m4);
-  if (t === 3) cliffs.push([x, z]); }
-// 上の段のがけ（土の色の側面）
-const cl = new THREE.InstancedMesh(box, cliffMat, cliffs.length); cliffs.forEach(([x, z], i) => { m4.compose(new THREE.Vector3(wx(x), 0.65, wz(z)), new THREE.Quaternion(), new THREE.Vector3(S * 1.001, 0.98, S * 1.001)); cl.setMatrixAt(i, m4); }); cl.receiveShadow = true; scene.add(cl);
-// 坂（上の段への階段）
-const stairX = 22; for (let i = 0; i < 3; i++) { const st = new THREE.Mesh(box, toon(0xd9c08c)); st.scale.set(2, .35 * (i + 1), .8); st.position.set(wx(stairX) + .5, .15 + .35 * (i + 1) / 2, wz(14) + 1.2 - i * .8); st.receiveShadow = true; scene.add(st); }
-// 海
-const sea = new THREE.Mesh(new THREE.PlaneGeometry(260, 260, 60, 60), bend(new THREE.MeshToonMaterial({color: 0x4fb6d8, gradientMap: grad, transparent: true, opacity: .95})));
-sea.rotation.x = -Math.PI / 2; sea.position.y = -0.35; scene.add(sea);
-// 橋
-const bridge = new THREE.Mesh(box, toon(0xb07a46)); bridge.scale.set(3.2, .2, 1.6); bridge.position.set(wx(13) - .5, .25, wz(20)); bridge.castShadow = true; scene.add(bridge);
-for (const z of [-0.8, 0.8]) { const rail = new THREE.Mesh(box, toon(0x8a5a30)); rail.scale.set(3.2, .3, .12); rail.position.set(wx(13) - .5, .5, wz(20) + z); scene.add(rail); }
-const walk = (x, z) => { const t = H[z] && H[z][x]; return t === 1 || t === 2 || (x === 12 || x === 13) && z === 20; };
+// ---- 地面の絵（草のむら・道の石・川・橋・花）
+const TS = 2048, SPAN = 40; const tc = document.createElement('canvas'); tc.width = tc.height = TS; const g = tc.getContext('2d');
+const P = (x, z) => [(x / SPAN + .5) * TS, (z / SPAN + .5) * TS];
+let sd = 11; const rnd = () => (sd = (sd * 1664525 + 1013904223) >>> 0) / 4294967296;
+g.fillStyle = '#7ccd5c'; g.fillRect(0, 0, TS, TS);
+for (let i = 0; i < 2600; i++) { const r = 6 + rnd() * 40; g.fillStyle = ['rgba(98,180,72,.35)', 'rgba(140,214,98,.35)', 'rgba(110,196,80,.3)'][i % 3]; g.beginPath(); g.ellipse(rnd() * TS, rnd() * TS, r, r * .7, rnd() * 3, 0, 7); g.fill(); }
+for (let i = 0; i < 9000; i++) { const x = rnd() * TS, y = rnd() * TS; g.strokeStyle = rnd() < .5 ? 'rgba(70,150,55,.55)' : 'rgba(170,230,120,.5)'; g.lineWidth = 1.4; g.beginPath(); g.moveTo(x, y); g.lineTo(x + (rnd() - .5) * 4, y - 5 - rnd() * 5); g.stroke(); }
+function stroke(L, w, c){ g.strokeStyle = c; g.lineWidth = w; g.lineCap = g.lineJoin = 'round'; g.beginPath(); L.forEach(([x, z], i) => { const [a, b] = P(x, z); i ? g.lineTo(a, b) : g.moveTo(a, b); }); g.stroke(); }
+const U = TS / SPAN;
+PATHS.forEach(L => { stroke(L, 1.9 * U, '#cdb07a'); stroke(L, 1.5 * U, '#dcc391'); });
+PATHS.forEach(L => { for (let i = 1; i < L.length; i++) { const n = Math.ceil(Math.hypot(L[i][0] - L[i - 1][0], L[i][1] - L[i - 1][1]) * 1.6); for (let k = 0; k < n; k++) { const t = k / n, x = L[i - 1][0] + (L[i][0] - L[i - 1][0]) * t + (rnd() - .5) * .9, z = L[i - 1][1] + (L[i][1] - L[i - 1][1]) * t + (rnd() - .5) * .9;
+  const [a, b] = P(x, z); g.fillStyle = '#b9b3a6'; g.beginPath(); g.ellipse(a, b, .32 * U, .24 * U, rnd() * 3, 0, 7); g.fill(); g.fillStyle = '#d8d2c4'; g.beginPath(); g.ellipse(a - 2, b - 3, .26 * U, .18 * U, rnd() * 3, 0, 7); g.fill(); } } });
+stroke(RIVER, 3.1 * U, '#9a7a4e'); stroke(RIVER, 2.7 * U, '#58b6d8'); stroke(RIVER, 1.6 * U, '#6cc8e8');
+for (let i = 0; i < 60; i++) { const k = Math.floor(rnd() * (RIVER.length - 1)); const [a, b] = P(RIVER[k][0] + (rnd() - .5), RIVER[k][1] + rnd()); g.fillStyle = 'rgba(255,255,255,.55)'; g.fillRect(a, b, 10 + rnd() * 16, 3); }
+{ const [a, b] = P(BRIDGE.x, BRIDGE.z); g.save(); g.translate(a, b); g.fillStyle = '#7a4f2a'; g.fillRect(-2.4 * U, -1 * U, 4.8 * U, 2 * U); for (let i = 0; i < 12; i++) { g.fillStyle = i % 2 ? '#c08a52' : '#b07a46'; g.fillRect(-2.3 * U + i * .4 * U, -.9 * U, .36 * U, 1.8 * U); } g.fillStyle = '#5e3a1e'; g.fillRect(-2.4 * U, -1.05 * U, 4.8 * U, .18 * U); g.fillRect(-2.4 * U, .87 * U, 4.8 * U, .18 * U); g.restore(); }
+for (let i = 0; i < 700; i++) { const x = (rnd() - .5) * SPAN, z = (rnd() - .5) * SPAN; if (!inIsland(x, z, .8) || onRiver(x, z) || PATHS.some(L => distLine(x, z, L) < 1.1)) continue;
+  const [a, b] = P(x, z), c = ['#ff6b8a', '#ffd34d', '#ffffff', '#b98cff', '#ff9f43'][i % 5]; for (let k = 0; k < 5; k++) { g.fillStyle = c; g.beginPath(); g.arc(a + Math.cos(k * 1.26) * 4, b + Math.sin(k * 1.26) * 4, 3.2, 0, 7); g.fill(); } g.fillStyle = '#ffe9a8'; g.beginPath(); g.arc(a, b, 2.4, 0, 7); g.fill(); }
+const gTex = new THREE.CanvasTexture(tc); gTex.colorSpace = THREE.SRGBColorSpace; gTex.anisotropy = 4; gTex.repeat.set(1 / SPAN, -1 / SPAN); gTex.offset.set(.5, .5);
+const sc = document.createElement('canvas'); sc.width = sc.height = 256; const s2 = sc.getContext('2d'); s2.fillStyle = '#f2dfa4'; s2.fillRect(0, 0, 256, 256); for (let i = 0; i < 1500; i++) { s2.fillStyle = rnd() < .5 ? 'rgba(200,170,110,.25)' : 'rgba(255,250,220,.4)'; s2.fillRect(rnd() * 256, rnd() * 256, 2, 2); }
+const sTex = new THREE.CanvasTexture(sc); sTex.colorSpace = THREE.SRGBColorSpace; sTex.wrapS = sTex.wrapT = THREE.RepeatWrapping; sTex.repeat.set(.25, .25);
+// ---- 島（ふちが丸い）・砂浜・海
+const lam = o => bend(new THREE.MeshLambertMaterial(o));
+const top = new THREE.Mesh(new THREE.ExtrudeGeometry(shapeOf(0), {depth: 1, bevelEnabled: true, bevelThickness: .35, bevelSize: .4, bevelSegments: 4, curveSegments: 1}), [lam({map: gTex}), lam({color: 0x9b7048})]);
+top.rotation.x = -Math.PI / 2; top.position.y = -.75; scene.add(top);
+const beach = new THREE.Mesh(new THREE.ExtrudeGeometry(shapeOf(2.4), {depth: 1, bevelEnabled: true, bevelThickness: .3, bevelSize: .8, bevelSegments: 4, curveSegments: 1}), [lam({map: sTex}), lam({color: 0xd9c08a})]);
+beach.rotation.x = -Math.PI / 2; beach.position.y = -1.55; scene.add(beach);
+const seaM = new THREE.ShaderMaterial({uniforms: {t: {value: 0}, deep: {value: new THREE.Color(0x2f8fc0)}, shal: {value: new THREE.Color(0x6fd6e8)}, night: {value: 0}},
+  vertexShader: 'varying vec2 vP; void main(){ vec4 w = modelMatrix * vec4(position,1.); vP = w.xz; vec4 mv = viewMatrix * w; mv.y -= mv.z*mv.z*0.0035; gl_Position = projectionMatrix * mv; }',
+  fragmentShader: `uniform float t; uniform vec3 deep, shal; uniform float night; varying vec2 vP;
+    float R(float a){ return 15. + 1.3*sin(3.*a+.4) + .8*cos(5.*a+1.) + .4*sin(8.*a); }
+    void main(){ float a = atan(-vP.y, vP.x); float d = length(vP) - (R(a) + 3.0);
+      vec3 c = mix(shal, deep, smoothstep(0., 9., d));
+      float sp = sin(vP.x*1.7 + t*1.3) * sin(vP.y*2.1 - t*1.1); c += smoothstep(.82, 1., sp) * .22;
+      float foam = smoothstep(.9, .0, abs(d - .35 - .25*sin(t*1.5 + a*9.))); c = mix(c, vec3(1.), foam * .75);
+      c *= mix(1., .38, night); gl_FragColor = vec4(c, 1.);
+      #include <colorspace_fragment>
+    }`});
+const sea = new THREE.Mesh(new THREE.PlaneGeometry(220, 220), seaM); sea.rotation.x = -Math.PI / 2; sea.position.y = -1.0; scene.add(sea);
+const hemi = new THREE.HemisphereLight(0xffffff, 0x9fbf80, 1.1); scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xffffff, 1.5); sun.position.set(-10, 20, 12); scene.add(sun);
+const GY = .6;                                             // 草の上の高さ
 
-// ---- 建物（仮の形）
-const blocked = new Set(); const key = (x, z) => x + ',' + z;
-function house(x, z, wall, roof, sign, big){
-  const g = new THREE.Group(), w = big ? 3 : 2.2, h = big ? 2 : 1.5, y0 = tileY(H[z][x]);
-  const body = outline(new THREE.Mesh(box, toon(wall))); body.scale.set(w, h, w * .9); body.position.y = h / 2; body.castShadow = body.receiveShadow = true; g.add(body);
-  const rg = new THREE.CylinderGeometry(0, w * .82, h * .8, 4, 1); const r = outline(new THREE.Mesh(rg, toon(roof)), 1.05); r.rotation.y = Math.PI / 4; r.position.y = h + h * .4; r.castShadow = true; g.add(r);
-  const door = new THREE.Mesh(box, toon(0x8a5a30)); door.scale.set(.5, .8, .05); door.position.set(0, .4, w * .45 + .01); g.add(door);
-  for (const sx of [-1, 1]) { const win = new THREE.Mesh(box, bend(new THREE.MeshBasicMaterial({color: 0xbfe6ff}))); win.scale.set(.42, .38, .05); win.position.set(sx * w * .3, h * .62, w * .45 + .01); win.userData.win = true; g.add(win); }
-  if (sign) { const c = document.createElement('canvas'); c.width = c.height = 128; const cx = c.getContext('2d'); cx.font = '96px system-ui'; cx.textAlign = 'center'; cx.textBaseline = 'middle'; cx.fillText(sign, 64, 70);
-    const sp = new THREE.Mesh(new THREE.PlaneGeometry(.8, .8), bend(new THREE.MeshBasicMaterial({map: new THREE.CanvasTexture(c), transparent: true, alphaTest: .1}))); sp.position.set(0, h + .1, w * .46 + .3); sp.userData.bill = true; g.add(sp); }
-  g.position.set(wx(x) + .5, y0, wz(z) + .5); scene.add(g);
-  const n = big ? 3 : 2; for (let a = -1; a < n - 1; a++) for (let b = -1; b < n - 1; b++) blocked.add(key(x + a + 1, z + b + 1));
-  return g;
-}
-const HOUSES = [house(19, 18, 0xfff3dc, 0xe0565a, '🏠', true), house(24, 22, 0xfff7e8, 0x4fa8ff, '🛒'), house(15, 24, 0xf4e1c4, 0x8a5a3c, '🍺'),
-  house(27, 15, 0xfff0f6, 0xff8fc0, '🐾'), house(20, 9, 0xf2f2f7, 0x6c5ce7, '🏰', true), house(7, 23, 0xe9d8b8, 0x5f8a3c, '🏹')];
+// ---- 絵の板
+const loader = new THREE.TextureLoader();
+const radial = (c0, c1) => { const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d'); const gr = x.createRadialGradient(64, 64, 0, 64, 64, 64); gr.addColorStop(0, c0); gr.addColorStop(1, c1); x.fillStyle = gr; x.fillRect(0, 0, 128, 128); return new THREE.CanvasTexture(c); };
+const shadowM = bend(new THREE.MeshBasicMaterial({map: radial('rgba(0,0,0,.4)', 'rgba(0,0,0,0)'), transparent: true, depthWrite: false}));
+const sprites = [], TEX = {};
+function tex(url, crop){ const k = url + (crop ? '#c' : ''); if (TEX[k]) return TEX[k]; const t = loader.load(url); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; if (crop) t.repeat.set(1, .5); return TEX[k] = t; }
+function billboard(url, x, z, h, aspect, opt = {}){
+  const m = bend(new THREE.MeshBasicMaterial({map: tex(url, opt.crop), transparent: true, depthWrite: false}));
+  const geo = new THREE.PlaneGeometry(h * aspect, h); geo.translate(0, h / 2, 0);
+  const mesh = new THREE.Mesh(geo, m); mesh.rotation.x = -PITCH * .35;
+  const sw = h * aspect * (opt.sw || .9), sh = new THREE.Mesh(new THREE.PlaneGeometry(sw, sw * .45), shadowM); sh.rotation.x = -Math.PI / 2; sh.position.y = .02;
+  const grp = new THREE.Group(); grp.add(sh); grp.add(mesh); grp.position.set(x, GY + (opt.y0 || 0), z); if (opt.flip) mesh.scale.x = -1; scene.add(grp);
+  const s = Object.assign({grp, mesh, sh, mat: m, x, z, h}, opt); sprites.push(s); return s; }
+const HOUSES = [[3, -1, 5.2], [9, 6.5, 4.6], [-12.5, 1.5, 4.4], [1.5, -8.5, 4.4], [11, -3, 4.2], [-9, -8, 4.2]];
+const blockers = [];
+HOUSES.forEach(([x, z, h], i) => { billboard('img/town3d/house1.webp', x, z, h, 455 / 512, {flip: i % 2 === 1, sw: .8, kind: 'house', y0: -.12}); blockers.push([x, z - .4, h * .42]); });
+for (let i = 0, n = 0; i < 600 && n < 30; i++) { const x = (rnd() - .5) * 32, z = (rnd() - .5) * 32; if (!inIsland(x, z, 1.2) || distLine(x, z, RIVER) < 2 || PATHS.some(L => distLine(x, z, L) < 1.4) || blockers.some(([bx, bz, r]) => Math.hypot(x - bx, z - bz) < r + 1.2)) continue;
+  const h = 2.0 + rnd() * 1.6; billboard('img/town3d/tree1.webp', x, z, h, 433 / 512, {flip: rnd() < .5, sw: .55, kind: 'tree'}); blockers.push([x, z, .55]); n++; }
+const glowTex = radial('rgba(255,220,130,.9)', 'rgba(255,200,100,0)');
+const glows = []; [].forEach(s => { [[-.28, .36], [.28, .36], [0, .62]].forEach(([u, v]) => { const m = new THREE.Sprite(new THREE.SpriteMaterial({map: glowTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0}));
+  m.scale.setScalar(s.h * .55); m.position.set(u * s.h * .9, v * s.h, .3); s.mesh.add(m); glows.push(m); }); });
 
-// ---- 木（まるい葉っぱ＋果物）
-const trunkG = new THREE.CylinderGeometry(.12, .16, .8, 6), leafG = new THREE.IcosahedronGeometry(.62, 1), fruitG = new THREE.SphereGeometry(.09, 8, 6);
-const trunkM = toon(0x8a5a30), leafM = toon(0x3f9a45), leafM2 = toon(0x55b85a), fruitM = toon(0xff5a5a);
-let seed = 7; const rnd = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296;
-for (let i = 0; i < 90; i++) { const x = Math.floor(rnd() * N), z = Math.floor(rnd() * N), t = H[z][x]; if ((t !== 2 && t !== 3) || blocked.has(key(x, z)) || (x >= 18 && x <= 25 && z >= 17 && z <= 25)) continue;
-  const g = new THREE.Group(), s = .8 + rnd() * .5; const tr = new THREE.Mesh(trunkG, trunkM); tr.position.y = .4; tr.castShadow = true; g.add(tr);
-  const lf = outline(new THREE.Mesh(leafG, rnd() < .5 ? leafM : leafM2), 1.07); lf.position.y = 1.15; lf.castShadow = true; g.add(lf);
-  if (rnd() < .35) for (let k = 0; k < 3; k++) { const f = new THREE.Mesh(fruitG, fruitM); f.position.set(Math.cos(k * 2.1) * .5, 1 + k * .12, Math.sin(k * 2.1) * .5); g.add(f); }
-  g.scale.setScalar(s); g.position.set(wx(x), tileY(t), wz(z)); g.rotation.y = rnd() * 6; scene.add(g); blocked.add(key(x, z)); }
-// 花
-const flG = new THREE.SphereGeometry(.07, 6, 4); ['#ff6b8a', '#ffd34d', '#ffffff', '#b98cff'].forEach(c => { const m = toon(new THREE.Color(c)); const im = new THREE.InstancedMesh(flG, m, 40); let n = 0;
-  for (let i = 0; i < 400 && n < 40; i++) { const x = rnd() * N, z = rnd() * N, t = H[z | 0][x | 0]; if (t !== 2 && t !== 3) continue; m4.makeTranslation(wx(x) - .5, tileY(t) + .05, wz(z) - .5); im.setMatrixAt(n++, m4); } im.count = n; scene.add(im); });
-
-// ---- 住人：2Dのちび絵を板にして立たせる（いまは立ち絵の下半分＝全身の正方形を使う。本番は img/walk/ のちび）
+// ---- 住人（2Dのちび絵の板・歩く）
 const IDS = ['ichigo', 'mocha', 'rinpan', 'kagura', 'ciel', 'chiyo', 'windy', 'nefer', 'busy', 'camilla'];
-const SAY = ['いい天気！', 'お店に行こうかな', 'ふぁ〜', 'パズルしたい！', '♪', 'こんにちは！', 'お腹すいた…', 'いい街だね'];
-const loader = new THREE.TextureLoader(), plane = new THREE.PlaneGeometry(1.5, 1.5), blobG = new THREE.CircleGeometry(.35, 16);
-const blobM = bend(new THREE.MeshBasicMaterial({color: 0x000000, transparent: true, opacity: .22, depthWrite: false}));
-const walkers = [];
-function free(x, z){ return walk(x, z) && !blocked.has(key(x, z)); }
-IDS.forEach(id => {
-  const tex = loader.load('img/stand/' + id + '.webp'); tex.colorSpace = THREE.SRGBColorSpace; tex.repeat.set(1, .5); tex.offset.set(0, 0);
-  const m = bend(new THREE.MeshBasicMaterial({map: tex, transparent: true, alphaTest: .35, side: THREE.DoubleSide}));
-  const card = new THREE.Mesh(plane, m); card.castShadow = true; const blob = new THREE.Mesh(blobG, blobM); blob.rotation.x = -Math.PI / 2;
-  const g = new THREE.Group(); g.add(card); g.add(blob); scene.add(g); card.position.y = .75; blob.position.y = .02;
-  let x, z; do { x = Math.floor(rnd() * N); z = Math.floor(rnd() * N); } while (!free(x, z));
-  walkers.push({g, card, x: wx(x), z: wz(z), tx: wx(x), tz: wz(z), wait: rnd() * 2, ph: rnd() * 6, face: 1, sp: .9 + rnd() * .5, el: null, sayT: 0});
-});
-function target(w){ for (let i = 0; i < 30; i++) { const x = Math.round(w.x / S + N / 2 - .5 + (rnd() - .5) * 10), z = Math.round(w.z / S + N / 2 - .5 + (rnd() - .5) * 10);
-  if (free(x, z) && pathOk(w.x, w.z, wx(x), wz(z))) { w.tx = wx(x); w.tz = wz(z); return; } } w.wait = 1; }
-function pathOk(ax, az, bx, bz){ const n = Math.ceil(Math.hypot(bx - ax, bz - az) * 3); for (let i = 1; i <= n; i++) { const x = Math.round((ax + (bx - ax) * i / n) / S + N / 2 - .5), z = Math.round((az + (bz - az) * i / n) / S + N / 2 - .5); if (!free(x, z)) return false; } return true; }
-function heightAt(px, pz){ const x = Math.round(px / S + N / 2 - .5), z = Math.round(pz / S + N / 2 - .5); const t = H[z] && H[z][x]; return t ? Math.max(0, tileY(t)) : 0; }
+const SAY = ['いい天気！', 'お店に行こうかな', 'ふぁ〜', 'パズルしたい！', '♪', 'こんにちは！', 'りんごおいしそう', 'いい街だね'];
+const free = (x, z) => inIsland(x, z, 1) && !onRiver(x, z) && !blockers.some(([bx, bz, r]) => Math.hypot(x - bx, z - bz) < r);
+const walkers = IDS.map(id => { let x, z; do { x = (rnd() - .5) * 26; z = (rnd() - .5) * 26; } while (!free(x, z));
+  const s = billboard('img/stand/' + id + '.webp', x, z, 1.9, 1, {crop: 1, sw: .5, kind: 'char'}); return Object.assign(s, {tx: x, tz: z, wait: rnd() * 2, ph: rnd() * 6, face: 1, sp: 1 + rnd() * .6}); });
+function pickT(w){ for (let i = 0; i < 30; i++) { const x = w.x + (rnd() - .5) * 9, z = w.z + (rnd() - .5) * 9; let ok = free(x, z); for (let k = 1; ok && k <= 12; k++) ok = free(w.x + (x - w.x) * k / 12, w.z + (z - w.z) * k / 12); if (ok) { w.tx = x; w.tz = z; return; } } w.wait = 1; }
 
-// ---- カメラ（斜め上から・固定の角度）
-const cam = {tx: 1, tz: 2, dist: 34};
-function placeCam(){ const pitch = 0.92; camera.position.set(cam.tx, Math.sin(pitch) * cam.dist, cam.tz + Math.cos(pitch) * cam.dist); camera.lookAt(cam.tx, 0, cam.tz);
-  sun.position.set(cam.tx + 12, 20, cam.tz + 8); sun.target.position.set(cam.tx, 0, cam.tz); }
+// ---- 仕上げ（ミニチュア風のぼかし・色・まわりを少し暗く）
+let rt; const mkRT = () => { if (rt) rt.dispose(); rt = new THREE.WebGLRenderTarget(innerWidth * DPR, innerHeight * DPR, {samples: 4}); }; mkRT();
+const post = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({uniforms: {tD: {value: null}, res: {value: new THREE.Vector2()}, tint: {value: new THREE.Vector3(1, 1, 1)}},
+  vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0., 1.); }',
+  fragmentShader: `uniform sampler2D tD; uniform vec2 res; uniform vec3 tint; varying vec2 vUv;
+    void main(){ float b = smoothstep(.14, .5, abs(vUv.y - .52)) * 6.0; vec4 c = vec4(0.);
+      for (int i = 0; i < 16; i++){ float a = float(i) * 2.39996; float r = sqrt(float(i) / 16.) * b; c += texture2D(tD, vUv + vec2(cos(a), sin(a)) * r / res); }
+      vec3 col = c.rgb / 16.; float l = dot(col, vec3(.299,.587,.114)); col = mix(vec3(l), col, 1.12) * tint;
+      col *= mix(.8, 1., smoothstep(.95, .35, length((vUv - .5) * vec2(1., 1.2)))); gl_FragColor = vec4(col, 1.);
+      #include <colorspace_fragment>
+    }`}));
+const postScene = new THREE.Scene(), postCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1); postScene.add(post);
+let tilt = true; document.getElementById('ts').onclick = e => { tilt = !tilt; e.target.textContent = 'ぼかし ' + (tilt ? 'ON' : 'OFF'); };
+addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); mkRT(); });
+
 // ---- 時間
-const TIMES = [{n: '朝', sky: 0xffd9b0, sun: 0xffe2b8, si: 1.2, hi: .8}, {n: '昼', sky: 0x8fd3f4, sun: 0xffffff, si: 1.6, hi: .9}, {n: '夕方', sky: 0xff9a6b, sun: 0xffb070, si: 1.1, hi: .6}, {n: '夜', sky: 0x1b2450, sun: 0x8090ff, si: .35, hi: .35}];
+const TIMES = [{n: '朝', sky: 0xffd9b8, tint: [1.05, .98, .92], spr: 0xfff2e6, hi: 1, si: 1.2, night: .1, glow: 0},
+  {n: '昼', sky: 0x7fc8e8, tint: [1, 1, 1], spr: 0xffffff, hi: 1.1, si: 1.5, night: 0, glow: 0},
+  {n: '夕方', sky: 0xff9e70, tint: [1.08, .9, .8], spr: 0xffd2b0, hi: .85, si: 1, night: .25, glow: .4},
+  {n: '夜', sky: 0x16204a, tint: [.75, .82, 1.1], spr: 0x6c78b8, hi: .45, si: .25, night: 1, glow: 1}];
 let ti = (h => h >= 5 && h < 9 ? 0 : h < 16 ? 1 : h < 19 ? 2 : 3)(new Date().getHours());
-function setTime(){ const T = TIMES[ti]; scene.background = new THREE.Color(T.sky); scene.fog = new THREE.Fog(T.sky, 30, 60); sun.color.set(T.sun); sun.intensity = T.si; hemi.intensity = T.hi;
-  HOUSES.forEach(h => h.traverse(o => { if (o.userData.win) o.material.color.set(ti === 3 ? 0xffe08a : 0xbfe6ff); })); document.getElementById('tm').textContent = '🕒 ' + T.n; }
+function setTime(){ const T = TIMES[ti]; scene.background = new THREE.Color(T.sky); scene.fog = new THREE.Fog(T.sky, 45, 90); hemi.intensity = T.hi; sun.intensity = T.si;
+  sprites.forEach(s => s.mat.color.set(T.spr)); seaM.uniforms.night.value = T.night; post.material.uniforms.tint.value.set(...T.tint); glows.forEach(gw => gw.material.opacity = T.glow);
+  document.getElementById('tm').textContent = '🕒 ' + T.n; }
 document.getElementById('tm').onclick = () => { ti = (ti + 1) % 4; setTime(); }; setTime();
 
-// ---- 動かす
+// ---- ループ
+const cam = {tx: 0, tz: 1, dist: 36};
 const clock = new THREE.Clock(); let fr = 0, ft = 0; const v = new THREE.Vector3();
 function loop(){
   const dt = Math.min(.05, clock.getDelta()), t = clock.elapsedTime;
   walkers.forEach(w => {
-    w.sayT -= dt; if (w.el && w.sayT <= 0) { w.el.remove(); w.el = null; }
-    let moving = false;
-    if (w.wait > 0) { w.wait -= dt; if (w.wait <= 0) target(w); }
+    w.sayT = (w.sayT || 0) - dt; if (w.el && w.sayT <= 0) { w.el.remove(); w.el = null; }
+    let mv = false;
+    if (w.wait > 0) { w.wait -= dt; if (w.wait <= 0) pickT(w); }
     else { const dx = w.tx - w.x, dz = w.tz - w.z, d = Math.hypot(dx, dz);
       if (d < .05) { w.wait = 1 + rnd() * 3; if (rnd() < .3) { w.say = SAY[Math.floor(rnd() * SAY.length)]; w.sayT = 2.5; } }
-      else { const st = Math.min(d, w.sp * dt); w.x += dx / d * st; w.z += dz / d * st; moving = true; if (Math.abs(dx) > .01) w.face = dx > 0 ? 1 : -1; } }
-    const y = heightAt(w.x, w.z), bob = moving ? Math.abs(Math.sin(t * 9 + w.ph)) * .12 : Math.sin(t * 2 + w.ph) * .02;
-    w.g.position.set(w.x, y, w.z); w.card.position.y = .75 + bob;
-    w.card.rotation.y = 0; w.card.scale.x += ((w.face) - w.card.scale.x) * Math.min(1, dt * 12);       // 向きを変えるときに板がくるっと回る（ペーパーマリオ風）
+      else { const st = Math.min(d, w.sp * dt); w.x += dx / d * st; w.z += dz / d * st; mv = true; if (Math.abs(dx) > .01) w.face = dx > 0 ? 1 : -1; } }
+    w.grp.position.set(w.x, GY, w.z); w.mesh.position.y = mv ? Math.abs(Math.sin(t * 9 + w.ph)) * .14 : 0;
+    w.mesh.scale.x += (w.face - w.mesh.scale.x) * Math.min(1, dt * 12);
     if (w.sayT > 0) { if (!w.el) { w.el = document.createElement('div'); w.el.className = 'say'; w.el.textContent = w.say; document.body.appendChild(w.el); }
-      v.set(w.x, y + 1.7, w.z).project(camera); w.el.style.left = (v.x * .5 + .5) * innerWidth + 'px'; w.el.style.top = (-v.y * .5 + .5) * innerHeight + 'px'; }
+      v.set(w.x, GY + 2.2, w.z).project(camera); w.el.style.left = (v.x * .5 + .5) * innerWidth + 'px'; w.el.style.top = (-v.y * .5 + .5) * innerHeight + 'px'; }
   });
-  const pa = sea.geometry.attributes.position; for (let i = 0; i < pa.count; i++) pa.setZ(i, Math.sin(t * 1.2 + pa.getX(i) * .3 + pa.getY(i) * .2) * .05); pa.needsUpdate = true;
-  placeCam(); renderer.render(scene, camera);
+  sprites.forEach(s => { const o = Math.round((s.grp.position.z + 50) * 100); s.mesh.renderOrder = 10000 + o; s.sh.renderOrder = 1; });   // 影は先に・絵は奥から順に
+  sprites.forEach((s, i) => { if (s.kind === 'tree') s.mesh.rotation.z = Math.sin(t * 1.3 + i) * .012; });
+  seaM.uniforms.t.value = t;
+  camera.position.set(cam.tx, Math.sin(PITCH) * cam.dist, cam.tz + Math.cos(PITCH) * cam.dist); camera.lookAt(cam.tx, 0, cam.tz);
+  if (tilt) { renderer.setRenderTarget(rt); renderer.render(scene, camera); renderer.setRenderTarget(null); post.material.uniforms.tD.value = rt.texture; post.material.uniforms.res.value.set(innerWidth, innerHeight); renderer.render(postScene, postCam); }
+  else renderer.render(scene, camera);
   fr++; if (t - ft > 1) { document.getElementById('fps').textContent = fr + ' fps'; fr = 0; ft = t; }
   requestAnimationFrame(loop);
 }
 loop();
-// ---- 操作：ドラッグで移動・ピンチ／ホイールで拡大
-const pts = new Map(); let drag = null, pinch = null;
-const el = renderer.domElement;
+// ---- 操作
+const pts = new Map(); let drag = null, pinch = null; const el = renderer.domElement;
 el.addEventListener('pointerdown', e => { el.setPointerCapture(e.pointerId); pts.set(e.pointerId, [e.clientX, e.clientY]);
   if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch = {d: Math.hypot(a[0] - b[0], a[1] - b[1]), z: cam.dist}; drag = null; } else drag = {x: e.clientX, y: e.clientY, tx: cam.tx, tz: cam.tz}; });
 el.addEventListener('pointermove', e => { if (!pts.has(e.pointerId)) return; pts.set(e.pointerId, [e.clientX, e.clientY]);
-  if (pinch && pts.size === 2) { const [a, b] = [...pts.values()]; cam.dist = Math.max(12, Math.min(40, pinch.z * pinch.d / Math.hypot(a[0] - b[0], a[1] - b[1]))); return; }
-  if (drag) { const k = cam.dist / innerHeight * 1.1; cam.tx = Math.max(-18, Math.min(18, drag.tx - (e.clientX - drag.x) * k)); cam.tz = Math.max(-16, Math.min(20, drag.tz - (e.clientY - drag.y) * k * 1.4)); } });
+  if (pinch && pts.size === 2) { const [a, b] = [...pts.values()]; cam.dist = Math.max(16, Math.min(60, pinch.z * pinch.d / Math.hypot(a[0] - b[0], a[1] - b[1]))); return; }
+  if (drag) { const k = cam.dist / innerHeight * .55; cam.tx = Math.max(-14, Math.min(14, drag.tx - (e.clientX - drag.x) * k)); cam.tz = Math.max(-14, Math.min(14, drag.tz - (e.clientY - drag.y) * k * 1.4)); } });
 const up = e => { pts.delete(e.pointerId); if (pts.size < 2) pinch = null; if (!pts.size) drag = null; };
 el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
-el.addEventListener('wheel', e => { e.preventDefault(); cam.dist = Math.max(12, Math.min(40, cam.dist * (e.deltaY > 0 ? 1.1 : .9))); }, {passive: false});
+el.addEventListener('wheel', e => { e.preventDefault(); cam.dist = Math.max(16, Math.min(60, cam.dist * (e.deltaY > 0 ? 1.1 : .9))); }, {passive: false});
 </script>
 </body></html>
