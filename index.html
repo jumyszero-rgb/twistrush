@@ -8000,7 +8000,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.311';
+  const APP_VER = '0.9.312';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -10050,7 +10050,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       return b + add;
     });
   }
-  const unitStats = u => { const b = statsOf(ciOf(u), u.lv, evoOf(u)); try { const w = gearBonus(u), pc = eqPctOf(eqItemsOf(u), u); return b.map((v, k) => Math.round((v + w[k]) * (1 + pc[k] / 100))); } catch(_) { return b; } };
+  const unitStats = u => { const b = statsOf(ciOf(u), u.lv, evoOf(u)).map((v, k) => v + ((u.tr && u.tr[k]) | 0)); /* 試練場の＋（2026-11-26） */ try { const w = gearBonus(u), pc = eqPctOf(eqItemsOf(u), u); return b.map((v, k) => Math.round((v + w[k]) * (1 + pc[k] / 100))); } catch(_) { return b; } };
   // ---- チーム（1人目がメイン）。4つまで保存して切りかえられる ----
   let teams = loadJ('teams', null), teamNo = +load('teamno', '0') || 0;
   if (!Array.isArray(teams) || teams.length !== 4) teams = [0, 1, 2, 3].map(() => [null, null, null, null]);   // 最初は空。自分で選んで入れる
@@ -11589,8 +11589,15 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     petshop:{n: 'ペットショップ', i: '🐾', apt: 'cha', d: 'ペットをお迎えできる。肉をあげると育って、街にボーナス', one: true},
     // 2026-11-26 本人「街でも（進化素材を）作れるようにすれば良い」：少しずつ進化の結晶ができる。Lv5になると進化の宝玉もときどき
     alchemy:{n: '錬金工房', i: '⚗️', apt: 'tec', d: '進化の結晶が少しずつできる（Lv5で進化の宝玉もときどき）。家Lv3から建てられて、キャラを置いているあいだだけ動く', evo: 0.02, one: true, needHome: 3, needCrew: true},   // 2026-11-26 本人「ある程度の条件は必要」
+    // 2026-11-26 本人「キャラのレベルを上げる道場、ステータスに+をつける試練場」：置いたキャラだけが育つ（8時間まで・ほかの建物と同じ）
+    dojo:   {n: '道場', i: '🥋', apt: 'pow', d: '置いたキャラに経験値が入る（レベル上限まで）。家Lv2から', train: 'xp', one: true, needHome: 2, needCrew: true},
+    trial:  {n: '試練場', i: '⛩', apt: 'pol', d: '置いたキャラのステータスに＋がつく（試練場のレベルで上限が上がる）。家Lv4から', train: 'tr', one: true, needHome: 4, needCrew: true},
   };
-  const TB_ORDER = ['castle', 'house', 'farm', 'shop', 'tavern', 'lumber', 'iron', 'hunter', 'casino', 'petshop', 'alchemy'];
+  const TB_ORDER = ['castle', 'house', 'farm', 'shop', 'tavern', 'lumber', 'iron', 'hunter', 'casino', 'petshop', 'alchemy', 'dojo', 'trial'];
+  //   道場：1人あたり 1時間に 25×Lv×(置いたキャラの向き) の経験値（Lv5でふつう1回の戦い1〜2回ぶん/時間）
+  //   試練場：1人あたり 1時間に 0.05×Lv の「＋」（Lv1で20時間に1つ・Lv5で4時間に1つ）。＋は得意なステータスから順にふえる。1つのステータスは 4×Lv まで（Lv5で+20）
+  const TR_XP = 25, TR_PT = 0.05, trCap = L => 4 * L;
+  const TR_ORD = {hp: [0, 2, 1, 3], atk: [1, 3, 0, 2], def: [2, 0, 1, 3], spd: [3, 1, 0, 2]};   // 得意なステータスから（0体力・1攻撃・2防御・3スピード）
   const famsOf = b => [].concat(TB[b].mat || []);
   // ペット（このゲームだけの子）：お迎え＝シルバー＋肉、肉をあげて Lv1〜10。ボーナスは Lv×2%（全部のペットが効く）
   const PETS = [
@@ -11635,13 +11642,14 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     let silver = 0; if (b.silver === 'tax') silver = townPop() * 0.6 * (1 + 0.25 * (L - 1)) * m * (1 + petBonus('luck')); else if (b.silver) silver = b.silver * L * m;
     if (x.b === 'shop' || x.b === 'tavern') silver *= 1 + petBonus('biz'); if (x.b === 'casino') silver *= 1 + petBonus('luck');
     const pm = x.b === 'hunter' ? 1 + petBonus('hunt') : 1 + petBonus('mat');
-    return {silver, mat: b.mat ? 0.5 * L * m * pm : 0, meat: b.meat ? b.meat * L * m * pm : 0, evo: b.evo ? b.evo * L * m : 0, evog: b.evo && L >= 5 ? b.evo * .25 * m : 0};
+    return {silver, mat: b.mat ? 0.5 * L * m * pm : 0, meat: b.meat ? b.meat * L * m * pm : 0, evo: b.evo ? b.evo * L * m : 0, evog: b.evo && L >= 5 ? b.evo * .25 * m : 0, xp: b.train === 'xp' ? TR_XP * L * m : 0, tr: b.train === 'tr' ? TR_PT * L : 0};
   }
   function townPending(){                                    // まだ受け取っていない分（8時間まで）
     const bk = town.bank || {silver: 0, mats: {}}; let silver = bk.silver || 0; const mats = Object.assign({}, bk.mats || {}), now = Date.now();
     town.p.forEach(x => { if (!x || lvNow(x) < 1) return; const from = x.done && x.done > (x.t || 0) ? x.done : (x.t || now);   // 工事中の時間は数えない
       const h = Math.min(TOWN_CAP_H, Math.max(0, (now - from) / 36e5)), r = perHour(x);
-      silver += r.silver * h; if (r.mat) mats[x.b] = (mats[x.b] || 0) + r.mat * h; if (r.meat) mats._meat = (mats._meat || 0) + r.meat * h; if (r.evo) mats._evo = (mats._evo || 0) + r.evo * h; if (r.evog) mats._evog = (mats._evog || 0) + r.evog * h; });
+      silver += r.silver * h; if (r.mat) mats[x.b] = (mats[x.b] || 0) + r.mat * h; if (r.meat) mats._meat = (mats._meat || 0) + r.meat * h; if (r.evo) mats._evo = (mats._evo || 0) + r.evo * h; if (r.evog) mats._evog = (mats._evog || 0) + r.evog * h;
+      if (r.xp || r.tr) x.crew.filter(unitOf).forEach(uid => { const k = (r.xp ? '_xp:' : '_tr:') + uid; mats[k] = (mats[k] || 0) + (r.xp || r.tr) * h; }); });
     return {silver: Math.floor(silver), mats};
   }
   function townClaim(){
@@ -11650,6 +11658,13 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (s > 0) { addCoins(s); town.got += s; got.push('シルバー ' + s.toLocaleString()); }
     Object.keys(pd.mats).forEach(b => { const n = Math.floor(pd.mats[b]); if (n < 1) return;
       if (b === '_meat') { town.meat = (town.meat || 0) + n; got.push('🍖肉 ×' + n); return; }
+      if (b.startsWith('_xp:')) { const u = unitOf(b.slice(4)); if (!u) return; const cap = capOf(u), lv0 = u.lv; let lv = u.lv, exp = (u.exp || 0) + n;
+        while (lv < cap && exp >= expNeed(lv)) { exp -= expNeed(lv); lv++; } if (lv >= cap) exp = Math.min(exp, expNeed(lv) - 1);
+        u.lv = lv; u.exp = exp; saveUnits(); got.push('🥋' + evoName(u) + (lv > lv0 ? ' LV' + lv : ' 経験値+' + n)); return; }
+      if (b.startsWith('_tr:')) { const u = unitOf(b.slice(4)); if (!u) return; const tx = town.p.find(p => p && p.b === 'trial'), cap = trCap(tx ? Math.max(1, lvNow(tx)) : 1);
+        u.tr = (u.tr || [0, 0, 0, 0]).slice(0, 4); const ord = TR_ORD[CHAR_STAT[u.id] ? CHAR_STAT[u.id].type : 'hp'] || [0, 1, 2, 3]; let add = 0;
+        for (let k = 0; k < n; k++) { const tot = u.tr.reduce((a, v) => a + v, 0), j = ord.map((_, q) => ord[(tot + q) % 4]).find(i => u.tr[i] < cap); if (j == null) break; u.tr[j]++; add++; }
+        if (add) { saveUnits(); got.push('⛩' + evoName(u) + ' ＋' + add); } return; }
       if (b === '_evo' || b === '_evog') { const k = b === '_evo' ? 'evo_c' : 'evo_g'; giveItem(k, n); got.push(EX_MAT[k][1] + EX_MAT[k][0] + ' ×' + n); return; }
       const fs = famsOf(b), cnt = {}; for (let k = 0; k < n; k++) { const f = fs[Math.floor(Math.random() * fs.length)], t = Math.min(tMatTier(Math.max(...town.p.filter(p => p && p.b === b).map(lvNow))), Math.random() < 0.7 ? 0 : Math.random() < 0.75 ? 1 : 2); giveItem('m_' + f + '_' + t, 1); cnt[f] = (cnt[f] || 0) + 1; }
       Object.keys(cnt).forEach(f => got.push(MAT_FAM[f].i + MAT_FAM[f].n + ' ×' + cnt[f])); });
@@ -11670,7 +11685,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   function drawTown(){
     const pd = townPending(), today = dmKey(), got = town.day === today ? town.got : 0, cap = tDayCap(homeLv()), cs = crewSet();
     let h = '<div class="twhead"><div><b>🏡 わたしの街</b><span>家 Lv' + homeLv() + '・人口 ' + townPop().toLocaleString() + '人</span></div>' +
-      '<button class="twclaim" data-tw="claim">受け取る<small>🪙' + Math.min(pd.silver, Math.max(0, cap - got)).toLocaleString() + Object.keys(pd.mats).map(b => Math.floor(pd.mats[b]) ? '・' + (b === '_meat' ? '🍖' : b === '_evo' ? '💠' : b === '_evog' ? '🔮' : MAT_FAM[famsOf(b)[0]].i) + Math.floor(pd.mats[b]) : '').join('') + '</small></button></div>' +
+      '<button class="twclaim" data-tw="claim">受け取る<small>🪙' + Math.min(pd.silver, Math.max(0, cap - got)).toLocaleString() + Object.keys(pd.mats).filter(b => !/^_(xp|tr):/.test(b)).map(b => Math.floor(pd.mats[b]) ? '・' + (b === '_meat' ? '🍖' : b === '_evo' ? '💠' : b === '_evog' ? '🔮' : MAT_FAM[famsOf(b)[0]].i) + Math.floor(pd.mats[b]) : '').join('') + (Object.keys(pd.mats).some(b => /^_xp:/.test(b) && pd.mats[b] >= 1) ? '・🥋' : '') + (Object.keys(pd.mats).some(b => /^_tr:/.test(b) && pd.mats[b] >= 1) ? '・⛩' : '') + '</small></button></div>' +
       '<div class="twcap">今日のシルバー ' + got.toLocaleString() + ' / ' + cap.toLocaleString() + '　<small>閉じているあいだも' + TOWN_CAP_H + '時間ぶんまでたまる</small></div>' +
       '<div class="twgrid">' + town.p.map((x, i) => {
         if (!plotOk(i)) return '<div class="twp lock">🔒</div>';
@@ -11687,7 +11702,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     } else if (x) {
       const b = TB[x.b], r = perHour(x), bld = isBuilding(x), maxLv = x.b === 'home' ? TOWN_MAXLV : Math.min(TOWN_MAXLV, homeLv());
       h += '<div class="twpanel"><h4>' + b.i + ' ' + b.n + ' <span>Lv' + Math.max(1, lvNow(x)) + (bld ? '（Lv' + x.lv + 'に工事中・あと' + tLeft(x) + '）' : '') + '</span></h4><p class="twd">' + b.d + '</p>' +
-        '<p class="twd">' + (b.needCrew && !x.crew.some(unitOf) ? '⚠ キャラを置くと動きます　' : '') + (b.pop ? '人口 +' + Math.round(b.pop * Math.max(0, lvNow(x)) * crewMul(x)) + '人　' : '') + (r.silver ? '🪙 ' + Math.round(r.silver).toLocaleString() + ' / 時間　' : '') + (r.mat ? famsOf(x.b).map(f => MAT_FAM[f].i).join('') + ' ' + r.mat.toFixed(1) + '個 / 時間　' : '') + (r.meat ? '🍖 ' + r.meat.toFixed(1) + '個 / 時間' : '') + (r.evo ? '💠 ' + (r.evo * 24).toFixed(1) + '個 / 日' : '') + (r.evog ? '　🔮 ' + (r.evog * 24).toFixed(1) + '個 / 日' : '') + (x.b === 'home' ? '使える土地 ' + plotsOpen() + 'か所・建物はLv' + homeLv() + 'まで' : '') + '</p>' +
+        '<p class="twd">' + (b.needCrew && !x.crew.some(unitOf) ? '⚠ キャラを置くと動きます　' : '') + (b.pop ? '人口 +' + Math.round(b.pop * Math.max(0, lvNow(x)) * crewMul(x)) + '人　' : '') + (r.silver ? '🪙 ' + Math.round(r.silver).toLocaleString() + ' / 時間　' : '') + (r.mat ? famsOf(x.b).map(f => MAT_FAM[f].i).join('') + ' ' + r.mat.toFixed(1) + '個 / 時間　' : '') + (r.meat ? '🍖 ' + r.meat.toFixed(1) + '個 / 時間' : '') + (r.evo ? '💠 ' + (r.evo * 24).toFixed(1) + '個 / 日' : '') + (r.evog ? '　🔮 ' + (r.evog * 24).toFixed(1) + '個 / 日' : '') + (r.xp ? '📈 経験値 ' + Math.round(r.xp) + ' / 時間（1人）' : '') + (r.tr ? '➕ 約' + Math.round(1 / r.tr) + '時間ごとに＋1（1人・1つのステータスは＋' + trCap(lvNow(x)) + 'まで）' : '') + (x.b === 'home' ? '使える土地 ' + plotsOpen() + 'か所・建物はLv' + homeLv() + 'まで' : '') + '</p>' +
         '<h5>運営するキャラ（3人まで・向いている：' + TAPT[b.apt] + '）<small>育てるほど生産が上がる</small></h5><div class="twcrew">' +
         [0, 1, 2].map(k => { const u = unitOf(x.crew[k]); return u ? '<button class="twc" data-twoff="' + k + '"><span class="tic" data-ci="' + ciOf(u) + '"></span><b>' + evoName(u) + '</b><small>' + '★'.repeat(aptStars(aptOf(u, b.apt))) + '</small></button>'
           : '<button class="twc add" data-twadd="' + k + '">＋ 置く</button>'; }).join('') + '</div>';
@@ -12867,7 +12882,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       '<div class="dexp">' + (atCap ? 'レベル上限です（限界突破で上限が上がります）' : '次のレベルまで ' + Math.max(0, expNeed(u.lv) - u.exp).toLocaleString()) + '</div></div></div>' +
       '<div class="dtabs">' + [['info', 'ステータス・技'], ['equip', '装備'], ['feed', 'LVアップ'], ['lb', '限界突破'], ['evo', '進化']].filter(([k]) => (k !== 'equip' || featOk('forge')) && (k !== 'evo' || EVO_GR[cs.grade] || EVO2[c.id])).map(([k, n]) => k === 'evo' && EVO_LOCK ? '<button class="lock" disabled>🔒 ' + n + '</button>' : '<button data-ftab="' + k + '" class="' + (detTab === k ? 'on' : '') + '">' + n + '</button>').join('') + '</div>';
     if (detTab === 'info') {
-      h += '<div class="dsec"><div class="stt">' + ST_NAME.map((n, k) => '<div>' + n + '<b>' + st[k] + '</b></div>').join('') + '</div></div>' +
+      h += '<div class="dsec"><div class="stt">' + ST_NAME.map((n, k) => '<div>' + n + '<b>' + st[k] + (u.tr && u.tr[k] ? '<small class="trp">（＋' + u.tr[k] + '）</small>' : '') + '</b></div>').join('') + '</div></div>' +
         (isZakoId(c.id) ? '<div class="dsec"><h4>必殺技 <span>' + (SPECIAL_NAME[c.id] || '').replace('！', '') + '</span><em>基準' + skBaseSec(c.id, 'sp') + '秒（スピードで変わる）</em></h4><p>' + skDescU(c.id, 'sp', u) + '</p>' +
           '<p class="dnote">N・Rは必殺技だけ（奥義なし）。サブ（②〜④）に入れて使います。メイン（①）にはなれません。</p></div>'
         : SKILLS[c.id] ? '<div class="dsec"><h4>必殺技 <span>' + (SPECIAL_NAME[c.id] || '').replace('！', '') + '</span><em>基準' + skBaseSec(c.id, 'sp') + '秒（スピードで変わる）</em></h4><p>' + skDescU(c.id, 'sp', u) + '</p>' +
