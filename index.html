@@ -7991,7 +7991,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.306';
+  const APP_VER = '0.9.307';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -9940,7 +9940,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   //   LV10ごとに常時スキル（技の発動ではなく、いつでも効く）。チームの4人全員に効く（ストーリー・遠征）
   //   art：進化後の立ち絵ができたら true にする（それまでは今の絵を使う）
   const EVO2 = {ichigo: {art: [false, false]}, mocha: {art: [false, false]}};
-  const EVO2_COST = [{mat: 'evo_c', n: 10, orb: 5, silver: 5000}, {mat: 'evo_g', n: 10, orb: 10, silver: 15000}];   // 2026-11-26 本人OK：素材は20→10個   // 2026-11-25 本人「シルバー30000は無理ゲー」→ 5,000／15,000
+  const EVO2_COST = [{mat: 'evo_c', n: 20, orb: 5, silver: 5000}, {mat: 'evo_g', n: 20, orb: 10, silver: 15000}];   // 2026-11-26 本人：ボス戦（オート）と街でも出るので、素材は20個のまま   // 2026-11-25 本人「シルバー30000は無理ゲー」→ 5,000／15,000
   const EVO2_LV = [0, 20, 50], EVO2_STAR = [0, 2, 5], EVO2_ST = [1, 1.6, 1.8], EVO2_TAG = ['', '覚醒', '極・'];
   const evoOf = u => (u && EVO2[u.id] && u.evo) || 0;
   const gradeU = u => evoOf(u) ? 'LR' : CHAR_STAT[u.id].grade;
@@ -11578,8 +11578,10 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     hunter: {n: 'ハンター協会', i: '🏹', apt: 'pow', d: '魔物素材・皮革（鍛冶屋の素材）と、ペットのごはんの肉が取れる', mat: ['beast', 'hide'], meat: 1.5},
     casino: {n: 'カジノ', i: '🎰', apt: 'biz', d: 'もうけ（シルバー）が多く入る。1日にレベルの回数だけルーレットを回せる', silver: 100, one: true},
     petshop:{n: 'ペットショップ', i: '🐾', apt: 'cha', d: 'ペットをお迎えできる。肉をあげると育って、街にボーナス', one: true},
+    // 2026-11-26 本人「街でも（進化素材を）作れるようにすれば良い」：少しずつ進化の結晶ができる。Lv5になると進化の宝玉もときどき
+    alchemy:{n: '錬金工房', i: '⚗️', apt: 'tec', d: '進化の結晶が少しずつできる（Lv5で進化の宝玉もときどき）', evo: 0.02, one: true},
   };
-  const TB_ORDER = ['castle', 'house', 'farm', 'shop', 'tavern', 'lumber', 'iron', 'hunter', 'casino', 'petshop'];
+  const TB_ORDER = ['castle', 'house', 'farm', 'shop', 'tavern', 'lumber', 'iron', 'hunter', 'casino', 'petshop', 'alchemy'];
   const famsOf = b => [].concat(TB[b].mat || []);
   // ペット（このゲームだけの子）：お迎え＝シルバー＋肉、肉をあげて Lv1〜10。ボーナスは Lv×2%（全部のペットが効く）
   const PETS = [
@@ -11624,13 +11626,13 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     let silver = 0; if (b.silver === 'tax') silver = townPop() * 0.6 * (1 + 0.25 * (L - 1)) * m * (1 + petBonus('luck')); else if (b.silver) silver = b.silver * L * m;
     if (x.b === 'shop' || x.b === 'tavern') silver *= 1 + petBonus('biz'); if (x.b === 'casino') silver *= 1 + petBonus('luck');
     const pm = x.b === 'hunter' ? 1 + petBonus('hunt') : 1 + petBonus('mat');
-    return {silver, mat: b.mat ? 0.5 * L * m * pm : 0, meat: b.meat ? b.meat * L * m * pm : 0};
+    return {silver, mat: b.mat ? 0.5 * L * m * pm : 0, meat: b.meat ? b.meat * L * m * pm : 0, evo: b.evo ? b.evo * L * m : 0, evog: b.evo && L >= 5 ? b.evo * .25 * m : 0};
   }
   function townPending(){                                    // まだ受け取っていない分（8時間まで）
     const bk = town.bank || {silver: 0, mats: {}}; let silver = bk.silver || 0; const mats = Object.assign({}, bk.mats || {}), now = Date.now();
     town.p.forEach(x => { if (!x || lvNow(x) < 1) return; const from = x.done && x.done > (x.t || 0) ? x.done : (x.t || now);   // 工事中の時間は数えない
       const h = Math.min(TOWN_CAP_H, Math.max(0, (now - from) / 36e5)), r = perHour(x);
-      silver += r.silver * h; if (r.mat) mats[x.b] = (mats[x.b] || 0) + r.mat * h; if (r.meat) mats._meat = (mats._meat || 0) + r.meat * h; });
+      silver += r.silver * h; if (r.mat) mats[x.b] = (mats[x.b] || 0) + r.mat * h; if (r.meat) mats._meat = (mats._meat || 0) + r.meat * h; if (r.evo) mats._evo = (mats._evo || 0) + r.evo * h; if (r.evog) mats._evog = (mats._evog || 0) + r.evog * h; });
     return {silver: Math.floor(silver), mats};
   }
   function townClaim(){
@@ -11639,9 +11641,10 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (s > 0) { addCoins(s); town.got += s; got.push('シルバー ' + s.toLocaleString()); }
     Object.keys(pd.mats).forEach(b => { const n = Math.floor(pd.mats[b]); if (n < 1) return;
       if (b === '_meat') { town.meat = (town.meat || 0) + n; got.push('🍖肉 ×' + n); return; }
+      if (b === '_evo' || b === '_evog') { const k = b === '_evo' ? 'evo_c' : 'evo_g'; giveItem(k, n); got.push(EX_MAT[k][1] + EX_MAT[k][0] + ' ×' + n); return; }
       const fs = famsOf(b), cnt = {}; for (let k = 0; k < n; k++) { const f = fs[Math.floor(Math.random() * fs.length)], t = Math.min(tMatTier(Math.max(...town.p.filter(p => p && p.b === b).map(lvNow))), Math.random() < 0.7 ? 0 : Math.random() < 0.75 ? 1 : 2); giveItem('m_' + f + '_' + t, 1); cnt[f] = (cnt[f] || 0) + 1; }
       Object.keys(cnt).forEach(f => got.push(MAT_FAM[f].i + MAT_FAM[f].n + ' ×' + cnt[f])); });
-    const now = Date.now(); town.p.forEach(x => { if (x) x.t = now; }); town.bank = {silver: 0, mats: {}}; saveTown();   // 上限をこえた分は捨てる
+    const now = Date.now(); town.p.forEach(x => { if (x) x.t = now; }); town.bank = {silver: 0, mats: Object.fromEntries(Object.entries(pd.mats).map(([k, v]) => [k, v - Math.floor(v)]))}; saveTown();   // シルバーの上限をこえた分は捨てる。素材の1個に満たない分は次に持ちこす
     if (got.length) { toast('🏡 受け取りました：' + got.join('・')); msgLog('get', '🏡 街：' + got.join('・')); }
     else toast(room <= 0 ? '今日のシルバーは上限です（明日またたまります）' : 'まだたまっていません');
     drawTown();
@@ -11658,7 +11661,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   function drawTown(){
     const pd = townPending(), today = dmKey(), got = town.day === today ? town.got : 0, cap = tDayCap(homeLv()), cs = crewSet();
     let h = '<div class="twhead"><div><b>🏡 わたしの街</b><span>家 Lv' + homeLv() + '・人口 ' + townPop().toLocaleString() + '人</span></div>' +
-      '<button class="twclaim" data-tw="claim">受け取る<small>🪙' + Math.min(pd.silver, Math.max(0, cap - got)).toLocaleString() + Object.keys(pd.mats).map(b => Math.floor(pd.mats[b]) ? '・' + (b === '_meat' ? '🍖' : MAT_FAM[famsOf(b)[0]].i) + Math.floor(pd.mats[b]) : '').join('') + '</small></button></div>' +
+      '<button class="twclaim" data-tw="claim">受け取る<small>🪙' + Math.min(pd.silver, Math.max(0, cap - got)).toLocaleString() + Object.keys(pd.mats).map(b => Math.floor(pd.mats[b]) ? '・' + (b === '_meat' ? '🍖' : b === '_evo' ? '💠' : b === '_evog' ? '🔮' : MAT_FAM[famsOf(b)[0]].i) + Math.floor(pd.mats[b]) : '').join('') + '</small></button></div>' +
       '<div class="twcap">今日のシルバー ' + got.toLocaleString() + ' / ' + cap.toLocaleString() + '　<small>閉じているあいだも' + TOWN_CAP_H + '時間ぶんまでたまる</small></div>' +
       '<div class="twgrid">' + town.p.map((x, i) => {
         if (!plotOk(i)) return '<div class="twp lock">🔒</div>';
@@ -11675,7 +11678,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     } else if (x) {
       const b = TB[x.b], r = perHour(x), bld = isBuilding(x), maxLv = x.b === 'home' ? TOWN_MAXLV : Math.min(TOWN_MAXLV, homeLv());
       h += '<div class="twpanel"><h4>' + b.i + ' ' + b.n + ' <span>Lv' + Math.max(1, lvNow(x)) + (bld ? '（Lv' + x.lv + 'に工事中・あと' + tLeft(x) + '）' : '') + '</span></h4><p class="twd">' + b.d + '</p>' +
-        '<p class="twd">' + (b.pop ? '人口 +' + Math.round(b.pop * Math.max(0, lvNow(x)) * crewMul(x)) + '人　' : '') + (r.silver ? '🪙 ' + Math.round(r.silver).toLocaleString() + ' / 時間　' : '') + (r.mat ? famsOf(x.b).map(f => MAT_FAM[f].i).join('') + ' ' + r.mat.toFixed(1) + '個 / 時間　' : '') + (r.meat ? '🍖 ' + r.meat.toFixed(1) + '個 / 時間' : '') + (x.b === 'home' ? '使える土地 ' + plotsOpen() + 'か所・建物はLv' + homeLv() + 'まで' : '') + '</p>' +
+        '<p class="twd">' + (b.pop ? '人口 +' + Math.round(b.pop * Math.max(0, lvNow(x)) * crewMul(x)) + '人　' : '') + (r.silver ? '🪙 ' + Math.round(r.silver).toLocaleString() + ' / 時間　' : '') + (r.mat ? famsOf(x.b).map(f => MAT_FAM[f].i).join('') + ' ' + r.mat.toFixed(1) + '個 / 時間　' : '') + (r.meat ? '🍖 ' + r.meat.toFixed(1) + '個 / 時間' : '') + (r.evo ? '💠 ' + (r.evo * 24).toFixed(1) + '個 / 日' : '') + (r.evog ? '　🔮 ' + (r.evog * 24).toFixed(1) + '個 / 日' : '') + (x.b === 'home' ? '使える土地 ' + plotsOpen() + 'か所・建物はLv' + homeLv() + 'まで' : '') + '</p>' +
         '<h5>運営するキャラ（3人まで・向いている：' + TAPT[b.apt] + '）<small>育てるほど生産が上がる</small></h5><div class="twcrew">' +
         [0, 1, 2].map(k => { const u = unitOf(x.crew[k]); return u ? '<button class="twc" data-twoff="' + k + '"><span class="tic" data-ci="' + ciOf(u) + '"></span><b>' + evoName(u) + '</b><small>' + '★'.repeat(aptStars(aptOf(u, b.apt))) + '</small></button>'
           : '<button class="twc add" data-twadd="' + k + '">＋ 置く</button>'; }).join('') + '</div>';
@@ -11809,7 +11812,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   //   2026-11-23 本人「ランキング上位（人気投票）はなし。進化後の絵・声ができたキャラから順に解放していく流れ」→ 投票は使わない
   //   進化の条件：①そのキャラの進化が解放されている（準備ができたキャラから順に）②レベル最大 ③★最大 ④進化素材＋属性の宝珠＋シルバー
   //   進化のしくみ（グレードが上がる・絵が変わる・技が強くなる）は、最初のキャラの絵ができたときに入れる
-  const EVO_GR = {SR: {to: 'MR', mat: 'evo_c', n: 10, orb: 5, silver: 5000}, MR: {to: 'LR', mat: 'evo_g', n: 10, orb: 10, silver: 15000}};
+  const EVO_GR = {SR: {to: 'MR', mat: 'evo_c', n: 20, orb: 5, silver: 5000}, MR: {to: 'LR', mat: 'evo_g', n: 20, orb: 10, silver: 15000}};
   const EVO_OPEN = {};                                    // 例：EVO_OPEN['x_g05'] = {month: '2026-12'}（進化が解放されたキャラ）
   function pskHTML(u){
     const L = PSK[u.id]; if (!L) return '';
