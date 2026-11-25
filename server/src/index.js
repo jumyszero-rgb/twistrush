@@ -635,6 +635,13 @@ async function api(env, req, url) {
     if (!res.meta.changes) return fail(env, req, 'もう受け取りました', 409);
     return json(env, req, { ok: true, reward: r });
   }
+  // ゴールドのおためし（2026-11-26）：Googleなどでログインした人に1回だけ300枚（無償ゴールド）。ゲーム側はユーザーLV10で案内する
+  if (p === '/api/gift/gold' && M === 'POST') {
+    const real = await env.DB.prepare("SELECT 1 FROM identities WHERE account_id = ? AND provider <> 'guest' LIMIT 1").bind(me.id).first();
+    if (!real) return fail(env, req, 'ログイン（Googleなど）すると受け取れます', 401);
+    const ok = await addGold(env, me.id, 'free', 300, 'gift:first', 'gift-first');
+    return json(env, req, { ok, gold: await walletOf(env, me.id) });
+  }
   if (p === '/api/daily/reward' && M === 'GET') return json(env, req, { rewards: await dmRewards(env, me.id) });
   if (p === '/api/daily/reward/claim' && M === 'POST') {
     const b = await req.json().catch(() => ({}));
@@ -897,9 +904,9 @@ async function chRewards(env, player) {
 
 // ---------- 今日の崩しミッション（2026-11-25）：前の日（日本時間）の順位のごほうび ----------
 const DM_REWARDS = [
-  { upTo: 1,   label: '1位',       items: { gticket: 3 } },
-  { upTo: 3,   label: '2〜3位',    items: { gticket: 2 } },
-  { upTo: 10,  label: '4〜10位',   items: { gticket: 1 } },
+  { upTo: 1,   label: '1位',       items: { gticket: 3, evo_c: 2 } },
+  { upTo: 3,   label: '2〜3位',    items: { gticket: 2, evo_c: 1 } },
+  { upTo: 10,  label: '4〜10位',   items: { gticket: 1, evo_c: 1 } },
   { upTo: 100, label: '11〜100位', items: { stampot: 1 } },
 ];
 async function dmRewards(env, player) {
@@ -924,6 +931,11 @@ const PAY_SKU = {
   gold5500:  { name: 'ゴールドコイン 5,500枚',  yen: 5000,  gold: 5500 },
   gold11500: { name: 'ゴールドコイン 11,500枚', yen: 10000, gold: 11500 },
   first:     { name: '初回限定パック', yen: 480, once: 'first', items: { gticket_hi: 2, gticket: 10, stampot: 3 } },
+  // 2026-11-26 本人「課金しやすいように・全部入れて」：困ったときだけ出すセット（中身と値段は先に見せる）。onceSku＝1人1回（purchases で確かめる）
+  evofirst:  { name: 'はじめての進化パック', yen: 480, onceSku: true, items: { evo_c: 10, evo_g: 3, gticket: 5 } },
+  evoset:    { name: '進化素材セット', yen: 980, items: { evo_c: 10, evo_g: 5 } },
+  bossset:   { name: 'ボス攻略セット', yen: 480, items: { gticket_hi: 1, bomb: 3, slow: 3 } },
+  stamset:   { name: 'スタミナセット', yen: 300, items: { stampot: 4, gticket: 2 } },
   // noads（広告削除・買い切り）は 2026-11-18 に販売終了。月パスの特典「広告なし」に（前に買った人の記録 ents.noads はそのまま）
   // 2026-11-19 本人：パスは シルバー（980円）・ゴールド（4,980円）。どちらも毎月自動更新。シルバー→ゴールドはアップグレードだけ（両方は持てない）
   pass:      { name: 'シルバーパス（毎月自動更新）', yen: 980, sub: true, tier: 'silver' },
@@ -987,7 +999,8 @@ async function payCheckout(env, req, me) {
   const real = await env.DB.prepare("SELECT 1 FROM identities WHERE account_id = ? AND provider <> 'guest' LIMIT 1").bind(me.id).first();
   if (!real) return fail(env, req, '購入にはログイン（Googleなど）が必要です', 401);
   const e = await entsOf(env, me.id);
-  if (it.once && e[it.once] && env.PAY_TEST !== '1') return fail(env, req, 'もう購入済みです', 409);   // PAY_TEST="1"（テスト環境）だけ、初回パックを何度でも買える
+  if (it.once && e[it.once] && env.PAY_TEST !== '1') return fail(env, req, 'もう購入済みです', 409);
+  if (it.onceSku && env.PAY_TEST !== '1' && await env.DB.prepare('SELECT 1 FROM purchases WHERE account_id = ? AND sku = ? LIMIT 1').bind(me.id, sku).first()) return fail(env, req, 'もう購入済みです', 409);   // PAY_TEST="1"（テスト環境）だけ、初回パックを何度でも買える
   const cur = passTierOf(e);
   if (it.sub && cur && PASS_RANK[cur] > PASS_RANK[it.tier]) return fail(env, req, 'ゴールドパスを契約中です（シルバーパスは買えません）', 409);
   if (it.sub && cur === it.tier && e.pass_auto) return fail(env, req, 'このパスはもう契約中です', 409);

@@ -773,6 +773,19 @@ body.on-menu .battlemain{opacity:0;}
   .twspin{display:flex;align-items:center;gap:14px} .twspin .wheel{font-size:44px} .twspin .wheel.go{animation:twSpin 1s cubic-bezier(.2,.8,.3,1)} .twspin button{flex:1;border:0;border-radius:12px;padding:10px;font:inherit;font-weight:900;font-size:16px;color:#fff;background:linear-gradient(#ff6fa0,#e23a75);box-shadow:0 3px 0 #a3204f;cursor:pointer} .twspin button:disabled{opacity:.4}
   @keyframes twSpin{from{transform:rotate(0)}to{transform:rotate(1440deg)}}
   .twdel{margin-top:10px;width:100%;border:1px solid rgba(255,120,140,.5);border-radius:10px;padding:7px;background:transparent;color:#ff9fb2;font:inherit;font-size:12px;cursor:pointer}
+  .srpity{grid-column:1/-1;width:100%;text-align:center;font-size:12px;font-weight:800;color:#fff;margin:2px 0;text-shadow:0 1px 3px rgba(0,0,0,.9)} .srpity b{color:#ffd24a}
+  .stepup{grid-column:1/-1;width:100%;box-sizing:border-box;background:linear-gradient(135deg,rgba(255,95,143,.25),rgba(155,92,240,.25));border:1px solid rgba(255,210,74,.6);border-radius:12px;padding:6px 10px;margin:4px 0;color:#fff;text-align:center;background-color:rgba(14,6,34,.78)}
+  .stepup .st-h{display:flex;justify-content:space-between;align-items:center} .stepup .st-h b{color:#ffd24a} .stepup .st-h i{display:inline-block;width:20px;height:20px;line-height:20px;margin-left:3px;border-radius:50%;font-style:normal;font-size:11px;font-weight:900;background:rgba(255,255,255,.15)}
+  .stepup .st-h i.done{background:#7a6a9a;opacity:.6} .stepup .st-h i.now{background:#ffd24a;color:#3a2a00} .stepup small{display:block;font-size:12px;margin:3px 0} .stepup .btn{width:100%}
+  .bgthemeBtn{grid-column:1/-1;width:100%}
+  #bgPick{position:fixed;inset:0;z-index:150;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;padding:16px}
+  #bgPick .pp-in{background:#241640;border:2px solid #ffd24a;border-radius:16px;padding:14px;width:100%;max-width:440px;max-height:90vh;overflow:auto;color:#fff;text-align:center}
+  #bgPick h3{margin:0 0 4px;color:#ffd24a} #bgPick p{margin:0 0 10px;font-size:12px;opacity:.85}
+  .bgt{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px} .bgt button{border:1px solid rgba(255,255,255,.2);border-radius:10px;background:rgba(0,0,0,.25);color:#fff;font:inherit;padding:4px;cursor:pointer}
+  .bgt button.on{border-color:#ffd24a;box-shadow:0 0 0 2px #ffd24a} .bgt img,.bgt .rnd{display:block;width:100%;aspect-ratio:9/12;object-fit:cover;border-radius:7px;font-size:30px;line-height:2.6;background:rgba(255,255,255,.08)} .bgt b{display:block;font-size:11px;margin-top:3px} .bgt small{font-size:10px;color:#ffd24a}
+  .evoshop{display:block;width:100%;margin-top:8px;border:1px solid rgba(255,211,77,.6);border-radius:10px;padding:7px;background:rgba(255,211,77,.12);color:#ffe9a8;font:inherit;font-weight:800;font-size:13px;cursor:pointer} .evoshop small{margin-left:6px}
+  .ss-pack{display:block;width:100%;margin:6px 0;border:1px solid rgba(255,211,77,.6);border-radius:10px;padding:7px;background:rgba(255,211,77,.12);color:#ffe9a8;font:inherit;font-weight:800;font-size:13px;cursor:pointer} .ss-pack small{display:block;font-size:11px;font-weight:400}
+  .dpass{margin:6px 0 0;font-size:12px;color:#ffe9a8} .dpass small{display:block;opacity:.8}
   .evogain{margin:4px 0 6px;font-size:13px;line-height:1.6;color:#ffe9a8}
   .dsec.psk ul{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:5px}
   .dsec.psk li{display:grid;grid-template-columns:52px 1fr;column-gap:6px;padding:6px 8px;border-radius:10px;background:rgba(255,255,255,.05);opacity:.5}
@@ -2715,7 +2728,10 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     freeBgLast = k;
     return true ? FREE_BG[k][1] : blobU(FREE_BG[k][0]);
   }
+  // 背景テーマ（2026-11-26・見た目だけの課金）：60秒・サバイバル・練習などの背景を、好きなエリアの景色に固定できる
+  const BGT_GOLD = 300, bgOwn = () => loadJ('bgown', []) || [], bgSel = () => +load('bgsel', '-1');
   function setStageBg(a){
+    if (a === 'free' && bgSel() >= 0 && bgOwn().includes(bgSel())) a = bgSel();
     const el = $('stageBg'), url = a === 'free' ? freeBgUrl() : (a == null ? null : areaBgOf(a));
     if (url) el.style.backgroundImage = 'url(' + url + ')';
     el.classList.toggle('on', !!url);
@@ -5167,6 +5183,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         seqExtra.push('ガチャチケット ×10' + (hi ? '・SR以上確定チケット ×1' : ''));
         coinNote += '　エリアクリア報酬：ガチャチケット×10（シルバー10連分）' + (hi ? '・SR以上確定チケット×1' : ''); }
       else bossDrop();                                   // 2回目からは確率で、もう1体（限界突破の材料に）
+      if (st.kind === 'boss' && !EVO_LOCK && Math.random() < (st.area >= 8 ? 0.08 : 0.05)) { giveItem('evo_c', 1); seqExtra.push('💠 進化の結晶 ×1'); coinNote += '　💠 進化の結晶×1'; }   // 2026-11-26：ボス戦でも進化素材
       try { const sd = enhStoneDrop(st.area, curVar); if (sd) { seqExtra.push(sd); coinNote += '　' + sd; } } catch (_) {}   // 強化石（ボス戦でごくまれ）
       try { bossBonus().forEach(x => { winGets.push(x.ci); seqExtra.push('確定ボーナス：' + x.why + ' → ' + CHARS[x.ci].name); coinNote += '　確定ボーナス：' + x.why + '（' + CHARS[x.ci].name + '）'; }); } catch(_) {}
       showResStars(lastStars);
@@ -6187,7 +6204,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     }
     else $('over').classList.remove('hidden');
   }
-  function endGame(){ $('cont').classList.add('hidden'); awardLoss(); pracExp(); $('over').classList.remove('hidden'); }
+  function endGame(){ $('cont').classList.add('hidden'); awardLoss(); pracExp(); $('over').classList.remove('hidden');
+    if (gameMode === 'story' && curStage && curStage.kind === 'boss' && !autoOn) setTimeout(() => offerPop('boss'), 2200); }   // ボスに負けたとき（1日1回まで）
   function pracExp(){                                    // 練習：やめたときに、遊んだ時間で経験値
     if (gameMode !== 'practice' || demoOn) return;
     const ux = Math.max(UEXP.pracMin, Math.min(UEXP.pracMax, Math.round((now() - runStart) / 60000 * UEXP.pracPerMin)));
@@ -6457,6 +6475,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (!o) { o = document.createElement('div'); o.id = 'stamShop'; o.className = 'hidden'; document.body.appendChild(o);
       o.addEventListener('click', async e => {
         if (e.target === o || e.target.closest('[data-sx]')) { o.classList.add('hidden'); return; }
+        if (e.target.closest('[data-sspack]')) { o.classList.add('hidden'); payBuy(packOf('stamset')); return; }
         const b = e.target.closest('[data-sb]'); if (!b || b.disabled) return;
         const [cur, k] = b.dataset.sb.split(':'), pk = STAM_PACKS[+k];
         if (cur === 'pot') { if (stamPots() <= 0) return; save('stampot', String(stamPots() - 1)); stamAdd(STAM_POT, 'スタミナ +' + STAM_POT + '（スタミナポット のこり ' + stamPots() + '個）'); return; }
@@ -6482,6 +6501,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         '<button data-sb="silver:' + k + '"' + (coins < pk.silver || sl <= 0 ? ' disabled' : '') + '>⚪ ' + pk.silver.toLocaleString() + '</button>' +
         '<button data-sb="medal:' + k + '"' + (md == null || md < pk.medal ? ' disabled' : '') + '>🏅 ' + pk.medal + '</button></div>').join('') +
       '<p class="ss-note">シルバーで買えるのは1日' + STAM_SILVER_DAY + '回まで（今日はあと' + Math.max(0, sl) + '回）。対戦メダルは名前を登録すると使えます。たくさん買うほどお得です。</p>' +
+      (acctToken && packOf('stamset') ? '<button class="ss-pack" data-sspack="1">💳 スタミナセット ' + packOf('stamset').price + '<small>' + packOf('stamset').desc + '</small></button>' : '') +
       '<button class="ss-close" data-sx="1">閉じる</button></div>';
   }
   $('storyStam').addEventListener('click', stamRefill);
@@ -7946,7 +7966,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.304';
+  const APP_VER = '0.9.305';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -8709,6 +8729,10 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     {price: '¥10,000', name: 'ゴールドコイン 11,500枚', coin: 11500, sku: 'gold11500'},
     {price: '¥4,980', sku: 'gold', name: 'ゴールドパス（毎月自動更新）', hide: true},
     {price: '¥980', sku: 'pass', hide: true, name: 'シルバーパス（毎月自動更新）', desc: '毎日：ガチャチケット×2・スタミナポット×1／30日ずっと：<b>広告なし</b>（コンティニュー・ごほうび2倍・毎日プレゼントの2倍が広告なしで使える）・遠征の経験値+15%・遠征で素材が出る率+15%', pass: true},
+    {price: '¥480', sku: 'evofirst', hide: true, name: 'はじめての進化パック', desc: '1回だけ：進化の結晶×10・進化の宝玉×3・ガチャチケット×5'},
+    {price: '¥980', sku: 'evoset', hide: true, name: '進化素材セット', desc: '進化の結晶×10・進化の宝玉×5'},
+    {price: '¥480', sku: 'bossset', hide: true, name: 'ボス攻略セット', desc: 'SR以上確定チケット×1・カラーボム×3・スピードダウン×3'},
+    {price: '¥300', sku: 'stamset', hide: true, name: 'スタミナセット', desc: 'スタミナポット×4・ガチャチケット×2'},
     {price: '¥480', sku: 'first', name: '初回限定パック', desc: '最初の1回だけ：SR以上確定チケット×2・ガチャチケット×10・スタミナポット×3', first: true},
   ];
   const today = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
@@ -9860,13 +9884,37 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     .concat(GACHA_CREW.map(z => ({id: 'x_' + z.k, name: z.name, title: GACHA_TITLE[z.k] || '', zk: z.k})));
   ALLC.forEach(c => { const z = c.zk && ZAKO_STAT[c.zk]; if (z) CHAR_STAT[c.id] = {type: z.type, grade: z.grade, base: z.base}; });
   const isZakoId = id => typeof id === 'string' && id.startsWith('z_');
+  // ===== 課金しやすい仕組み（2026-11-26 本人「全部入れて」）=====
+  //   正直なやり方だけ：確率は表示どおり・中身と値段は先に見せる・18歳未満の上限と保護者の同意（payBuy）はそのまま
+  //   困ったときにだけ、1日1回まで（種類ごと）そっと出す。ログインしていない人には出さない
+  const OFFER = {
+    boss: {sku: 'bossset', t: '😣 おしい！次こそ勝てるセット'},
+    stam: {sku: 'stamset', t: '⚡ スタミナがたりないときに'},
+    evo: {sku: 'evoset', t: '💠 あと少しで進化できます'},
+    evofirst: {sku: 'evofirst', t: '✨ はじめての進化におすすめ（1回だけ）', once: true},
+  };
+  const packOf = sku => PACKS.find(x => x.sku === sku);
+  function offerPop(k){
+    const o = OFFER[k], p = o && packOf(o.sku); if (!p || !acctToken || running) return;
+    const key = 'offer_' + k, last = load(key, ''); if (o.once ? last : last === dmKey()) return;
+    save(key, dmKey());
+    askChoice('<b>' + o.t + '</b><br><br><b>' + p.name + '</b>　' + p.price + '<br><small>' + p.desc + '</small>', '見てみる', 'いまはいい', () => payBuy(p), () => {});
+  }
+  // ゴールドのおためし：ユーザーLV10で、ログインしている人に1回だけ300枚（ゴールドガチャ1回ぶん）
+  async function goldGiftCheck(){
+    if (!acctToken || running || load('goldgift', '') || userLv() < 10) return;
+    askChoice('🎁 <b>ゴールドコイン 300枚 プレゼント！</b><br><small>ゴールドガチャを1回引けます（LR・MRが出やすいガチャ）</small>', '受け取る', 'あとで', async () => {
+      try { const r = await api('/api/gift/gold', {method: 'POST', body: '{}'}); save('goldgift', '1'); if (r.gold) { gold = r.gold.total; goldW = r.gold; } refreshCoins(); toast(r.ok ? '🟡 ゴールドコイン 300枚を受け取りました' : 'もう受け取っています'); }
+      catch (e) { toast(e.message || 'サーバーにつながりませんでした'); } }, () => {});
+  }
+  setInterval(() => { try { if (document.body.classList.contains('on-menu')) goldGiftCheck(); } catch(_) {} }, 20000);
   // ===== 2段階の進化（2026-11-25 本人と決めた。まず いちご・モカ）=====
   //   覚醒（進化）：LV上限+20・★上限+2・ステータスはLR相当（基本値×1.6）。表示は「LR」＋名前の前に「覚醒」・金の枠
   //   極（究極進化）：さらにLV上限+30・★上限+3（SRなら LV100・★9）・LR5段くらい（基本値×1.8）。表示は「LR」＋「極・」・虹の枠
   //   LV10ごとに常時スキル（技の発動ではなく、いつでも効く）。チームの4人全員に効く（ストーリー・遠征）
   //   art：進化後の立ち絵ができたら true にする（それまでは今の絵を使う）
   const EVO2 = {ichigo: {art: [false, false]}, mocha: {art: [false, false]}};
-  const EVO2_COST = [{mat: 'evo_c', n: 20, orb: 5, silver: 5000}, {mat: 'evo_g', n: 20, orb: 10, silver: 15000}];   // 2026-11-25 本人「シルバー30000は無理ゲー」→ 5,000／15,000
+  const EVO2_COST = [{mat: 'evo_c', n: 10, orb: 5, silver: 5000}, {mat: 'evo_g', n: 10, orb: 10, silver: 15000}];   // 2026-11-26 本人OK：素材は20→10個   // 2026-11-25 本人「シルバー30000は無理ゲー」→ 5,000／15,000
   const EVO2_LV = [0, 20, 50], EVO2_STAR = [0, 2, 5], EVO2_ST = [1, 1.6, 1.8], EVO2_TAG = ['', '覚醒', '極・'];
   const evoOf = u => (u && EVO2[u.id] && u.evo) || 0;
   const gradeU = u => evoOf(u) ? 'LR' : CHAR_STAT[u.id].grade;
@@ -11684,7 +11732,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     const d = turns + '手で何点取れるか。時間は止まっているので、じっくり考えてOK' + (gim === 1 ? '。3手ごとにブロックが凍る（となりで消すと割れる）' : gim === 2 ? '。石が落ちてくる（となりで3回消すとこわれる）' : '');
     return {id: 'dm' + day, day, daily: true, r: {k: 'daily', n: '今日の崩し ' + turns + '手', d, turns, gim}, seed, col: 0};
   }
-  const DM_RANK_REW = [['1位', 'ガチャチケット×3'], ['2〜3位', 'ガチャチケット×2'], ['4〜10位', 'ガチャチケット×1'], ['11〜100位', 'スタミナポット×1']];
+  const DM_RANK_REW = [['1位', 'ガチャチケット×3・進化の結晶×2'], ['2〜3位', 'ガチャチケット×2・進化の結晶×1'], ['4〜10位', 'ガチャチケット×1・進化の結晶×1'], ['11〜100位', 'スタミナポット×1']];
   function dmLeftTxt(){ const d = new Date(Date.now() + JST), end = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1) - JST, ms = end - Date.now(); return 'あと' + Math.floor(ms / 36e5) + '時間' + Math.floor(ms % 36e5 / 6e4) + '分'; }
   function drawDaily(){
     const c = dmOf(dmKey()), b = chState().best[c.id] || 0, d = new Date(Date.now() + JST);
@@ -11735,7 +11783,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   //   2026-11-23 本人「ランキング上位（人気投票）はなし。進化後の絵・声ができたキャラから順に解放していく流れ」→ 投票は使わない
   //   進化の条件：①そのキャラの進化が解放されている（準備ができたキャラから順に）②レベル最大 ③★最大 ④進化素材＋属性の宝珠＋シルバー
   //   進化のしくみ（グレードが上がる・絵が変わる・技が強くなる）は、最初のキャラの絵ができたときに入れる
-  const EVO_GR = {SR: {to: 'MR', mat: 'evo_c', n: 20, orb: 5, silver: 5000}, MR: {to: 'LR', mat: 'evo_g', n: 20, orb: 10, silver: 15000}};
+  const EVO_GR = {SR: {to: 'MR', mat: 'evo_c', n: 10, orb: 5, silver: 5000}, MR: {to: 'LR', mat: 'evo_g', n: 10, orb: 10, silver: 15000}};
   const EVO_OPEN = {};                                    // 例：EVO_OPEN['x_g05'] = {month: '2026-12'}（進化が解放されたキャラ）
   function pskHTML(u){
     const L = PSK[u.id]; if (!L) return '';
@@ -11748,6 +11796,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     const ev = evoOf(u); if (ev >= 2) return '<div class="dsec evo"><h4>進化 <span>極</span></h4><p>いちばん上まで進化しました。LV' + lvMaxOf(u) + '・★' + starMaxOf(u) + 'まで育てられます。</p></div>';
     const e = EVO2_COST[ev], at = attrOf(u.id), orb = 'st_' + at + '_2';
     const ok = [u.lv >= lvMaxOf(u), (u.star || 0) >= starMaxOf(u), own(e.mat) >= e.n, own(orb) >= e.orb, coins >= e.silver], all = ok.every(Boolean);
+    if (ok[0] && ok[1] && !ok[2] && !ev) setTimeout(() => offerPop('evofirst'), 700);   // はじめて「育てきったのに素材が足りない」になったとき1回だけ
     const it = (b, t) => '<li class="' + (b ? 'ok' : '') + '">' + (b ? '✔' : '□') + ' ' + t + '</li>';
     const to = ev ? '極（究極進化）' : '覚醒（進化）', gain = ev ? 'LV上限+30（LV' + (lvMaxOf(u) + 30) + '）・★上限+3・LR5段くらいの強さ・常時スキルLV80〜100' : 'LV上限+20（LV' + (lvMaxOf(u) + 20) + '）・★上限+2・LR相当の強さ・常時スキルLV60〜70';
     return '<div class="dsec evo"><h4>進化 <span>' + (ev ? '覚醒 → 極' : gradeU(u) + ' → 覚醒（LR）') + '</span></h4>' +
@@ -11756,7 +11805,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         it(ok[2], EX_MAT[e.mat][1] + EX_MAT[e.mat][0] + ' ×' + e.n + '（所持 ' + own(e.mat) + '）') +
         it(ok[3], (EX_MAT[orb] ? EX_MAT[orb][1] + EX_MAT[orb][0] : ATTR[at].n + 'の宝珠') + ' ×' + e.orb + '（所持 ' + own(orb) + '）') +
         it(ok[4], 'シルバー ' + e.silver.toLocaleString() + '（所持 ' + coins.toLocaleString() + '）') + '</ul>' +
-      '<div class="evobtns"><button class="evogo" data-evo2="' + u.u + '"' + (all ? '' : ' disabled') + '>' + (ev ? '🌈 極める' : '✨ 覚醒する') + '</button></div></div>';
+      '<div class="evobtns"><button class="evogo" data-evo2="' + u.u + '"' + (all ? '' : ' disabled') + '>' + (ev ? '🌈 極める' : '✨ 覚醒する') + '</button></div>' +
+      (ok[0] && ok[1] && !(ok[2] && ok[3]) && acctToken ? '<button class="evoshop" data-evobuy="1">💠 進化素材セットを見る<small>' + (packOf('evoset') || {}).price + '</small></button>' : '') + '</div>';
   }
   function doEvo2(u){
     const ev = evoOf(u), e = EVO2_COST[ev], orb = 'st_' + attrOf(u.id) + '_2';
@@ -11774,6 +11824,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     d.onclick = () => d.remove(); document.body.appendChild(d);
     try { const a = audio(), t = a ? a.currentTime : 0; if (a) [523, 659, 784, 1047, 1319].forEach((f, k) => tone(f, t + k * 0.12, 0.5, 'triangle', 0.09)); } catch(_) {}
   }
+  $('boxBody').addEventListener('click', e => { if (e.target.closest('[data-evobuy]')) { e.stopPropagation(); payBuy(packOf('evoset')); return; } });
   $('boxBody').addEventListener('click', e => { const b = e.target.closest('[data-evo2]'); if (!b) return; e.stopPropagation(); const u = unitOf(b.dataset.evo2); if (u) doEvo2(u); });
   function evoHTML(u){
     if (EVO2[u.id]) return evo2HTML(u);
@@ -12229,17 +12280,33 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (!pools[order[k]]) { k = order.indexOf(g); while (!pools[order[k]] && k > 0) k--; }
     const pl = pools[order[k]]; return pl[Math.floor(Math.random() * pl.length)];
   }
+  // ===== ゴールドガチャのおまけ（2026-11-26 本人「全部入れて」）=====
+  //   ・1回ずつ引いても10回目はSR以上確定（あと何回かを見せる）
+  //   ・ステップアップ：10連を5段で1周。段ごとにおまけの確定がふえて、5段目はLR1体確定。値段も中身も先に見せる
+  const SRP_N = 10, srpNow = () => Math.max(0, +load('srp', '0') || 0);
+  const STEP = [{c: 2000, sr: 1, t: '1段目：いつもの10連が2,000（おためし価格）'}, {c: 2500, sr: 2, t: '2段目：SR以上2体確定'}, {c: 3000, mr: 1, sr: 1, t: '3段目：MR以上1体確定'}, {c: 3000, sr: 3, t: '4段目：SR以上3体確定'}, {c: 3000, lr: 1, sr: 1, t: '5段目：LR 1体確定！'}];
+  const stepNow = () => Math.min(STEP.length - 1, Math.max(0, +load('stepn', '0') || 0));
+  function stepHTML(){
+    const k = stepNow(), coinImg = k2 => '<img src="' + gImg(k2) + '" alt="">';
+    return '<div class="stepup"><div class="st-h"><b>STEP UP</b><span>' + STEP.map((x, i) => '<i class="' + (i < k ? 'done' : i === k ? 'now' : '') + '">' + (i + 1) + '</i>').join('') + '</span></div>' +
+      '<small>' + STEP[k].t + '</small><button class="btn shop" data-g="step">ステップ' + (k + 1) + ' 10連（11体） ' + coinImg('coin_gold') + STEP[k].c.toLocaleString() + '</button></div>';
+  }
   function gachaPull(n, kind){
     if (String(kind).startsWith('char:')) {               // キャラ確定チケット：そのキャラが100%
       const ci = ALLC_IDX.get(kind.slice(5)); if (ci == null) return [];
       const isNew = !units.some(u => u.id === ALLC[ci].id); newUnit(ci); saveUnits(); return [{ci, isNew}];
     }
-    const pick = kind === 'pone' || kind === 'pten', pu = pick ? pickupNow() : null;
-    const rate = kind === 'ticket_hi' ? G_RATE.hi : (kind === 'gone' || kind === 'goldten' || pick) ? G_RATE.gold : G_RATE.silver;
+    const pick = kind === 'pone' || kind === 'pten', pu = pick ? pickupNow() : null, step = kind === 'step' ? STEP[stepNow()] : null, single = kind === 'gone' || kind === 'pone';
+    const rate = kind === 'ticket_hi' ? G_RATE.hi : (kind === 'gone' || kind === 'goldten' || pick || step) ? G_RATE.gold : G_RATE.silver;
+    const mins = step ? [].concat(Array(step.lr || 0).fill('LR'), Array(step.mr || 0).fill('MR'), Array(step.sr || 0).fill('SR')) : [];
+    let srp = srpNow();
     const out = [];
     for (let k = 0; k < n; k++) {
-      const guarantee = (n >= 11 && k === n - 1 && !out.some(o => GRADE_RANK[CHAR_STAT[ALLC[o.ci].id].grade] >= 3)) ? 'SR' : null;   // 10連は1体SR以上
+      let guarantee = (n >= 11 && k === n - 1 && !out.some(o => GRADE_RANK[CHAR_STAT[ALLC[o.ci].id].grade] >= 3)) ? 'SR' : null;   // 10連は1体SR以上
+      if (step && n - 1 - k < mins.length) guarantee = mins[n - 1 - k];               // ステップのおまけは最後の何体かに
+      if (single && srp >= SRP_N - 1) guarantee = 'SR';                                // 1回ずつでも10回目はSR以上
       let ci = gachaGrade(rate, guarantee);
+      if (single) { srp = GRADE_RANK[CHAR_STAT[ALLC[ci].id].grade] >= 3 ? 0 : srp + 1; save('srp', String(srp)); }
       if (pu) { const g = CHAR_STAT[ALLC[ci].id].grade; if (g === 'LR' && pu.lr != null && Math.random() < 0.5) ci = pu.lr; else if (g === 'MR' && pu.mr != null && Math.random() < 0.5) ci = pu.mr; }
       const id = ALLC[ci].id;
       const isNew = !units.some(u => u.id === id);
@@ -12247,6 +12314,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       out.push({ci, isNew});
     }
     saveUnits();
+    if (step) save('stepn', String((stepNow() + 1) % STEP.length));
     return out;
   }
   // シルバーガチャ（無料コイン）とゴールドガチャ（有料コイン）。確率は G_RATE
@@ -12262,7 +12330,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     const end = new Date((wk * 7 - 3 + 7) * 86400000);
     return {lr: L.length ? L[wk % L.length] : null, mr: M.length ? M[wk % M.length] : null, end: (end.getMonth() + 1) + '/' + end.getDate()};
   }
-  function pityAdd(kind){ const n = (kind === 'goldten' || kind === 'pten') ? 10 : (kind === 'gone' || kind === 'pone') ? 1 : 0; if (n) save('pity', String(pityNow() + n)); }
+  function pityAdd(kind){ const n = (kind === 'goldten' || kind === 'pten' || kind === 'step') ? 10 : (kind === 'gone' || kind === 'pone') ? 1 : 0; if (n) save('pity', String(pityNow() + n)); }
   function pityHTML(){
     const p = pityNow(), pct = Math.min(100, p / PITY_N * 100);
     return '<div class="pity"><div class="pity-t"><b>LEGEND GAUGE</b><span>' + Math.min(p, PITY_N) + ' / ' + PITY_N + (p > PITY_N ? '（+' + (p - PITY_N) + '）' : '') + '</span></div><div class="pbar"><i style="width:' + pct + '%"></i></div>' +
@@ -12374,7 +12442,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         '<div class="pubtns"><button class="btn shop" data-g="pone">1回 ' + coinImg('coin_gold') + G_COST.gold.one + '</button><button class="btn shop" data-g="pten">10連 ' + coinImg('coin_gold') + G_COST.gold.ten.toLocaleString() + '</button></div></div>';
       h += '<button class="btn shop" data-g="gone">1回 ' + coinImg('coin_gold') + G_COST.gold.one + '</button><button class="btn shop" data-g="goldten">10連（11体） ' + coinImg('coin_gold') + G_COST.gold.ten.toLocaleString() + '</button>';
       if (t.ticket_hi > 0) h += '<button class="btn shop" data-g="ticket_hi">' + coinImg('ticket_hi') + '確定チケット（' + t.ticket_hi + '枚）</button>';
-      h += pityHTML();
+      h += '<div class="srpity">ゴールド1回ずつでも、あと <b>' + (SRP_N - srpNow()) + '回</b>でSR以上確定</div>' + stepHTML();
+      h += pityHTML() + '<button class="btn gray bgthemeBtn" data-g="bgtheme">🎨 背景テーマ（見た目だけ）</button>';
       if (t.ticket_hi > 1) h += '<button class="btn shop" data-g="ticket_hi_m">' + coinImg('ticket_hi') + '確定チケットでまとめて' + Math.min(t.ticket_hi, TK_MULTI) + '回</button>';
     }
     if (gTab !== 'item') { const ct = cTickets(); Object.keys(ct).filter(id => ct[id] > 0 && ALLC_IDX.has(id)).forEach(id => {
@@ -12431,6 +12500,23 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     else if (res.length === 1) box.appendChild(card(res[0], true));
     gBusy = false; drawGachaFoot(); refreshCoins();
   }
+  function openBgTheme(){
+    const old = document.getElementById('bgPick'); if (old) old.remove();
+    const d = document.createElement('div'); d.id = 'bgPick'; const own = bgOwn(), sel = bgSel();
+    d.innerHTML = '<div class="pp-in"><h3>🎨 背景テーマ</h3><p>60秒・サバイバル・練習・チャレンジ・対戦の背景を、好きなエリアの景色にできます（強さは変わりません）。1つ ゴールド' + BGT_GOLD + '・ずっと使えます</p><div class="bgt">' +
+      '<button data-bgt="-1" class="' + (sel < 0 ? 'on' : '') + '"><span class="rnd">🎲</span><b>ランダム</b><small>無料</small></button>' +
+      AREA_BG_FILE.map((f, i) => '<button data-bgt="' + i + '" class="' + (sel === i ? 'on' : '') + '"><img alt="" src="' + areaBgOf(i) + '" loading="lazy"><b>' + (AREAS[i] ? AREAS[i].name : 'エリア' + (i + 1)) + '</b><small>' + (own.includes(i) ? (sel === i ? '使用中' : '使う') : '🟡 ' + BGT_GOLD) + '</small></button>').join('') +
+      '</div><button class="btn gray" data-bgx="1">閉じる</button></div>';
+    d.addEventListener('click', async e => {
+      if (e.target === d || e.target.closest('[data-bgx]')) { d.remove(); return; }
+      const b = e.target.closest('[data-bgt]'); if (!b) return; const i = +b.dataset.bgt;
+      if (i < 0 || bgOwn().includes(i)) { save('bgsel', String(i)); toast(i < 0 ? '背景はランダムになります' : '背景を「' + (AREAS[i] ? AREAS[i].name : '') + '」にしました'); openBgTheme(); return; }
+      askYes('背景テーマ「' + (AREAS[i] ? AREAS[i].name : '') + '」を ゴールド' + BGT_GOLD + 'で買いますか？<br><small>見た目だけ・ずっと使えます</small>', async () => {
+        if (!(await spendGold(BGT_GOLD, 'bgtheme'))) return; const o2 = bgOwn(); o2.push(i); save('bgown', JSON.stringify(o2)); save('bgsel', String(i)); toast('🎨 背景テーマを手に入れました'); openBgTheme(); });
+      const ab = $('askBox'); if (ab) ab.style.zIndex = 9600;
+    });
+    document.body.appendChild(d);
+  }
   function runGacha(kind){
     if (kind === 'next') { if (!gRev) return; if (gRev.i + 1 < gRev.res.length) { gRev.i++; revealOne(); } else showList(); return; }
     if (kind === 'skip') { showList(); return; }
@@ -12446,6 +12532,12 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     else if (kind === 'igone' || kind === 'igten') {        // アイテムガチャのゴールド版
       const c = kind === 'igone' ? G_COST.itemGold.one : G_COST.itemGold.ten, n2 = kind === 'igone' ? 1 : 11;
       gBusy = true; spendGold(c, 'itemgacha').then(ok => { gBusy = false; if (ok) itemGachaGo(n2, 'gold'); else drawGachaFoot(); }); return;
+    }
+    else if (kind === 'bgtheme') { openBgTheme(); return; }
+    else if (kind === 'step') {
+      const c = STEP[stepNow()].c; n = 11;
+      if (acctToken) { gBusy = true; spendGold(c, 'gacha').then(ok => { gBusy = false; if (ok) { pityAdd(kind); gachaGo(n, kind); } else drawGachaFoot(); }); return; }
+      if (!payG(c)) return; pityAdd(kind);
     }
     else if (kind === 'gone' || kind === 'goldten' || kind === 'pone' || kind === 'pten') {      // ゴールドコイン：ログイン中はサーバーで減らしてから引く（PICK UPも同じ値段）
       const c = (kind === 'gone' || kind === 'pone') ? G_COST.gold.one : G_COST.gold.ten; if (kind === 'goldten' || kind === 'pten') n = 11;
@@ -14443,6 +14535,9 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     $('dailyRow').innerHTML = DAILY.map((_, k) => '<div class="d' + (k < d.i ? ' done' : '') + (k === d.i ? ' now' : '') + (k === 6 ? ' big' : '') + '">' +
       (k + 1) + '日目' + coinTag() + '<b>' + dailyAmt(k, g) + '</b>' + (k === 6 ? '<small class="dgold"><img src="' + gImg('ticket_hi') + '" alt="">+' + DAILY_HI + '</small>' : '') + (DAILY_POT[k] ? '<small class="dgold"><img src="' + STAMPOT_IMG + '" alt="">+' + DAILY_POT[k] + '</small>' : '') + '</div>').join('');
     $('dailyNote').textContent = nx ? 'いまLV' + userLv() + '。LV' + nx.min + 'になると「' + nx.name + '」（×' + nx.mul + '）になります。経験値はどのモードで遊んでも、実績を達成してもたまります。' : 'いちばん上のグレードです。';
+    { const pm = document.getElementById('dailyPass') || (() => { const e = document.createElement('p'); e.id = 'dailyPass'; e.className = 'dpass'; $('dailyNote').after(e); return e; })();
+      pm.innerHTML = passOn() ? '🎫 パスの特典：ガチャチケット×2・スタミナポット×1 も届いています' : '🎫 <b>パス</b>なら今日、ガチャチケット×2・スタミナポット×1 も届きました<small>（シルバーパス 980円/月・広告なし）</small>';
+    }
     $('dailyAd').disabled = false; $('dailyGet').disabled = false;
     $('daily').classList.remove('hidden');
     const claim = m => {
