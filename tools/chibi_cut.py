@@ -26,10 +26,34 @@ rgba = np.dstack([rgb.astype(np.uint8), alpha.clip(0, 255).astype(np.uint8)])
 nc, cl, st, cen = cv2.connectedComponentsWithStats(fg, connectivity=8)
 cells = {k: np.zeros((H, W), bool) for k in range(len(ids))}
 # 大きいかたまり（体）はマスで決める。小さいかけら（炎・玉・きらきら）は、いちばん近い体のものにする（となりのキャラのかけらが混ざらないように）
+# 1行のシート（建物など）：すき間（何もない縦の列）で区切る。大きい建物の重心がとなりのマスに入っても大丈夫
+colOf = lambda cx: min(cols - 1, int(cx * cols / W))
+if rows == 1 and cols > 1:
+    proj = (fg > 0).sum(axis=0) > 0
+    runs = []; x = 0
+    while x < W:
+        if proj[x]:
+            x0 = x
+            while x < W and proj[x]: x += 1
+            runs.append([x0, x])
+        else: x += 1
+    runs = [r for r in runs if r[1] - r[0] > 8]
+    while len(runs) > cols:   # すき間がいちばん狭いところからくっつける
+        g = min(range(len(runs) - 1), key=lambda j: runs[j + 1][0] - runs[j][1])
+        runs[g] = [runs[g][0], runs[g + 1][1]]; del runs[g + 1]
+    if len(runs) == cols:
+        bounds = [(runs[j][1] + runs[j + 1][0]) / 2 for j in range(cols - 1)]
+        colOf = lambda cx: sum(cx > b for b in bounds)
+# 大きいかたまりがちょうどマスの数だけあるときは、左から順に割り当てる（いちばん確実）
+bigs = [i for i in range(1, nc) if st[i, cv2.CC_STAT_AREA] >= 5000]
+if rows == 1 and len(bigs) == cols:
+    order = sorted(bigs, key=lambda i: cen[i][0]); rank = {i: j for j, i in enumerate(order)}
+else:
+    rank = None
 boxes = {}
 for i in range(1, nc):
     if st[i, cv2.CC_STAT_AREA] < 5000: continue
-    cx, cy = cen[i]; c = min(cols - 1, int(cx * cols / W)); r = min(rows - 1, int(cy * rows / H)); k = r * cols + c
+    cx, cy = cen[i]; c = rank[i] if rank else colOf(cx); r = min(rows - 1, int(cy * rows / H)); k = r * cols + c
     if k >= len(ids): continue
     cells[k] |= cl == i
     x, y, w, h = st[i, 0], st[i, 1], st[i, 2], st[i, 3]
