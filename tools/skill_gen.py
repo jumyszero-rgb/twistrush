@@ -143,3 +143,25 @@ def rep(m):
 s2 = re.sub(r'^\s*\{k: "g\d+",( noTune: true,)?( uq: "[^"]*",)? name:.*$', rep, s, flags=re.M)
 open(F, 'w', encoding='utf-8').write(s2)
 print('rewrote', cnt)
+
+# ===== ストーリーキャラ（BOSS_FX）と住人（ZAKO_SK）も同じルールで（2026-11-27 本人「ストーリーキャラも修正して」）=====
+# 必要なキャラ情報（タイプ・グレード・属性）は、ゲームから書き出した JSON（tools/skill_gen.py 第2引数）
+if len(sys.argv) > 2:
+    import hashlib
+    meta = json.load(open(sys.argv[2], encoding='utf-8'))
+    hh = lambda x: int(hashlib.md5(x.encode()).hexdigest()[:6], 16) % 101
+    s = open(F, encoding='utf-8').read()
+    for b in meta['boss']:
+        attr[b['n']] = b['a']
+        c = {'grade': b['g'], 'type': b['t'], 'name': b['n'], 'h': hh(b['id'])}
+        sp, _ = build(c, 'sp'); og, _ = build(c, 'ougi')
+        s, n = re.subn(r"^(    " + b['id'] + r": )\{sp: \[\[.*\},$", lambda m: m.group(1) + '{sp: ' + fxs(sp) + ', ougi: ' + fxs(og) + '},', s, count=1, flags=re.M)
+        assert n == 1, b['id']
+    for z in meta['zako']:
+        attr[z['n']] = z['a']
+        c = {'grade': z['g'], 'type': z['t'], 'name': z['n'], 'h': hh(z['k'])}
+        sp, _ = build(c, 'sp')
+        s, n = re.subn(r"^(    " + z['k'] + r": \{n: '[^']*', fx: ).*?(\]\])(\}.*)$", lambda m: m.group(1) + fxs(sp) + m.group(3), s, count=1, flags=re.M)
+        assert n == 1, z['k']
+    open(F, 'w', encoding='utf-8').write(s)
+    print('story/zako rewrote', len(meta['boss']), len(meta['zako']))
