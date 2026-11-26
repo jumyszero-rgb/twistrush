@@ -5150,6 +5150,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     try { ['buffBar', 'heartTray', 'enSk'].forEach(id => { const el = $(id); if (el) el.style.display = 'none'; }); buffKey = ''; } catch(_) {}
     try { document.querySelectorAll('.healfx').forEach(el => el.remove()); } catch(_) {}
     try { document.body.classList.remove('tstop', 'slowmo'); } catch(_) {}
+    try { vfxClear(); } catch(_) {}   // 2026-11-27 本人「画面効果が戦闘が終わっても残る。必ず戦闘終了時にリセット」
   }
   // 相手が全員脱落したら勝ち
   function winGame(){
@@ -8029,7 +8030,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.331';
+  const APP_VER = '0.9.332';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -10279,7 +10280,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   const ratioC = x => Math.max(0.25, Math.min(4, x));
   //   2026-11-23 本人「ボス戦がやたら短い。裏で攻撃力・防御力を半分に」：ボス戦だけ、こちらも敵も攻撃と防御を半分にして計算する
   //     ダメージ＝攻撃×（攻撃÷防御）なので、両方半分→どちらのダメージも半分（比べ合いは同じ）→ 強さのバランスはそのままで、戦いが約2倍長くなる
-  const BOSS_AD = 0.5;
+  const BOSS_AD = 0.17;   // 2026-11-27 本人「ボス戦は2〜3分」：0.5→0.17（試し戦いで必要戦闘力ちょうどのとき2〜3分）
   const adMul = () => curStage && curStage.kind === 'boss' ? BOSS_AD : 1;
   const storyV3 = () => gameMode === 'story' && !!curStage;
   function incoming(n){ if (!statOn()) return n;
@@ -13756,7 +13757,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   let enBuf = {atk: [1, 0], def: [1, 0], spd: [1, 0]}, enDeb = {atk: [1, 0], def: [1, 0]}, enRegens = [];   // 敵のバフ・デバフ・じわじわ回復
   let eshock = 0, evade = [1, 0], defPierce = [0, 0], reflect = [0, 0], critUp = [0, 1.5, 0], flip = [0, 0], guard = [0, 0], parry = 0;
   // 本人「30秒ごとに双方の攻撃力を上げて、長くてもボス戦1〜5分で終わるように」
-  const RAMP = 1.25, RAMP_MS = 30000; let fightMs = 0, rampStep = 0;
+  const RAMP = 1.12, RAMP_MS = 30000; let fightMs = 0, rampStep = 0;
   const on2 = a => !!(a && a[a.length - 1] && now() < a[a.length - 1]);
   const rampMul = () => storyV3() ? Math.pow(RAMP, rampStep) : 1;
   const enK = k => (on2(enBuf[k]) ? enBuf[k][0] : 1) * (enDeb[k] && on2(enDeb[k]) ? enDeb[k][0] : 1);
@@ -14633,6 +14634,16 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   // 画面のふちの色・感電・敵キャラの色
   let vfxKey = '';
+  // 戦いが終わったら、効果と画面効果を全部消す（次の戦いやメニューに残さない）
+  function vfxClear(){
+    pdots = []; pshock = [0, 0]; pblind = [1, 0]; pfield = [0, 0]; Object.keys(pdeb).forEach(k => { pdeb[k] = [1, 0]; });
+    eshock = 0; enRegens = []; Object.keys(enBuf).forEach(k => { enBuf[k] = [1, 0]; }); Object.keys(enDeb).forEach(k => { enDeb[k] = [1, 0]; });
+    vfxKey = '';
+    const ed = $('vfxEdge'); if (ed) ed.className = '';
+    const st = $('shockTxt'); if (st) { st.classList.remove('on'); st.innerHTML = ''; }
+    document.body.classList.remove('pshock', 'pshockLock');
+    const ea = $('enArt'); if (ea) ['eb-shock', 'eb-burn', 'eb-poison', 'eb-ice', 'eb-weak'].forEach(c => ea.classList.remove(c));
+  }
   function drawVfx(){
     let ed = $('vfxEdge'); if (!ed) { ed = document.createElement('div'); ed.id = 'vfxEdge'; document.body.appendChild(ed); const st = document.createElement('div'); st.id = 'shockTxt'; document.body.appendChild(st); }
     const t = now(), live = running && gameMode === 'story';
