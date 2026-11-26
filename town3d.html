@@ -127,7 +127,7 @@ function billboard(url, x, z, h, opt = {}){
   const mesh = new THREE.Mesh(geo, m); mesh.rotation.order = 'YXZ'; mesh.rotation.x = -PITCH * .35;
   const grp = new THREE.Group(); let sh = null;
   if (opt.sw) { const sw = h * opt.sw; sh = new THREE.Mesh(new THREE.PlaneGeometry(sw, sw * .45), shadowM); sh.rotation.x = -Math.PI / 2; sh.position.y = .02; grp.add(sh); }
-  grp.add(mesh); grp.position.set(x, GY, z); if (opt.flip) mesh.rotation.y = Math.PI; world.add(grp);
+  grp.add(mesh); grp.position.set(x, GY, z); if (opt.flip) mesh.scale.x = -1; world.add(grp);
   const s = Object.assign({grp, mesh, sh, mat: m, x, z, h}, opt); sprites.push(s); if (curT) m.color.set(curT.spr); return s; }
 function unbill(s){ world.remove(s.grp); s.mat.dispose(); s.mesh.geometry.dispose(); const i = sprites.indexOf(s); if (i >= 0) sprites.splice(i, 1); if (s.tagE) { s.tagE.remove(); } }
 
@@ -266,7 +266,7 @@ function loop(){
       if (d < .05) { w.wait = 1 + rnd() * 3; if (rnd() < .25) { w.say = SAY[Math.floor(rnd() * SAY.length)]; w.sayT = 2.5; } }
       else { const st = Math.min(d, w.sp * dt * (onRoad(w.x, w.z) ? 1.3 : 1)); w.x += dx / d * st; w.z += dz / d * st; mv = true; if (Math.abs(dx) > .01) w.face = dx > 0 ? -1 : 1; } }
     w.grp.position.set(w.x, GY, w.z); w.mesh.position.y = mv ? Math.abs(Math.sin(t * 9 + w.ph)) * .12 : 0;
-    const ry = w.face > 0 ? 0 : Math.PI; w.mesh.rotation.y += (ry - w.mesh.rotation.y) * Math.min(1, dt * 9);   // 向きを変えるとき、紙がくるっと回る
+    const fx = w.face > 0 ? 1 : -1; w.mesh.scale.x += (fx - w.mesh.scale.x) * Math.min(1, dt * 10);   // 向きを変えるとき、紙がくるっと回る（横はばだけ変わる。縦は変えない）
     if (w.sayT > 0) { if (!w.el) { w.el = document.createElement('div'); w.el.className = 'say'; w.el.textContent = w.say; document.body.appendChild(w.el); }
       const [sx, sy] = scr(w.x, GY + 1.9, w.z); w.el.style.left = sx + 'px'; w.el.style.top = sy + 'px'; }
   });
