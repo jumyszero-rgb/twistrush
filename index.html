@@ -11698,7 +11698,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         if (!x) return '<button class="twp empty' + (townSel === i ? ' sel' : '') + '" data-twp="' + i + '">＋</button>';
         const b = TB[x.b], bld = isBuilding(x);
         return '<button class="twp b-' + x.b + (townSel === i ? ' sel' : '') + (bld ? ' bld' : '') + '" data-twp="' + i + '">' +
-          (TOWN_ART ? '<img alt="" src="img/town/' + x.b + '_' + (lvNow(x) >= 5 ? 3 : lvNow(x) >= 3 ? 2 : 1) + '.webp">' : '<i>' + b.i + '</i>') +
+          (TOWN_ART ? '<img alt="" src="img/town3d/' + x.b + '_' + Math.max(1, Math.min(5, lvNow(x))) + '.webp">' : '<i>' + b.i + '</i>') +
           '<em>Lv' + Math.max(1, lvNow(x)) + '</em>' + (x.crew.length ? '<u>👤' + x.crew.length + '</u>' : '') + (bld ? '<s>🔨' + tLeft(x) + '</s>' : '') + '</button>'; }).join('') + '</div>';
     const x = townSel >= 0 ? town.p[townSel] : null;
     if (townSel >= 0 && !x) {
