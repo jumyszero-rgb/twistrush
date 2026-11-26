@@ -167,8 +167,27 @@ const hemi = new THREE.HemisphereLight(0xffffff, 0x9fbf80, 1.1); scene.add(hemi)
 const sun = new THREE.DirectionalLight(0xffffff, 1.5); sun.position.set(-10, 20, 12); scene.add(sun);
 
 const DECO_H = {wall1: 2.2, wall2: 2.4, wall3: 3.2, gate1: 3.4, tower1: 4.6, tree1: 3.4, tree2: 3.6, tree3: 3.6, tree4: 3.2, bush1: 1.9, rock1: 1.8, flower1: 1.6, fence1: 1.7, bench1: 1.7, lamp1: 2.6, fountain1: 2.6};
-function addDeco(d){ const s = billboard('img/town3d/' + d.k + '.webp', d.x, d.z, DECO_H[d.k] || 2.4, {sw: .45, kind: 'deco', flip: (Math.round(d.x * 7 + d.z * 3) & 1) === 1}); s.d = d; decoS.push(s); return s; }
-const blockedAt = (x, z, r = 0) => decoS.some(s => Math.hypot(s.x - x, s.z - z) < .55 + r) || sprites.some(s => s.kind === 'bld' && Math.hypot(s.x - x, s.z - .9 - z) < 1.9 + r);
+// 橋（2026-11-26 本人「あと橋だな」）：絵ではなく3Dで組み立てる。川の流れに直角に、川の上に置く。上はキャラが歩ける
+const BRIDGE = {bridge1: 1, bridge2: 1};
+function riverDir(x, z){ let best = 1e9, ang = 0, px = x, pz = z;
+  M.rivers.forEach(L => { for (let i = 1; i < L.length; i++) { const [ax, az] = L[i - 1], [bx, bz] = L[i], dx = bx - ax, dz = bz - az, t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / (dx * dx + dz * dz))), qx = ax + dx * t, qz = az + dz * t, d = Math.hypot(x - qx, z - qz);
+    if (d < best) { best = d; ang = Math.atan2(dz, dx); px = qx; pz = qz; } } });
+  return {ang, px, pz}; }
+function makeBridge(d){
+  const {ang} = riverDir(d.x, d.z), g = new THREE.Group(), stone = d.k === 'bridge2', L = RW * 2 + 2.6, W = 1.7;
+  const mat = c => lam({color: c}), box = (w, h, l, x, y, z, m) => { const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, l), m); b.position.set(x, y, z); g.add(b); return b; };
+  const lift = u => stone ? Math.cos(u / (L / 2) * Math.PI / 2) * .55 : 0;               // 石の橋は少しアーチ
+  if (stone) { const m1 = mat(0xb8b2a6), m2 = mat(0x8f897e);
+    for (let i = 0; i < 9; i++) { const u = -L / 2 + (i + .5) * L / 9; box(L / 9 + .02, .28, W, u, .05 + lift(u), 0, i % 2 ? m1 : m2); box(L / 9 + .02, .38, .18, u, .32 + lift(u), W / 2 - .09, m2); box(L / 9 + .02, .38, .18, u, .32 + lift(u), -W / 2 + .09, m2); } }
+  else { const m1 = mat(0xc08a52), m2 = mat(0xa8743f), m3 = mat(0x6e4524);
+    for (let i = 0; i < 11; i++) { const u = -L / 2 + (i + .5) * L / 11; box(L / 11 - .04, .14, W, u, .05, 0, i % 2 ? m1 : m2); }
+    [-1, 1].forEach(sd => { box(L, .08, .08, 0, .55, sd * (W / 2 - .05), m3); for (let i = 0; i <= 4; i++) box(.1, .55, .1, -L / 2 + i * L / 4, .3, sd * (W / 2 - .05), m3); }); }
+  g.rotation.y = -ang + Math.PI / 2; g.position.set(d.x, GY - .12, d.z); world.add(g);
+  const s = {grp: g, x: d.x, z: d.z, d, kind: 'bridge', ang, L, W, mat: {opacity: 1, color: {set(){}}}}; decoS.push(s); return s; }
+const onBridge = (x, z) => decoS.some(s => { if (s.kind !== 'bridge') return false; const c = Math.cos(-s.ang + Math.PI / 2), sn = Math.sin(-s.ang + Math.PI / 2), dx = x - s.x, dz = z - s.z;
+  const u = dx * c - dz * sn, w = dx * sn + dz * c; return Math.abs(u) < s.L / 2 + .3 && Math.abs(w) < s.W / 2; });
+function addDeco(d){ if (BRIDGE[d.k]) return makeBridge(d); const s = billboard('img/town3d/' + d.k + '.webp', d.x, d.z, DECO_H[d.k] || 2.4, {sw: .45, kind: 'deco', flip: (Math.round(d.x * 7 + d.z * 3) & 1) === 1}); s.d = d; decoS.push(s); return s; }
+const blockedAt = (x, z, r = 0) => decoS.some(s => s.kind !== 'bridge' && Math.hypot(s.x - x, s.z - z) < .55 + r) || sprites.some(s => s.kind === 'bld' && Math.hypot(s.x - x, s.z - .9 - z) < 1.9 + r);
 
 function build(D, mapIdx){
   DATA = D; M = MAPS[mapIdx] || MAPS[0];
@@ -193,7 +212,7 @@ function build(D, mapIdx){
     const s = billboard(w.img, x, z, 1.6, {sw: .35, kind: 'char'}); walkers.push(Object.assign(s, {tx: x, tz: z, wait: rnd() * 2, ph: rnd() * 6, face: 1, sp: .9 + rnd() * .6})); });
   setTime();
 }
-const free = (x, z) => inIsland(x, z, 1.1) && (!onRiver(x, z) || onRoad(x, z)) && !blockedAt(x, z, -.1);
+const free = (x, z) => inIsland(x, z, 1.1) && (!onRiver(x, z) || onRoad(x, z) || onBridge(x, z)) && !blockedAt(x, z, -.1);
 function pickT(w){ for (let i = 0; i < 30; i++) { const x = w.x + (rnd() - .5) * 8, z = w.z + (rnd() - .5) * 8; let ok = free(x, z); for (let k = 1; ok && k <= 12; k++) ok = free(w.x + (x - w.x) * k / 12, w.z + (z - w.z) * k / 12); if (ok) { w.tx = x; w.tz = z; return; } } w.wait = 1; }
 const SAY = ['いい天気！', 'お店に行こうかな', 'ふぁ〜', 'パズルしたい！', '♪', 'こんにちは！', 'いい街だね', 'がんばるぞ！', '木がふえたね'];
 
@@ -264,6 +283,7 @@ const TOOLS = [{k: 'road', n: '道', i: '🟫'}, {k: 'tree1', n: 'りんご'}, {
   {k: 'rock1', n: '岩'}, {k: 'fence1', n: '柵'}, {k: 'bench1', n: 'ベンチ'}, {k: 'lamp1', n: '街灯'}, {k: 'fountain1', n: '噴水'},
   // 2026-11-26 本人「将来、敵が攻めてくる。街の壁や城壁も建てたい」：絵ができたものから出る（img/town3d/○○.webp があるもの）
   {k: 'wall1', n: '木の壁', opt: 1}, {k: 'wall2', n: '石の壁', opt: 1}, {k: 'wall3', n: '城壁', opt: 1}, {k: 'gate1', n: '門', opt: 1}, {k: 'tower1', n: '見張り塔', opt: 1},
+  {k: 'bridge1', n: '木の橋', i: '🌉'}, {k: 'bridge2', n: '石の橋', i: '🌁'},
   {k: 'move', n: 'うごかす', i: '✋'}, {k: 'erase', n: 'とりのぞく', i: '🧹'}, {k: 'map', n: '島をかえる', i: '🗺'}];
 TOOLS.forEach(t => { if (!t.opt) return; t.hide = 1; const im = new Image(); im.onload = () => { t.hide = 0; if (edit) drawPal(); }; im.src = 'img/town3d/' + t.k + '.webp'; });
 let edit = false, tool = 'road', coins = 0, moving = null;
@@ -277,13 +297,17 @@ async function editTap(cx, cy){
   const [x, z] = groundAt(cx, cy);
   if (tool === 'erase') {
     let bi = -1, bd = 1.1; decoS.forEach((s, i) => { const d = Math.hypot(s.x - x, s.z - z); if (d < bd) { bd = d; bi = i; } });
-    if (bi >= 0) { const s = decoS[bi], r = await req('unplace', {d: s.d}); if (!r.ok) return toast(r.msg || 'できませんでした'); decoS.splice(bi, 1); unbill(s); return; }
+    if (bi >= 0) { const s = decoS[bi], r = await req('unplace', {d: s.d}); if (!r.ok) return toast(r.msg || 'できませんでした'); decoS.splice(bi, 1); if (s.kind === 'bridge') world.remove(s.grp); else unbill(s); return; }
     const k = rk(Math.round(x / RG), Math.round(z / RG)); if (roads.has(k)) { roads.delete(k); const r = await req('roads', {list: [...roads], add: 0}); if (!r.ok) { roads.add(k); return toast(r.msg || 'できませんでした'); } drawGround(); }
     return; }
   if (tool === 'road') return;                                // 道は押した・なぞったところ（下の paintRoad）
   if (tool === 'move' && !moving) { let bi = -1, bd = 1.1; decoS.forEach((s, i) => { const d = Math.hypot(s.x - x, s.z - z); if (d < bd) { bd = d; bi = i; } });
-    if (bi < 0) return toast('うごかしたい木や飾りをタップしてね'); moving = decoS[bi]; moving.mat.opacity = .5; drawPal(); return; }
+    if (bi < 0) return toast('うごかしたい木や飾りをタップしてね'); if (decoS[bi].kind === 'bridge') return toast('橋はうごかせません（とりのぞいて置きなおしてね）'); moving = decoS[bi]; moving.mat.opacity = .5; drawPal(); return; }
   if (!inIsland(x, z, .9)) return toast('島の上に置いてね');
+  if (BRIDGE[tool]) { if (riverD(x, z) > RW + .6) return toast('橋は川の上に置いてね'); const {px, pz} = riverDir(x, z);
+    if (decoS.some(s => s.kind === 'bridge' && Math.hypot(s.x - px, s.z - pz) < 3)) return toast('ほかの橋と近すぎます');
+    if (!inIsland(px, pz, 1.5)) return toast('島の中の川に置いてね');
+    const d = {k: tool, x: Math.round(px * 100) / 100, z: Math.round(pz * 100) / 100}, r = await req('place', {d}); if (!r.ok) return toast(r.msg || 'シルバーが足りません'); addDeco(d); setCoins(r.coins); return; }
   if (onRiver(x, z) || onRoad(x, z)) return toast('川や道の上には置けません');
   if (nearPlot(x, z, 1.9)) return toast('建物を建てる土地には置けません');
   if (moving) { const ms = moving; decoS.splice(decoS.indexOf(ms), 1); const bad = blockedAt(x, z); decoS.push(ms); if (bad) return toast('ほかのものと近すぎます');
@@ -350,7 +374,7 @@ addEventListener('message', e => { if (e.origin !== location.origin || !e.data |
 send({type: 'ready'});
 setTimeout(() => { $('hint').style.opacity = 0; }, 7000);
 setTimeout(() => { if (DATA) return;                       // 単体で開いたとき：見本
-  PRICE = {road: 20, move: 50, tree1: 300, tree2: 300, tree3: 300, tree4: 300, bush1: 200, flower1: 300, rock1: 150, fence1: 100, bench1: 400, lamp1: 500, fountain1: 2000};
+  PRICE = {road: 20, move: 50, bridge1: 1000, bridge2: 2500, tree1: 300, tree2: 300, tree3: 300, tree4: 300, bush1: 200, flower1: 300, rock1: 150, fence1: 100, bench1: 400, lamp1: 500, fountain1: 2000};
   const D = {map: null, plots: Array.from({length: 25}, (_, i) => i === 12 ? {t: 'bld', img: 'img/town3d/home_1.webp', tag: '自分の家 Lv1'} : i < 10 ? {t: 'empty'} : {t: 'lock'}),
     walkers: ['g20', 'g42', 'g51'].map(k => ({img: 'img/walk/' + k + '.webp'})), deco: [], roads: null};
   // 土地の番号は「近い順」の並び（ゲームと同じ）にする
