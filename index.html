@@ -7611,6 +7611,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     (fx || []).forEach(f => {
       const k = f[0];
       if (k === 'heart') o.heal += 10 * f[1]; else if (k === 'sheart') o.heal += 30 * f[1]; else if (k === 'gheart') o.heal += 50 * f[1]; else if (k === 'heal') o.heal += f[1]; else if (k === 'regen') o.heal += f[1] * 0.8;
+      else if (k === 'drain') { o.dmg += 0.5 * f[1]; o.heal += f[1] * f[2] / 100; }
       else if (k === 'buf' || k === 'atk2' || k === 'def2' || k === 'chg' || k === 'score') o.buf += fxPow([f]);
       else if (k === 'eslow' || k === 'mslow' || k === 'stop') o.deb += fxPow([f]);
       else if (k === 'crit') o.crit += f[1];
@@ -8012,7 +8013,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.324';
+  const APP_VER = '0.9.325';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -9862,7 +9863,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     {k: "g73", name: "キキ", grade: "N", type: "spd", base: [5, 6, 3, 9], bio: "こうもりのフードをかぶった女の子。昼間はねむくて、夜になると元気いっぱい。耳がよくて、ないしょ話もすぐ聞こえる。", sp: {n: "ちょうおんぱ", fx: [["eslow", 20, 4]]}},
     {k: "g74", name: "カゲロウ", grade: "N", type: "def", base: [7, 3, 8, 4], bio: "かげから生まれた、はずかしがり屋の子。紫のランタンをいつも大事に持っている。明るい所が苦手で、すぐ物かげにかくれる。", sp: {n: "かげぼうし", fx: [["cut", 30]]}},
     {k: "g75", name: "マリオン", grade: "R", type: "spd", base: [8, 11, 7, 14], bio: "夜の劇場であやつり人形を踊らせる人形使い。光る糸で、人形も敵も思いのまま。人形には一体ずつ名前がある。", sp: {n: "あやつり糸", fx: [["eslow", 30, 5]]}},
-    {k: "g76", name: "エリザ", grade: "SR", type: "atk", base: [15, 20, 13, 13], bio: "古いお城に住む吸血姫。バラの杖で相手の力をうばいとる。トマトジュースが好物なのは、ないしょ。", sp: {n: "血のくちづけ", fx: [["dmg", 10]]}, ougi: {n: "紅の晩餐会", fx: [["dmg", 15], ["octa", 5], ["buf", "atk", 8, 250], ["heart", 3]]}},
+    {k: "g76", name: "エリザ", grade: "SR", type: "atk", base: [15, 20, 13, 13], bio: "古いお城に住む吸血姫。バラの杖で相手の力をうばいとる。トマトジュースが好物なのは、ないしょ。", sp: {n: "血のくちづけ", fx: [["drain", 10, 50]]}, ougi: {n: "紅の晩餐会", fx: [["dmg", 15], ["octa", 5], ["buf", "atk", 8, 250], ["heart", 3]]}},
     {k: "g77", name: "ホクホ", grade: "N", type: "hp", base: [9, 4, 5, 4], bio: "冬の町で焼きいもを売る男の子。屋台を引いて、どこへでも出かけていく。売れ残りは、自分でおいしく食べる。", sp: {n: "ほかほか焼きいも", fx: [["heal", 9]]}},
     {k: "g78", name: "ルシア", grade: "N", type: "def", base: [6, 4, 8, 4], bio: "雪の町でマッチを売る女の子。マッチをすると、小さな火の中に夢が見える。寒くても、笑顔はわすれない。", sp: {n: "マッチのあかり", fx: [["octa", 3]]}},
     {k: "g79", name: "ボーボ", grade: "R", type: "atk", base: [9, 15, 6, 10], bio: "火を吹く大道芸人の男の子。たいまつのお手玉は百発百中。拍手が大きいほど、炎も大きくなる。", sp: {n: "火吹き芸", fx: [["clr", 7]]}},
@@ -13665,6 +13666,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       case 'crit': p += 0.6 * f[1]; break;
       case 'cut': p += 0.4 * f[1]; break;
       case 'dmg': p += 0.5 * f[1]; break;
+      case 'drain': p += 0.5 * f[1] + 0.6 * f[1] * f[2] / 100; break;   // 吸血：直接ダメージ＋その一部を回復
       case 'doom': p += f[1] === 'all' ? 36 : 18; break;
       case 'shuf': p += 4 + 0.15 * (f[1] || 0); break;
       case 'tempest': p += 0.4 * (f[1] || 30) + 3; break;
@@ -14247,6 +14249,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     : f[0] === 'heart' ? 'ブロンズハート（全色10%回復）を' + f[1] + '個ためる' : f[0] === 'sheart' ? 'シルバーハート（全色30%回復）を' + f[1] + '個ためる' : f[0] === 'buf' ? f[2] + '秒間 ' + ZST[f[1]] + 'が' + f[3] + '%になる'
     : f[0] === 'shuf' ? (f[1] ? '盤面をシャッフルして、' + f[1] + '%くらいをそろう並びにする' : '盤面をシャッフルする') : f[0] === 'cut' ? 'いちばんたまっている色のカラーHPを' + f[1] + '%下げる'
     : f[0] === 'dmg' ? '相手のHPに直接 ' + f[1] + '%のダメージ'
+    : f[0] === 'drain' ? '相手のHPに直接 ' + f[1] + '%のダメージ。与えたダメージの' + f[2] + '%を吸血して回復する'
     : f[0] === 'cross' ? 'ランダムな場所に十字の形で、合わせて' + f[1] + '個消す'
     : f[0] === 'rect' ? 'ランダムな場所の' + f[1] + '×' + f[2] + 'を消す'
     : f[0] === 'rects' ? f[1] + '×' + f[2] + 'を' + f[3] + 'か所消す'
@@ -14296,6 +14299,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     const t = (() => { switch (f[0]) {
       case 'clr': case 'octa': case 'octaDrop': case 'heart': case 'sheart': case 'gheart': case 'chg': case 'stop': case 'heal': case 'crit': return [f[0], r(f[1])];
       case 'cut': case 'dmg': return [f[0], r(f[1], 5)];
+      case 'drain': return [f[0], r(f[1], 5), f[2]];
       case 'score': return [f[0], r(f[1] / 100) * 100];
       case 'buf': return [f[0], f[1], f[2], 100 + r(f[3] - 100, 10)];
       case 'eslow': case 'mslow': return [f[0], r(f[1], 5), f[2]];
@@ -14326,7 +14330,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   // ★が1つ上がるごとに、必ずどこかが強くなるようにする（同じ中身の★が続かない）。奥義の★0と★1は同じ（★2から育つ）
   const NUMP = {clr: [[1, 1]], cross: [[1, 1]], octa: [[1, 1]], octaDrop: [[1, 1]], heart: [[1, 1]], sheart: [[1, 1]], gheart: [[1, 1]], chg: [[1, 1]], stop: [[1, 1]],
-    heal: [[1, 1]], atk2: [[1, 1]], def2: [[1, 1]], crit: [[1, 1]], cut: [[1, 2]], dmg: [[1, 2]], rows: [[1, 1]], rect: [[1, 1], [2, 1]], octaRect: [[1, 1], [2, 1]],
+    heal: [[1, 1]], atk2: [[1, 1]], def2: [[1, 1]], crit: [[1, 1]], cut: [[1, 2]], dmg: [[1, 2]], drain: [[1, 2]], rows: [[1, 1]], rect: [[1, 1], [2, 1]], octaRect: [[1, 1], [2, 1]],
     rects: [[3, 1]], buf: [[3, 5], [2, 1]], eslow: [[1, 2], [2, 1]], mslow: [[1, 2], [2, 1]], score: [[1, 100]], shuf: [[1, 2]], tempest: [[1, 2]]};
   const fxCopy = f => { const g = f.slice(); g._k = f._k; return g; };
   function fxBump(list, full, fx){
@@ -14498,6 +14502,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       else if (f[0] === 'shuf') { if (f[1]) tempest(f[1] / 100); else shuffleBoard(); }
       else if (f[0] === 'cut') cutOne(f[1] / 100);
       else if (f[0] === 'dmg') { directDmg(f[1] / 100); msg.push('相手に直接 ' + f[1] + '%ダメージ'); }
+      else if (f[0] === 'drain') { directDmg(f[1] / 100); healPct(f[1] * f[2] / 10000, 'big'); msg.push('🩸 吸血：相手に ' + f[1] + '%ダメージ・' + Math.round(f[1] * f[2] / 100 * 10) / 10 + '%回復'); }   // 2026-11-26 本人「エリザの必殺技を吸血に」
       else if (f[0] === 'crit') critDmg(f[1]);
       else if (f[0] === 'gheart') stockHeart('g', f[1]);
       else if (f[0] === 'sheart') stockHeart('s', f[1]);
