@@ -795,8 +795,8 @@ body.on-menu .battlemain{opacity:0;}
   .mtile .mie{font-style:normal;font-size:46px;line-height:1.1;filter:drop-shadow(0 3px 4px rgba(0,0,0,.5))}
   #hubStoryBtn,#hubChalBtn,#hubVsBtn,#gachaBtn,#boxBtn{position:relative}
   #hubStoryBtn.dot::after,#hubChalBtn.dot::after,#hubVsBtn.dot::after,.mview .mtile.dot:not(.passbtn)::after{content:'';position:absolute;top:8px;right:10px;width:12px;height:12px;border-radius:50%;background:#ff4f7b;box-shadow:0 0 0 2px #fff}
-  #menu.overlay.v-chal{background:linear-gradient(rgba(10,20,60,.55),rgba(10,10,40,.75)),radial-gradient(circle at 50% 30%,#3b6fd8,#141a4a 75%)}
-  #menu.overlay.v-vs{background:linear-gradient(rgba(20,8,40,.45),rgba(20,8,40,.8)),url(img/howto/vsintro.webp) center/cover no-repeat,#24103f}
+  #menu.overlay.v-chal{background:linear-gradient(rgba(10,15,50,.25),rgba(10,10,40,.45)),url(img/menu/bg_chal.webp) center/cover no-repeat,#141a4a}
+  #menu.overlay.v-vs{background:linear-gradient(rgba(20,8,40,.2),rgba(20,8,40,.45)),url(img/menu/bg_vs.webp) center/cover no-repeat,#24103f}
   #menu.v-chal .logo,#menu.v-vs .logo{opacity:.9}
   #mvFall{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:-1} #mvFall img{position:absolute;top:-90px;opacity:.85;animation:mvFall linear forwards;filter:drop-shadow(0 4px 6px rgba(0,0,0,.4))}
   @keyframes mvFall{to{transform:translateY(calc(100vh + 120px)) rotate(var(--r))}}
@@ -8005,7 +8005,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.314';
+  const APP_VER = '0.9.315';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -9953,7 +9953,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   //   極（究極進化）：さらにLV上限+30・★上限+3（SRなら LV100・★9）・LR5段くらい（基本値×1.8）。表示は「LR」＋「極・」・虹の枠
   //   LV10ごとに常時スキル（技の発動ではなく、いつでも効く）。チームの4人全員に効く（ストーリー・遠征）
   //   art：進化後の立ち絵ができたら true にする（それまでは今の絵を使う）
-  const EVO2 = {ichigo: {art: [false, false]}, mocha: {art: [false, false]}};
+  const EVO2 = {ichigo: {art: [true, true]}, mocha: {art: [true, true]}};   // 2026-11-26 立ち絵がそろった
   const EVO2_COST = [{mat: 'evo_c', n: 20, orb: 5, silver: 5000}, {mat: 'evo_g', n: 20, orb: 10, silver: 15000}];   // 2026-11-26 本人：ボス戦（オート）と街でも出るので、素材は20個のまま   // 2026-11-25 本人「シルバー30000は無理ゲー」→ 5,000／15,000
   const EVO2_LV = [0, 20, 50], EVO2_STAR = [0, 2, 5], EVO2_ST = [1, 1.6, 1.8], EVO2_TAG = ['', '覚醒', '極・'];
   const evoOf = u => (u && EVO2[u.id] && u.evo) || 0;
@@ -12694,7 +12694,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   function setMView(v){
     mView = v; Object.keys(MV_ID).forEach(k => $(MV_ID[k]).classList.toggle('hidden', k !== v));
     const m = $('menu'); ['story', 'chal', 'vs'].forEach(k => m.classList.toggle('v-' + k, k === v));
-    m.scrollTop = 0; mvFall(v === 'chal'); hubDots();
+    m.scrollTop = 0; mvFall(false); hubDots();   // 2026-11-26：背景の絵にブロックが入ったので、落ちるブロックの動きは止めた
   }
   Object.keys(MVIEW).forEach(b => $(b).addEventListener('click', () => { audio(); setMView(MVIEW[b]); }));
   document.querySelectorAll('[data-mvback]').forEach(b => b.addEventListener('click', () => setMView('top')));
