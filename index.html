@@ -1502,6 +1502,19 @@ body.on-menu .battlemain{opacity:0;}
   #buffBar .bf em{font-style:normal;} #buffBar .bf b{font-size:11px;}
   #buffBar .bf.atk{color:#ff8a7a;} #buffBar .bf.def{color:#7ac8ff;} #buffBar .bf.spd{color:#ffe27a;} #buffBar .bf.slow{color:#c9a2ff;} #buffBar .bf.stop{color:#9ff;} #buffBar .bf.heal{color:#7dffb0;}
   #buffBar .bf.end{animation:bfBlink .5s steps(2) infinite;}
+  #buffBar .bf.deb{color:#ff6b8a;background:rgba(60,0,20,.75);} #buffBar .bf.en{color:#ffb35c;background:rgba(40,20,0,.7);}
+  /* 2026-11-27 本人「効果中のビジュアル：出血は画面を赤く、毒は紫に光らせる。感電はビリビリ揺らして2秒止まる→2秒動ける。真ん中に感電中」 */
+  #vfxEdge{position:fixed;inset:0;pointer-events:none;z-index:60;opacity:0;transition:opacity .35s;box-shadow:inset 0 0 70px 22px var(--vc,rgba(255,40,40,.85));}
+  #vfxEdge.on{opacity:1;animation:vfxPulse 1.3s ease-in-out infinite;}
+  #vfxEdge.burn{--vc:rgba(255,40,40,.85);} #vfxEdge.poison{--vc:rgba(170,60,255,.85);} #vfxEdge.ice{--vc:rgba(150,225,255,.9);} #vfxEdge.shock{--vc:rgba(255,232,60,.95);animation:vfxZap .18s steps(2) infinite;}
+  @keyframes vfxPulse{50%{opacity:.5;}} @keyframes vfxZap{0%{opacity:1;}50%{opacity:.55;}}
+  #shockTxt{position:fixed;left:50%;top:44%;transform:translate(-50%,-50%);z-index:61;font-size:30px;font-weight:900;color:#fff36a;text-shadow:0 0 14px #ffd000,0 3px 0 #7a5a00;pointer-events:none;display:none;letter-spacing:2px;}
+  #shockTxt.on{display:block;} #shockTxt small{display:block;text-align:center;font-size:13px;color:#fff;text-shadow:0 1px 3px #000;letter-spacing:0;}
+  body.pshock canvas#game{animation:zapShake .1s steps(2) infinite;} body.pshockLock canvas#game{filter:brightness(1.3) saturate(.5) contrast(1.2);}
+  @keyframes zapShake{0%{transform:translate(2px,-1px);}50%{transform:translate(-2px,1px);}}
+  #enArt.eb-burn{filter:drop-shadow(0 0 10px #ff3a2a) saturate(1.5);animation:ebPulse .9s ease-in-out infinite;} #enArt.eb-poison{filter:drop-shadow(0 0 10px #a03cff) hue-rotate(40deg) saturate(1.3);animation:ebPulse 1.2s ease-in-out infinite;}
+  #enArt.eb-ice{filter:drop-shadow(0 0 10px #9fe3ff) saturate(.4) brightness(1.15);} #enArt.eb-shock{filter:drop-shadow(0 0 12px #ffe23c) brightness(1.3);animation:zapShake .1s steps(2) infinite;} #enArt.eb-weak{filter:brightness(.75) saturate(.7);}
+  @keyframes ebPulse{50%{filter:drop-shadow(0 0 2px transparent);}}
   @keyframes bfBlink{50%{opacity:.35}}
   #heartTray{position:absolute;z-index:12;display:flex;gap:3px;transform:translateY(calc(-100% - 6px));pointer-events:none;}
   #heartTray button{width:30px;height:30px;border:2px solid #fff;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffd1e2,#ff4f8b);font-size:15px;line-height:1;padding:0;box-shadow:0 2px 6px rgba(0,0,0,.35),0 0 8px rgba(255,90,150,.7);animation:hpop .35s cubic-bezier(.2,1.6,.4,1) both;touch-action:manipulation;}
@@ -5080,10 +5093,11 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (!vsOn || !n) return;
     spawnSay(n); playAnim('me', 'atk');          // 自分の攻撃はセリフと動きで見せる
     if (isZako()) zakoFx('hit');                   // 暴走ブロックは当たると揺れる
+    if (gameMode === 'story' && on2(pblind) && Math.random() > pblind[0]) { floatTxt('MISS'); return; }   // 閃光などで命中ダウン
     let dealt = 0;
-    const crR = (wCrit[1] && now() < wCrit[1] ? wCrit[0] : 0) + (eqT.crit || 0) / 100, crit = crR > 0 && Math.random() < crR;   // 武器・防具・アクセの効果：クリティカルは1.5倍（＋クリティカルダメージ）
+    const crR = (wCrit[1] && now() < wCrit[1] ? wCrit[0] : 0) + (eqT.crit || 0) / 100 + (on2(critUp) ? critUp[0] : 0), crit = crR > 0 && Math.random() < crR;   // 武器・防具・アクセの効果：クリティカルは1.5倍（＋クリティカルダメージ）
     const nCol = dec ? dec.filter(x => x).length : 0;
-    const cm = (crit ? 1.5 + (eqT.critDmg || 0) / 100 : 1) * (nCol >= 2 && eqT.sync ? 1 + eqT.sync / 100 : 1) * (eqT.low && Math.max(...stacks) >= CFG.STACK_MAX / 2 ? 1 + eqT.low / 100 : 1)
+    const cm = (crit ? Math.max(1.5, on2(critUp) ? critUp[1] : 0) + (eqT.critDmg || 0) / 100 : 1) * (nCol >= 2 && eqT.sync ? 1 + eqT.sync / 100 : 1) * (eqT.low && Math.max(...stacks) >= CFG.STACK_MAX / 2 ? 1 + eqT.low / 100 : 1)
       * (1 + (eqT.dmgP || 0) / 100) * (chain >= 4 && eqT.chain4 ? 1 + eqT.chain4 / 100 : 1) * (chain >= 2 && eqT.chainP ? 1 + eqT.chainP / 100 : 1)
       * (eqT.dragon && /竜|龍|ドラゴン|ドレイク|ワイバーン/.test((cpus[0] && cpus[0].name) || '') ? 1 + eqT.dragon / 100 : 1) * (ogDmgUntil && now() < ogDmgUntil ? 1.25 : 1) * (eqT.darkMul || 1);
     const pr = wPierce[1] && now() < wPierce[1] ? wPierce[0] : 0;
@@ -5349,6 +5363,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (!running && overFx && !afterShown) { showEnemyWin(showOver); return; }
     if (inputMode === 'key') return;                                 // キー操作モードでは盤面のタップ・ドラッグを使わない
     if (!running) return;
+    if (pshockLock()) { try { navigator.vibrate && navigator.vibrate(30); } catch (_) {} return; }   // 感電でしびれている間は動かせない
     cvRect = canvas.getBoundingClientRect();
     if (autoOn) return;                                              // オート中は盤面をさわれない
     audio();
@@ -7612,8 +7627,9 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       const k = f[0];
       if (k === 'heart') o.heal += 10 * f[1]; else if (k === 'sheart') o.heal += 30 * f[1]; else if (k === 'gheart') o.heal += 50 * f[1]; else if (k === 'heal') o.heal += f[1]; else if (k === 'regen') o.heal += f[1] * 0.8;
       else if (k === 'drain') { o.dmg += 0.5 * f[1]; o.heal += f[1] * f[2] / 100; }
-      else if (k === 'buf' || k === 'atk2' || k === 'def2' || k === 'chg' || k === 'score') o.buf += fxPow([f]);
-      else if (k === 'eslow' || k === 'mslow' || k === 'stop') o.deb += fxPow([f]);
+      else if (['buf', 'atk2', 'def2', 'chg', 'score', 'buf2', 'allup', 'pierce', 'flip', 'guard', 'reflect', 'field', 'cleanse', 'parry', 'evade'].includes(k)) o.buf += fxPow([f]);
+      else if (['eslow', 'mslow', 'stop', 'edeb', 'shock', 'erew'].includes(k)) o.deb += fxPow([f]);
+      else if (k === 'critup') o.crit += f[1] * f[3] / 30;
       else if (k === 'crit') o.crit += f[1];
       else o.dmg += fxPow([f]);
     });
@@ -8013,7 +8029,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.328';
+  const APP_VER = '0.9.329';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -8590,7 +8606,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   // ---- 動かす部分：枠を動かす → 回す。人がさわっているくらいの速さで ----
   const AUTO_MOVE_MS = 170, AUTO_ROT_MS = 260;
   function autoTick(t){
-    if (pausedAt || bombPick) return;
+    if (pausedAt || bombPick || pshockLock()) return;   // 感電でしびれている間はオートも止まる
     // 技：たまったら使う（ブロックが消えていないときだけ）
     const AL0 = demoOn ? DEMO_AL : AUTO_LV[autoLv] || AUTO_LV.gachi;
     if (phase === 'idle' && skillOn()) { const k = skList.findIndex(s2 => s2.ready);
@@ -10250,7 +10266,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   //   受けるダメージ＝ブロック数×敵の攻撃×（敵の攻撃÷自分の防御）÷自分の体力×STACK_K（カラーHPの目もり）
   //   本人「勝てるように無理やり倍率をかけるのは本末転倒」：受けるダメージに勝手な倍率はかけない。
   //   こちらのHPも敵と同じ「体力×EN_HP_H」。カラーHPは5色×30目もりなので、1ブロック分（同じステータス）＝150÷EN_HP_H 目もり
-  const EN_HP_H = 96, EN_ATK_BASE = 5000;
+  const EN_HP_H = 144, EN_ATK_BASE = 5000;   // 2026-11-27 本人「HPを3倍に」：96→144（ボスは攻撃・防御半分と合わせて、もとの3倍）
   const STACK_K = 30 * 5 / EN_HP_H;
   //   2026-11-23 本人「ザコが弱いのは1回の重さ。中心をザコ6・中ボス8・ボス10に寄せて出る率を割り振る」：[いちばん少ない, いちばん多い, 中心]
   const EN_ATK_RANGE = {boss: [3, 15, 10], mid: [3, 8, 8], normal: [0, 8, 6]};
@@ -10267,10 +10283,10 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   const adMul = () => curStage && curStage.kind === 'boss' ? BOSS_AD : 1;
   const storyV3 = () => gameMode === 'story' && !!curStage;
   function incoming(n){ if (!statOn()) return n;
-    if (storyV3()) { const ea = runEn[1] * ebm() * adMul(), md = myDef() * adMul(); return n * ea * ratioC(ea / Math.max(1, md)) * runAttr.inn * (1 - (eqT.cut || 0) / 100) / Math.max(1, runMy[0]) * STACK_K; }
+    if (storyV3()) { const ea = runEn[1] * ebm() * adMul() * enK('atk'), md = myDef() * adMul(); return n * ea * ratioC(ea / Math.max(1, md)) * runAttr.inn * (1 - (eqT.cut || 0) / 100) * (on2(guard) ? 1 - guard[0] : 1) * rampMul() / Math.max(1, runMy[0]) * STACK_K; }
     const pts = n * runEn[1] * corr(runEn[1], myDef()) * runAttr.inn * (1 - (eqT.cut || 0) / 100); return pts / unitPts() / (gameMode === 'story' ? FIGHT_T : 1); }
   // 与えるダメージ：敵のHPの1目もり＝敵の体力（同じステータスならブロック1個で1目もり）
-  function outgoing(d){ if (!statOn()) return d * atkMul(); if (storyV3()) { const ma = myAtk() * adMul(), ed = runEn[2] * adMul(); return d * ma * ratioC(ma / Math.max(1, ed)) * runAttr.out / Math.max(1, runEn[0]); } return d * myAtk() * corr(myAtk(), runEn[2]) * runAttr.out / Math.max(1, runEn[0]); }
+  function outgoing(d){ if (!statOn()) return d * atkMul(); if (storyV3()) { const ma = myAtk() * adMul(), ed = runEn[2] * adMul() * enK('def') * (on2(defPierce) ? 1 - defPierce[0] : 1); return d * ma * ratioC(ma / Math.max(1, ed)) * attrOut() * rampMul() / Math.max(1, runEn[0]); } return d * myAtk() * corr(myAtk(), runEn[2]) * runAttr.out / Math.max(1, runEn[0]); }
   const enUnitPts = () => statOn() ? Math.max(1, runEn[0]) : 1;
   // スピード：自分が速いほど、外周の光とカラーHPの時計がゆっくりになる
   // 2026-11-20 本人：1エリアのふつうルートは、強さ（戦闘力）はそのままで、敵の速さだけ下げる（練習用。弱すぎると案内の途中で勝ってしまうため）
@@ -13670,6 +13686,23 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       case 'cut': p += 0.4 * f[1]; break;
       case 'dmg': p += 0.5 * f[1]; break;
       case 'drain': p += 0.5 * f[1] + 0.6 * f[1] * f[2] / 100; break;   // 吸血：直接ダメージ＋その一部を回復
+      case 'focus': p += 0.35 * f[1]; break;
+      case 'dot': p += 0.5 * f[1] * f[2]; break;
+      case 'shock': p += 3 * f[1]; break;
+      case 'edeb': p += f[3] / 100 * f[2] * 1.5 / 2.8; break;
+      case 'buf2': p += Math.max(0, f[3] - 100) / 100 * f[2] * 1.5 / 2.8; break;
+      case 'allup': p += Math.max(0, f[2] - 100) / 100 * f[1] * 3 / 2.8; break;
+      case 'pierce': case 'guard': p += f[1] / 100 * f[2] * 1.5 / 2.8; break;
+      case 'reflect': p += f[1] / 100 * f[2] / 2.8; break;
+      case 'field': p += f[1] / 100 * f[2] / 2.8; break;
+      case 'evade': p += (100 - f[1]) / 100 * f[2] * 1.2 / 2.8; break;
+      case 'critup': p += f[1] / 100 * f[3] * f[2] / 100 * 1.5 / 2.8; break;
+      case 'flip': p += (f[1] - 100) / 100 * f[2] * 3 / 2.8; break;
+      case 'cleanse': p += f[1] / 20; break;
+      case 'colorx': p += 6; break;
+      case 'parry': p += 4 * f[1]; break;
+      case 'erew': p += 0.8 * f[1]; break;
+      case 'cols': p += 6 * f[1]; break;
       case 'doom': p += f[1] === 'all' ? 36 : 18; break;
       case 'shuf': p += 4 + 0.15 * (f[1] || 0); break;
       case 'tempest': p += 0.4 * (f[1] || 30) + 3; break;
@@ -13715,8 +13748,23 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   let ebuf = [1, 0], tslow = [0, 0], tstop = 0, octaPend = 0, fxExtra = [], skUsing = null;
   let wdots = [], wPierce = [0, 0], wCrit = [0, 0], wDrain = [0, 0];   // 武器の効果：出血・毒／貫通／クリティカル率／HPドレイン
   let regens = [];                                       // 時間をかけて回復：{per: 1秒ごとの%, end: 終わる時刻, next: 次に回復する時刻, total}
+  // ===== 2026-11-27 スキル作りなおし：新しい効果（本人と決めた。Notion「スキル作りなおし案（2026-11-27）」）=====
+  let zbuf2 = {atk: [1, 0], def: [1, 0], spd: [1, 0]};                         // さらに〇%アップ（重ねがけ）
+  let pdeb = {atk: [1, 0], def: [1, 0], spd: [1, 0]};                          // 敵の技で、こちらにかかったステータスダウン
+  let pdots = [], pshock = [0, 0], pblind = [1, 0], pfield = [0, 0];          // こちらへの継続ダメージ／感電[始まり, 終わり]／命中ダウン／領域展開
+  let enBuf = {atk: [1, 0], def: [1, 0], spd: [1, 0]}, enDeb = {atk: [1, 0], def: [1, 0]}, enRegens = [];   // 敵のバフ・デバフ・じわじわ回復
+  let eshock = 0, evade = [1, 0], defPierce = [0, 0], reflect = [0, 0], critUp = [0, 1.5, 0], flip = [0, 0], guard = [0, 0], parry = 0;
+  // 本人「30秒ごとに双方の攻撃力を上げて、長くてもボス戦1〜5分で終わるように」
+  const RAMP = 1.25, RAMP_MS = 30000; let fightMs = 0, rampStep = 0;
+  const on2 = a => !!(a && a[a.length - 1] && now() < a[a.length - 1]);
+  const rampMul = () => storyV3() ? Math.pow(RAMP, rampStep) : 1;
+  const enK = k => (on2(enBuf[k]) ? enBuf[k][0] : 1) * (enDeb[k] && on2(enDeb[k]) ? enDeb[k][0] : 1);
+  const pshockLock = () => { const t = now(); return pshock[1] > t && Math.floor((t - pshock[0]) / 2000) % 2 === 0; };   // 感電：2秒止まる→2秒動ける→…
+  const debSec = s => s * (on2(pfield) ? 1 - pfield[0] : 1);                    // 領域展開中は、新しくかかるデバフの時間が短い
+  // 属性反転（本人「有利なら重ねがけ。不利の場合は110%相当」）
+  const attrOut = () => { const b = runAttr.out; if (!on2(flip)) return b; return b > 1.001 ? b * flip[0] : b < 0.999 ? 1.1 : flip[0]; };
   const ebm = () => (ebuf[1] && now() < ebuf[1]) ? ebuf[0] : 1;
-  const bm = k => (zbuf[k][1] && now() < zbuf[k][1]) ? zbuf[k][0] : 1;
+  const bm = k => clampF(((zbuf[k][1] && now() < zbuf[k][1]) ? zbuf[k][0] : 1) * (on2(zbuf2[k]) ? zbuf2[k][0] : 1) * (on2(pdeb[k]) ? pdeb[k][0] : 1), 0.2, 4);   // 重ねても4倍まで
   const atkMul = () => ((atkUntil && now() < atkUntil) ? 2 : 1) * bm('atk');
   function defCut(n){ const m = ((defUntil && now() < defUntil) ? 2 : 1) * bm('def'); return m > 1 ? Math.max(0, Math.round(n / m)) : n; }
   const myId = () => (CHARS[myChar] ? CHARS[myChar].id : null);
@@ -13754,9 +13802,10 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     enemySay(name + '！');
     try { playAnim('en', 'atk'); } catch(_) {}
     const before = stacks.slice();
-    addStackAll(EN_SK_DMG[e.kind]);
+    addStackAll(EN_SK_DMG[e.kind]); reflectBack(before);
     const got = Math.round(stacks.reduce((a, v, k) => a + v - before[k], 0) / TYPES * (statOn() ? unitPts() : 1)).toLocaleString();
-    if (ci != null) cutIn({kind: e.kind, ci, enemy: true}, name, ['敵の' + (e.kind === 'sp' ? '必殺技' : '奥義') + '！ 全色のカラーHP +' + got], true);
+    const efx = EN_FX[id] && EN_FX[id][e.kind], el = efx ? runEnemyFx(efx) : [];   // 2026-11-27 本人「回復持ちは回復もする。デバフも当然かかる」
+    if (ci != null) cutIn({kind: e.kind, ci, enemy: true}, name, ['敵の' + (e.kind === 'sp' ? '必殺技' : '奥義') + '！ 全色のカラーHP +' + got].concat(el), true);
     try { e.kind === 'ougi' ? sndPenalty() : sndPenalty(); } catch(_) {}
     penaltyFlash = now();
   }
@@ -13767,17 +13816,20 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     const k = curStage ? (curStage.kind === 'boss' ? 'boss' : curStage.kind === 'mid' ? 'mid' : 'normal') : 'normal';
     const n = enAtkRoll(EN_ATK_RANGE[k]);
     if (n <= 0) { enemySay('ミス！'); return; }
+    if (parry > 0) { parry--; enemySay('ミス！'); floatTxt('見切り！'); return; }                       // 見切り：1回よける
+    if (on2(evade) && Math.random() > evade[0]) { enemySay('ミス！'); floatTxt('回避！'); return; }      // ダメージ回避：敵の命中率ダウン
     try { playAnim('en', 'atk'); } catch(_) {}
     spawnBolt(Math.min(n, 6));
-    addStack(n);
+    const before = stacks.slice(); addStack(n); reflectBack(before);
   }
   function enSkTick(dt){
     if (!enSk.length || !running || pausedAt) return;
     if (tstop && now() < tstop) return;                  // 時止め中はたまらない
-    enAtkCharge += dt * ebm();
+    if (eshock > now()) return;                          // 感電中の敵は止まる
+    enAtkCharge += dt * ebm() * enK('spd');
     if (enAtkCharge >= enAtkMs()) { enAtkCharge = 0; if (phase === 'idle' || phase === 'clear' || phase === 'fall') enemyNormalAttack(); }
     enSk.forEach(e => {
-      e.charge += dt * ebm();                           // 敵のスピードダウン中はゆっくり
+      e.charge += dt * ebm() * enK('spd');              // 敵のスピードダウン中はゆっくり
       if (e.charge >= enMs(e.kind)) { e.charge = 0; if (phase === 'idle' || phase === 'clear' || phase === 'fall') enemyCast(e); }
     });
     drawEnSk();
@@ -13798,6 +13850,9 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     ebuf = [1, 0]; tslow = [0, 0]; tstop = 0; octaPend = 0; regens = [];
     document.body.classList.remove('tstop', 'slowmo');        // 時止めの途中で戦いが終わっても、次の戦いに残さない
     wdots = []; wPierce = [0, 0]; wCrit = [0, 0]; wDrain = [0, 0];
+    zbuf2 = {atk: [1, 0], def: [1, 0], spd: [1, 0]}; pdeb = {atk: [1, 0], def: [1, 0], spd: [1, 0]}; pdots = []; pshock = [0, 0]; pblind = [1, 0]; pfield = [0, 0];
+    enBuf = {atk: [1, 0], def: [1, 0], spd: [1, 0]}; enDeb = {atk: [1, 0], def: [1, 0]}; enRegens = [];
+    eshock = 0; evade = [1, 0]; defPierce = [0, 0]; reflect = [0, 0]; critUp = [0, 1.5, 0]; flip = [0, 0]; guard = [0, 0]; parry = 0; fightMs = 0; rampStep = 0; drawVfx();
     { const tu = curTeam().map(unitOf).filter(Boolean); eqT = gameMode === 'story' ? eqTeamFx(tu) : {};
       eqT.darkMul = eqT.darkAtk && tu.length ? 1 + eqT.darkAtk / 100 * tu.filter(u => attrOf(u.id) === 'dark').length / tu.length : 1;
     }
@@ -13811,7 +13866,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (!skillOn() || pausedAt) return;
     skList.forEach(s2 => {
       if (s2.ready) return;
-      s2.charge = Math.min(skMs(s2), s2.charge + dt * onlSkMul());
+      s2.charge = Math.min(skMs(s2), s2.charge + dt * onlSkMul() * (pshockLock() ? 0 : 1));   // 感電で止まっている間はたまらない
       if (s2.charge >= skMs(s2)) {
         s2.ready = true;
         const msg = (s2.main ? '' : fullName(ALLC[s2.ci]) + 'の') + (s2.kind === 'sp' ? '必殺技チャージ完了！' : '奥義チャージ完了！');
@@ -13831,6 +13886,16 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (ebuf[1] && t >= ebuf[1]) { ebuf = [1, 0]; toast('敵のスピードダウンおわり'); }
     if (tslow[1] && t >= tslow[1]) { tslow = [0, 0]; toast('時間のスロウおわり'); }
     if (tstop && t >= tstop) { tstop = 0; document.body.classList.remove('tstop'); toast('時が動き出した'); }
+    if (running && !pausedAt && storyV3()) {
+      fightMs += dt; const st = Math.floor(fightMs / RAMP_MS);
+      if (st > rampStep) { rampStep = st; const m = Math.round(Math.pow(RAMP, st) * 100) / 100;
+        pops.push({text: '⚔ 攻撃力アップ ×' + m, style: 'combo', r: 2.6, c: 2.5, row: 0, n: 1, t, long: true}); }
+      pdots.forEach(g => { while (g.next <= t && g.next <= g.end) { hurtPct(g.per, g.nm); g.next += 1000; } });   // こちらへの継続ダメージ
+      pdots = pdots.filter(g => g.next <= g.end);
+      enRegens.forEach(g => { while (g.next <= t && g.next <= g.end) { enHeal(g.per); g.next += 1000; } });
+      enRegens = enRegens.filter(g => g.next <= g.end);
+      drawVfx();
+    }
     if (regens.length && running && !pausedAt) {
       regens.forEach(g => { while (g.next <= t && g.next <= g.end) { healPct(g.per / 100, 'tick'); g.next += 1000; } });
       regens = regens.filter(g => g.next <= g.end);
@@ -13884,6 +13949,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   $('skillBar').addEventListener('pointerdown', e => {
     const b = e.target.closest('.skbtn'); if (!b) return;
     e.preventDefault(); e.stopPropagation();
+    if (pshockLock()) { toast('⚡ 感電でしびれて動けない'); return; }
     useSkill(+b.dataset.i);
   });
   // 声を1本だけ鳴らす（読み込めていなければ false）
@@ -14037,15 +14103,34 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (tslow[1]) add('slow', '⏳', '時間 −' + Math.round(tslow[0] * 100) + '%', tslow[1], 0);
     if (tstop) add('stop', '⏸', '時間停止', tstop, 0);
     regens.forEach(g => add('heal', '♥', 'じわじわ回復', g.end, 0));
-    wdots.forEach(g => add('slow', g.nm === '毒' ? '☠' : '🩸', '敵に' + g.nm, g.end, 0));
+    wdots.forEach(g => add('slow', DOT_IC[g.nm] || '🩸', '敵に' + g.nm, g.end, 0));
     if (wPierce[1]) add('atk', '➹', '貫通 ' + Math.round(wPierce[0] * 100) + '%', wPierce[1], 0);
     if (wCrit[1]) add('atk', '✦', 'クリティカル率 +' + Math.round(wCrit[0] * 100) + '%', wCrit[1], 0);
     if (wDrain[1]) add('heal', '🩸', 'HPドレイン ' + Math.round(wDrain[0] * 100) + '%', wDrain[1], 0);
+    Object.keys(zbuf2).forEach(k => { if (on2(zbuf2[k])) add(k, '⏫', 'さらに' + ZST[k] + ' ' + Math.round(zbuf2[k][0] * 100) + '%', zbuf2[k][1], 0); });
+    if (on2(defPierce)) add('atk', '➹', '防御貫通 ' + Math.round(defPierce[0] * 100) + '%', defPierce[1], 0);
+    if (on2(critUp)) add('atk', '✦', 'クリティカル ' + Math.round(critUp[0] * 100) + '%', critUp[2], 0);
+    if (on2(flip)) add('atk', '🔄', '属性反転', flip[1], 0);
+    if (on2(guard)) add('def', '🪨', 'ダメージ −' + Math.round(guard[0] * 100) + '%', guard[1], 0);
+    if (on2(reflect)) add('def', '🔁', '反射 ' + Math.round(reflect[0] * 100) + '%', reflect[1], 0);
+    if (on2(evade)) add('spd', '💨', '敵の命中 ' + Math.round(evade[0] * 100) + '%', evade[1], 0);
+    if (on2(pfield)) add('heal', '🌀', '領域展開', pfield[1], 0);
+    if (parry > 0) L.push({cls: 'def', ic: '🗡', name: '見切り ×' + parry, left: 99000, len: 0, nos: 1});
+    // こちらにかかったデバフ（赤）
+    Object.keys(pdeb).forEach(k => { if (on2(pdeb[k])) add('deb', '⬇', ZST[k] + ' −' + Math.round((1 - pdeb[k][0]) * 100) + '%', pdeb[k][1], 0); });
+    pdots.forEach(g => add('deb', DOT_IC[g.nm] || '🔥', g.nm, g.end, 0));
+    if (pshock[1] > t) add('deb', '⚡', '感電', pshock[1], 0);
+    if (on2(pblind)) add('deb', '💫', '命中 ' + Math.round(pblind[0] * 100) + '%', pblind[1], 0);
+    // 敵のようす（オレンジ）
+    Object.keys(enBuf).forEach(k => { if (on2(enBuf[k])) add('en', '⬆', '敵の' + ZST[k] + ' ' + Math.round(enBuf[k][0] * 100) + '%', enBuf[k][1], 0); });
+    Object.keys(enDeb).forEach(k => { if (on2(enDeb[k])) add('en', '⬇', '敵の' + ZST[k] + ' −' + Math.round((1 - enDeb[k][0]) * 100) + '%', enDeb[k][1], 0); });
+    if (eshock > t) add('en', '⚡', '敵が感電', eshock, 0);
+    enRegens.forEach(g => add('en', '♥', '敵がじわじわ回復', g.end, 0));
     const on = running && L.length > 0;
     el.style.display = on ? '' : 'none'; if (!on) { buffKey = ''; return; }
     el.style.left = (canvas.offsetLeft + gm) + 'px'; el.style.width = (canvas.offsetWidth - gm * 2) + 'px'; el.style.top = (canvas.offsetTop + canvas.offsetHeight - gm) + 'px';
     const key = L.map(x => x.cls + x.name + Math.ceil(x.left / 1000)).join('|'); if (key === buffKey) return; buffKey = key;
-    el.innerHTML = L.map(x => { const s = Math.ceil(x.left / 1000); return '<span class="bf ' + x.cls + (s <= 3 ? ' end' : '') + '"><em>' + x.ic + '</em>' + x.name + '<b>' + s + '秒</b></span>'; }).join('');
+    el.innerHTML = L.map(x => { const s = Math.ceil(x.left / 1000); return '<span class="bf ' + x.cls + (s <= 3 && !x.nos ? ' end' : '') + '"><em>' + x.ic + '</em>' + x.name + (x.nos ? '' : '<b>' + s + '秒</b>') + '</span>'; }).join('');
   }
   function healPct(p, fx){
     if (fx && running) healFx((fx === 'tick' ? '+' + (Math.round(p * 1000) / 10) + '%' : '全色 ' + Math.round(p * 100) + '% ヒール'), fx === 'tick' ? 'tick' : 'big');
@@ -14251,7 +14336,25 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   const fxText = f => f[0] === 'diag' ? 'ななめに' + f[1] + '個消す' : f[0] === 'octaCol' ? '縦1列（最大' + f[1] + '個）をオクタブロックに変える' : f[0] === 'clr' ? 'ランダムで' + f[1] + '個消す' : f[0] === 'octa' ? 'ランダムで' + f[1] + '個をオクタブロックに変える'
     : f[0] === 'heart' ? 'ブロンズハート（全色10%回復）を' + f[1] + '個ためる' : f[0] === 'sheart' ? 'シルバーハート（全色30%回復）を' + f[1] + '個ためる' : f[0] === 'buf' ? f[2] + '秒間 ' + ZST[f[1]] + 'が' + f[3] + '%になる'
     : f[0] === 'shuf' ? (f[1] ? '盤面をシャッフルして、' + f[1] + '%くらいをそろう並びにする' : '盤面をシャッフルする') : f[0] === 'cut' ? 'いちばんたまっている色のカラーHPを' + f[1] + '%下げる'
-    : f[0] === 'dmg' ? '相手のHPに直接 ' + f[1] + '%のダメージ'
+    : f[0] === 'dmg' ? (f[2] ? f[2] + '：' : '') + '相手のHPに直接 ' + f[1] + '%のダメージ'
+    : f[0] === 'focus' ? (f[2] ? f[2] + '：' : '') + '相手のいちばん残っている色のHPに、最大HPの' + f[1] + '%のダメージ'
+    : f[0] === 'dot' ? (f[3] || '延焼') + '：' + f[2] + '秒間、1秒ごとに相手の最大HPの' + f[1] + '%のダメージ'
+    : f[0] === 'shock' ? '感電：' + f[1] + '秒間、相手の攻撃と技のたまりを止める'
+    : f[0] === 'edeb' ? f[2] + '秒間 相手の' + ZST[f[1]] + 'を' + f[3] + '%下げる'
+    : f[0] === 'buf2' ? f[2] + '秒間 さらに' + ZST[f[1]] + ' ' + f[3] + '%（重ねがけ）'
+    : f[0] === 'allup' ? f[1] + '秒間 攻撃力・防御力・スピードがすべて' + f[2] + '%'
+    : f[0] === 'pierce' ? f[2] + '秒間 相手の防御力を' + f[1] + '%無視して攻撃する'
+    : f[0] === 'reflect' ? f[2] + '秒間 受けたダメージの' + f[1] + '%を相手に返す'
+    : f[0] === 'evade' ? f[2] + '秒間 相手のふつうの攻撃の命中率を' + f[1] + '%に下げる'
+    : f[0] === 'critup' ? f[3] + '秒間 クリティカル率' + f[1] + '%（クリティカルのダメージ' + f[2] + '%）'
+    : f[0] === 'flip' ? f[2] + '秒間 属性反転：相手に有利な属性になる（' + f[1] + '%）'
+    : f[0] === 'colorx' ? 'いちばん多い色のブロックを、いちばん少ない色に変える'
+    : f[0] === 'cleanse' ? 'かかっているデバフの時間を' + f[1] + '%短くする'
+    : f[0] === 'field' ? '領域展開：' + f[2] + '秒間、新しくかかるデバフの時間を' + f[1] + '%短くする'
+    : f[0] === 'guard' ? f[2] + '秒間 受けるダメージを' + f[1] + '%減らす'
+    : f[0] === 'parry' ? '見切り：相手のふつうの攻撃を' + f[1] + '回よける'
+    : f[0] === 'erew' ? '石化：相手の技のたまりを' + f[1] + '秒もどす'
+    : f[0] === 'cols' ? '縦' + f[1] + '列を消す'
     : f[0] === 'drain' ? '相手のHPに直接 ' + f[1] + '%のダメージ。与えたダメージの' + f[2] + '%を吸血して回復する'
     : f[0] === 'cross' ? 'ランダムな場所に十字の形で、合わせて' + f[1] + '個消す'
     : f[0] === 'rect' ? 'ランダムな場所の' + f[1] + '×' + f[2] + 'を消す'
@@ -14301,7 +14404,17 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     const r = (v, m) => { m = m == null ? 1 : m; if (v <= m) return v; const lo = Math.max(m, Math.floor(v / 2)); return lo + Math.floor((v - lo) * lv + 1e-9); };
     const t = (() => { switch (f[0]) {
       case 'clr': case 'octa': case 'octaDrop': case 'heart': case 'sheart': case 'gheart': case 'chg': case 'stop': case 'heal': case 'crit': return [f[0], r(f[1])];
-      case 'cut': case 'dmg': return [f[0], r(f[1], 5)];
+      case 'cut': return [f[0], r(f[1], 5)];
+      case 'dmg': case 'focus': return [f[0], r(f[1], 5)].concat(f.slice(2));
+      case 'dot': return [f[0], r(f[1], 1), f[2], f[3]];
+      case 'shock': case 'parry': case 'erew': case 'cols': return [f[0], r(f[1])];
+      case 'edeb': case 'buf2': return [f[0], f[1], f[2], f[0] === 'buf2' ? 100 + r(f[3] - 100, 5) : r(f[3], 5)];
+      case 'allup': return [f[0], f[1], 100 + r(f[2] - 100, 5)];
+      case 'pierce': case 'reflect': case 'guard': case 'field': return [f[0], r(f[1], 5), f[2]];
+      case 'cleanse': return [f[0], r(f[1], 10)];
+      case 'evade': return [f[0], 100 - r(100 - f[1], 5), f[2]];
+      case 'critup': return [f[0], r(f[1], 5), 100 + r(f[2] - 100, 10), f[3]];
+      case 'flip': return [f[0], 100 + r(f[1] - 100, 2), f[2]];
       case 'drain': return [f[0], r(f[1], 5), f[2]];
       case 'score': return [f[0], r(f[1] / 100) * 100];
       case 'buf': return [f[0], f[1], f[2], 100 + r(f[3] - 100, 10)];
@@ -14334,7 +14447,9 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   // ★が1つ上がるごとに、必ずどこかが強くなるようにする（同じ中身の★が続かない）。奥義の★0と★1は同じ（★2から育つ）
   const NUMP = {clr: [[1, 1]], cross: [[1, 1]], octa: [[1, 1]], octaDrop: [[1, 1]], heart: [[1, 1]], sheart: [[1, 1]], gheart: [[1, 1]], chg: [[1, 1]], stop: [[1, 1]],
     heal: [[1, 1]], atk2: [[1, 1]], def2: [[1, 1]], crit: [[1, 1]], cut: [[1, 2]], dmg: [[1, 2]], drain: [[1, 2]], rows: [[1, 1]], rect: [[1, 1], [2, 1]], octaRect: [[1, 1], [2, 1]],
-    rects: [[3, 1]], buf: [[3, 5], [2, 1]], eslow: [[1, 2], [2, 1]], mslow: [[1, 2], [2, 1]], score: [[1, 100]], shuf: [[1, 2]], tempest: [[1, 2]]};
+    rects: [[3, 1]], buf: [[3, 5], [2, 1]], eslow: [[1, 2], [2, 1]], mslow: [[1, 2], [2, 1]], score: [[1, 100]], shuf: [[1, 2]], tempest: [[1, 2]],
+    focus: [[1, 2]], dot: [[1, 1]], shock: [[1, 1]], parry: [[1, 1]], erew: [[1, 1]], cols: [[1, 1]], edeb: [[3, 5]], buf2: [[3, 5]], allup: [[2, 5]],
+    pierce: [[1, 5]], reflect: [[1, 5]], guard: [[1, 5]], field: [[1, 5]], cleanse: [[1, 10]], critup: [[1, 5]], flip: [[1, 1]]};
   const fxCopy = f => { const g = f.slice(); g._k = f._k; return g; };
   function fxBump(list, full, fx){
     for (let i = 0; i < list.length; i++) {               // 数字を1段上げる（★MAXの値まで）
@@ -14467,6 +14582,88 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     }
     if (left < h) updateGauges();
   }
+  // ===== 2026-11-27 新しい効果のしくみ =====
+  const DOT_IC = {'延焼': '🔥', 'やけど': '🔥', '雷撃': '⚡', '出血': '🩸', '毒': '☠', '呪い': '💀'};
+  const DOT_VFX = {'延焼': 'burn', 'やけど': 'burn', '出血': 'burn', '毒': 'poison', '呪い': 'poison', '雷撃': 'shock'};
+  // 盤面の上に短い文字（MISS・見切り！など）
+  function floatTxt(t){ try { pops.push({text: t, style: 'combo', r: 2.2, c: 2.5, row: 0, n: 1, t: now()}); } catch (_) {} }
+  // こちらが受けたダメージの一部を相手に返す（反射）。こちらの減った割合×（こちらの体力÷敵の体力）を、敵の全色に
+  function reflectBack(before){
+    if (!on2(reflect) || !vsOn) return;
+    const got = stacks.reduce((a, v, k) => a + Math.max(0, v - before[k]), 0); if (got <= 0) return;
+    const u = got / TYPES / CFG.STACK_MAX * enemyHP * reflect[0] * (statOn() ? Math.max(1, runMy[0]) / Math.max(1, runEn[0]) : 1);
+    cpus.forEach(c => { if (!c.alive) return; c.stacks = c.stacks.map(v => Math.min(enemyHP, v + u)); checkCpuOut(c); });
+    floatDmg(u * enUnitPts(), 'direct', '反射 '); drawVsPanel();
+  }
+  // こちらの全色に、最大HPの p% のダメージ（敵の延焼・雷撃・直接ダメージ）
+  function hurtPct(p, nm){
+    if (!running) return;
+    const before = stacks.slice(), u = CFG.STACK_MAX * p / 100;
+    stacks = stacks.map(v => Math.min(CFG.STACK_MAX, v + u)); updateGauges();
+    reflectBack(before);
+    if (stacks.some(v => v >= CFG.STACK_MAX)) finish();
+  }
+  // 敵が回復：たまったダメージを p% 減らす
+  function enHeal(p){
+    if (!vsOn) return;
+    cpus.forEach(c => { if (!c.alive) return; c.stacks = c.stacks.map(v => Math.max(0, v - v * p / 100)); });
+    drawVsPanel();
+  }
+  // 一点集中・煉獄：敵のいちばん残っている色のHPに、最大HPの p% のダメージ
+  function focusHit(p, nm){
+    if (!vsOn) return;
+    let tot = 0;
+    cpus.forEach(c => { if (!c.alive) return; let i = 0; for (let j = 1; j < c.stacks.length; j++) if (c.stacks[j] < c.stacks[i]) i = j;
+      const was = c.stacks[i]; c.stacks[i] = Math.min(enemyHP, c.stacks[i] + enemyHP * p / 100); tot += c.stacks[i] - was; checkCpuOut(c); });
+    if (tot > 0) floatDmg(tot * enUnitPts(), 'direct', (nm || '一点集中') + ' ');
+    playAnim('me', 'atk'); if (isZako()) zakoFx('hit'); drawVsPanel();
+  }
+  // カラー変換：いちばん多い色のブロックを、いちばん少ない色に変える
+  function colorConvert(){
+    const cnt = Array(TYPES).fill(0); cellsWhere(v => isNormal(v)).forEach(([r, c]) => { cnt[grid[r][c]]++; });
+    let hi = 0, lo = 0; cnt.forEach((v, i) => { if (v > cnt[hi]) hi = i; if (v < cnt[lo]) lo = i; });
+    if (hi === lo) return 0;
+    const cells = cellsWhere(v => v === hi); cells.forEach(([r, c]) => { grid[r][c] = lo; }); return cells.length;
+  }
+  // こちらにかかっている時間しばりのデバフを p% 短くする（HP型のデバフ軽減）
+  function cleanseDeb(p){
+    const t = now(), sh = e => e > t ? t + (e - t) * (1 - p) : e;
+    Object.keys(pdeb).forEach(k => { pdeb[k][1] = sh(pdeb[k][1]); }); pblind[1] = sh(pblind[1]); pshock[1] = sh(pshock[1]); pdots.forEach(g => { g.end = sh(g.end); });
+  }
+  // 画面のふちの色・感電・敵キャラの色
+  let vfxKey = '';
+  function drawVfx(){
+    let ed = $('vfxEdge'); if (!ed) { ed = document.createElement('div'); ed.id = 'vfxEdge'; document.body.appendChild(ed); const st = document.createElement('div'); st.id = 'shockTxt'; document.body.appendChild(st); }
+    const t = now(), live = running && gameMode === 'story';
+    const sh = live && pshock[1] > t, lock = sh && pshockLock();
+    const me = !live ? '' : sh ? 'shock' : pdots.some(g => g.end > t && DOT_VFX[g.nm] === 'burn') ? 'burn' : pdots.some(g => g.end > t && DOT_VFX[g.nm] === 'poison') || on2(pdeb.atk) || on2(pdeb.def) ? 'poison'
+      : pdots.some(g => g.end > t) ? 'shock' : on2(pdeb.spd) ? 'ice' : '';
+    const en = !live ? '' : eshock > t || wdots.some(g => g.end > t && g.nm === '雷撃') ? 'eb-shock' : wdots.some(g => g.end > t && DOT_VFX[g.nm] === 'burn') ? 'eb-burn' : wdots.some(g => g.end > t && DOT_VFX[g.nm] === 'poison') ? 'eb-poison'
+      : (ebuf[1] && t < ebuf[1]) ? 'eb-ice' : on2(enDeb.atk) || on2(enDeb.def) ? 'eb-weak' : '';
+    const key = me + '|' + en + '|' + sh + lock + (sh ? Math.ceil((pshock[1] - t) / 1000) : ''); if (key === vfxKey) return; vfxKey = key;
+    ed.className = me ? 'on ' + me : '';
+    document.body.classList.toggle('pshock', sh); document.body.classList.toggle('pshockLock', lock);
+    const st = $('shockTxt'); st.classList.toggle('on', sh); if (sh) st.innerHTML = '⚡感電中⚡<small>' + (lock ? 'しびれて動けない…' : '今なら動かせる！') + '（あと' + Math.ceil((pshock[1] - t) / 1000) + '秒）</small>';
+    const ea = $('enArt'); if (ea) { ['eb-shock', 'eb-burn', 'eb-poison', 'eb-ice', 'eb-weak'].forEach(c => ea.classList.toggle(c, c === en)); }
+  }
+  // 敵の技の効果（こちらにかかる／敵が強くなる）。出したことの説明を返す
+  // 形：['heal', %] ['regen', 合計%, 秒] ['buf', 'atk|def|spd', 秒, %] ['pdeb', 'atk|def|spd', 秒, 下げる%] ['dot', 1秒の%, 秒, 名前] ['shock', 秒] ['blind', 命中%, 秒] ['dmg', %]
+  function runEnemyFx(fx){
+    const t = now(), L = [];
+    fx.forEach(f => {
+      if (f[0] === 'heal') { enHeal(f[1]); L.push('敵が回復 ' + f[1] + '%'); }
+      else if (f[0] === 'regen') { enRegens.push({per: f[1] / f[2], end: t + f[2] * 1000, next: t + 1000}); L.push('敵が' + f[2] + '秒間 じわじわ回復'); }
+      else if (f[0] === 'buf') { enBuf[f[1]] = [f[3] / 100, t + f[2] * 1000]; L.push('敵の' + ZST[f[1]] + ' ' + f[3] + '%（' + f[2] + '秒）'); }
+      else if (f[0] === 'pdeb') { const sec = debSec(f[2]); pdeb[f[1]] = [1 - f[3] / 100, t + sec * 1000]; L.push('こちらの' + ZST[f[1]] + ' −' + f[3] + '%（' + Math.round(sec) + '秒）'); }
+      else if (f[0] === 'dot') { const sec = debSec(f[2]); pdots.push({per: f[1], end: t + sec * 1000, next: t + 1000, nm: f[3] || '延焼'}); L.push((DOT_IC[f[3]] || '🔥') + (f[3] || '延焼') + '（' + Math.round(sec) + '秒）'); }
+      else if (f[0] === 'shock') { const sec = debSec(f[1]); pshock = [t, t + sec * 1000]; L.push('⚡感電（' + Math.round(sec) + '秒）'); }
+      else if (f[0] === 'blind') { const sec = debSec(f[2]); pblind = [f[1] / 100, t + sec * 1000]; L.push('💫こちらの命中 ' + f[1] + '%（' + Math.round(sec) + '秒）'); }
+      else if (f[0] === 'dmg') { hurtPct(f[1]); L.push('全色に ' + f[1] + '%のダメージ'); }
+    });
+    drawVfx(); return L;
+  }
+  // 敵の技の効果の表。キャラ・ボスの id → {sp: [...], ougi: [...]}（中身は別の手順で入れる）
+  const EN_FX = {};
   function critDmg(pct){
     if (gameMode === 'online') { onlAttack(Array(TYPES).fill(CFG.STACK_MAX * pct / 100), true); floatDmg(CFG.STACK_MAX * pct / 100 * enUnitPts(), 'direct', 'CRITICAL '); return; }   // 相手の全色に、最大HPの％
     if (!vsOn) return;
@@ -14488,6 +14685,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       else if (f[0] === 'claws') shape.push(...claws());
       else if (f[0] === 'diag') shape.push(...diag(f[1]));
       else if (f[0] === 'rows') { shuf([0, 1, 2, 3, 4, 5]).slice(0, f[1]).forEach(r => { for (let k = 0; k < N; k++) shape.push([r, k]); }); }
+      else if (f[0] === 'cols') { shuf([...Array(N).keys()]).slice(0, f[1]).forEach(c => { for (let r = 0; r < 6; r++) shape.push([r, c]); }); }
     });
     const avoid = keyset(shape);
     fx.forEach(f => {
@@ -14504,7 +14702,24 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       else if (f[0] === 'buf') { zbuf[f[1]] = [f[3] / 100, now() + f[2] * 1000]; msg.push(f[2] + '秒間 ' + ZST[f[1]] + ' ' + f[3] + '%'); }
       else if (f[0] === 'shuf') { if (f[1]) tempest(f[1] / 100); else shuffleBoard(); }
       else if (f[0] === 'cut') cutOne(f[1] / 100);
-      else if (f[0] === 'dmg') { directDmg(f[1] / 100); msg.push('相手に直接 ' + f[1] + '%ダメージ'); }
+      else if (f[0] === 'dmg') { directDmg(f[1] / 100); msg.push((f[2] ? f[2] + '：' : '') + '相手に直接 ' + f[1] + '%ダメージ'); }
+      else if (f[0] === 'focus') focusHit(f[1], f[2]);
+      else if (f[0] === 'dot') { wdots.push({per: f[1], end: now() + f[2] * 1000, next: now() + 1000, nm: f[3] || '延焼'}); fxExtra.push((DOT_IC[f[3]] || '🔥') + (f[3] || '延焼') + '（' + f[2] + '秒）'); }
+      else if (f[0] === 'shock') { eshock = Math.max(eshock, now() + f[1] * 1000); fxExtra.push('⚡ 敵が感電（' + f[1] + '秒 止まる）'); }
+      else if (f[0] === 'edeb') { if (f[1] === 'spd') ebuf = [1 - f[3] / 100, now() + f[2] * 1000]; else enDeb[f[1]] = [1 - f[3] / 100, now() + f[2] * 1000]; fxExtra.push('⬇ 敵の' + ZST[f[1]] + ' −' + f[3] + '%（' + f[2] + '秒）'); }
+      else if (f[0] === 'buf2') { zbuf2[f[1]] = [f[3] / 100, now() + f[2] * 1000]; fxExtra.push('⏫ さらに' + ZST[f[1]] + ' ' + f[3] + '%（' + f[2] + '秒）'); }
+      else if (f[0] === 'allup') { ['atk', 'def', 'spd'].forEach(k => { zbuf[k] = [f[2] / 100, now() + f[1] * 1000]; }); fxExtra.push('⬆ ステータス全部 ' + f[2] + '%（' + f[1] + '秒）'); }
+      else if (f[0] === 'pierce') { defPierce = [f[1] / 100, now() + f[2] * 1000]; fxExtra.push('➹ 防御貫通 ' + f[1] + '%（' + f[2] + '秒）'); }
+      else if (f[0] === 'reflect') { reflect = [f[1] / 100, now() + f[2] * 1000]; fxExtra.push('🔁 ダメージ反射 ' + f[1] + '%（' + f[2] + '秒）'); }
+      else if (f[0] === 'evade') { evade = [f[1] / 100, now() + f[2] * 1000]; fxExtra.push('💨 敵の命中 ' + f[1] + '%（' + f[2] + '秒）'); }
+      else if (f[0] === 'critup') { critUp = [f[1] / 100, f[2] / 100, now() + f[3] * 1000]; fxExtra.push('✦ クリティカル率 ' + f[1] + '%（' + f[3] + '秒）'); }
+      else if (f[0] === 'flip') { flip = [f[1] / 100, now() + f[2] * 1000]; fxExtra.push('🔄 属性反転（' + f[2] + '秒）'); }
+      else if (f[0] === 'guard') { guard = [f[1] / 100, now() + f[2] * 1000]; fxExtra.push('🪨 受けるダメージ −' + f[1] + '%（' + f[2] + '秒）'); }
+      else if (f[0] === 'parry') { parry += f[1]; fxExtra.push('🗡 見切り ×' + f[1]); }
+      else if (f[0] === 'erew') { enSk.forEach(e => { e.charge = Math.max(0, e.charge - f[1] * 1000); }); fxExtra.push('🗿 敵の技のたまり −' + f[1] + '秒'); }
+      else if (f[0] === 'colorx') { if (colorConvert()) fxExtra.push('🎨 いちばん多い色を、いちばん少ない色に'); }
+      else if (f[0] === 'cleanse') { cleanseDeb(f[1] / 100); fxExtra.push('✨ デバフの時間 −' + f[1] + '%'); }
+      else if (f[0] === 'field') { pfield = [f[1] / 100, now() + f[2] * 1000]; cleanseDeb(f[1] / 100); fxExtra.push('🌀 領域展開（' + f[2] + '秒）'); }
       else if (f[0] === 'drain') { directDmg(f[1] / 100); healPct(f[1] * f[2] / 10000, 'big'); msg.push('🩸 吸血：相手に ' + f[1] + '%ダメージ・' + Math.round(f[1] * f[2] / 100 * 10) / 10 + '%回復'); }   // 2026-11-26 本人「エリザの必殺技を吸血に」
       else if (f[0] === 'crit') critDmg(f[1]);
       else if (f[0] === 'gheart') stockHeart('g', f[1]);
