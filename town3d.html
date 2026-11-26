@@ -1,25 +1,27 @@
 <!doctype html>
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>わたしの街 3D試作</title>
+<title>わたしの街 3D</title>
 <style>
   html,body{margin:0;height:100%;overflow:hidden;background:#7fc8e8;font-family:system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:#fff;-webkit-user-select:none;user-select:none;touch-action:none}
   canvas{display:block}
-  .bar{position:fixed;left:0;right:0;top:0;display:flex;align-items:center;gap:8px;padding:10px 12px;padding-top:max(10px,env(safe-area-inset-top));background:linear-gradient(rgba(20,12,40,.55),rgba(20,12,40,0));pointer-events:none}
+  .bar{position:fixed;left:0;right:0;top:0;display:flex;align-items:center;gap:8px;padding:10px 12px;padding-top:max(10px,env(safe-area-inset-top));background:linear-gradient(rgba(20,12,40,.6),rgba(20,12,40,0));pointer-events:none}
   .bar b{font-size:16px;flex:1;text-shadow:0 1px 3px rgba(0,0,0,.5)}
-  .bar button{pointer-events:auto;border:0;border-radius:999px;padding:7px 11px;font:inherit;font-weight:800;font-size:12.5px;color:#3a2a00;background:#ffd34d;box-shadow:0 2px 0 #c98a00}
+  .bar button{pointer-events:auto;border:0;border-radius:999px;padding:7px 11px;font:inherit;font-weight:800;font-size:12.5px;color:#3a2a00;background:#ffd34d;box-shadow:0 2px 0 #c98a00;cursor:pointer}
+  .bar button.back{background:rgba(255,255,255,.9);box-shadow:0 2px 0 rgba(0,0,0,.25)}
   .hint{position:fixed;left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));padding:8px 12px;border-radius:14px;background:rgba(20,12,40,.6);font-size:12px;line-height:1.6;text-align:center;pointer-events:none}
-  #fps{position:fixed;right:10px;bottom:64px;font-size:11px;background:rgba(0,0,0,.4);padding:2px 6px;border-radius:6px}
   .say{position:fixed;transform:translate(-50%,-100%);padding:4px 10px;border-radius:12px;background:#fff;color:#4a3520;font-size:12px;font-weight:800;white-space:nowrap;pointer-events:none;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+  .tag{position:fixed;transform:translate(-50%,0);padding:1px 7px;border-radius:8px;background:rgba(20,12,40,.72);font-size:11px;font-weight:900;white-space:nowrap;pointer-events:none}
+  .tag.bld{background:rgba(255,140,0,.9)}
 </style></head><body>
-<div class="bar"><b>🏝 わたしの街（3D試作2）</b><button id="ts">ぼかし ON</button><button id="tm">🕒 時間</button></div>
-<div class="hint">ドラッグで移動・2本指（ホイール）で拡大／地面は3D、家・木・キャラは画像AIの絵を立たせている（ジオラマ風）</div>
-<div id="fps"></div>
+<div class="bar"><button class="back" id="back">‹ もどる</button><b>🏝 わたしの街</b><button id="ts">ぼかし ON</button><button id="tm">🕒 時間</button></div>
+<div class="hint">ドラッグで移動・2本指（ホイール）で拡大／建物や「＋」をタップすると、建てる・育てる画面へ</div>
 <script type="importmap">{"imports":{"three":"./lib/three.module.min.js"}}</script>
 <script type="module">
-/* 2026-11-25 3Dの街の試作2（本人「しょぼい」→ 画像AIの絵を立たせる方式に）
-   ・地面＝3D（丸い島・砂浜・海。道と川と花は地面の絵に描く）・家/木/キャラ＝画像AIの絵の板（絵と同じ45度のカメラ）
-   ・ミニチュア風のぼかし（ティルトシフト）・やわらかい影・奥が丸く下がる地平線・時間で色が変わる */
+/* 2026-11-26 わたしの街を3Dの島に（本人「建物・木・地面は3D、キャラは2Dのちび絵を板にして立たせる。ペーパーマリオ風」）
+   ・ゲーム（index.html）から街の様子をもらって描くだけ。建てる・育てるなどの仕組みはゲーム側のまま
+   ・建物や「＋」をタップ → ゲームに「この土地」を知らせて、いつもの画面を開く
+   ・単体で開いたとき（試しに見るとき）は見本の街を出す */
 import * as THREE from 'three';
 const renderer = new THREE.WebGLRenderer({antialias: false});
 const DPR = Math.min(2, devicePixelRatio || 1);
@@ -27,50 +29,63 @@ renderer.setPixelRatio(DPR); renderer.setSize(innerWidth, innerHeight); document
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(30, innerWidth / innerHeight, 0.5, 200);
 const PITCH = Math.PI / 4;
-const BEND = {value: 0.0035};
+const BEND = {value: 0.0012};
 function bend(m){ m.onBeforeCompile = sh => { sh.uniforms.uBend = BEND; sh.vertexShader = 'uniform float uBend;\n' + sh.vertexShader.replace('#include <project_vertex>', '#include <project_vertex>\n  mvPosition.y -= mvPosition.z * mvPosition.z * uBend;\n  gl_Position = projectionMatrix * mvPosition;'); }; return m; }
+const send = m => { try { parent !== window && parent.postMessage(Object.assign({src: 'tw3d'}, m), location.origin); } catch (_) {} };
 
-// ---- 島の形・川・道
-const R = a => 15 + 1.3 * Math.sin(3 * a + .4) + .8 * Math.cos(5 * a + 1) + .4 * Math.sin(8 * a);
+// ---- 土地（5×5）の場所
+const N = 5, SP = 5.0;                                       // 土地のあいだ
+const cell = i => ({x: (i % N - (N - 1) / 2) * SP, z: (Math.floor(i / N) - (N - 1) / 2) * SP});
+const R = a => 17.2 + 1.1 * Math.sin(3 * a + .4) + .7 * Math.cos(5 * a + 1) + .35 * Math.sin(8 * a);
 function shapeOf(off){ const s = new THREE.Shape(); for (let i = 0; i <= 120; i++) { const a = i / 120 * Math.PI * 2, r = R(a) + off; const x = Math.cos(a) * r, y = Math.sin(a) * r; i ? s.lineTo(x, y) : s.moveTo(x, y); } return s; }
 const inIsland = (x, z, m = 0) => Math.hypot(x, z) < R(Math.atan2(-z, x)) - m;
-const RIVER = []; for (let i = 0; i <= 40; i++) { const t = i / 40; RIVER.push([-6 + Math.sin(t * 5) * 2.2, -20 + t * 40]); }
-const BRIDGE = {x: -6 + Math.sin(.5 * 5) * 2.2, z: 0};
-const PATHS = [[[BRIDGE.x + 2, 0], [2, 1], [6, 2.5], [10, 3]], [[2, 1], [3, -4], [4, -9]], [[6, 2.5], [7, 7], [6, 11]], [[BRIDGE.x - 2, 0], [-10, -1], [-12, 3]]];
-const distSeg = (px, pz, ax, az, bx, bz) => { const dx = bx - ax, dz = bz - az, t = Math.max(0, Math.min(1, ((px - ax) * dx + (pz - az) * dz) / (dx * dx + dz * dz))); return Math.hypot(px - ax - dx * t, pz - az - dz * t); };
-const distLine = (px, pz, L) => { let d = 1e9; for (let i = 1; i < L.length; i++) d = Math.min(d, distSeg(px, pz, L[i - 1][0], L[i - 1][1], L[i][0], L[i][1])); return d; };
-const onRiver = (x, z) => distLine(x, z, RIVER) < 1.3 && !(Math.abs(z - BRIDGE.z) < 1.1);
-
-// ---- 地面の絵（草のむら・道の石・川・橋・花）
-const TS = 2048, SPAN = 40; const tc = document.createElement('canvas'); tc.width = tc.height = TS; const g = tc.getContext('2d');
-const P = (x, z) => [(x / SPAN + .5) * TS, (z / SPAN + .5) * TS];
 let sd = 11; const rnd = () => (sd = (sd * 1664525 + 1013904223) >>> 0) / 4294967296;
-g.fillStyle = '#7ccd5c'; g.fillRect(0, 0, TS, TS);
-for (let i = 0; i < 2600; i++) { const r = 6 + rnd() * 40; g.fillStyle = ['rgba(98,180,72,.35)', 'rgba(140,214,98,.35)', 'rgba(110,196,80,.3)'][i % 3]; g.beginPath(); g.ellipse(rnd() * TS, rnd() * TS, r, r * .7, rnd() * 3, 0, 7); g.fill(); }
-for (let i = 0; i < 9000; i++) { const x = rnd() * TS, y = rnd() * TS; g.strokeStyle = rnd() < .5 ? 'rgba(70,150,55,.55)' : 'rgba(170,230,120,.5)'; g.lineWidth = 1.4; g.beginPath(); g.moveTo(x, y); g.lineTo(x + (rnd() - .5) * 4, y - 5 - rnd() * 5); g.stroke(); }
-function stroke(L, w, c){ g.strokeStyle = c; g.lineWidth = w; g.lineCap = g.lineJoin = 'round'; g.beginPath(); L.forEach(([x, z], i) => { const [a, b] = P(x, z); i ? g.lineTo(a, b) : g.moveTo(a, b); }); g.stroke(); }
-const U = TS / SPAN;
-PATHS.forEach(L => { stroke(L, 1.9 * U, '#cdb07a'); stroke(L, 1.5 * U, '#dcc391'); });
-PATHS.forEach(L => { for (let i = 1; i < L.length; i++) { const n = Math.ceil(Math.hypot(L[i][0] - L[i - 1][0], L[i][1] - L[i - 1][1]) * 1.6); for (let k = 0; k < n; k++) { const t = k / n, x = L[i - 1][0] + (L[i][0] - L[i - 1][0]) * t + (rnd() - .5) * .9, z = L[i - 1][1] + (L[i][1] - L[i - 1][1]) * t + (rnd() - .5) * .9;
-  const [a, b] = P(x, z); g.fillStyle = '#b9b3a6'; g.beginPath(); g.ellipse(a, b, .32 * U, .24 * U, rnd() * 3, 0, 7); g.fill(); g.fillStyle = '#d8d2c4'; g.beginPath(); g.ellipse(a - 2, b - 3, .26 * U, .18 * U, rnd() * 3, 0, 7); g.fill(); } } });
-stroke(RIVER, 3.1 * U, '#9a7a4e'); stroke(RIVER, 2.7 * U, '#58b6d8'); stroke(RIVER, 1.6 * U, '#6cc8e8');
-for (let i = 0; i < 60; i++) { const k = Math.floor(rnd() * (RIVER.length - 1)); const [a, b] = P(RIVER[k][0] + (rnd() - .5), RIVER[k][1] + rnd()); g.fillStyle = 'rgba(255,255,255,.55)'; g.fillRect(a, b, 10 + rnd() * 16, 3); }
-{ const [a, b] = P(BRIDGE.x, BRIDGE.z); g.save(); g.translate(a, b); g.fillStyle = '#7a4f2a'; g.fillRect(-2.4 * U, -1 * U, 4.8 * U, 2 * U); for (let i = 0; i < 12; i++) { g.fillStyle = i % 2 ? '#c08a52' : '#b07a46'; g.fillRect(-2.3 * U + i * .4 * U, -.9 * U, .36 * U, 1.8 * U); } g.fillStyle = '#5e3a1e'; g.fillRect(-2.4 * U, -1.05 * U, 4.8 * U, .18 * U); g.fillRect(-2.4 * U, .87 * U, 4.8 * U, .18 * U); g.restore(); }
-for (let i = 0; i < 700; i++) { const x = (rnd() - .5) * SPAN, z = (rnd() - .5) * SPAN; if (!inIsland(x, z, .8) || onRiver(x, z) || PATHS.some(L => distLine(x, z, L) < 1.1)) continue;
-  const [a, b] = P(x, z), c = ['#ff6b8a', '#ffd34d', '#ffffff', '#b98cff', '#ff9f43'][i % 5]; for (let k = 0; k < 5; k++) { g.fillStyle = c; g.beginPath(); g.arc(a + Math.cos(k * 1.26) * 4, b + Math.sin(k * 1.26) * 4, 3.2, 0, 7); g.fill(); } g.fillStyle = '#ffe9a8'; g.beginPath(); g.arc(a, b, 2.4, 0, 7); g.fill(); }
-const gTex = new THREE.CanvasTexture(tc); gTex.colorSpace = THREE.SRGBColorSpace; gTex.anisotropy = 4; gTex.repeat.set(1 / SPAN, -1 / SPAN); gTex.offset.set(.5, .5);
-const sc = document.createElement('canvas'); sc.width = sc.height = 256; const s2 = sc.getContext('2d'); s2.fillStyle = '#f2dfa4'; s2.fillRect(0, 0, 256, 256); for (let i = 0; i < 1500; i++) { s2.fillStyle = rnd() < .5 ? 'rgba(200,170,110,.25)' : 'rgba(255,250,220,.4)'; s2.fillRect(rnd() * 256, rnd() * 256, 2, 2); }
-const sTex = new THREE.CanvasTexture(sc); sTex.colorSpace = THREE.SRGBColorSpace; sTex.wrapS = sTex.wrapT = THREE.RepeatWrapping; sTex.repeat.set(.25, .25);
-// ---- 島（ふちが丸い）・砂浜・海
-const lam = o => bend(new THREE.MeshLambertMaterial(o));
-const top = new THREE.Mesh(new THREE.ExtrudeGeometry(shapeOf(0), {depth: 1, bevelEnabled: true, bevelThickness: .35, bevelSize: .4, bevelSegments: 4, curveSegments: 1}), [lam({map: gTex}), lam({color: 0x9b7048})]);
-top.rotation.x = -Math.PI / 2; top.position.y = -.75; scene.add(top);
-const beach = new THREE.Mesh(new THREE.ExtrudeGeometry(shapeOf(2.4), {depth: 1, bevelEnabled: true, bevelThickness: .3, bevelSize: .8, bevelSegments: 4, curveSegments: 1}), [lam({map: sTex}), lam({color: 0xd9c08a})]);
-beach.rotation.x = -Math.PI / 2; beach.position.y = -1.55; scene.add(beach);
+
+let DATA = null;                                             // ゲームからもらう街の様子
+function build(D){
+  DATA = D;
+  // ---- 地面の絵（草・土地のあいだの道・花・空き地のしるし）
+  const TS = 2048, SPAN = 44, U = TS / SPAN; const tc = document.createElement('canvas'); tc.width = tc.height = TS; const g = tc.getContext('2d');
+  const P = (x, z) => [(x / SPAN + .5) * TS, (z / SPAN + .5) * TS];
+  sd = 11; g.fillStyle = '#7ccd5c'; g.fillRect(0, 0, TS, TS);
+  for (let i = 0; i < 2600; i++) { const r = 6 + rnd() * 40; g.fillStyle = ['rgba(98,180,72,.35)', 'rgba(140,214,98,.35)', 'rgba(110,196,80,.3)'][i % 3]; g.beginPath(); g.ellipse(rnd() * TS, rnd() * TS, r, r * .7, rnd() * 3, 0, 7); g.fill(); }
+  for (let i = 0; i < 9000; i++) { const x = rnd() * TS, y = rnd() * TS; g.strokeStyle = rnd() < .5 ? 'rgba(70,150,55,.55)' : 'rgba(170,230,120,.5)'; g.lineWidth = 1.4; g.beginPath(); g.moveTo(x, y); g.lineTo(x + (rnd() - .5) * 4, y - 5 - rnd() * 5); g.stroke(); }
+  const road = (x0, z0, x1, z1) => { const [a, b] = P(x0, z0), [c, d] = P(x1, z1); g.lineCap = 'round'; g.strokeStyle = '#cdb07a'; g.lineWidth = 1.5 * U; g.beginPath(); g.moveTo(a, b); g.lineTo(c, d); g.stroke(); g.strokeStyle = '#dcc391'; g.lineWidth = 1.15 * U; g.stroke(); };
+  const H = (N / 2) * SP;
+  for (let k = 0; k < N - 1; k++) { const v = (k - (N - 2) / 2) * SP; road(-H + .6, v, H - .6, v); road(v, -H + .6, v, H - .6); }
+  for (let i = 0; i < 520; i++) { const x = (rnd() - .5) * SPAN, z = (rnd() - .5) * SPAN; if (!inIsland(x, z, .8) || (Math.abs(x) < H && Math.abs(z) < H && (Math.abs(((x / SP + N / 2) % 1) - .5) < .25 || Math.abs(((z / SP + N / 2) % 1) - .5) < .25))) continue;
+    const [a, b] = P(x, z), c = ['#ff6b8a', '#ffd34d', '#ffffff', '#b98cff', '#ff9f43'][i % 5]; for (let k = 0; k < 5; k++) { g.fillStyle = c; g.beginPath(); g.arc(a + Math.cos(k * 1.26) * 4, b + Math.sin(k * 1.26) * 4, 3.2, 0, 7); g.fill(); } g.fillStyle = '#ffe9a8'; g.beginPath(); g.arc(a, b, 2.4, 0, 7); g.fill(); }
+  D.plots.forEach((p, i) => { if (p.t !== 'empty') return; const {x, z} = cell(i), [a, b] = P(x, z), s = 1.6 * U;
+    g.fillStyle = 'rgba(150,110,60,.45)'; g.beginPath(); g.roundRect(a - s, b - s * .8, s * 2, s * 1.6, 18); g.fill();
+    g.setLineDash([14, 10]); g.strokeStyle = 'rgba(255,255,255,.8)'; g.lineWidth = 5; g.stroke(); g.setLineDash([]); });
+  const gTex = new THREE.CanvasTexture(tc); gTex.colorSpace = THREE.SRGBColorSpace; gTex.anisotropy = 4; gTex.repeat.set(1 / SPAN, -1 / SPAN); gTex.offset.set(.5, .5);
+  const sc = document.createElement('canvas'); sc.width = sc.height = 256; const s2 = sc.getContext('2d'); s2.fillStyle = '#f2dfa4'; s2.fillRect(0, 0, 256, 256); for (let i = 0; i < 1500; i++) { s2.fillStyle = rnd() < .5 ? 'rgba(200,170,110,.25)' : 'rgba(255,250,220,.4)'; s2.fillRect(rnd() * 256, rnd() * 256, 2, 2); }
+  const sTex = new THREE.CanvasTexture(sc); sTex.colorSpace = THREE.SRGBColorSpace; sTex.wrapS = sTex.wrapT = THREE.RepeatWrapping; sTex.repeat.set(.25, .25);
+  const lam = o => bend(new THREE.MeshLambertMaterial(o));
+  const top = new THREE.Mesh(new THREE.ExtrudeGeometry(shapeOf(0), {depth: 1, bevelEnabled: true, bevelThickness: .35, bevelSize: .4, bevelSegments: 4, curveSegments: 1}), [lam({map: gTex}), lam({color: 0x9b7048})]);
+  top.rotation.x = -Math.PI / 2; top.position.y = -.75; scene.add(top);
+  const beach = new THREE.Mesh(new THREE.ExtrudeGeometry(shapeOf(2.4), {depth: 1, bevelEnabled: true, bevelThickness: .3, bevelSize: .8, bevelSegments: 4, curveSegments: 1}), [lam({map: sTex}), lam({color: 0xd9c08a})]);
+  beach.rotation.x = -Math.PI / 2; beach.position.y = -1.55; scene.add(beach);
+
+  // ---- 建物・飾り・空き地の「＋」
+  D.plots.forEach((p, i) => { const {x, z} = cell(i);
+    if (p.t === 'bld') { const s = billboard(p.img, x, z + 1.1, 4.7, 1, {sw: .62, kind: 'bld', plot: i}); s.tag = p.tag; s.busy = p.busy; blockers.push([x, z + .6, 2.1]); }
+    else if (p.t === 'deco') { billboard('img/town3d/' + p.img + '.webp', x, z + .8, p.img.startsWith('tree') ? 3.6 : 2.4, 1, {sw: .5, kind: 'deco', flip: i % 2 === 1}); blockers.push([x, z + .4, 1.2]); }
+    else { const s = billboard(plusTex(), x, z, 1.4, 1, {sw: 0, kind: 'plus', plot: i}); s.base = GY; } });
+  // 島のふちに木を少し
+  for (let i = 0, n = 0; i < 400 && n < 16; i++) { const a = rnd() * Math.PI * 2, r = R(a) - 1.6 - rnd() * 1.2, x = Math.cos(a) * r, z = -Math.sin(a) * r;
+    if (Math.abs(x) < N / 2 * SP + .8 && Math.abs(z) < N / 2 * SP + .8) continue; billboard('img/town3d/' + ['tree1', 'tree2', 'tree3', 'tree4', 'bush1'][n % 5] + '.webp', x, z, 2.6 + rnd(), 1, {sw: .45, kind: 'tree', flip: rnd() < .5}); n++; }
+  // ---- 住人（ちび絵）
+  D.walkers.forEach(w => { let x, z, k = 0; do { x = (rnd() - .5) * 26; z = (rnd() - .5) * 26; } while (!free(x, z) && ++k < 200);
+    const s = billboard(w.img, x, z, 1.7, 1, {sw: .35, kind: 'char'}); walkers.push(Object.assign(s, {name: w.name, tx: x, tz: z, wait: rnd() * 2, ph: rnd() * 6, face: 1, sp: .9 + rnd() * .6})); });
+  setTime();
+}
+
+// ---- 海・光
 const seaM = new THREE.ShaderMaterial({uniforms: {t: {value: 0}, deep: {value: new THREE.Color(0x2f8fc0)}, shal: {value: new THREE.Color(0x6fd6e8)}, night: {value: 0}},
-  vertexShader: 'varying vec2 vP; void main(){ vec4 w = modelMatrix * vec4(position,1.); vP = w.xz; vec4 mv = viewMatrix * w; mv.y -= mv.z*mv.z*0.0035; gl_Position = projectionMatrix * mv; }',
+  vertexShader: 'varying vec2 vP; void main(){ vec4 w = modelMatrix * vec4(position,1.); vP = w.xz; vec4 mv = viewMatrix * w; mv.y -= mv.z*mv.z*0.0012; gl_Position = projectionMatrix * mv; }',
   fragmentShader: `uniform float t; uniform vec3 deep, shal; uniform float night; varying vec2 vP;
-    float R(float a){ return 15. + 1.3*sin(3.*a+.4) + .8*cos(5.*a+1.) + .4*sin(8.*a); }
+    float R(float a){ return 17.2 + 1.1*sin(3.*a+.4) + .7*cos(5.*a+1.) + .35*sin(8.*a); }
     void main(){ float a = atan(-vP.y, vP.x); float d = length(vP) - (R(a) + 3.0);
       vec3 c = mix(shal, deep, smoothstep(0., 9., d));
       float sp = sin(vP.x*1.7 + t*1.3) * sin(vP.y*2.1 - t*1.1); c += smoothstep(.82, 1., sp) * .22;
@@ -78,70 +93,65 @@ const seaM = new THREE.ShaderMaterial({uniforms: {t: {value: 0}, deep: {value: n
       c *= mix(1., .38, night); gl_FragColor = vec4(c, 1.);
       #include <colorspace_fragment>
     }`});
-const sea = new THREE.Mesh(new THREE.PlaneGeometry(220, 220), seaM); sea.rotation.x = -Math.PI / 2; sea.position.y = -1.0; scene.add(sea);
+const sea = new THREE.Mesh(new THREE.PlaneGeometry(240, 240), seaM); sea.rotation.x = -Math.PI / 2; sea.position.y = -1.0; scene.add(sea);
 const hemi = new THREE.HemisphereLight(0xffffff, 0x9fbf80, 1.1); scene.add(hemi);
 const sun = new THREE.DirectionalLight(0xffffff, 1.5); sun.position.set(-10, 20, 12); scene.add(sun);
-const GY = .6;                                             // 草の上の高さ
+const GY = .6;
 
 // ---- 絵の板
 const loader = new THREE.TextureLoader();
 const radial = (c0, c1) => { const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d'); const gr = x.createRadialGradient(64, 64, 0, 64, 64, 64); gr.addColorStop(0, c0); gr.addColorStop(1, c1); x.fillStyle = gr; x.fillRect(0, 0, 128, 128); return new THREE.CanvasTexture(c); };
 const shadowM = bend(new THREE.MeshBasicMaterial({map: radial('rgba(0,0,0,.4)', 'rgba(0,0,0,0)'), transparent: true, depthWrite: false}));
-const sprites = [], TEX = {};
-function tex(url, crop){ const k = url + (crop ? '#c' : ''); if (TEX[k]) return TEX[k]; const t = loader.load(url); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; if (crop) t.repeat.set(1, .5); return TEX[k] = t; }
+const sprites = [], walkers = [], blockers = [], TEX = {};
+function plusTex(){ if (TEX.plus) return TEX.plus; const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d');
+  x.fillStyle = 'rgba(255,211,77,.95)'; x.beginPath(); x.arc(64, 64, 46, 0, 7); x.fill(); x.lineWidth = 6; x.strokeStyle = '#fff'; x.stroke();
+  x.fillStyle = '#5a3a00'; x.fillRect(56, 34, 16, 60); x.fillRect(34, 56, 60, 16); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return TEX.plus = t; }
+function tex(url){ if (typeof url !== 'string') return url; if (TEX[url]) return TEX[url]; const t = loader.load(url); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return TEX[url] = t; }
 function billboard(url, x, z, h, aspect, opt = {}){
-  const m = bend(new THREE.MeshBasicMaterial({map: tex(url, opt.crop), transparent: true, depthWrite: false}));
+  const m = bend(new THREE.MeshBasicMaterial({map: tex(url), transparent: true, depthWrite: false, alphaTest: .02}));
   const geo = new THREE.PlaneGeometry(h * aspect, h); geo.translate(0, h / 2, 0);
   const mesh = new THREE.Mesh(geo, m); mesh.rotation.x = -PITCH * .35;
-  const sw = h * aspect * (opt.sw || .9), sh = new THREE.Mesh(new THREE.PlaneGeometry(sw, sw * .45), shadowM); sh.rotation.x = -Math.PI / 2; sh.position.y = .02;
-  const grp = new THREE.Group(); grp.add(sh); grp.add(mesh); grp.position.set(x, GY + (opt.y0 || 0), z); if (opt.flip) mesh.scale.x = -1; scene.add(grp);
+  const grp = new THREE.Group(); let sh = null;
+  if (opt.sw) { const sw = h * aspect * opt.sw; sh = new THREE.Mesh(new THREE.PlaneGeometry(sw, sw * .45), shadowM); sh.rotation.x = -Math.PI / 2; sh.position.y = .02; grp.add(sh); }
+  grp.add(mesh); grp.position.set(x, GY + (opt.y0 || 0), z); if (opt.flip) mesh.scale.x = -1; scene.add(grp);
   const s = Object.assign({grp, mesh, sh, mat: m, x, z, h}, opt); sprites.push(s); return s; }
-const HOUSES = [[3, -1, 5.2], [9, 6.5, 4.6], [-12.5, 1.5, 4.4], [1.5, -8.5, 4.4], [11, -3, 4.2], [-9, -8, 4.2]];
-const blockers = [];
-HOUSES.forEach(([x, z, h], i) => { billboard('img/town3d/house1.webp', x, z, h, 455 / 512, {flip: i % 2 === 1, sw: .8, kind: 'house', y0: -.12}); blockers.push([x, z - .4, h * .42]); });
-for (let i = 0, n = 0; i < 600 && n < 30; i++) { const x = (rnd() - .5) * 32, z = (rnd() - .5) * 32; if (!inIsland(x, z, 1.2) || distLine(x, z, RIVER) < 2 || PATHS.some(L => distLine(x, z, L) < 1.4) || blockers.some(([bx, bz, r]) => Math.hypot(x - bx, z - bz) < r + 1.2)) continue;
-  const h = 2.0 + rnd() * 1.6; billboard('img/town3d/tree1.webp', x, z, h, 433 / 512, {flip: rnd() < .5, sw: .55, kind: 'tree'}); blockers.push([x, z, .55]); n++; }
-const glowTex = radial('rgba(255,220,130,.9)', 'rgba(255,200,100,0)');
-const glows = []; [].forEach(s => { [[-.28, .36], [.28, .36], [0, .62]].forEach(([u, v]) => { const m = new THREE.Sprite(new THREE.SpriteMaterial({map: glowTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0}));
-  m.scale.setScalar(s.h * .55); m.position.set(u * s.h * .9, v * s.h, .3); s.mesh.add(m); glows.push(m); }); });
-
-// ---- 住人（2Dのちび絵の板・歩く）
-const IDS = ['ichigo', 'mocha', 'rinpan', 'kagura', 'ciel', 'chiyo', 'windy', 'nefer', 'busy', 'camilla'];
-const SAY = ['いい天気！', 'お店に行こうかな', 'ふぁ〜', 'パズルしたい！', '♪', 'こんにちは！', 'りんごおいしそう', 'いい街だね'];
-const free = (x, z) => inIsland(x, z, 1) && !onRiver(x, z) && !blockers.some(([bx, bz, r]) => Math.hypot(x - bx, z - bz) < r);
-const walkers = IDS.map(id => { let x, z; do { x = (rnd() - .5) * 26; z = (rnd() - .5) * 26; } while (!free(x, z));
-  const s = billboard('img/stand/' + id + '.webp', x, z, 1.9, 1, {crop: 1, sw: .5, kind: 'char'}); return Object.assign(s, {tx: x, tz: z, wait: rnd() * 2, ph: rnd() * 6, face: 1, sp: 1 + rnd() * .6}); });
+const free = (x, z) => inIsland(x, z, 1.2) && !blockers.some(([bx, bz, r]) => Math.hypot(x - bx, z - bz) < r);
 function pickT(w){ for (let i = 0; i < 30; i++) { const x = w.x + (rnd() - .5) * 9, z = w.z + (rnd() - .5) * 9; let ok = free(x, z); for (let k = 1; ok && k <= 12; k++) ok = free(w.x + (x - w.x) * k / 12, w.z + (z - w.z) * k / 12); if (ok) { w.tx = x; w.tz = z; return; } } w.wait = 1; }
+const SAY = ['いい天気！', 'お店に行こうかな', 'ふぁ〜', 'パズルしたい！', '♪', 'こんにちは！', 'いい街だね', 'がんばるぞ！'];
 
-// ---- 仕上げ（ミニチュア風のぼかし・色・まわりを少し暗く）
+// ---- 仕上げ（ミニチュア風のぼかし）
 let rt; const mkRT = () => { if (rt) rt.dispose(); rt = new THREE.WebGLRenderTarget(innerWidth * DPR, innerHeight * DPR, {samples: 4}); }; mkRT();
 const post = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({uniforms: {tD: {value: null}, res: {value: new THREE.Vector2()}, tint: {value: new THREE.Vector3(1, 1, 1)}},
   vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0., 1.); }',
   fragmentShader: `uniform sampler2D tD; uniform vec2 res; uniform vec3 tint; varying vec2 vUv;
-    void main(){ float b = smoothstep(.14, .5, abs(vUv.y - .52)) * 6.0; vec4 c = vec4(0.);
+    void main(){ float b = smoothstep(.18, .5, abs(vUv.y - .5)) * 5.0; vec4 c = vec4(0.);
       for (int i = 0; i < 16; i++){ float a = float(i) * 2.39996; float r = sqrt(float(i) / 16.) * b; c += texture2D(tD, vUv + vec2(cos(a), sin(a)) * r / res); }
-      vec3 col = c.rgb / 16.; float l = dot(col, vec3(.299,.587,.114)); col = mix(vec3(l), col, 1.12) * tint;
-      col *= mix(.8, 1., smoothstep(.95, .35, length((vUv - .5) * vec2(1., 1.2)))); gl_FragColor = vec4(col, 1.);
+      vec3 col = c.rgb / 16.; float l = dot(col, vec3(.299,.587,.114)); col = mix(vec3(l), col, 1.1) * tint;
+      col *= mix(.82, 1., smoothstep(.95, .35, length((vUv - .5) * vec2(1., 1.2)))); gl_FragColor = vec4(col, 1.);
       #include <colorspace_fragment>
     }`}));
 const postScene = new THREE.Scene(), postCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1); postScene.add(post);
 let tilt = true; document.getElementById('ts').onclick = e => { tilt = !tilt; e.target.textContent = 'ぼかし ' + (tilt ? 'ON' : 'OFF'); };
+document.getElementById('back').onclick = () => send({type: 'close'});
 addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); mkRT(); });
 
 // ---- 時間
-const TIMES = [{n: '朝', sky: 0xffd9b8, tint: [1.05, .98, .92], spr: 0xfff2e6, hi: 1, si: 1.2, night: .1, glow: 0},
-  {n: '昼', sky: 0x7fc8e8, tint: [1, 1, 1], spr: 0xffffff, hi: 1.1, si: 1.5, night: 0, glow: 0},
-  {n: '夕方', sky: 0xff9e70, tint: [1.08, .9, .8], spr: 0xffd2b0, hi: .85, si: 1, night: .25, glow: .4},
-  {n: '夜', sky: 0x16204a, tint: [.75, .82, 1.1], spr: 0x6c78b8, hi: .45, si: .25, night: 1, glow: 1}];
+const TIMES = [{n: '朝', sky: 0xffd9b8, tint: [1.05, .98, .92], spr: 0xfff2e6, hi: 1, si: 1.2, night: .1},
+  {n: '昼', sky: 0x7fc8e8, tint: [1, 1, 1], spr: 0xffffff, hi: 1.1, si: 1.5, night: 0},
+  {n: '夕方', sky: 0xff9e70, tint: [1.08, .9, .8], spr: 0xffd2b0, hi: .85, si: 1, night: .25},
+  {n: '夜', sky: 0x16204a, tint: [.75, .82, 1.1], spr: 0x6c78b8, hi: .45, si: .25, night: 1}];
 let ti = (h => h >= 5 && h < 9 ? 0 : h < 16 ? 1 : h < 19 ? 2 : 3)(new Date().getHours());
-function setTime(){ const T = TIMES[ti]; scene.background = new THREE.Color(T.sky); scene.fog = new THREE.Fog(T.sky, 45, 90); hemi.intensity = T.hi; sun.intensity = T.si;
-  sprites.forEach(s => s.mat.color.set(T.spr)); seaM.uniforms.night.value = T.night; post.material.uniforms.tint.value.set(...T.tint); glows.forEach(gw => gw.material.opacity = T.glow);
+function setTime(){ const T = TIMES[ti]; scene.background = new THREE.Color(T.sky); scene.fog = new THREE.Fog(T.sky, 50, 95); hemi.intensity = T.hi; sun.intensity = T.si;
+  sprites.forEach(s => s.kind !== 'plus' && s.mat.color.set(T.spr)); seaM.uniforms.night.value = T.night; post.material.uniforms.tint.value.set(...T.tint);
   document.getElementById('tm').textContent = '🕒 ' + T.n; }
 document.getElementById('tm').onclick = () => { ti = (ti + 1) % 4; setTime(); }; setTime();
 
 // ---- ループ
-const cam = {tx: 0, tz: 1, dist: 36};
-const clock = new THREE.Clock(); let fr = 0, ft = 0; const v = new THREE.Vector3();
+const cam = {tx: 0, tz: 1, dist: 62};
+const clock = new THREE.Clock(); const v = new THREE.Vector3(); const tags = new Map();
+// 地面が丸く下がる分も入れて、画面の位置を出す
+function scr(x, y, z){ v.set(x, y, z).applyMatrix4(camera.matrixWorldInverse); v.y -= v.z * v.z * BEND.value; v.applyMatrix4(camera.projectionMatrix); return [(v.x * .5 + .5) * innerWidth, (-v.y * .5 + .5) * innerHeight]; }
+function tagEl(s){ let e = tags.get(s); if (!e) { e = document.createElement('div'); e.className = 'tag' + (s.busy ? ' bld' : ''); e.textContent = s.tag; document.body.appendChild(e); tags.set(s, e); } return e; }
 function loop(){
   const dt = Math.min(.05, clock.getDelta()), t = clock.elapsedTime;
   walkers.forEach(w => {
@@ -149,32 +159,49 @@ function loop(){
     let mv = false;
     if (w.wait > 0) { w.wait -= dt; if (w.wait <= 0) pickT(w); }
     else { const dx = w.tx - w.x, dz = w.tz - w.z, d = Math.hypot(dx, dz);
-      if (d < .05) { w.wait = 1 + rnd() * 3; if (rnd() < .3) { w.say = SAY[Math.floor(rnd() * SAY.length)]; w.sayT = 2.5; } }
-      else { const st = Math.min(d, w.sp * dt); w.x += dx / d * st; w.z += dz / d * st; mv = true; if (Math.abs(dx) > .01) w.face = dx > 0 ? 1 : -1; } }
-    w.grp.position.set(w.x, GY, w.z); w.mesh.position.y = mv ? Math.abs(Math.sin(t * 9 + w.ph)) * .14 : 0;
+      if (d < .05) { w.wait = 1 + rnd() * 3; if (rnd() < .25) { w.say = SAY[Math.floor(rnd() * SAY.length)]; w.sayT = 2.5; } }
+      else { const st = Math.min(d, w.sp * dt); w.x += dx / d * st; w.z += dz / d * st; mv = true; if (Math.abs(dx) > .01) w.face = dx > 0 ? -1 : 1; } }   // ちび絵は左向きに歩く絵が多いので、右へ行くときに反転
+    w.grp.position.set(w.x, GY, w.z); w.mesh.position.y = mv ? Math.abs(Math.sin(t * 9 + w.ph)) * .12 : 0;
     w.mesh.scale.x += (w.face - w.mesh.scale.x) * Math.min(1, dt * 12);
     if (w.sayT > 0) { if (!w.el) { w.el = document.createElement('div'); w.el.className = 'say'; w.el.textContent = w.say; document.body.appendChild(w.el); }
-      v.set(w.x, GY + 2.2, w.z).project(camera); w.el.style.left = (v.x * .5 + .5) * innerWidth + 'px'; w.el.style.top = (-v.y * .5 + .5) * innerHeight + 'px'; }
+      const [sx, sy] = scr(w.x, GY + 2.0, w.z); w.el.style.left = sx + 'px'; w.el.style.top = sy + 'px'; }
   });
-  sprites.forEach(s => { const o = Math.round((s.grp.position.z + 50) * 100); s.mesh.renderOrder = 10000 + o; s.sh.renderOrder = 1; });   // 影は先に・絵は奥から順に
-  sprites.forEach((s, i) => { if (s.kind === 'tree') s.mesh.rotation.z = Math.sin(t * 1.3 + i) * .012; });
+  sprites.forEach(s => { const o = Math.round((s.grp.position.z + 50) * 100); s.mesh.renderOrder = 10000 + o; if (s.sh) s.sh.renderOrder = 1; });
+  sprites.forEach((s, i) => { if (s.kind === 'tree' || s.kind === 'deco') s.mesh.rotation.z = Math.sin(t * 1.3 + i) * .01; if (s.kind === 'plus') s.mesh.position.y = .25 + Math.sin(t * 3 + i) * .15; });
   seaM.uniforms.t.value = t;
   camera.position.set(cam.tx, Math.sin(PITCH) * cam.dist, cam.tz + Math.cos(PITCH) * cam.dist); camera.lookAt(cam.tx, 0, cam.tz);
+  sprites.forEach(s => { if (!s.tag) return; const e = tagEl(s), [sx, sy] = scr(s.x, GY - .1, s.z + .3); e.style.left = sx + 'px'; e.style.top = sy + 'px'; });
   if (tilt) { renderer.setRenderTarget(rt); renderer.render(scene, camera); renderer.setRenderTarget(null); post.material.uniforms.tD.value = rt.texture; post.material.uniforms.res.value.set(innerWidth, innerHeight); renderer.render(postScene, postCam); }
   else renderer.render(scene, camera);
-  fr++; if (t - ft > 1) { document.getElementById('fps').textContent = fr + ' fps'; fr = 0; ft = t; }
   requestAnimationFrame(loop);
 }
 loop();
-// ---- 操作
-const pts = new Map(); let drag = null, pinch = null; const el = renderer.domElement;
-el.addEventListener('pointerdown', e => { el.setPointerCapture(e.pointerId); pts.set(e.pointerId, [e.clientX, e.clientY]);
+
+// ---- 操作（ドラッグで移動・2本指で拡大・タップで建物）
+const pts = new Map(); let drag = null, pinch = null, moved = 0; const el = renderer.domElement;
+function tap(cx, cy){
+  // 画面の上で、建物の絵の四角に入っているもの（手前のものを優先）→ なければ一番近い土地
+  let best = null;
+  sprites.forEach(s => { if (s.plot == null) return; const [x0, y0] = scr(s.x - s.h * .42, GY, s.z), [x1, y1] = scr(s.x + s.h * .42, GY + s.h * .95, s.z);
+    if (cx >= Math.min(x0, x1) && cx <= Math.max(x0, x1) && cy >= Math.min(y0, y1) && cy <= Math.max(y0, y1) && (!best || s.z > best.z)) best = s; });
+  if (best) return send({type: 'tap', i: best.plot});
+  let bi = -1, bd = 1e9; if (DATA) DATA.plots.forEach((p, i) => { if (p.t === 'deco') return; const c = cell(i), [sx, sy] = scr(c.x, GY, c.z), d = Math.hypot(sx - cx, sy - cy); if (d < bd) { bd = d; bi = i; } });
+  if (bi >= 0 && bd < innerWidth / 9) send({type: 'tap', i: bi});
+}
+el.addEventListener('pointerdown', e => { el.setPointerCapture(e.pointerId); pts.set(e.pointerId, [e.clientX, e.clientY]); moved = 0;
   if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch = {d: Math.hypot(a[0] - b[0], a[1] - b[1]), z: cam.dist}; drag = null; } else drag = {x: e.clientX, y: e.clientY, tx: cam.tx, tz: cam.tz}; });
 el.addEventListener('pointermove', e => { if (!pts.has(e.pointerId)) return; pts.set(e.pointerId, [e.clientX, e.clientY]);
-  if (pinch && pts.size === 2) { const [a, b] = [...pts.values()]; cam.dist = Math.max(16, Math.min(60, pinch.z * pinch.d / Math.hypot(a[0] - b[0], a[1] - b[1]))); return; }
-  if (drag) { const k = cam.dist / innerHeight * .55; cam.tx = Math.max(-14, Math.min(14, drag.tx - (e.clientX - drag.x) * k)); cam.tz = Math.max(-14, Math.min(14, drag.tz - (e.clientY - drag.y) * k * 1.4)); } });
-const up = e => { pts.delete(e.pointerId); if (pts.size < 2) pinch = null; if (!pts.size) drag = null; };
-el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
-el.addEventListener('wheel', e => { e.preventDefault(); cam.dist = Math.max(16, Math.min(60, cam.dist * (e.deltaY > 0 ? 1.1 : .9))); }, {passive: false});
+  if (pinch && pts.size === 2) { moved = 99; const [a, b] = [...pts.values()]; cam.dist = Math.max(18, Math.min(72, pinch.z * pinch.d / Math.hypot(a[0] - b[0], a[1] - b[1]))); return; }
+  if (drag) { moved = Math.max(moved, Math.hypot(e.clientX - drag.x, e.clientY - drag.y)); const k = cam.dist / innerHeight * .55; cam.tx = Math.max(-15, Math.min(15, drag.tx - (e.clientX - drag.x) * k)); cam.tz = Math.max(-15, Math.min(15, drag.tz - (e.clientY - drag.y) * k * 1.4)); } });
+const up = e => { if (pts.size === 1 && drag && moved < 8) tap(e.clientX, e.clientY); pts.delete(e.pointerId); if (pts.size < 2) pinch = null; if (!pts.size) drag = null; };
+el.addEventListener('pointerup', up); el.addEventListener('pointercancel', e => { pts.delete(e.pointerId); pinch = null; drag = null; });
+el.addEventListener('wheel', e => { e.preventDefault(); cam.dist = Math.max(18, Math.min(72, cam.dist * (e.deltaY > 0 ? 1.1 : .9))); }, {passive: false});
+
+// ---- ゲームから街の様子をもらう（来なければ見本）
+addEventListener('message', e => { if (e.origin !== location.origin || !e.data || e.data.src !== 'game' || e.data.type !== 'town' || DATA) return; build(e.data.town); });
+send({type: 'ready'});
+setTimeout(() => { if (DATA) return; const B = ['castle', 'house', 'farm', 'shop', 'tavern', 'lumber', 'iron', 'hunter', 'casino', 'petshop', 'alchemy', 'dojo', 'trial'];
+  build({plots: Array.from({length: 25}, (_, i) => i === 12 ? {t: 'bld', img: 'img/town3d/home_5.webp', tag: '自分の家 Lv5'} : i < 13 ? {t: 'bld', img: 'img/town3d/' + B[i] + '_' + (i % 5 + 1) + '.webp', tag: 'Lv' + (i % 5 + 1)} : i < 19 ? {t: 'empty'} : {t: 'deco', img: ['tree1', 'tree2', 'fountain1', 'tree3', 'flower1', 'tree4'][i - 19]}),
+    walkers: ['g20', 'g42', 'g51', 'g84', 'g23', 'g10', 'g62', 'g44'].map(k => ({img: 'img/walk/' + k + '.webp'}))}); }, 1200);
 </script>
 </body></html>

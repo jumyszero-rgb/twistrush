@@ -755,7 +755,8 @@ body.on-menu .battlemain{opacity:0;}
   .twp u{position:absolute;right:2px;top:2px;text-decoration:none;font-size:9px;background:rgba(0,0,0,.5);border-radius:6px;padding:0 3px}
   .twp s{position:absolute;inset:auto 0 0 0;text-decoration:none;font-size:9px;font-weight:800;background:rgba(255,140,0,.85);text-align:center} .twp.bld i{opacity:.55}
   .twp.b-home{background:rgba(255,211,77,.28)}
-  .twmap{position:relative} .twwalk{position:absolute;inset:8px;pointer-events:none;overflow:hidden}
+  .twmap{position:relative} .tw3dbtn{display:block;margin-top:4px;border:0;border-radius:999px;padding:5px 11px;font:inherit;font-weight:900;font-size:12px;color:#123;background:linear-gradient(#bff3ff,#6fd6e8);box-shadow:0 2px 0 #2f8fc0;cursor:pointer}
+  #tw3d{position:fixed;inset:0;z-index:9000;background:#7fc8e8} #tw3d iframe{width:100%;height:100%;border:0;display:block} .twwalk{position:absolute;inset:8px;pointer-events:none;overflow:hidden}
   .twwalk img{position:absolute;left:0;width:13%;max-width:56px;animation:twWalk linear infinite,twBob ease-in-out infinite alternate;filter:drop-shadow(0 3px 2px rgba(0,0,0,.35))}
   @keyframes twWalk{0%{left:-14%;transform:scaleX(1)}49%{left:100%;transform:scaleX(1)}50%{left:100%;transform:scaleX(-1)}99%{left:-14%;transform:scaleX(-1)}100%{left:-14%;transform:scaleX(1)}}
   @keyframes twBob{to{margin-top:-3px}}
@@ -8011,7 +8012,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.317';
+  const APP_VER = '0.9.318';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -11697,16 +11698,20 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   // 2026-11-26：3Dの街の絵を入れた。空いていない土地には木や飾り、街の上をちびキャラが歩く
   const TW_DECO = ['tree1', 'tree2', 'bush1', 'tree3', 'flower1', 'rock1', 'tree4', 'fountain1', 'lamp1', 'bench1', 'fence1'];
   const walkOf = u => { const c = u && ALLC[ALLC_IDX.get(u.id)]; return c && /^g\d+$/.test(c.zk || '') ? 'img/walk/' + c.zk + '.webp' : null; };
-  function twWalkers(){
+  function twPick(max){
     const cs = crewSet(), pick = [];
-    units.forEach(u => { if (cs.has(u.u) && walkOf(u) && pick.length < 8) pick.push(u); });
-    units.forEach(u => { if (!cs.has(u.u) && walkOf(u) && pick.length < 4 && !pick.some(p => p.id === u.id)) pick.push(u); });
+    units.forEach(u => { if (cs.has(u.u) && walkOf(u) && pick.length < max) pick.push(u); });
+    units.forEach(u => { if (!cs.has(u.u) && walkOf(u) && pick.length < Math.min(max, 4) && !pick.some(p => p.id === u.id)) pick.push(u); });
+    return pick;
+  }
+  function twWalkers(){
+    const pick = twPick(8);
     return '<div class="twwalk">' + pick.map((u, j) => { const d = 14 + (j * 7) % 11, y = 8 + (j * 23) % 80, dl = -(j * 3.1) % d;
       return '<img alt="" src="' + walkOf(u) + '" style="top:' + y + '%;animation-duration:' + d + 's,.5s;animation-delay:' + dl + 's,0s">'; }).join('') + '</div>';
   }
   function drawTown(){
     const pd = townPending(), today = dmKey(), got = town.day === today ? town.got : 0, cap = tDayCap(homeLv()), cs = crewSet();
-    let h = '<div class="twhead"><div><b>🏡 わたしの街</b><span>家 Lv' + homeLv() + '・人口 ' + townPop().toLocaleString() + '人</span></div>' +
+    let h = '<div class="twhead"><div><b>🏡 わたしの街</b><span>家 Lv' + homeLv() + '・人口 ' + townPop().toLocaleString() + '人</span><button class="tw3dbtn" data-tw="3d">🏝 3Dで見る</button></div>' +
       '<button class="twclaim" data-tw="claim">受け取る<small>🪙' + Math.min(pd.silver, Math.max(0, cap - got)).toLocaleString() + Object.keys(pd.mats).filter(b => !/^_(xp|tr):/.test(b)).map(b => Math.floor(pd.mats[b]) ? '・' + (b === '_meat' ? '🍖' : b === '_evo' ? '💠' : b === '_evog' ? '🔮' : MAT_FAM[famsOf(b)[0]].i) + Math.floor(pd.mats[b]) : '').join('') + (Object.keys(pd.mats).some(b => /^_xp:/.test(b) && pd.mats[b] >= 1) ? '・🥋' : '') + (Object.keys(pd.mats).some(b => /^_tr:/.test(b) && pd.mats[b] >= 1) ? '・⛩' : '') + '</small></button></div>' +
       '<div class="twcap">今日のシルバー ' + got.toLocaleString() + ' / ' + cap.toLocaleString() + '　<small>閉じているあいだも' + TOWN_CAP_H + '時間ぶんまでたまる</small></div>' +
       '<div class="twmap"><div class="twgrid">' + town.p.map((x, i) => {
@@ -11743,6 +11748,26 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     $('townBody').innerHTML = h;
     $('townBody').querySelectorAll('.tic').forEach(el => el.appendChild(charIcon(+el.dataset.ci, 36)));
   }
+  // 3Dの島で見る（2026-11-26）：town3d.html に街の様子を渡して描いてもらう。建物や「＋」をタップしたら、その土地の画面を開く
+  function town3DData(){
+    return {plots: town.p.map((x, i) => {
+      if (!plotOk(i)) return {t: 'deco', img: TW_DECO[i % TW_DECO.length]};
+      if (!x) return {t: 'empty'};
+      const L = Math.max(1, Math.min(5, lvNow(x))), bld = isBuilding(x);
+      return {t: 'bld', img: 'img/town3d/' + x.b + '_' + L + '.webp', tag: TB[x.b].n + ' Lv' + L + (bld ? ' 🔨' : ''), busy: bld}; }),
+      walkers: twPick(10).map(u => ({img: walkOf(u)}))};
+  }
+  function open3DTown(){
+    if ($('tw3d')) return;
+    const w = document.createElement('div'); w.id = 'tw3d'; w.innerHTML = '<iframe title="わたしの街 3D" src="town3d.html"></iframe>'; document.body.appendChild(w);
+    const fr = w.querySelector('iframe');
+    const close = () => { removeEventListener('message', on); w.remove(); };
+    const on = e => { if (e.origin !== location.origin || !e.data || e.data.src !== 'tw3d') return;
+      if (e.data.type === 'ready') fr.contentWindow.postMessage({src: 'game', type: 'town', town: town3DData()}, location.origin);
+      else if (e.data.type === 'close') close();
+      else if (e.data.type === 'tap' && e.data.i >= 0 && e.data.i < town.p.length) { close(); if (!plotOk(e.data.i)) return; townSel = e.data.i; townPick = null; drawTown(); setTimeout(() => { const p = document.querySelector('#townBody .twpanel'); if (p) p.scrollIntoView({behavior: 'smooth', block: 'start'}); }, 50); } };
+    addEventListener('message', on);
+  }
   function openTown(){ townSel = -1; townPick = null; drawTown(); $('town').classList.remove('hidden'); }
   $('townBtn').addEventListener('click', openTown);
   $('townBack').addEventListener('click', () => $('town').classList.add('hidden'));
@@ -11750,6 +11775,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     const q = (a) => e.target.closest('[' + a + ']'), now = Date.now();
     let t;
     if ((t = q('data-tw')) && t.dataset.tw === 'claim') { townClaim(); return; }
+    if (t && t.dataset.tw === '3d') { open3DTown(); return; }
     if ((t = q('data-twp'))) { const i = +t.dataset.twp; townSel = townSel === i ? -1 : i; townPick = null; drawTown(); return; }
     const x = town.p[townSel];
     if ((t = q('data-twbuild'))) { const k = t.dataset.twbuild; if (!tCanPay(k, 1) || x || (TB[k].needHome && homeLv() < TB[k].needHome)) return; tPay(k, 1); town.p[townSel] = {b: k, lv: 1, crew: [], t: now, done: now + buildMs(1)}; saveTown(); toast(TB[k].i + TB[k].n + 'を建てはじめました'); drawTown(); return; }
