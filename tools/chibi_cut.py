@@ -41,13 +41,18 @@ for i in range(1, nc):
     d = {k: np.hypot(max(b[0] - cx, 0, cx - b[2]), max(b[1] - cy, 0, cy - b[3])) for k, b in boxes.items()}
     cells[min(d, key=d.get)] |= cl == i
 sheet = Image.new('RGBA', (cols * 200, rows * 200), (60, 60, 70, 255))
+S = int(os.environ.get('SIZE', '256'))   # SIZE=512：建物など大きい絵
+gs = None
+if os.environ.get('SAME_SCALE') == '1':   # SAME_SCALE=1：全部を同じ倍率で縮める（Lv1〜5の大きさの差を残す）
+    dims = [(np.ptp(np.where(cells[k])[1]) + 1, np.ptp(np.where(cells[k])[0]) + 1) for k, g in enumerate(ids) if g != '-' and cells[k].any()]
+    gs = min(min(S * 0.94 / w, S * 0.97 / h) for w, h in dims)
 for k, gid in enumerate(ids):
     if gid == '-' or not cells[k].any(): continue
     ys, xs = np.where(cells[k]); a = rgba.copy(); a[..., 3] = np.where(cells[k], a[..., 3], 0)
     cc = Image.fromarray(a[ys.min():ys.max() + 1, xs.min():xs.max() + 1])
-    s = min(240 / cc.width, 248 / cc.height)
+    s = gs if gs else min(S * 0.94 / cc.width, S * 0.97 / cc.height, 1.0)
     cc = cc.resize((max(1, round(cc.width * s)), max(1, round(cc.height * s))), Image.LANCZOS)
-    o = Image.new('RGBA', (256, 256), (0, 0, 0, 0)); o.paste(cc, ((256 - cc.width) // 2, 256 - cc.height - 4), cc)
+    o = Image.new('RGBA', (S, S), (0, 0, 0, 0)); o.paste(cc, ((S - cc.width) // 2, S - cc.height - S // 64), cc)
     o.save(f'{out}/{gid}.webp', quality=88)
     r, c = divmod(k, cols); t = o.resize((190, 190)); sheet.paste(t, (c * 200 + 5, r * 200 + 5), t)
 sheet.save(f'{out}/_check.png')
