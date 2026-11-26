@@ -5,89 +5,156 @@
 <style>
   html,body{margin:0;height:100%;overflow:hidden;background:#7fc8e8;font-family:system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:#fff;-webkit-user-select:none;user-select:none;touch-action:none}
   canvas{display:block}
-  .bar{position:fixed;left:0;right:0;top:0;display:flex;align-items:center;gap:8px;padding:10px 12px;padding-top:max(10px,env(safe-area-inset-top));background:linear-gradient(rgba(20,12,40,.6),rgba(20,12,40,0));pointer-events:none}
-  .bar b{font-size:16px;flex:1;text-shadow:0 1px 3px rgba(0,0,0,.5)}
-  .bar button{pointer-events:auto;border:0;border-radius:999px;padding:7px 11px;font:inherit;font-weight:800;font-size:12.5px;color:#3a2a00;background:#ffd34d;box-shadow:0 2px 0 #c98a00;cursor:pointer}
-  .bar button.back{background:rgba(255,255,255,.9);box-shadow:0 2px 0 rgba(0,0,0,.25)}
-  .hint{position:fixed;left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));padding:8px 12px;border-radius:14px;background:rgba(20,12,40,.6);font-size:12px;line-height:1.6;text-align:center;pointer-events:none}
+  .bar{position:fixed;left:0;right:0;top:0;display:flex;align-items:center;gap:6px;padding:10px 10px;padding-top:max(10px,env(safe-area-inset-top));background:linear-gradient(rgba(20,12,40,.6),rgba(20,12,40,0));pointer-events:none}
+  .bar b{font-size:15px;flex:1;text-shadow:0 1px 3px rgba(0,0,0,.5);white-space:nowrap}
+  .bar button,.side button{pointer-events:auto;border:0;border-radius:999px;padding:7px 10px;font:inherit;font-weight:800;font-size:12.5px;color:#3a2a00;background:#ffd34d;box-shadow:0 2px 0 #c98a00;cursor:pointer;white-space:nowrap}
+  .bar button.w,.side button.w{background:rgba(255,255,255,.92);box-shadow:0 2px 0 rgba(0,0,0,.25)}
+  .side{position:fixed;right:10px;top:calc(max(10px,env(safe-area-inset-top)) + 46px);display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+  .claim{border-radius:14px!important;padding:8px 14px!important;font-size:15px!important;font-weight:900!important;background:linear-gradient(#ffe27a,#ffbf1f)!important;position:relative} .claim small{display:block;font-size:12px} .claim.dot::after{content:'';position:absolute;top:-3px;right:-3px;width:12px;height:12px;border-radius:50%;background:#ff4d6a;box-shadow:0 0 0 2px #fff}
+  .coins{pointer-events:none;padding:3px 9px;border-radius:999px;background:rgba(20,12,40,.65);font-size:12px;font-weight:900}
+  .hint{position:fixed;left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));padding:8px 12px;border-radius:14px;background:rgba(20,12,40,.6);font-size:12px;line-height:1.6;text-align:center;pointer-events:none;transition:opacity 1s}
   .say{position:fixed;transform:translate(-50%,-100%);padding:4px 10px;border-radius:12px;background:#fff;color:#4a3520;font-size:12px;font-weight:800;white-space:nowrap;pointer-events:none;box-shadow:0 2px 6px rgba(0,0,0,.25)}
   .tag{position:fixed;transform:translate(-50%,0);padding:1px 7px;border-radius:8px;background:rgba(20,12,40,.72);font-size:11px;font-weight:900;white-space:nowrap;pointer-events:none}
   .tag.bld{background:rgba(255,140,0,.9)}
-  .claim{position:fixed;right:12px;top:calc(max(10px,env(safe-area-inset-top)) + 46px);border:0;border-radius:14px;padding:8px 14px;font:inherit;font-weight:900;font-size:15px;color:#3a2a00;background:linear-gradient(#ffe27a,#ffbf1f);box-shadow:0 3px 0 #c98a00;cursor:pointer} .claim small{display:block;font-size:12px} .claim.dot::after{content:'';position:absolute;top:-3px;right:-3px;width:12px;height:12px;border-radius:50%;background:#ff4d6a;box-shadow:0 0 0 2px #fff}
+  .pal{position:fixed;left:0;right:0;bottom:0;padding:8px 8px max(8px,env(safe-area-inset-bottom));background:rgba(20,12,40,.82);display:none;flex-direction:column;gap:6px}
+  .pal.on{display:flex} .pal p{margin:0;font-size:12px;text-align:center;color:#ffe9a8}
+  .pal .row{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
+  .pal .row button{flex:0 0 auto;width:64px;border:2px solid transparent;border-radius:12px;background:rgba(255,255,255,.1);color:#fff;font:inherit;font-size:10.5px;font-weight:800;padding:4px 2px;display:flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer}
+  .pal .row button img{width:40px;height:40px;object-fit:contain} .pal .row button i{font-style:normal;font-size:28px;line-height:40px}
+  .pal .row button.sel{border-color:#ffd34d;background:rgba(255,211,77,.22)} .pal .row button small{color:#ffd34d;font-size:10px}
+  .toast{position:fixed;left:50%;top:40%;transform:translateX(-50%);padding:8px 14px;border-radius:12px;background:rgba(20,12,40,.85);font-size:13px;font-weight:800;pointer-events:none;opacity:0;transition:opacity .3s}
+  .toast.on{opacity:1}
+  .maps{position:fixed;inset:0;display:none;flex-direction:column;justify-content:flex-end;pointer-events:none}
+  .maps.on{display:flex}
+  .maps .box{pointer-events:auto;margin:0 10px max(10px,env(safe-area-inset-bottom));padding:12px;border-radius:16px;background:rgba(20,12,40,.88)}
+  .maps h3{margin:0 0 4px;font-size:16px} .maps p{margin:0 0 8px;font-size:12px;line-height:1.6;color:#eee6ff}
+  .maps .row{display:flex;gap:6px;overflow-x:auto} .maps .row button{flex:0 0 auto;border:2px solid transparent;border-radius:12px;padding:8px 10px;font:inherit;font-size:12.5px;font-weight:900;color:#fff;background:rgba(255,255,255,.12);cursor:pointer}
+  .maps .row button.sel{border-color:#ffd34d;background:rgba(255,211,77,.25)}
+  .maps .ok{display:block;width:100%;margin-top:10px;border:0;border-radius:12px;padding:11px;font:inherit;font-weight:900;font-size:15px;color:#3a2a00;background:linear-gradient(#ffe27a,#ffbf1f);box-shadow:0 3px 0 #c98a00;cursor:pointer}
 </style></head><body>
-<div class="bar"><button class="back" id="back">‹ もどる</button><b>🏝 わたしの街</b><button id="gr" class="back">📋 一覧</button><button id="tm">🕒</button></div>
-<button id="cl" class="claim">受け取る<small id="clv">🪙0</small></button>
-<div class="hint" id="hint">ドラッグで移動・2本指で拡大／建物や「＋」をタップで、建てる・育てる</div>
+<div class="bar"><button class="w" id="back">‹ もどる</button><b>🏝 わたしの街</b><button class="w" id="gr">📋 一覧</button><button id="tm">🕒</button></div>
+<div class="side"><button id="cl" class="claim">受け取る<small id="clv">🪙0</small></button><button id="ed" class="w">🌳 かざる</button><span class="coins" id="cn">🪙0</span></div>
+<div class="hint" id="hint">2本指で広げると全体が見える／建物や「＋」をタップで建てる・育てる／「🌳 かざる」で木や道を置ける</div>
+<div class="pal" id="pal"><p id="palp">置きたいものをえらんで、島をタップ</p><div class="row" id="palrow"></div></div>
+<div class="maps" id="maps"><div class="box"><h3>🗺 島をえらぶ</h3><p id="mapsp">5つの島から、好きな形をえらべます。川の場所や島の形がちがいます。</p><div class="row" id="maprow"></div><button class="ok" id="mapok">この島にする</button></div></div>
+<div class="toast" id="toast"></div>
 <script type="importmap">{"imports":{"three":"./lib/three.module.min.js"}}</script>
 <script type="module">
-/* 2026-11-26 わたしの街を3Dの島に（本人「建物・木・地面は3D、キャラは2Dのちび絵を板にして立たせる。ペーパーマリオ風」）
-   ・ゲーム（index.html）から街の様子をもらって描くだけ。建てる・育てるなどの仕組みはゲーム側のまま
-   ・建物や「＋」をタップ → ゲームに「この土地」を知らせて、いつもの画面を開く
-   ・単体で開いたとき（試しに見るとき）は見本の街を出す */
+/* 2026-11-26 わたしの街（3Dの島）
+   本人：「建物・木・地面は3D、キャラは2Dのちび絵を板にして立たせる。ペーパーマリオ風」「最初から3Dで」
+         「最初はまっさらで、自宅と島と川があるだけ、道も1本くらい。マップは5種類から選べる（川の位置や島の形が違う）」
+         「最初からズームで、ピンチで引ける」「木とか道とかは自分で置ける」
+   ・街の仕組み（建てる・育てる・お金）はゲーム（index.html）側。ここは描くのと、置く・けすの操作だけ
+   ・土地（25か所）は、島ごとに川をよけて自分の家の近い順に並べる（近い土地から使えるようになる） */
 import * as THREE from 'three';
+const $ = id => document.getElementById(id);
 const renderer = new THREE.WebGLRenderer({antialias: false});
 const DPR = Math.min(2, devicePixelRatio || 1);
 renderer.setPixelRatio(DPR); renderer.setSize(innerWidth, innerHeight); document.body.prepend(renderer.domElement);
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(30, innerWidth / innerHeight, 0.5, 200);
+const camera = new THREE.PerspectiveCamera(30, innerWidth / innerHeight, 0.5, 220);
 const PITCH = Math.PI / 4;
 const BEND = {value: 0.0012};
 function bend(m){ m.onBeforeCompile = sh => { sh.uniforms.uBend = BEND; sh.vertexShader = 'uniform float uBend;\n' + sh.vertexShader.replace('#include <project_vertex>', '#include <project_vertex>\n  mvPosition.y -= mvPosition.z * mvPosition.z * uBend;\n  gl_Position = projectionMatrix * mvPosition;'); }; return m; }
+let reqN = 0; const waits = {};
 const send = m => { try { parent !== window && parent.postMessage(Object.assign({src: 'tw3d'}, m), location.origin); } catch (_) {} };
+const req = (op, p) => new Promise(res => { if (parent === window) return res({ok: true}); const id = ++reqN; waits[id] = res; send(Object.assign({type: 'req', id, op}, p)); setTimeout(() => { if (waits[id]) { delete waits[id]; res({ok: false, msg: 'つながりませんでした'}); } }, 4000); });
+const toast = t => { const e = $('toast'); e.textContent = t; e.classList.add('on'); clearTimeout(toast.k); toast.k = setTimeout(() => e.classList.remove('on'), 1600); };
 
-// ---- 土地（5×5）の場所
-const N = 5, SP = 5.0;                                       // 土地のあいだ
-const cell = i => ({x: (i % N - (N - 1) / 2) * SP, z: (Math.floor(i / N) - (N - 1) / 2) * SP});
-const R = a => 17.2 + 1.1 * Math.sin(3 * a + .4) + .7 * Math.cos(5 * a + 1) + .35 * Math.sin(8 * a);
-function shapeOf(off){ const s = new THREE.Shape(); for (let i = 0; i <= 120; i++) { const a = i / 120 * Math.PI * 2, r = R(a) + off; const x = Math.cos(a) * r, y = Math.sin(a) * r; i ? s.lineTo(x, y) : s.moveTo(x, y); } return s; }
+// ---- 島（5種類）：形の式 R(a) = base + Σ amp*sin(fr*a+ph)、川（折れ線・何本でも）、自分の家の場所
+const MAPS = [
+  {n: 'まんまる島', d: 'まるい島のまん中を、川がゆるやかに流れる', base: 16.5, amp: [1.0, .6, .3, 0], fr: [3, 5, 8, 2], ph: [.4, 1, 0, 0], rivers: [[[-3, -24], [-4, -10], [-1, 0], [-5, 10], [-3, 24]]], home: [4.5, 1]},
+  {n: 'ふたご島', d: '2つの丘がくっついた島。くびれを川が横切る', base: 15.2, amp: [3.4, .5, .3, 0], fr: [2, 5, 7, 1], ph: [1.5708, 1, .5, 0], rivers: [[[-1.5, -24], [.5, -10], [-1, 0], [1, 10], [-.5, 24]]], home: [-8, 1]},
+  {n: 'みかづき島', d: '片側がふくらんだ島。川がななめに流れる', base: 16, amp: [2.2, .8, .4, 0], fr: [1, 3, 6, 2], ph: [0, .3, 1.2, 0], rivers: [[[-22, -18], [-9, -7], [0, -1], [8, 8], [20, 20]]], home: [-4, 7]},
+  {n: 'ぎざぎざ島', d: '入り江の多い島。川は島のはしを流れる', base: 16, amp: [.8, 1.1, .9, .5], fr: [4, 7, 11, 3], ph: [.2, 1.4, .7, 2], rivers: [[[11, -24], [10, -10], [12, 0], [9, 12], [11, 24]]], home: [-2, 0]},
+  {n: 'わかれ川の島', d: '大きな島を、2つにわかれた川が流れる', base: 17, amp: [1.2, .5, .3, 0], fr: [3, 5, 9, 2], ph: [1, 2, 0, 0], rivers: [[[-2, -24], [-1, -12], [0, -4]], [[0, -4], [-8, 4], [-13, 24]], [[0, -4], [7, 5], [13, 24]]], home: [0, 6]},
+];
+let M = MAPS[0];
+const R = a => M.base + M.amp[0] * Math.sin(M.fr[0] * a + M.ph[0]) + M.amp[1] * Math.sin(M.fr[1] * a + M.ph[1]) + M.amp[2] * Math.sin(M.fr[2] * a + M.ph[2]) + M.amp[3] * Math.sin(M.fr[3] * a + M.ph[3]);
+function shapeOf(off){ const s = new THREE.Shape(); for (let i = 0; i <= 160; i++) { const a = i / 160 * Math.PI * 2, r = R(a) + off; const x = Math.cos(a) * r, y = Math.sin(a) * r; i ? s.lineTo(x, y) : s.moveTo(x, y); } return s; }
 const inIsland = (x, z, m = 0) => Math.hypot(x, z) < R(Math.atan2(-z, x)) - m;
+const distSeg = (px, pz, ax, az, bx, bz) => { const dx = bx - ax, dz = bz - az, t = Math.max(0, Math.min(1, ((px - ax) * dx + (pz - az) * dz) / (dx * dx + dz * dz))); return Math.hypot(px - ax - dx * t, pz - az - dz * t); };
+const distLine = (px, pz, L) => { let d = 1e9; for (let i = 1; i < L.length; i++) d = Math.min(d, distSeg(px, pz, L[i - 1][0], L[i - 1][1], L[i][0], L[i][1])); return d; };
+const riverD = (x, z) => Math.min(...M.rivers.map(L => distLine(x, z, L)));
+const RW = 1.25;                                             // 川のはば（半分）
 let sd = 11; const rnd = () => (sd = (sd * 1664525 + 1013904223) >>> 0) / 4294967296;
 
-let DATA = null;                                             // ゲームからもらう街の様子
-function build(D){
-  DATA = D;
-  // ---- 地面の絵（草・土地のあいだの道・花・空き地のしるし）
-  const TS = 2048, SPAN = 44, U = TS / SPAN; const tc = document.createElement('canvas'); tc.width = tc.height = TS; const g = tc.getContext('2d');
-  const P = (x, z) => [(x / SPAN + .5) * TS, (z / SPAN + .5) * TS];
-  sd = 11; g.fillStyle = '#7ccd5c'; g.fillRect(0, 0, TS, TS);
-  for (let i = 0; i < 2600; i++) { const r = 6 + rnd() * 40; g.fillStyle = ['rgba(98,180,72,.35)', 'rgba(140,214,98,.35)', 'rgba(110,196,80,.3)'][i % 3]; g.beginPath(); g.ellipse(rnd() * TS, rnd() * TS, r, r * .7, rnd() * 3, 0, 7); g.fill(); }
-  for (let i = 0; i < 9000; i++) { const x = rnd() * TS, y = rnd() * TS; g.strokeStyle = rnd() < .5 ? 'rgba(70,150,55,.55)' : 'rgba(170,230,120,.5)'; g.lineWidth = 1.4; g.beginPath(); g.moveTo(x, y); g.lineTo(x + (rnd() - .5) * 4, y - 5 - rnd() * 5); g.stroke(); }
-  const road = (x0, z0, x1, z1) => { const [a, b] = P(x0, z0), [c, d] = P(x1, z1); g.lineCap = 'round'; g.strokeStyle = '#cdb07a'; g.lineWidth = 1.5 * U; g.beginPath(); g.moveTo(a, b); g.lineTo(c, d); g.stroke(); g.strokeStyle = '#dcc391'; g.lineWidth = 1.15 * U; g.stroke(); };
-  const H = (N / 2) * SP;
-  for (let k = 0; k < N - 1; k++) { const v = (k - (N - 2) / 2) * SP; road(-H + .6, v, H - .6, v); road(v, -H + .6, v, H - .6); }
-  for (let i = 0; i < 520; i++) { const x = (rnd() - .5) * SPAN, z = (rnd() - .5) * SPAN; if (!inIsland(x, z, .8) || (Math.abs(x) < H && Math.abs(z) < H && (Math.abs(((x / SP + N / 2) % 1) - .5) < .25 || Math.abs(((z / SP + N / 2) % 1) - .5) < .25))) continue;
-    const [a, b] = P(x, z), c = ['#ff6b8a', '#ffd34d', '#ffffff', '#b98cff', '#ff9f43'][i % 5]; for (let k = 0; k < 5; k++) { g.fillStyle = c; g.beginPath(); g.arc(a + Math.cos(k * 1.26) * 4, b + Math.sin(k * 1.26) * 4, 3.2, 0, 7); g.fill(); } g.fillStyle = '#ffe9a8'; g.beginPath(); g.arc(a, b, 2.4, 0, 7); g.fill(); }
-  D.plots.forEach((p, i) => { if (p.t !== 'empty') return; const {x, z} = cell(i), [a, b] = P(x, z), s = 1.6 * U;
-    g.fillStyle = 'rgba(150,110,60,.45)'; g.beginPath(); g.roundRect(a - s, b - s * .8, s * 2, s * 1.6, 18); g.fill();
-    g.setLineDash([14, 10]); g.strokeStyle = 'rgba(255,255,255,.8)'; g.lineWidth = 5; g.stroke(); g.setLineDash([]); });
-  const gTex = new THREE.CanvasTexture(tc); gTex.colorSpace = THREE.SRGBColorSpace; gTex.anisotropy = 4; gTex.repeat.set(1 / SPAN, -1 / SPAN); gTex.offset.set(.5, .5);
-  const sc = document.createElement('canvas'); sc.width = sc.height = 256; const s2 = sc.getContext('2d'); s2.fillStyle = '#f2dfa4'; s2.fillRect(0, 0, 256, 256); for (let i = 0; i < 1500; i++) { s2.fillStyle = rnd() < .5 ? 'rgba(200,170,110,.25)' : 'rgba(255,250,220,.4)'; s2.fillRect(rnd() * 256, rnd() * 256, 2, 2); }
-  const sTex = new THREE.CanvasTexture(sc); sTex.colorSpace = THREE.SRGBColorSpace; sTex.wrapS = sTex.wrapT = THREE.RepeatWrapping; sTex.repeat.set(.25, .25);
-  const lam = o => bend(new THREE.MeshLambertMaterial(o));
-  const top = new THREE.Mesh(new THREE.ExtrudeGeometry(shapeOf(0), {depth: 1, bevelEnabled: true, bevelThickness: .35, bevelSize: .4, bevelSegments: 4, curveSegments: 1}), [lam({map: gTex}), lam({color: 0x9b7048})]);
-  top.rotation.x = -Math.PI / 2; top.position.y = -.75; scene.add(top);
-  const beach = new THREE.Mesh(new THREE.ExtrudeGeometry(shapeOf(2.4), {depth: 1, bevelEnabled: true, bevelThickness: .3, bevelSize: .8, bevelSegments: 4, curveSegments: 1}), [lam({map: sTex}), lam({color: 0xd9c08a})]);
-  beach.rotation.x = -Math.PI / 2; beach.position.y = -1.55; scene.add(beach);
+// ---- 道（1.25四方のマス）
+const RG = 1.25; const rk = (ix, iz) => ix + ',' + iz; const rxz = k => k.split(',').map(v => +v * RG);
+let roads = new Set();
+const onRoad = (x, z) => roads.has(rk(Math.round(x / RG), Math.round(z / RG)));
+const onRiver = (x, z) => riverD(x, z) < RW + .1;
 
-  // ---- 建物・飾り・空き地の「＋」
-  D.plots.forEach((p, i) => { const {x, z} = cell(i);
-    if (p.t === 'bld') { const s = billboard(p.img, x, z + 1.1, 4.7, 1, {sw: .62, kind: 'bld', plot: i}); s.tag = p.tag; s.busy = p.busy; blockers.push([x, z + .6, 2.1]); }
-    else if (p.t === 'deco') { billboard('img/town3d/' + p.img + '.webp', x, z + .8, p.img.startsWith('tree') ? 3.6 : 2.4, 1, {sw: .5, kind: 'deco', flip: i % 2 === 1}); blockers.push([x, z + .4, 1.2]); }
-    else { const s = billboard(plusTex(), x, z, 1.4, 1, {sw: 0, kind: 'plus', plot: i}); s.base = GY; } });
-  // 島のふちに木を少し
-  for (let i = 0, n = 0; i < 400 && n < 16; i++) { const a = rnd() * Math.PI * 2, r = R(a) - 1.6 - rnd() * 1.2, x = Math.cos(a) * r, z = -Math.sin(a) * r;
-    if (Math.abs(x) < N / 2 * SP + .8 && Math.abs(z) < N / 2 * SP + .8) continue; billboard('img/town3d/' + ['tree1', 'tree2', 'tree3', 'tree4', 'bush1'][n % 5] + '.webp', x, z, 2.6 + rnd(), 1, {sw: .45, kind: 'tree', flip: rnd() < .5}); n++; }
-  // ---- 住人（ちび絵）
-  D.walkers.forEach(w => { let x, z, k = 0; do { x = (rnd() - .5) * 26; z = (rnd() - .5) * 26; } while (!free(x, z) && ++k < 200);
-    const s = billboard(w.img, x, z, 1.7, 1, {sw: .35, kind: 'char'}); walkers.push(Object.assign(s, {name: w.name, tx: x, tz: z, wait: rnd() * 2, ph: rnd() * 6, face: 1, sp: .9 + rnd() * .6})); });
-  setTime();
+// ---- 土地（25か所）
+let PLOTS = [], POS = [];   // PLOTS：家から近い順の場所／POS[土地の番号]：その土地の場所（ゲームの「使える順」に合わせる）
+function plotsOf(){
+  const [hx, hz] = M.home; let out = [];
+  for (const sp of [4.7, 4.4, 4.1, 3.8]) {
+    const c = []; for (let x = -20; x <= 20; x += sp) for (let z = -20; z <= 20; z += sp) { const px = hx + Math.round((x) / sp) * sp, pz = hz + Math.round(z / sp) * sp;
+      if (Math.hypot(px - hx, pz - hz) < .5) continue; if (!inIsland(px, pz, 2.4) || riverD(px, pz) < RW + 2.0) continue; if (c.some(p => Math.hypot(p[0] - px, p[1] - pz) < 1)) continue; c.push([px, pz]); }
+    c.sort((a, b) => Math.hypot(a[0] - hx, a[1] - hz) - Math.hypot(b[0] - hx, b[1] - hz));
+    out = [[hx, hz]].concat(c); if (out.length >= 25) break; }
+  return out.slice(0, 25);
 }
 
-// ---- 海・光
-const seaM = new THREE.ShaderMaterial({uniforms: {t: {value: 0}, deep: {value: new THREE.Color(0x2f8fc0)}, shal: {value: new THREE.Color(0x6fd6e8)}, night: {value: 0}},
+// ---- 世界（島を変えたら全部作りなおす）
+let world = null, DATA = null, PRICE = {}, gTex = null, gCan = null, baseCan = null;
+const sprites = [], walkers = [], decoS = [];
+const lam = o => bend(new THREE.MeshLambertMaterial(o));
+const loader = new THREE.TextureLoader(), TEX = {};
+function tex(url){ if (typeof url !== 'string') return url; if (TEX[url]) return TEX[url]; const t = loader.load(url); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return TEX[url] = t; }
+const radial = (c0, c1) => { const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d'); const gr = x.createRadialGradient(64, 64, 0, 64, 64, 64); gr.addColorStop(0, c0); gr.addColorStop(1, c1); x.fillStyle = gr; x.fillRect(0, 0, 128, 128); return new THREE.CanvasTexture(c); };
+const shadowM = bend(new THREE.MeshBasicMaterial({map: radial('rgba(0,0,0,.4)', 'rgba(0,0,0,0)'), transparent: true, depthWrite: false}));
+function plusTex(){ if (TEX.plus) return TEX.plus; const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d');
+  x.fillStyle = 'rgba(255,211,77,.95)'; x.beginPath(); x.arc(64, 64, 46, 0, 7); x.fill(); x.lineWidth = 6; x.strokeStyle = '#fff'; x.stroke();
+  x.fillStyle = '#5a3a00'; x.fillRect(56, 34, 16, 60); x.fillRect(34, 56, 60, 16); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return TEX.plus = t; }
+const GY = .6;
+function billboard(url, x, z, h, opt = {}){
+  const m = bend(new THREE.MeshBasicMaterial({map: tex(url), transparent: true, depthWrite: false, alphaTest: .02}));
+  const geo = new THREE.PlaneGeometry(h, h); geo.translate(0, h / 2, 0);
+  const mesh = new THREE.Mesh(geo, m); mesh.rotation.x = -PITCH * .35;
+  const grp = new THREE.Group(); let sh = null;
+  if (opt.sw) { const sw = h * opt.sw; sh = new THREE.Mesh(new THREE.PlaneGeometry(sw, sw * .45), shadowM); sh.rotation.x = -Math.PI / 2; sh.position.y = .02; grp.add(sh); }
+  grp.add(mesh); grp.position.set(x, GY, z); if (opt.flip) mesh.scale.x = -1; world.add(grp);
+  const s = Object.assign({grp, mesh, sh, mat: m, x, z, h}, opt); sprites.push(s); if (curT) m.color.set(curT.spr); return s; }
+function unbill(s){ world.remove(s.grp); s.mat.dispose(); s.mesh.geometry.dispose(); const i = sprites.indexOf(s); if (i >= 0) sprites.splice(i, 1); if (s.tagE) { s.tagE.remove(); } }
+
+// 地面の絵：草（島ごとに1回）＋川・道・空き地のしるし（変わるたびに描きなおす）
+const TS = 2048, SPAN = 46, U = TS / SPAN; const P = (x, z) => [(x / SPAN + .5) * TS, (z / SPAN + .5) * TS];
+function drawBase(){
+  baseCan = document.createElement('canvas'); baseCan.width = baseCan.height = TS; const g = baseCan.getContext('2d'); sd = 11;
+  g.fillStyle = '#7ccd5c'; g.fillRect(0, 0, TS, TS);
+  for (let i = 0; i < 2600; i++) { const r = 6 + rnd() * 40; g.fillStyle = ['rgba(98,180,72,.35)', 'rgba(140,214,98,.35)', 'rgba(110,196,80,.3)'][i % 3]; g.beginPath(); g.ellipse(rnd() * TS, rnd() * TS, r, r * .7, rnd() * 3, 0, 7); g.fill(); }
+  for (let i = 0; i < 9000; i++) { const x = rnd() * TS, y = rnd() * TS; g.strokeStyle = rnd() < .5 ? 'rgba(70,150,55,.55)' : 'rgba(170,230,120,.5)'; g.lineWidth = 1.4; g.beginPath(); g.moveTo(x, y); g.lineTo(x + (rnd() - .5) * 4, y - 5 - rnd() * 5); g.stroke(); }
+  for (let i = 0; i < 380; i++) { const x = (rnd() - .5) * SPAN, z = (rnd() - .5) * SPAN; if (!inIsland(x, z, .8) || riverD(x, z) < RW + .6) continue;
+    const [a, b] = P(x, z), c = ['#ff6b8a', '#ffd34d', '#ffffff', '#b98cff', '#ff9f43'][i % 5]; for (let k = 0; k < 5; k++) { g.fillStyle = c; g.beginPath(); g.arc(a + Math.cos(k * 1.26) * 3.4, b + Math.sin(k * 1.26) * 3.4, 2.8, 0, 7); g.fill(); } g.fillStyle = '#ffe9a8'; g.beginPath(); g.arc(a, b, 2, 0, 7); g.fill(); }
+}
+function drawGround(){
+  const g = gCan.getContext('2d'); g.drawImage(baseCan, 0, 0); sd = 77;
+  const stroke = (L, w, c) => { g.strokeStyle = c; g.lineWidth = w; g.lineCap = g.lineJoin = 'round'; g.beginPath(); L.forEach(([x, z], i) => { const [a, b] = P(x, z); i ? g.lineTo(a, b) : g.moveTo(a, b); }); g.stroke(); };
+  M.rivers.forEach(L => stroke(L, (RW * 2 + .5) * U, '#9a7a4e')); M.rivers.forEach(L => stroke(L, RW * 2 * U, '#58b6d8')); M.rivers.forEach(L => stroke(L, RW * 1.2 * U, '#6cc8e8'));
+  for (let i = 0; i < 90; i++) { const L = M.rivers[i % M.rivers.length], k = Math.floor(rnd() * (L.length - 1)), t = rnd(); const x = L[k][0] + (L[k + 1][0] - L[k][0]) * t, z = L[k][1] + (L[k + 1][1] - L[k][1]) * t; const [a, b] = P(x + (rnd() - .5), z); g.fillStyle = 'rgba(255,255,255,.5)'; g.fillRect(a, b, 10 + rnd() * 14, 3); }
+  // 空き地のしるし
+  if (DATA) DATA.plots.forEach((p, i) => { if (p.t !== 'empty' || !POS[i]) return; const [a, b] = P(POS[i][0], POS[i][1]), s = 1.55 * U;
+    g.fillStyle = 'rgba(150,110,60,.4)'; g.beginPath(); g.roundRect(a - s, b - s * .8, s * 2, s * 1.6, 16); g.fill(); g.setLineDash([12, 9]); g.strokeStyle = 'rgba(255,255,255,.8)'; g.lineWidth = 4; g.stroke(); g.setLineDash([]); });
+  // 道（川の上は橋）
+  const h = RG * U / 2 + 1;
+  roads.forEach(k => { const [x, z] = rxz(k), [a, b] = P(x, z); g.fillStyle = '#cdb07a'; g.fillRect(a - h - 2, b - h - 2, h * 2 + 4, h * 2 + 4); });
+  roads.forEach(k => { const [x, z] = rxz(k), [a, b] = P(x, z);
+    if (onRiver(x, z)) { g.fillStyle = '#7a4f2a'; g.fillRect(a - h, b - h, h * 2, h * 2); for (let i = 0; i < 5; i++) { g.fillStyle = i % 2 ? '#c08a52' : '#b07a46'; g.fillRect(a - h + 2, b - h + 2 + i * (h * 2 - 4) / 5, h * 2 - 4, (h * 2 - 4) / 5 - 2); } }
+    else { g.fillStyle = '#dcc391'; g.fillRect(a - h + 1, b - h + 1, h * 2 - 2, h * 2 - 2); for (let i = 0; i < 3; i++) { g.fillStyle = 'rgba(185,179,166,.9)'; g.beginPath(); g.ellipse(a + (rnd() - .5) * h * 1.4, b + (rnd() - .5) * h * 1.4, h * .22, h * .16, rnd() * 3, 0, 7); g.fill(); } } });
+  gTex.needsUpdate = true;
+}
+function defaultRoad(){
+  // 自分の家から、手前（南）の浜まで1本
+  const s = new Set(), [hx, hz] = M.home; let ix = Math.round(hx / RG), iz = Math.round((hz + 1.6) / RG);
+  for (let n = 0; n < 40; n++) { const x = ix * RG, z = iz * RG; if (!inIsland(x, z, .7)) break; s.add(rk(ix, iz)); iz++; }
+  return s;
+}
+const seaM = new THREE.ShaderMaterial({uniforms: {t: {value: 0}, deep: {value: new THREE.Color(0x2f8fc0)}, shal: {value: new THREE.Color(0x6fd6e8)}, night: {value: 0}, base: {value: 16}, amp: {value: new THREE.Vector4()}, fr: {value: new THREE.Vector4()}, ph: {value: new THREE.Vector4()}},
   vertexShader: 'varying vec2 vP; void main(){ vec4 w = modelMatrix * vec4(position,1.); vP = w.xz; vec4 mv = viewMatrix * w; mv.y -= mv.z*mv.z*0.0012; gl_Position = projectionMatrix * mv; }',
-  fragmentShader: `uniform float t; uniform vec3 deep, shal; uniform float night; varying vec2 vP;
-    float R(float a){ return 17.2 + 1.1*sin(3.*a+.4) + .7*cos(5.*a+1.) + .35*sin(8.*a); }
+  fragmentShader: `uniform float t; uniform vec3 deep, shal; uniform float night, base; uniform vec4 amp, fr, ph; varying vec2 vP;
+    float R(float a){ return base + amp.x*sin(fr.x*a+ph.x) + amp.y*sin(fr.y*a+ph.y) + amp.z*sin(fr.z*a+ph.z) + amp.w*sin(fr.w*a+ph.w); }
     void main(){ float a = atan(-vP.y, vP.x); float d = length(vP) - (R(a) + 3.0);
       vec3 c = mix(shal, deep, smoothstep(0., 9., d));
       float sp = sin(vP.x*1.7 + t*1.3) * sin(vP.y*2.1 - t*1.1); c += smoothstep(.82, 1., sp) * .22;
@@ -95,67 +162,67 @@ const seaM = new THREE.ShaderMaterial({uniforms: {t: {value: 0}, deep: {value: n
       c *= mix(1., .38, night); gl_FragColor = vec4(c, 1.);
       #include <colorspace_fragment>
     }`});
-const sea = new THREE.Mesh(new THREE.PlaneGeometry(240, 240), seaM); sea.rotation.x = -Math.PI / 2; sea.position.y = -1.0; scene.add(sea);
+const sea = new THREE.Mesh(new THREE.PlaneGeometry(260, 260), seaM); sea.rotation.x = -Math.PI / 2; sea.position.y = -1.0; scene.add(sea);
 const hemi = new THREE.HemisphereLight(0xffffff, 0x9fbf80, 1.1); scene.add(hemi);
 const sun = new THREE.DirectionalLight(0xffffff, 1.5); sun.position.set(-10, 20, 12); scene.add(sun);
-const GY = .6;
 
-// ---- 絵の板
-const loader = new THREE.TextureLoader();
-const radial = (c0, c1) => { const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d'); const gr = x.createRadialGradient(64, 64, 0, 64, 64, 64); gr.addColorStop(0, c0); gr.addColorStop(1, c1); x.fillStyle = gr; x.fillRect(0, 0, 128, 128); return new THREE.CanvasTexture(c); };
-const shadowM = bend(new THREE.MeshBasicMaterial({map: radial('rgba(0,0,0,.4)', 'rgba(0,0,0,0)'), transparent: true, depthWrite: false}));
-const sprites = [], walkers = [], blockers = [], TEX = {};
-function plusTex(){ if (TEX.plus) return TEX.plus; const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d');
-  x.fillStyle = 'rgba(255,211,77,.95)'; x.beginPath(); x.arc(64, 64, 46, 0, 7); x.fill(); x.lineWidth = 6; x.strokeStyle = '#fff'; x.stroke();
-  x.fillStyle = '#5a3a00'; x.fillRect(56, 34, 16, 60); x.fillRect(34, 56, 60, 16); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return TEX.plus = t; }
-function tex(url){ if (typeof url !== 'string') return url; if (TEX[url]) return TEX[url]; const t = loader.load(url); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return TEX[url] = t; }
-function billboard(url, x, z, h, aspect, opt = {}){
-  const m = bend(new THREE.MeshBasicMaterial({map: tex(url), transparent: true, depthWrite: false, alphaTest: .02}));
-  const geo = new THREE.PlaneGeometry(h * aspect, h); geo.translate(0, h / 2, 0);
-  const mesh = new THREE.Mesh(geo, m); mesh.rotation.x = -PITCH * .35;
-  const grp = new THREE.Group(); let sh = null;
-  if (opt.sw) { const sw = h * aspect * opt.sw; sh = new THREE.Mesh(new THREE.PlaneGeometry(sw, sw * .45), shadowM); sh.rotation.x = -Math.PI / 2; sh.position.y = .02; grp.add(sh); }
-  grp.add(mesh); grp.position.set(x, GY + (opt.y0 || 0), z); if (opt.flip) mesh.scale.x = -1; scene.add(grp);
-  const s = Object.assign({grp, mesh, sh, mat: m, x, z, h}, opt); sprites.push(s); return s; }
-const free = (x, z) => inIsland(x, z, 1.2) && !blockers.some(([bx, bz, r]) => Math.hypot(x - bx, z - bz) < r);
-function pickT(w){ for (let i = 0; i < 30; i++) { const x = w.x + (rnd() - .5) * 9, z = w.z + (rnd() - .5) * 9; let ok = free(x, z); for (let k = 1; ok && k <= 12; k++) ok = free(w.x + (x - w.x) * k / 12, w.z + (z - w.z) * k / 12); if (ok) { w.tx = x; w.tz = z; return; } } w.wait = 1; }
-const SAY = ['いい天気！', 'お店に行こうかな', 'ふぁ〜', 'パズルしたい！', '♪', 'こんにちは！', 'いい街だね', 'がんばるぞ！'];
+const DECO_H = {wall1: 2.2, wall2: 2.4, wall3: 3.2, gate1: 3.4, tower1: 4.6, tree1: 3.4, tree2: 3.6, tree3: 3.6, tree4: 3.2, bush1: 1.9, rock1: 1.8, flower1: 1.6, fence1: 1.7, bench1: 1.7, lamp1: 2.6, fountain1: 2.6};
+function addDeco(d){ const s = billboard('img/town3d/' + d.k + '.webp', d.x, d.z, DECO_H[d.k] || 2.4, {sw: .45, kind: 'deco', flip: (Math.round(d.x * 7 + d.z * 3) & 1) === 1}); s.d = d; decoS.push(s); return s; }
+const blockedAt = (x, z, r = 0) => decoS.some(s => Math.hypot(s.x - x, s.z - z) < .55 + r) || sprites.some(s => s.kind === 'bld' && Math.hypot(s.x - x, s.z - .9 - z) < 1.9 + r);
 
-// ---- 仕上げ（ミニチュア風のぼかし）
+function build(D, mapIdx){
+  DATA = D; M = MAPS[mapIdx] || MAPS[0];
+  if (world) { scene.remove(world); sprites.slice().forEach(unbill); walkers.forEach(w => w.el && w.el.remove()); walkers.length = 0; decoS.length = 0; document.querySelectorAll('.tag').forEach(e => e.remove()); }
+  world = new THREE.Group(); scene.add(world);
+  const u = seaM.uniforms; u.base.value = M.base; u.amp.value.set(...M.amp); u.fr.value.set(...M.fr); u.ph.value.set(...M.ph);
+  PLOTS = plotsOf(); POS = []; (D.order || [12]).forEach((pi, j) => { POS[pi] = PLOTS[j]; }); drawBase(); gCan = document.createElement('canvas'); gCan.width = gCan.height = TS;
+  gTex = new THREE.CanvasTexture(gCan); gTex.flipY = false; gTex.colorSpace = THREE.SRGBColorSpace; gTex.anisotropy = 4; gTex.repeat.set(1 / SPAN, -1 / SPAN); gTex.offset.set(.5, .5);
+  roads = D.roads ? new Set(D.roads) : defaultRoad(); drawGround();
+  const sTex = (() => { const c = document.createElement('canvas'); c.width = c.height = 256; const s2 = c.getContext('2d'); s2.fillStyle = '#f2dfa4'; s2.fillRect(0, 0, 256, 256); for (let i = 0; i < 1500; i++) { s2.fillStyle = rnd() < .5 ? 'rgba(200,170,110,.25)' : 'rgba(255,250,220,.4)'; s2.fillRect(rnd() * 256, rnd() * 256, 2, 2); } const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(.25, .25); return t; })();
+  const top = new THREE.Mesh(new THREE.ExtrudeGeometry(shapeOf(0), {depth: 1, bevelEnabled: true, bevelThickness: .35, bevelSize: .4, bevelSegments: 4, curveSegments: 1}), [lam({map: gTex}), lam({color: 0x9b7048})]);
+  top.rotation.x = -Math.PI / 2; top.position.y = -.75; world.add(top);
+  const beach = new THREE.Mesh(new THREE.ExtrudeGeometry(shapeOf(2.4), {depth: 1, bevelEnabled: true, bevelThickness: .3, bevelSize: .8, bevelSegments: 4, curveSegments: 1}), [lam({map: sTex}), lam({color: 0xd9c08a})]);
+  beach.rotation.x = -Math.PI / 2; beach.position.y = -1.55; world.add(beach);
+  // 建物・空き地の「＋」（使えない土地は何もない）
+  D.plots.forEach((p, i) => { const q = POS[i]; if (!q) return; const [x, z] = q;
+    if (p.t === 'bld') { const s = billboard(p.img, x, z + 1.0, i === 12 ? 4.9 : 4.6, {sw: .6, kind: 'bld', plot: i}); s.tag = p.tag; s.busy = p.busy; }
+    else if (p.t === 'empty') billboard(plusTex(), x, z, 1.3, {kind: 'plus', plot: i}); });
+  (D.deco || []).forEach(addDeco);
+  // 住人
+  D.walkers.forEach(w => { let x, z, k = 0; do { x = M.home[0] + (rnd() - .5) * 16; z = M.home[1] + (rnd() - .5) * 16; } while (!free(x, z) && ++k < 300);
+    const s = billboard(w.img, x, z, 1.6, {sw: .35, kind: 'char'}); walkers.push(Object.assign(s, {tx: x, tz: z, wait: rnd() * 2, ph: rnd() * 6, face: 1, sp: .9 + rnd() * .6})); });
+  setTime();
+}
+const free = (x, z) => inIsland(x, z, 1.1) && (!onRiver(x, z) || onRoad(x, z)) && !blockedAt(x, z, -.1);
+function pickT(w){ for (let i = 0; i < 30; i++) { const x = w.x + (rnd() - .5) * 8, z = w.z + (rnd() - .5) * 8; let ok = free(x, z); for (let k = 1; ok && k <= 12; k++) ok = free(w.x + (x - w.x) * k / 12, w.z + (z - w.z) * k / 12); if (ok) { w.tx = x; w.tz = z; return; } } w.wait = 1; }
+const SAY = ['いい天気！', 'お店に行こうかな', 'ふぁ〜', 'パズルしたい！', '♪', 'こんにちは！', 'いい街だね', 'がんばるぞ！', '木がふえたね'];
+
+// ---- ぼかし・時間
 let rt; const mkRT = () => { if (rt) rt.dispose(); rt = new THREE.WebGLRenderTarget(innerWidth * DPR, innerHeight * DPR, {samples: 4}); }; mkRT();
-const post = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({uniforms: {tD: {value: null}, res: {value: new THREE.Vector2()}, tint: {value: new THREE.Vector3(1, 1, 1)}},
+const post = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({uniforms: {tD: {value: null}, res: {value: new THREE.Vector2()}, tint: {value: new THREE.Vector3(1, 1, 1)}, blur: {value: 1}},
   vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0., 1.); }',
-  fragmentShader: `uniform sampler2D tD; uniform vec2 res; uniform vec3 tint; varying vec2 vUv;
-    void main(){ float b = smoothstep(.18, .5, abs(vUv.y - .5)) * 5.0; vec4 c = vec4(0.);
+  fragmentShader: `uniform sampler2D tD; uniform vec2 res; uniform vec3 tint; uniform float blur; varying vec2 vUv;
+    void main(){ float b = smoothstep(.2, .5, abs(vUv.y - .5)) * 5.0 * blur; vec4 c = vec4(0.);
       for (int i = 0; i < 16; i++){ float a = float(i) * 2.39996; float r = sqrt(float(i) / 16.) * b; c += texture2D(tD, vUv + vec2(cos(a), sin(a)) * r / res); }
       vec3 col = c.rgb / 16.; float l = dot(col, vec3(.299,.587,.114)); col = mix(vec3(l), col, 1.1) * tint;
-      col *= mix(.82, 1., smoothstep(.95, .35, length((vUv - .5) * vec2(1., 1.2)))); gl_FragColor = vec4(col, 1.);
+      col *= mix(.84, 1., smoothstep(.95, .35, length((vUv - .5) * vec2(1., 1.2)))); gl_FragColor = vec4(col, 1.);
       #include <colorspace_fragment>
     }`}));
 const postScene = new THREE.Scene(), postCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1); postScene.add(post);
-let tilt = true;
-document.getElementById('gr').onclick = () => send({type: 'grid'});
-document.getElementById('cl').onclick = () => send({type: 'claim'});
-document.getElementById('back').onclick = () => send({type: 'close'});
 addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); mkRT(); });
-
-// ---- 時間
 const TIMES = [{n: '朝', sky: 0xffd9b8, tint: [1.05, .98, .92], spr: 0xfff2e6, hi: 1, si: 1.2, night: .1},
   {n: '昼', sky: 0x7fc8e8, tint: [1, 1, 1], spr: 0xffffff, hi: 1.1, si: 1.5, night: 0},
   {n: '夕方', sky: 0xff9e70, tint: [1.08, .9, .8], spr: 0xffd2b0, hi: .85, si: 1, night: .25},
   {n: '夜', sky: 0x16204a, tint: [.75, .82, 1.1], spr: 0x6c78b8, hi: .45, si: .25, night: 1}];
-let ti = (h => h >= 5 && h < 9 ? 0 : h < 16 ? 1 : h < 19 ? 2 : 3)(new Date().getHours());
-function setTime(){ const T = TIMES[ti]; scene.background = new THREE.Color(T.sky); scene.fog = new THREE.Fog(T.sky, 50, 95); hemi.intensity = T.hi; sun.intensity = T.si;
-  sprites.forEach(s => s.kind !== 'plus' && s.mat.color.set(T.spr)); seaM.uniforms.night.value = T.night; post.material.uniforms.tint.value.set(...T.tint);
-  document.getElementById('tm').textContent = '🕒 ' + T.n; }
-document.getElementById('tm').onclick = () => { ti = (ti + 1) % 4; setTime(); }; setTime();
+let ti = (h => h >= 5 && h < 9 ? 0 : h < 16 ? 1 : h < 19 ? 2 : 3)(new Date().getHours()), curT = null;
+function setTime(){ const T = curT = TIMES[ti]; scene.background = new THREE.Color(T.sky); scene.fog = new THREE.Fog(T.sky, 55, 110); hemi.intensity = T.hi; sun.intensity = T.si;
+  sprites.forEach(s => s.kind !== 'plus' && s.mat.color.set(T.spr)); seaM.uniforms.night.value = T.night; post.material.uniforms.tint.value.set(...T.tint); $('tm').textContent = '🕒 ' + T.n; }
+$('tm').onclick = () => { ti = (ti + 1) % 4; setTime(); };
 
-// ---- ループ
-const cam = {tx: 0, tz: 1, dist: 62};
+// ---- カメラ（最初は自分の家に寄っている。2本指で引ける）
+const cam = {tx: 0, tz: 0, dist: 24}; const ZMIN = 14, ZMAX = 74;
 const clock = new THREE.Clock(); const v = new THREE.Vector3(); const tags = new Map();
-// 地面が丸く下がる分も入れて、画面の位置を出す
 function scr(x, y, z){ v.set(x, y, z).applyMatrix4(camera.matrixWorldInverse); v.y -= v.z * v.z * BEND.value; v.applyMatrix4(camera.projectionMatrix); return [(v.x * .5 + .5) * innerWidth, (-v.y * .5 + .5) * innerHeight]; }
-function tagEl(s){ let e = tags.get(s); if (!e) { e = document.createElement('div'); e.className = 'tag' + (s.busy ? ' bld' : ''); e.textContent = s.tag; document.body.appendChild(e); tags.set(s, e); } return e; }
 function loop(){
   const dt = Math.min(.05, clock.getDelta()), t = clock.elapsedTime;
   walkers.forEach(w => {
@@ -164,51 +231,130 @@ function loop(){
     if (w.wait > 0) { w.wait -= dt; if (w.wait <= 0) pickT(w); }
     else { const dx = w.tx - w.x, dz = w.tz - w.z, d = Math.hypot(dx, dz);
       if (d < .05) { w.wait = 1 + rnd() * 3; if (rnd() < .25) { w.say = SAY[Math.floor(rnd() * SAY.length)]; w.sayT = 2.5; } }
-      else { const st = Math.min(d, w.sp * dt); w.x += dx / d * st; w.z += dz / d * st; mv = true; if (Math.abs(dx) > .01) w.face = dx > 0 ? -1 : 1; } }   // ちび絵は左向きに歩く絵が多いので、右へ行くときに反転
+      else { const st = Math.min(d, w.sp * dt * (onRoad(w.x, w.z) ? 1.3 : 1)); w.x += dx / d * st; w.z += dz / d * st; mv = true; if (Math.abs(dx) > .01) w.face = dx > 0 ? -1 : 1; } }
     w.grp.position.set(w.x, GY, w.z); w.mesh.position.y = mv ? Math.abs(Math.sin(t * 9 + w.ph)) * .12 : 0;
     w.mesh.scale.x += (w.face - w.mesh.scale.x) * Math.min(1, dt * 12);
     if (w.sayT > 0) { if (!w.el) { w.el = document.createElement('div'); w.el.className = 'say'; w.el.textContent = w.say; document.body.appendChild(w.el); }
-      const [sx, sy] = scr(w.x, GY + 2.0, w.z); w.el.style.left = sx + 'px'; w.el.style.top = sy + 'px'; }
+      const [sx, sy] = scr(w.x, GY + 1.9, w.z); w.el.style.left = sx + 'px'; w.el.style.top = sy + 'px'; }
   });
   sprites.forEach(s => { const o = Math.round((s.grp.position.z + 50) * 100); s.mesh.renderOrder = 10000 + o; if (s.sh) s.sh.renderOrder = 1; });
-  sprites.forEach((s, i) => { if (s.kind === 'tree' || s.kind === 'deco') s.mesh.rotation.z = Math.sin(t * 1.3 + i) * .01; if (s.kind === 'plus') s.mesh.position.y = .25 + Math.sin(t * 3 + i) * .15; });
+  sprites.forEach((s, i) => { if (s.kind === 'deco' && /tree|bush/.test(s.d.k)) s.mesh.rotation.z = Math.sin(t * 1.3 + i) * .01; if (s.kind === 'plus') s.mesh.position.y = .2 + Math.sin(t * 3 + i) * .14; });
   seaM.uniforms.t.value = t;
-  camera.position.set(cam.tx, Math.sin(PITCH) * cam.dist, cam.tz + Math.cos(PITCH) * cam.dist); camera.lookAt(cam.tx, 0, cam.tz);
-  sprites.forEach(s => { if (!s.tag) return; const e = tagEl(s), [sx, sy] = scr(s.x, GY - .1, s.z + .3); e.style.left = sx + 'px'; e.style.top = sy + 'px'; });
-  if (tilt) { renderer.setRenderTarget(rt); renderer.render(scene, camera); renderer.setRenderTarget(null); post.material.uniforms.tD.value = rt.texture; post.material.uniforms.res.value.set(innerWidth, innerHeight); renderer.render(postScene, postCam); }
-  else renderer.render(scene, camera);
+  camera.position.set(cam.tx, Math.sin(PITCH) * cam.dist, cam.tz + Math.cos(PITCH) * cam.dist); camera.lookAt(cam.tx, 0, cam.tz); camera.updateMatrixWorld();
+  const showTag = cam.dist < 50;
+  sprites.forEach(s => { if (!s.tag) return; if (!s.tagE) { s.tagE = document.createElement('div'); s.tagE.className = 'tag' + (s.busy ? ' bld' : ''); s.tagE.textContent = s.tag; document.body.appendChild(s.tagE); }
+    s.tagE.style.display = showTag ? '' : 'none'; const [sx, sy] = scr(s.x, GY - .1, s.z + .3); s.tagE.style.left = sx + 'px'; s.tagE.style.top = sy + 'px'; });
+  post.material.uniforms.blur.value = Math.min(1, Math.max(0, (cam.dist - 18) / 20));
+  renderer.setRenderTarget(rt); renderer.render(scene, camera); renderer.setRenderTarget(null); post.material.uniforms.tD.value = rt.texture; post.material.uniforms.res.value.set(innerWidth, innerHeight); renderer.render(postScene, postCam);
   requestAnimationFrame(loop);
 }
 loop();
 
-// ---- 操作（ドラッグで移動・2本指で拡大・タップで建物）
+// ---- 地面のどこを押したか（丸く下がる分もふくめて、近い点をさがす）
+function groundAt(cx, cy){
+  let bx = cam.tx, bz = cam.tz;
+  for (let it = 0; it < 3; it++) { let best = 1e9, nx = bx, nz = bz; const span = it === 0 ? 30 : it === 1 ? 3 : .4, st = it === 0 ? 1.5 : it === 1 ? .2 : .03;
+    for (let x = bx - span; x <= bx + span; x += st) for (let z = bz - span; z <= bz + span; z += st) { const [sx, sy] = scr(x, GY, z), d = (sx - cx) ** 2 + (sy - cy) ** 2; if (d < best) { best = d; nx = x; nz = z; } }
+    bx = nx; bz = nz; }
+  return [bx, bz];
+}
+
+// ---- かざる（木・飾り・道を置く／けす）
+const TOOLS = [{k: 'road', n: '道', i: '🟫'}, {k: 'tree1', n: 'りんご'}, {k: 'tree2', n: 'さくら'}, {k: 'tree3', n: 'もみ'}, {k: 'tree4', n: 'みかん'}, {k: 'bush1', n: 'しげみ'}, {k: 'flower1', n: '花だん'},
+  {k: 'rock1', n: '岩'}, {k: 'fence1', n: '柵'}, {k: 'bench1', n: 'ベンチ'}, {k: 'lamp1', n: '街灯'}, {k: 'fountain1', n: '噴水'},
+  // 2026-11-26 本人「将来、敵が攻めてくる。街の壁や城壁も建てたい」：絵ができたものから出る（img/town3d/○○.webp があるもの）
+  {k: 'wall1', n: '木の壁', opt: 1}, {k: 'wall2', n: '石の壁', opt: 1}, {k: 'wall3', n: '城壁', opt: 1}, {k: 'gate1', n: '門', opt: 1}, {k: 'tower1', n: '見張り塔', opt: 1},
+  {k: 'move', n: 'うごかす', i: '✋'}, {k: 'erase', n: 'とりのぞく', i: '🧹'}, {k: 'map', n: '島をかえる', i: '🗺'}];
+TOOLS.forEach(t => { if (!t.opt) return; t.hide = 1; const im = new Image(); im.onload = () => { t.hide = 0; if (edit) drawPal(); }; im.src = 'img/town3d/' + t.k + '.webp'; });
+let edit = false, tool = 'road', coins = 0, moving = null;
+function drawPal(){ $('palrow').innerHTML = TOOLS.filter(t => !t.hide).map(t => '<button data-k="' + t.k + '"' + (t.k === tool ? ' class="sel"' : '') + '>' + (t.i ? '<i>' + t.i + '</i>' : '<img alt="" src="img/town3d/' + t.k + '.webp">') + t.n +
+    (PRICE[t.k] ? '<small>🪙' + PRICE[t.k].toLocaleString() + '</small>' : '') + '</button>').join('');
+  $('palp').textContent = tool === 'road' ? '島をタップ・なぞると道ができる（川の上は橋）' : tool === 'erase' ? '木・飾り・道をタップするとなくなる（お金はもどらない）' : tool === 'move' ? (moving ? 'うごかす先をタップ' : 'うごかしたい木や飾りをタップ') : '置きたい場所をタップ'; }
+$('palrow').onclick = e => { const b = e.target.closest('[data-k]'); if (!b) return; if (b.dataset.k === 'map') { openMaps(true); return; } tool = b.dataset.k; if (moving) { moving.mat.opacity = 1; moving = null; } drawPal(); };
+$('ed').onclick = () => { edit = !edit; $('pal').classList.toggle('on', edit); $('ed').textContent = edit ? '✔ おわる' : '🌳 かざる'; $('hint').style.opacity = 0; if (edit) { drawPal(); if (cam.dist > 40) cam.dist = 32; } };
+const nearPlot = (x, z, r) => PLOTS.some(([px, pz]) => Math.hypot(px - x, pz - z) < r);
+async function editTap(cx, cy){
+  const [x, z] = groundAt(cx, cy);
+  if (tool === 'erase') {
+    let bi = -1, bd = 1.1; decoS.forEach((s, i) => { const d = Math.hypot(s.x - x, s.z - z); if (d < bd) { bd = d; bi = i; } });
+    if (bi >= 0) { const s = decoS[bi], r = await req('unplace', {d: s.d}); if (!r.ok) return toast(r.msg || 'できませんでした'); decoS.splice(bi, 1); unbill(s); return; }
+    const k = rk(Math.round(x / RG), Math.round(z / RG)); if (roads.has(k)) { roads.delete(k); const r = await req('roads', {list: [...roads], add: 0}); if (!r.ok) { roads.add(k); return toast(r.msg || 'できませんでした'); } drawGround(); }
+    return; }
+  if (tool === 'road') return;                                // 道は押した・なぞったところ（下の paintRoad）
+  if (tool === 'move' && !moving) { let bi = -1, bd = 1.1; decoS.forEach((s, i) => { const d = Math.hypot(s.x - x, s.z - z); if (d < bd) { bd = d; bi = i; } });
+    if (bi < 0) return toast('うごかしたい木や飾りをタップしてね'); moving = decoS[bi]; moving.mat.opacity = .5; drawPal(); return; }
+  if (!inIsland(x, z, .9)) return toast('島の上に置いてね');
+  if (onRiver(x, z) || onRoad(x, z)) return toast('川や道の上には置けません');
+  if (nearPlot(x, z, 1.9)) return toast('建物を建てる土地には置けません');
+  if (moving) { const ms = moving; decoS.splice(decoS.indexOf(ms), 1); const bad = blockedAt(x, z); decoS.push(ms); if (bad) return toast('ほかのものと近すぎます');
+    const to = {k: ms.d.k, x: Math.round(x * 100) / 100, z: Math.round(z * 100) / 100}, r = await req('move', {d: ms.d, to}); ms.mat.opacity = 1; moving = null; drawPal();
+    if (!r.ok) return toast(r.msg || 'お金が足りません'); decoS.splice(decoS.indexOf(ms), 1); unbill(ms); addDeco(to); setCoins(r.coins); return; }
+  if (blockedAt(x, z)) return toast('ほかのものと近すぎます');
+  if (decoS.length >= 80) return toast('置けるのは80こまで');
+  const d = {k: tool, x: Math.round(x * 100) / 100, z: Math.round(z * 100) / 100}; const r = await req('place', {d});
+  if (!r.ok) return toast(r.msg || 'お金が足りません'); addDeco(d); setCoins(r.coins);
+}
+let painted = 0;
+async function paintRoad(cx, cy, end){
+  if (!end) { const [x, z] = groundAt(cx, cy); if (!inIsland(x, z, .5)) return; const k = rk(Math.round(x / RG), Math.round(z / RG)), [rx, rz] = rxz(k);
+    if (roads.has(k) || nearPlot(rx, rz, 1.6) || blockedAt(rx, rz, .1) || roads.size >= 400) return; roads.add(k); painted++; drawGround(); return; }
+  if (!painted) return; const n = painted; painted = 0; const r = await req('roads', {list: [...roads], add: n});
+  if (!r.ok) { toast(r.msg || 'お金が足りません'); roads = new Set(DATA.roadsSaved || []); drawGround(); return; } DATA.roadsSaved = [...roads]; setCoins(r.coins);
+}
+const setCoins = c => { if (c == null) return; coins = c; $('cn').textContent = '🪙' + c.toLocaleString(); };
+
+// ---- 島をえらぶ
+let mapSel = 0, mapChanging = false;
+function openMaps(change){ mapChanging = change; mapSel = DATA ? DATA.map ?? 0 : 0;
+  $('mapsp').textContent = change ? '島をかえると、置いた木・飾り・道はなくなります（建物はそのまま、新しい島の土地にうつります）。' : '5つの島から、好きな形をえらべます。川の場所や島の形がちがいます。あとから「🌳 かざる」でかえられます。';
+  $('maprow').innerHTML = MAPS.map((m, i) => '<button data-m="' + i + '"' + (i === mapSel ? ' class="sel"' : '') + '>' + m.n + '</button>').join('');
+  $('maps').classList.add('on'); $('pal').classList.remove('on'); cam.dist = 84; cam.tx = 0; cam.tz = 9; }
+$('maprow').onclick = e => { const b = e.target.closest('[data-m]'); if (!b) return; mapSel = +b.dataset.m; [...$('maprow').children].forEach((c, i) => c.classList.toggle('sel', i === mapSel));
+  $('mapsp').textContent = MAPS[mapSel].d; build(Object.assign({}, DATA, {roads: null, deco: []}), mapSel); cam.dist = 84; cam.tx = 0; cam.tz = 9; };
+$('mapok').onclick = async () => { const r = await req('pickMap', {map: mapSel}); if (!r.ok) return toast(r.msg || 'できませんでした');
+  DATA.map = mapSel; DATA.deco = []; DATA.roads = null; DATA.roadsSaved = null; build(DATA, mapSel); $('maps').classList.remove('on');
+  await req('roads', {list: [...roads], add: 0}); DATA.roadsSaved = [...roads]; edit = false; $('ed').textContent = '🌳 かざる'; focusHome(); };
+function focusHome(){ cam.tx = M.home[0]; cam.tz = M.home[1] + 1; cam.dist = 24; }
+
+// ---- 操作
 const pts = new Map(); let drag = null, pinch = null, moved = 0; const el = renderer.domElement;
 function tap(cx, cy){
-  // 画面の上で、建物の絵の四角に入っているもの（手前のものを優先）→ なければ一番近い土地
   let best = null;
   sprites.forEach(s => { if (s.plot == null) return; const [x0, y0] = scr(s.x - s.h * .42, GY, s.z), [x1, y1] = scr(s.x + s.h * .42, GY + s.h * .95, s.z);
     if (cx >= Math.min(x0, x1) && cx <= Math.max(x0, x1) && cy >= Math.min(y0, y1) && cy <= Math.max(y0, y1) && (!best || s.z > best.z)) best = s; });
   if (best) return send({type: 'tap', i: best.plot});
-  let bi = -1, bd = 1e9; if (DATA) DATA.plots.forEach((p, i) => { if (p.t === 'deco') return; const c = cell(i), [sx, sy] = scr(c.x, GY, c.z), d = Math.hypot(sx - cx, sy - cy); if (d < bd) { bd = d; bi = i; } });
-  if (bi >= 0 && bd < innerWidth / 9) send({type: 'tap', i: bi});
+  let bi = -1, bd = 1e9; if (DATA) DATA.plots.forEach((p, i) => { if (p.t === 'lock' || !POS[i]) return; const [sx, sy] = scr(POS[i][0], GY, POS[i][1]), d = Math.hypot(sx - cx, sy - cy); if (d < bd) { bd = d; bi = i; } });
+  if (bi >= 0 && bd < innerWidth / 10) send({type: 'tap', i: bi});
 }
 el.addEventListener('pointerdown', e => { el.setPointerCapture(e.pointerId); pts.set(e.pointerId, [e.clientX, e.clientY]); moved = 0;
-  if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch = {d: Math.hypot(a[0] - b[0], a[1] - b[1]), z: cam.dist}; drag = null; } else drag = {x: e.clientX, y: e.clientY, tx: cam.tx, tz: cam.tz}; });
+  if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch = {d: Math.hypot(a[0] - b[0], a[1] - b[1]), z: cam.dist}; drag = null; painted && paintRoad(0, 0, true); }
+  else { drag = {x: e.clientX, y: e.clientY, tx: cam.tx, tz: cam.tz, road: edit && tool === 'road'}; if (drag.road) paintRoad(e.clientX, e.clientY); } });
 el.addEventListener('pointermove', e => { if (!pts.has(e.pointerId)) return; pts.set(e.pointerId, [e.clientX, e.clientY]);
-  if (pinch && pts.size === 2) { moved = 99; const [a, b] = [...pts.values()]; cam.dist = Math.max(18, Math.min(72, pinch.z * pinch.d / Math.hypot(a[0] - b[0], a[1] - b[1]))); return; }
-  if (drag) { moved = Math.max(moved, Math.hypot(e.clientX - drag.x, e.clientY - drag.y)); const k = cam.dist / innerHeight * .55; cam.tx = Math.max(-15, Math.min(15, drag.tx - (e.clientX - drag.x) * k)); cam.tz = Math.max(-15, Math.min(15, drag.tz - (e.clientY - drag.y) * k * 1.4)); } });
-const up = e => { if (pts.size === 1 && drag && moved < 8) tap(e.clientX, e.clientY); pts.delete(e.pointerId); if (pts.size < 2) pinch = null; if (!pts.size) drag = null; };
-el.addEventListener('pointerup', up); el.addEventListener('pointercancel', e => { pts.delete(e.pointerId); pinch = null; drag = null; });
-el.addEventListener('wheel', e => { e.preventDefault(); cam.dist = Math.max(18, Math.min(72, cam.dist * (e.deltaY > 0 ? 1.1 : .9))); }, {passive: false});
+  if (pinch && pts.size === 2) { moved = 99; const [a, b] = [...pts.values()]; cam.dist = Math.max(ZMIN, Math.min(ZMAX, pinch.z * pinch.d / Math.hypot(a[0] - b[0], a[1] - b[1]))); return; }
+  if (!drag) return; moved = Math.max(moved, Math.hypot(e.clientX - drag.x, e.clientY - drag.y));
+  if (drag.road) { paintRoad(e.clientX, e.clientY); return; }
+  const k = cam.dist / innerHeight * .55; cam.tx = Math.max(-20, Math.min(20, drag.tx - (e.clientX - drag.x) * k)); cam.tz = Math.max(-20, Math.min(20, drag.tz - (e.clientY - drag.y) * k * 1.4)); });
+const up = e => { if (pts.size === 1 && drag) { if (drag.road) paintRoad(0, 0, true); else if (moved < 8) { if ($('maps').classList.contains('on')) {} else if (edit) editTap(e.clientX, e.clientY); else tap(e.clientX, e.clientY); } }
+  pts.delete(e.pointerId); if (pts.size < 2) pinch = null; if (!pts.size) drag = null; };
+el.addEventListener('pointerup', up); el.addEventListener('pointercancel', e => { pts.delete(e.pointerId); pinch = null; drag = null; painted && paintRoad(0, 0, true); });
+el.addEventListener('wheel', e => { e.preventDefault(); cam.dist = Math.max(ZMIN, Math.min(ZMAX, cam.dist * (e.deltaY > 0 ? 1.1 : .9))); }, {passive: false});
+$('back').onclick = () => send({type: 'close'});
+$('gr').onclick = () => send({type: 'grid'});
+$('cl').onclick = () => send({type: 'claim'});
 
-// ---- ゲームから街の様子をもらう（来なければ見本）
-addEventListener('message', e => { if (e.origin !== location.origin || !e.data || e.data.src !== 'game') return;
-  if (e.data.type === 'town' && !DATA) build(e.data.town);
-  if (e.data.type === 'hud') { const h = e.data.hud; document.getElementById('clv').textContent = '🪙' + h.silver.toLocaleString(); document.getElementById('cl').classList.toggle('dot', h.silver > 0 || h.mats); } });
+// ---- ゲームから
+addEventListener('message', e => { if (e.origin !== location.origin || !e.data || e.data.src !== 'game') return; const d = e.data;
+  if (d.type === 'town' && !DATA) { PRICE = d.town.price || {}; const first = d.town.map == null; build(d.town, first ? 0 : d.town.map); DATA.roadsSaved = d.town.roads; setCoins(d.town.coins); if (first) openMaps(false); else focusHome(); }
+  if (d.type === 'hud') { const h = d.hud; $('clv').textContent = '🪙' + h.silver.toLocaleString(); $('cl').classList.toggle('dot', h.silver > 0 || h.mats); setCoins(h.coins); }
+  if (d.type === 'res' && waits[d.id]) { const f = waits[d.id]; delete waits[d.id]; f(d); } });
 send({type: 'ready'});
-setTimeout(() => { const h = document.getElementById('hint'); if (h) h.style.transition = 'opacity 1s', h.style.opacity = 0; }, 6000);
-setTimeout(() => { if (DATA) return; const B = ['castle', 'house', 'farm', 'shop', 'tavern', 'lumber', 'iron', 'hunter', 'casino', 'petshop', 'alchemy', 'dojo', 'trial'];
-  build({plots: Array.from({length: 25}, (_, i) => i === 12 ? {t: 'bld', img: 'img/town3d/home_5.webp', tag: '自分の家 Lv5'} : i < 13 ? {t: 'bld', img: 'img/town3d/' + B[i] + '_' + (i % 5 + 1) + '.webp', tag: 'Lv' + (i % 5 + 1)} : i < 19 ? {t: 'empty'} : {t: 'deco', img: ['tree1', 'tree2', 'fountain1', 'tree3', 'flower1', 'tree4'][i - 19]}),
-    walkers: ['g20', 'g42', 'g51', 'g84', 'g23', 'g10', 'g62', 'g44'].map(k => ({img: 'img/walk/' + k + '.webp'}))}); }, 1200);
+setTimeout(() => { $('hint').style.opacity = 0; }, 7000);
+setTimeout(() => { if (DATA) return;                       // 単体で開いたとき：見本
+  PRICE = {road: 20, move: 50, tree1: 300, tree2: 300, tree3: 300, tree4: 300, bush1: 200, flower1: 300, rock1: 150, fence1: 100, bench1: 400, lamp1: 500, fountain1: 2000};
+  const D = {map: null, plots: Array.from({length: 25}, (_, i) => i === 12 ? {t: 'bld', img: 'img/town3d/home_1.webp', tag: '自分の家 Lv1'} : i < 10 ? {t: 'empty'} : {t: 'lock'}),
+    walkers: ['g20', 'g42', 'g51'].map(k => ({img: 'img/walk/' + k + '.webp'})), deco: [], roads: null};
+  // 土地の番号は「近い順」の並び（ゲームと同じ）にする
+  const ord = (() => { const c = 2, o = []; for (let i = 0; i < 25; i++) o.push(i); return o.sort((a, b) => (Math.abs(a % 5 - c) + Math.abs((a / 5 | 0) - c)) - (Math.abs(b % 5 - c) + Math.abs((b / 5 | 0) - c)) || a - b); })();
+  D.order = ord; build(D, 0); openMaps(false); }, 1200);
 </script>
 </body></html>
