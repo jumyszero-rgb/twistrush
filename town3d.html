@@ -16,14 +16,24 @@
   .say{position:fixed;transform:translate(-50%,-100%);padding:4px 10px;border-radius:12px;background:#fff;color:#4a3520;font-size:12px;font-weight:800;white-space:nowrap;pointer-events:none;box-shadow:0 2px 6px rgba(0,0,0,.25)}
   .tag{position:fixed;transform:translate(-50%,0);padding:1px 7px;border-radius:8px;background:rgba(20,12,40,.72);font-size:11px;font-weight:900;white-space:nowrap;pointer-events:none}
   .tag.bld{background:rgba(255,140,0,.9)}
-  .pal{position:fixed;left:0;right:0;bottom:0;padding:8px 8px max(8px,env(safe-area-inset-bottom));background:rgba(20,12,40,.82);display:none;flex-direction:column;gap:6px}
+  .pal{position:fixed;z-index:5;left:0;right:0;bottom:0;padding:8px 8px max(8px,env(safe-area-inset-bottom));background:rgba(20,12,40,.82);display:none;flex-direction:column;gap:6px}
   .pal.on{display:flex} .pal p{margin:0;font-size:12px;text-align:center;color:#ffe9a8}
   .pal .row{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
   .pal .row button{flex:0 0 auto;width:66px;border:2px solid transparent;border-radius:12px;background:rgba(255,255,255,.1);color:#fff;font:inherit;font-size:10.5px;font-weight:800;padding:4px 2px;display:flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer}
   .pal .row button img{width:40px;height:40px;object-fit:contain} .pal .row button i{font-style:normal;font-size:28px;line-height:40px}
   .pal .row button.sel{border-color:#ffd34d;background:rgba(255,211,77,.22)} .pal .row button small{color:#ffd34d;font-size:10px;line-height:1.25;text-align:center} .pal .row button em{font-style:normal;color:#cfc6e6;font-size:9.5px}
   .pal .row button.ng{opacity:.45}
-  .ask{position:fixed;left:50%;bottom:calc(max(8px,env(safe-area-inset-bottom)) + 150px);transform:translateX(-50%);display:none;gap:8px;padding:8px;border-radius:999px;background:rgba(20,12,40,.75)}
+  .bl{position:fixed;z-index:5;left:0;right:0;bottom:0;max-height:58vh;display:none;flex-direction:column;background:rgba(20,12,40,.92);border-radius:16px 16px 0 0;padding-bottom:max(6px,env(safe-area-inset-bottom))}
+  .bl.on{display:flex} .bl p{margin:0;padding:9px 12px 6px;font-size:12.5px;font-weight:800;color:#ffe9a8;text-align:center}
+  .bl .list{overflow-y:auto;padding:0 8px 6px;display:flex;flex-direction:column;gap:6px}
+  .bl .it{display:flex;gap:8px;align-items:flex-start;text-align:left;border:2px solid transparent;border-radius:12px;background:rgba(255,255,255,.08);color:#fff;font:inherit;padding:6px 8px;cursor:pointer}
+  .bl .it img{flex:0 0 56px;width:56px;height:56px;object-fit:contain}
+  .bl .it div{flex:1;min-width:0} .bl .it b{font-size:14px} .bl .it .sz{margin-left:6px;font-size:11px;color:#cfc6e6;font-weight:700}
+  .bl .it .tg{display:flex;flex-wrap:wrap;gap:3px;margin:3px 0} .bl .it .tg span{font-size:10.5px;font-weight:800;padding:1px 6px;border-radius:999px;background:rgba(255,211,77,.22);color:#ffe9a8}
+  .bl .it .d{font-size:11px;line-height:1.5;color:#e8e1f8} .bl .it .c{font-size:11.5px;font-weight:900;color:#ffd34d;margin-top:2px} .bl .it.ng{opacity:.55} .bl .it.ng .c{color:#ff9aa8}
+  .bl .mini{display:none;align-items:center;gap:8px;padding:8px 10px} .bl.min .list,.bl.min > p{display:none} .bl.min .mini{display:flex}
+  .bl .mini span{flex:1;font-size:12.5px;font-weight:800;color:#ffe9a8} .bl .mini button{border:0;border-radius:999px;padding:7px 10px;font:inherit;font-weight:800;font-size:12px;background:rgba(255,255,255,.92);color:#3a2a00}
+  .ask{position:fixed;z-index:6;left:50%;bottom:calc(max(8px,env(safe-area-inset-bottom)) + 64px);transform:translateX(-50%);display:none;gap:8px;padding:8px;border-radius:999px;background:rgba(20,12,40,.75)}
   .ask.on{display:flex}
   .toast{position:fixed;left:50%;top:40%;transform:translateX(-50%);padding:8px 14px;border-radius:12px;background:rgba(20,12,40,.85);font-size:13px;font-weight:800;pointer-events:none;opacity:0;transition:opacity .3s;text-align:center;max-width:80%}
   .toast.on{opacity:1}
@@ -39,6 +49,7 @@
 <div class="side"><button id="cl" class="claim">受け取る<small id="clv">🪙0</small></button><button id="bd" class="w">🏗 建てる</button><button id="ed" class="w">🌳 かざる</button><span class="coins" id="cn">🪙0</span></div>
 <div class="hint" id="hint">2本指で広げると全体が見える／建物をタップで育てる／「🏗 建てる」で建物、「🌳 かざる」で木や道を置ける</div>
 <div class="pal" id="pal"><p id="palp">置きたいものをえらんで、島をタップ</p><div class="row" id="palrow"></div></div>
+<div class="bl" id="bl"><p id="blp"></p><div class="list" id="blist"></div><div class="mini"><span id="blm"></span><button id="blre">📋 えらびなおす</button></div></div>
 <div class="ask" id="ask"><button id="askok">✔ ここに建てる</button><button class="w" id="askno">✖ やめる</button></div>
 <div class="maps" id="maps"><div class="box"><h3>🗺 島をえらぶ</h3><p id="mapsp">5つの島から、好きな形をえらべます。川の場所や島の形がちがいます。</p><div class="row" id="maprow"></div><button class="ok" id="mapok">この島にする</button></div></div>
 <div class="toast" id="toast"></div>
@@ -374,12 +385,10 @@ TOOLS.forEach(t => { if (!t.opt) return; t.hide = 1; const im = new Image(); im.
 let edit = false, tool = 'road', coins = 0, moving = null, placing = null, blist = null;
 const szTxt = k => DSZ[k] ? DSZ[k][0] + '×' + DSZ[k][1] : '';
 function drawPal(){
-  if (placing || blist) { drawBPal(); return; }
   $('palrow').innerHTML = TOOLS.filter(t => !t.hide).map(t => '<button data-k="' + t.k + '"' + (t.k === tool ? ' class="sel"' : '') + '>' + (t.i ? '<i>' + t.i + '</i>' : '<img alt="" src="img/town3d/' + t.k + '.webp">') + t.n +
     (szTxt(t.k) ? '<em>' + szTxt(t.k) + 'マス</em>' : '') + (PRICE[t.k] ? '<small>🪙' + PRICE[t.k].toLocaleString() + '</small>' : '') + '</button>').join('');
   $('palp').textContent = tool === 'road' ? '島をタップ・なぞると土の道ができる（1マス🪙' + (PRICE.road || 0) + '・川には橋を置いてね）' : tool === 'erase' ? '木・飾り・道をタップするとなくなる（お金はもどらない）' : tool === 'move' ? (moving ? 'うごかす先をタップ' : 'うごかしたい建物・木・飾りをタップ') : '置きたい場所をタップ'; }
-$('palrow').onclick = e => { const b = e.target.closest('[data-k],[data-b]'); if (!b) return;
-  if (b.dataset.b) { const it = blist.list.find(x => x.k === b.dataset.b); if (!it) return; if (!it.ok) return toast(it.why || '今は建てられません'); placing = {b: it.k, s: bsz(it.k, 1), it}; ghost.visible = false; $('ask').classList.remove('on'); drawBPal(); return; }
+$('palrow').onclick = e => { const b = e.target.closest('[data-k]'); if (!b) return;
   if (b.dataset.k === 'map') { openMaps(true); return; } tool = b.dataset.k; if (moving) { moving.mat.opacity = 1; moving = null; } drawPal(); };
 const setEdit = on => { edit = on; $('pal').classList.toggle('on', on); $('ed').textContent = on ? '✔ おわる' : '🌳 かざる'; $('hint').style.opacity = 0; if (moving) { moving.mat.opacity = 1; moving = null; } if (on) { endBuild(); drawPal(); if (cam.dist > 50) cam.dist = 34; } };
 $('ed').onclick = () => setEdit(!edit);
@@ -388,11 +397,20 @@ $('ed').onclick = () => setEdit(!edit);
 async function openBuild(){
   if (blist) { endBuild(); return; } setEdit(false); const r = await req('blist', {});
   if (!r.ok || !r.list) return toast(r.msg || 'できませんでした');
-  blist = r; placing = null; $('pal').classList.add('on'); $('bd').textContent = '✖ やめる'; drawBPal(); if (cam.dist > 50) cam.dist = 40; }
+  blist = r; placing = null; $('bd').textContent = '✖ やめる'; drawBPal(); if (cam.dist > 50) cam.dist = 40; }
+// 建てる一覧（2026-11-26 本人「選択が横だとちゃんと見えないので縦に」）：絵・名前・広さ・何に効くか・説明・費用
+const esc = t => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
 function drawBPal(){
-  $('palrow').innerHTML = blist.list.map(it => '<button data-b="' + it.k + '" class="' + (placing && placing.b === it.k ? 'sel' : '') + (it.ok ? '' : ' ng') + '"><img alt="" src="img/town3d/' + it.k + '_1.webp">' + it.n + '<em>' + bsz(it.k, 1) + '×' + bsz(it.k, 1) + 'マス</em><small>' + (it.ok ? it.cost : it.why) + '</small></button>').join('');
-  $('palp').textContent = placing ? '「' + placing.it.n + '」を建てる場所をタップ（' + placing.s + '×' + placing.s + 'マス・緑なら建てられる）' : blist.free > 0 ? '建てたいものをえらんでね（あと' + blist.free + 'こ建てられる）' : '今は建てられる数がいっぱい（家のレベルを上げるとふえる）'; }
-function endBuild(){ blist = null; placing = null; ghost.visible = false; $('ask').classList.remove('on'); $('bd').textContent = '🏗 建てる'; if (!edit) $('pal').classList.remove('on'); }
+  const b = $('bl'); b.classList.add('on'); b.classList.toggle('min', !!placing);
+  $('blp').textContent = blist.free > 0 ? '建てたいものをえらんでね（あと' + blist.free + 'こ建てられる）' : '今は建てられる数がいっぱい（家のレベルを上げるとふえる）';
+  $('blist').innerHTML = blist.list.map(it => { const s = bsz(it.k, 1), s5 = bsz(it.k, 5);
+    return '<button class="it' + (it.ok ? '' : ' ng') + '" data-b="' + it.k + '"><img alt="" src="img/town3d/' + it.k + '_1.webp"><div><b>' + esc(it.n) + '</b><span class="sz">' + s + '×' + s + 'マス' + (s5 > s ? '（Lv5で' + s5 + '×' + s5 + '）' : '') + '</span>' +
+      '<div class="tg">' + (it.tags || []).map(t => '<span>' + esc(t) + '</span>').join('') + '</div><div class="d">' + esc(it.d) + '</div><div class="c">' + esc(it.ok ? it.cost : it.why) + '</div></div></button>'; }).join('');
+  if (placing) $('blm').textContent = '「' + placing.it.n + '」を建てる場所をタップ（' + placing.s + '×' + placing.s + 'マス・緑なら建てられる）'; }
+$('blist').onclick = e => { const b = e.target.closest('[data-b]'); if (!b) return; const it = blist.list.find(x => x.k === b.dataset.b); if (!it) return;
+  if (!it.ok) return toast(it.why || '今は建てられません'); placing = {b: it.k, s: bsz(it.k, 1), it}; ghost.visible = false; $('ask').classList.remove('on'); drawBPal(); };
+$('blre').onclick = () => { placing = null; ghost.visible = false; $('ask').classList.remove('on'); drawBPal(); };
+function endBuild(){ blist = null; placing = null; ghost.visible = false; $('ask').classList.remove('on'); $('bd').textContent = '🏗 建てる'; $('bl').classList.remove('on', 'min'); }
 $('bd').onclick = openBuild;
 function buildTap(cx, cy){ const [x, z] = groundAt(cx, cy), s = placing.s, [ix, iz] = cellFor(x, z, s, s), ok = rectFree(ix, iz, s, s);
   showGhost(ix, iz, s, s, ok); placing.at = ok ? [ix, iz] : null; $('ask').classList.toggle('on', ok); if (!ok) toast('ここには建てられません（川・道・ほかのものと重なる）'); }
