@@ -13,9 +13,11 @@
   .say{position:fixed;transform:translate(-50%,-100%);padding:4px 10px;border-radius:12px;background:#fff;color:#4a3520;font-size:12px;font-weight:800;white-space:nowrap;pointer-events:none;box-shadow:0 2px 6px rgba(0,0,0,.25)}
   .tag{position:fixed;transform:translate(-50%,0);padding:1px 7px;border-radius:8px;background:rgba(20,12,40,.72);font-size:11px;font-weight:900;white-space:nowrap;pointer-events:none}
   .tag.bld{background:rgba(255,140,0,.9)}
+  .claim{position:fixed;right:12px;top:calc(max(10px,env(safe-area-inset-top)) + 46px);border:0;border-radius:14px;padding:8px 14px;font:inherit;font-weight:900;font-size:15px;color:#3a2a00;background:linear-gradient(#ffe27a,#ffbf1f);box-shadow:0 3px 0 #c98a00;cursor:pointer} .claim small{display:block;font-size:12px} .claim.dot::after{content:'';position:absolute;top:-3px;right:-3px;width:12px;height:12px;border-radius:50%;background:#ff4d6a;box-shadow:0 0 0 2px #fff}
 </style></head><body>
-<div class="bar"><button class="back" id="back">‹ もどる</button><b>🏝 わたしの街</b><button id="ts">ぼかし ON</button><button id="tm">🕒 時間</button></div>
-<div class="hint">ドラッグで移動・2本指（ホイール）で拡大／建物や「＋」をタップすると、建てる・育てる画面へ</div>
+<div class="bar"><button class="back" id="back">‹ もどる</button><b>🏝 わたしの街</b><button id="gr" class="back">📋 一覧</button><button id="tm">🕒</button></div>
+<button id="cl" class="claim">受け取る<small id="clv">🪙0</small></button>
+<div class="hint" id="hint">ドラッグで移動・2本指で拡大／建物や「＋」をタップで、建てる・育てる</div>
 <script type="importmap">{"imports":{"three":"./lib/three.module.min.js"}}</script>
 <script type="module">
 /* 2026-11-26 わたしの街を3Dの島に（本人「建物・木・地面は3D、キャラは2Dのちび絵を板にして立たせる。ペーパーマリオ風」）
@@ -131,7 +133,9 @@ const post = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMater
       #include <colorspace_fragment>
     }`}));
 const postScene = new THREE.Scene(), postCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1); postScene.add(post);
-let tilt = true; document.getElementById('ts').onclick = e => { tilt = !tilt; e.target.textContent = 'ぼかし ' + (tilt ? 'ON' : 'OFF'); };
+let tilt = true;
+document.getElementById('gr').onclick = () => send({type: 'grid'});
+document.getElementById('cl').onclick = () => send({type: 'claim'});
 document.getElementById('back').onclick = () => send({type: 'close'});
 addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); mkRT(); });
 
@@ -198,8 +202,11 @@ el.addEventListener('pointerup', up); el.addEventListener('pointercancel', e => 
 el.addEventListener('wheel', e => { e.preventDefault(); cam.dist = Math.max(18, Math.min(72, cam.dist * (e.deltaY > 0 ? 1.1 : .9))); }, {passive: false});
 
 // ---- ゲームから街の様子をもらう（来なければ見本）
-addEventListener('message', e => { if (e.origin !== location.origin || !e.data || e.data.src !== 'game' || e.data.type !== 'town' || DATA) return; build(e.data.town); });
+addEventListener('message', e => { if (e.origin !== location.origin || !e.data || e.data.src !== 'game') return;
+  if (e.data.type === 'town' && !DATA) build(e.data.town);
+  if (e.data.type === 'hud') { const h = e.data.hud; document.getElementById('clv').textContent = '🪙' + h.silver.toLocaleString(); document.getElementById('cl').classList.toggle('dot', h.silver > 0 || h.mats); } });
 send({type: 'ready'});
+setTimeout(() => { const h = document.getElementById('hint'); if (h) h.style.transition = 'opacity 1s', h.style.opacity = 0; }, 6000);
 setTimeout(() => { if (DATA) return; const B = ['castle', 'house', 'farm', 'shop', 'tavern', 'lumber', 'iron', 'hunter', 'casino', 'petshop', 'alchemy', 'dojo', 'trial'];
   build({plots: Array.from({length: 25}, (_, i) => i === 12 ? {t: 'bld', img: 'img/town3d/home_5.webp', tag: '自分の家 Lv5'} : i < 13 ? {t: 'bld', img: 'img/town3d/' + B[i] + '_' + (i % 5 + 1) + '.webp', tag: 'Lv' + (i % 5 + 1)} : i < 19 ? {t: 'empty'} : {t: 'deco', img: ['tree1', 'tree2', 'fountain1', 'tree3', 'flower1', 'tree4'][i - 19]}),
     walkers: ['g20', 'g42', 'g51', 'g84', 'g23', 'g10', 'g62', 'g44'].map(k => ({img: 'img/walk/' + k + '.webp'}))}); }, 1200);
