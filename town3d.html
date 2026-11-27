@@ -37,6 +37,8 @@
   .ask.on{display:flex}
   .toast{position:fixed;left:50%;top:40%;transform:translateX(-50%);padding:8px 14px;border-radius:12px;background:rgba(20,12,40,.85);font-size:13px;font-weight:800;pointer-events:none;opacity:0;transition:opacity .3s;text-align:center;max-width:80%}
   .toast.on{opacity:1}
+  .got{position:fixed;left:50%;top:30%;transform:translateX(-50%);min-width:200px;max-width:85%;padding:12px 18px;border-radius:14px;background:rgba(24,110,44,.94);color:#fff;font-size:14px;font-weight:800;line-height:1.7;text-align:center;pointer-events:none;opacity:0;transition:opacity .3s;z-index:60}
+  .got b{display:block;font-size:15px;color:#ffe27a;margin-bottom:2px} .got.on{opacity:1}
   .maps{position:fixed;inset:0;display:none;flex-direction:column;justify-content:flex-end;pointer-events:none}
   .maps.on{display:flex}
   .maps .box{pointer-events:auto;margin:0 10px max(10px,env(safe-area-inset-bottom));padding:12px;border-radius:16px;background:rgba(20,12,40,.88)}
@@ -52,7 +54,7 @@
 <div class="bl" id="bl"><p id="blp"></p><div class="list" id="blist"></div><div class="mini"><span id="blm"></span><button id="blre">📋 えらびなおす</button></div></div>
 <div class="ask" id="ask"><button id="askok">✔ ここに建てる</button><button class="w" id="askno">✖ やめる</button></div>
 <div class="maps" id="maps"><div class="box"><h3>🗺 島をえらぶ</h3><p id="mapsp">5つの島から、好きな形をえらべます。川の場所や島の形がちがいます。</p><div class="row" id="maprow"></div><button class="ok" id="mapok">この島にする</button></div></div>
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast"></div><div class="got" id="got"></div>
 <script type="importmap">{"imports":{"three":"./lib/three.module.min.js"}}</script>
 <script type="module">
 /* 2026-11-26 わたしの街（3Dの島）
@@ -533,6 +535,7 @@ addEventListener('message', e => { if (e.origin !== location.origin || !e.data |
   if (d.type === 'town' && !DATA) { PRICE = d.town.price || {}; setCoins(d.town.coins); start(d.town); }
   if (d.type === 'hud') { const h = d.hud; $('clv').textContent = '🪙' + h.silver.toLocaleString() + (h.n ? '・📦' + h.n : h.mats ? '・🥋' : ''); $('cl').classList.toggle('dot', h.silver > 0 || h.mats); setCoins(h.coins); }
   if (d.type === 'openBuild' && DATA && !$('maps').classList.contains('on')) openBuild();
+  if (d.type === 'got') { const e = $('got'); e.innerHTML = d.list.length ? '<b>受け取りました</b>' + d.list.map(g => '<div>' + esc(g) + '</div>').join('') : '<b>まだたまっていません</b>'; e.classList.add('on'); clearTimeout(e.k); e.k = setTimeout(() => e.classList.remove('on'), 2600 + d.list.length * 700); }
   if (d.type === 'res' && waits[d.id]) { const f = waits[d.id]; delete waits[d.id]; f(d); } });
 send({type: 'ready'});
 setTimeout(() => { $('hint').style.opacity = 0; }, 7000);
