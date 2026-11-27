@@ -786,6 +786,16 @@ body.on-menu .battlemain{opacity:0;}
   .trs button{border:0;border-radius:9px;padding:6px 8px;font:inherit;font-weight:800;background:linear-gradient(#ffe27a,#f0a81c);color:#3a2a00} .trs button small{font-size:10px}
   .trt{display:grid;grid-template-columns:repeat(3,1fr);gap:6px} .trt button{border:2px solid #ffd34d;border-radius:10px;padding:7px 4px;font:inherit;background:rgba(255,211,77,.12);color:#fff;text-align:center}
   .trt b{display:block;font-size:12.5px} .trt small{display:block;font-size:10.5px;opacity:.9} .trt .ok{color:#7dff95} .trt .ng{color:#ff9a9a} .twmini{border:0;border-radius:8px;padding:3px 8px;font:inherit;font-size:11px;background:rgba(255,255,255,.2);color:#fff}
+  .casbet{display:flex;gap:4px;margin:4px 0 8px} .casbet button{flex:1;border:0;border-radius:8px;padding:6px 0;font:inherit;font-weight:800;font-size:12px;background:rgba(255,255,255,.12);color:#fff} .casbet button.on{background:#ffd34d;color:#3a2a00} .casbet button:disabled{opacity:.35}
+  .cas{margin:0 0 10px;padding:9px;border-radius:12px;background:rgba(0,0,0,.25);text-align:center} .cas>b{display:block;font-size:15px} .cas>small{display:block;font-size:11px;opacity:.85;line-height:1.6}
+  .slot{display:flex;justify-content:center;gap:8px;margin:8px 0} .slot span{width:64px;height:64px;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center} .slot .ic{width:48px;height:48px}
+  .slot.spin span{animation:slotsp .5s ease-out} .slot.spin span:nth-child(2){animation-duration:.7s} .slot.spin span:nth-child(3){animation-duration:.9s} @keyframes slotsp{0%{transform:translateY(-30px) scaleY(.6);opacity:0}100%{transform:none;opacity:1}}
+  .casres{margin:6px 0;font-weight:800} .casres.w{color:#7dff95} .casres.l{opacity:.75} .casgo{display:block;width:100%;margin-top:6px;border:0;border-radius:10px;padding:10px;font:inherit;font-weight:900;background:linear-gradient(#ffe27a,#f0a81c);color:#3a2a00} .casgo:disabled{opacity:.4}
+  .hlcard{width:72px;height:100px;margin:8px auto;border-radius:10px;background:#fff;color:#c0262d;font-size:40px;font-weight:900;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(0,0,0,.4)}
+  .hlbtns{display:flex;gap:6px} .hlbtns button{flex:1;border:0;border-radius:10px;padding:9px 4px;font:inherit;font-weight:900;background:#4aa3ff;color:#fff} .hlbtns button.g{background:linear-gradient(#ffe27a,#f0a81c);color:#3a2a00} .hlbtns small{display:block;font-size:11px} .hlbtns button:disabled{opacity:.35}
+  .tana{display:grid;grid-template-columns:repeat(5,1fr);gap:4px} .tana>div{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border-radius:10px;background:rgba(255,255,255,.08);text-align:center;font-size:10.5px;position:relative}
+  .tana .ic{width:34px;height:34px} .tana b{font-size:10.5px;line-height:1.3;min-height:2.6em} .tana em{position:absolute;top:2px;right:2px;font-style:normal;font-size:8.5px;background:#ff6b8a;color:#fff;border-radius:6px;padding:0 3px}
+  .tana button{border:0;border-radius:7px;padding:4px 2px;width:100%;font:inherit;font-weight:800;font-size:10.5px;background:#ffd34d;color:#3a2a00} .tana button .ic{width:12px;height:12px} .tana .sold{opacity:.45} .tana button:disabled{opacity:.6}
   .ofadv{margin:0;padding-left:20px;font-size:13px;line-height:1.7} .ofadv li{margin-bottom:6px} .ofgo{display:block;width:100%;margin-top:10px;border:0;border-radius:12px;padding:11px;font:inherit;font-weight:900;font-size:15px;color:#3a2a00;background:linear-gradient(#ffe27a,#ffbf1f)}
   .ofst{display:grid;grid-template-columns:1fr 1fr;gap:6px} .ofst div{background:rgba(255,255,255,.08);border-radius:10px;padding:7px 9px} .ofst span{display:block;font-size:11px;opacity:.8} .ofst b{font-size:15px}
   .ofh{margin:12px 0 6px;font-size:13px} .oflist div{display:flex;gap:8px;align-items:center;padding:5px 2px;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px} .oflist i{font-style:normal} .oflist span{margin-left:auto;font-size:12px;opacity:.85}
@@ -8066,7 +8076,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.352';
+  const APP_VER = '0.9.353';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -11674,14 +11684,14 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     castle: {n: '城', i: '🏰', apt: 'pol', d: '人口に合わせて税金（街コイン）が入る', silver: 'tax', one: true},
     house:  {n: '民家', i: '🏘', apt: 'cha', d: '住める人がふえる（1レベルで20人）。人口がふえるのは民家だけ', pop: 20},
     farm:   {n: '農場', i: '🌾', apt: 'pow', d: '食べものを作る。食べものが足りないと人が出ていく（1レベルで25人分）', food: 25},
-    shop:   {n: '商店', i: '🏪', apt: 'biz', d: 'もうけ（街コイン）が入る', silver: 60},
+    shop:   {n: '商店', i: '🏪', apt: 'biz', d: 'もうけ（街コイン）が入る。「今日の5タナ」でシルバーの買い物ができる（ここだけの品も）', silver: 60},
     tavern: {n: '酒場', i: '🍺', apt: 'cha', d: 'もうけ（街コイン）が少し入る。キャラの貸し借りは準備中', silver: 30},
     lumber: {n: '伐採所', i: '🪓', apt: 'pow', d: '木材が取れる（Lvでグレードが上がる）', raw: 'wood'},
     quarry: {n: '採石場', i: '⛏', apt: 'pow', d: '石材が取れる（Lvでグレードが上がる）', raw: 'stone'},
     iron:   {n: '製鉄所', i: '🔥', apt: 'tec', d: '金属が取れる（Lvでグレードが上がる）', raw: 'metal'},
     // 2026-11-25 本人「ハンター協会（魔物などの素材や食料、肉とか）・カジノ・ペットショップ（このゲーム専用キャラ）」
     hunter: {n: 'ハンター協会', i: '🏹', apt: 'pow', d: '皮・魔物素材と、肉が取れる（Lvでグレードが上がる）', raw: ['hide', 'beast'], meat: 1.5},
-    casino: {n: 'カジノ', i: '🎰', apt: 'biz', d: '遊技場（シルバーをかけるミニゲームは準備中）。いまは1日にレベルの回数だけルーレットを回せる', one: true},
+    casino: {n: 'カジノ', i: '🎰', apt: 'biz', d: '遊技場。シルバーをかけてスロットやハイ＆ローで遊べる（負けることもある）。1日にレベルの回数だけ無料のルーレット', one: true},
     petshop:{n: 'ペットショップ', i: '🐾', apt: 'cha', d: 'ペットをお迎えできる。肉をあげると育って、街にボーナス', one: true},
     // 2026-11-26 本人「街でも（進化素材を）作れるようにすれば良い」：少しずつ進化の結晶ができる。Lv5になると進化の宝玉もときどき
     alchemy:{n: '錬金工房', i: '⚗️', apt: 'tec', d: '進化の結晶が少しずつできる（Lv5で進化の宝玉もときどき）。素材と街コインで錬金もできる（Lv3から進化の宝玉）。家Lv3から建てられて、キャラを置いているあいだだけ動く', evo: 0.02, one: true, needHome: 3, needCrew: true},   // 2026-11-26 本人「ある程度の条件は必要」
@@ -12046,7 +12056,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         h += '<h5>できるもの（1日） <small>Lv' + L + '：' + Object.keys(P).map(g => 'G' + g + ' ' + Math.round(P[g] * 100) + '%').join('・') + '　Lvが上がるとグレードも上がる</small></h5><div class="twmake">' +
           fs.flatMap(f => Object.keys(P).map(g => { const k = 'r_' + f + '_' + g, n = (f === 'meat' ? r.meat : r.raw / rawFams(x.b).length) * P[g] * 24; return '<div class="on">' + icMat(k) + '<b>' + EX_MAT[k][0] + '</b><small>' + n.toFixed(1) + '個</small></div>'; })).join('') + '</div>'; }
       if (x.b === 'petshop' && lvNow(x) >= 1) h += petHTML(lvNow(x));
-      if (x.b === 'casino' && lvNow(x) >= 1) h += casinoHTML(lvNow(x));
+      if (x.b === 'casino' && lvNow(x) >= 1) h += casGamesHTML(lvNow(x)) + casinoHTML(lvNow(x));
+      if (x.b === 'shop' && lvNow(x) >= 1) h += shopHTML();
       if (x.b === 'alchemy' && lvNow(x) >= 1) h += alcHTML(lvNow(x));
       if (townPick != null) {
         const list = units.filter(u => !cs.has(u.u)).map(u => ({u, v: aptOf(u, b.apt)})).sort((a, c) => c.v - a.v).slice(0, 40);
@@ -12176,6 +12187,11 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if ((t = q('data-petfeed'))) { const pt = PETS.find(p => p.k === t.dataset.petfeed), lv = town.pets && town.pets[pt.k]; if (!lv || lv >= PET_MAX || (town.meat || 0) < petMeat(lv)) return;
       townClaimQuiet(); useMeat(petMeat(lv)); town.pets[pt.k] = lv + 1; saveTown(); toast(pt.i + ' ' + pt.n + ' が Lv' + (lv + 1) + ' になった！'); drawTown(); return; }
     if ((t = q('data-spin'))) { casinoSpin(lvNow(x)); return; }
+    if ((t = q('data-casbet'))) { casBet = +t.dataset.casbet; drawTown(); return; }
+    if ((t = q('data-casslot'))) { casSlotGo(lvNow(x)); return; }
+    if ((t = q('data-cashl'))) { casHLGo(lvNow(x), t.dataset.cashl); return; }
+    if ((t = q('data-tana'))) { shopBuy(+t.dataset.tana); return; }
+    if ((t = q('data-tanare'))) { payAsk('ゴールド 20 で、今日の5タナを並べかえますか？', async () => { if (!(await spendGold(20, 'town-shop'))) return; shopGen(); refreshCoins(); drawTown(); }); return; }
     if ((t = q('data-alc'))) { alcMake(t.dataset.alc, lvNow(x)); return; }
     if ((t = q('data-twadd'))) { townPick = +t.dataset.twadd; drawTown(); return; }
     if ((t = q('data-twput'))) { townClaimQuiet(); x.crew.push(t.dataset.twput); x.crew = x.crew.slice(0, 3); townPick = null; saveTown(); drawTown(); return; }
@@ -12212,6 +12228,62 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   // カジノのルーレット：1日にカジノのレベルの回数だけ無料（シルバーをかけるものではない）
   const ROULETTE = [{w: 45, t: 'あたり', f: L => ({silver: 300 * L})}, {w: 20, t: 'いい感じ', f: L => ({silver: 1000 * L})}, {w: 15, t: 'あたり', f: L => ({meat: 5 + 3 * L})},
     {w: 14, t: 'あたり', f: L => ({mat: 2 + L})}, {w: 5, t: '大当たり', f: L => ({silver: 5000 * L})}, {w: 1, t: '超大当たり', f: () => ({evo: 1})}];
+  // ===== カジノ（2026-11-28 本人「求めてるのは税金ではなく、簡単なゲームを遊んでシルバーをかけにして儲ける（負けることも当然ある）ことができる遊技場」）
+  //   シルバーをかける：スロット（期待値 約93%）／ハイ＆ロー（当たりの倍率は確率から決まる・期待値 約95%・5回まで続けられる）。かけられる上限＝カジノLv×1,000
+  const CAS_BETS = [100, 500, 1000, 2000, 5000], SLOT_SYM = [['wood', .30], ['meat', .25], ['box', .18], ['gem', .14], ['evo_g', .08], ['rush', .05]];
+  const SLOT_3 = {wood: 5, meat: 8, box: 15, gem: 30, evo_g: 80, rush: 300}, SLOT_2 = {wood: 1.5, meat: 2, box: 3, gem: 4, evo_g: 8, rush: 15};
+  let casBet = 100, casSlot = null, casHL = null, casMsg = '';
+  const casMax = L => 1000 * L;
+  const slotRoll = () => { let r = Math.random(); for (const [k, p] of SLOT_SYM) { if (r < p) return k; r -= p; } return 'wood'; };
+  const hlName = c => ({1: 'A', 11: 'J', 12: 'Q', 13: 'K'})[c] || String(c);
+  const hlMul = (c, up) => { const w = up ? 13 - c : c - 1; return w <= 0 ? 0 : Math.max(1.1, Math.floor(0.95 * 13 / w * 10) / 10); };
+  function casGamesHTML(L){ const mx = casMax(L); if (casBet > mx) casBet = CAS_BETS.filter(b => b <= mx).pop();
+    let h = '<h5>' + ic('silver') + ' シルバーをかける <small>所持 ' + coins.toLocaleString() + '・1回 ' + mx.toLocaleString() + 'まで（カジノのLvで上がる）</small></h5><div class="casbet">' +
+      CAS_BETS.map(b => '<button data-casbet="' + b + '"' + (b === casBet ? ' class="on"' : '') + (b > mx ? ' disabled' : '') + '>' + b.toLocaleString() + '</button>').join('') + '</div>';
+    // スロット
+    h += '<div class="cas"><b>🎰 スロット</b><div class="slot">' + (casSlot ? casSlot.r : ['box', 'gem', 'rush']).map(k => '<span>' + ic(k) + '</span>').join('') + '</div>' +
+      '<small>3つそろう：' + Object.keys(SLOT_3).map(k => ic(k) + '×' + SLOT_3[k]).join(' ') + '<br>左の2つそろう：' + Object.keys(SLOT_2).map(k => ic(k) + '×' + SLOT_2[k]).join(' ') + '</small>' +
+      (casSlot ? '<p class="casres ' + (casSlot.win ? 'w' : 'l') + '">' + (casSlot.win ? '当たり！ +' + casSlot.win.toLocaleString() : 'はずれ…') + '</p>' : '') +
+      '<button class="casgo" data-casslot="1"' + (coins >= casBet ? '' : ' disabled') + '>' + casBet.toLocaleString() + ' かけて回す</button></div>';
+    // ハイ＆ロー
+    h += '<div class="cas"><b>🃏 ハイ＆ロー</b><small>次のカードが大きいか小さいかを当てる（同じ数ははずれ）。当たると続けられる（5回まで）</small>';
+    if (!casHL) h += (casMsg ? '<p class="casres">' + casMsg + '</p>' : '') + '<button class="casgo" data-cashl="start"' + (coins >= casBet ? '' : ' disabled') + '>' + casBet.toLocaleString() + ' かけて始める</button>';
+    else { const c = casHL.c, hu = hlMul(c, true), lo = hlMul(c, false);
+      h += '<div class="hlcard">' + hlName(c) + '</div><p class="casres">いま ' + casHL.pot.toLocaleString() + '（' + casHL.n + '/5回）</p><div class="hlbtns">' +
+        '<button data-cashl="hi"' + (hu ? '' : ' disabled') + '>⬆ 大きい<small>×' + hu + '</small></button><button data-cashl="lo"' + (lo ? '' : ' disabled') + '>⬇ 小さい<small>×' + lo + '</small></button>' +
+        (casHL.n ? '<button class="g" data-cashl="take">やめて受け取る<small>' + casHL.pot.toLocaleString() + '</small></button>' : '') + '</div>'; }
+    return h + '</div>'; }
+  function casSlotGo(L){ if (coins < casBet || casBet > casMax(L)) return; addCoins(-casBet); const r = [slotRoll(), slotRoll(), slotRoll()];
+    const m = r[0] === r[1] && r[1] === r[2] ? SLOT_3[r[0]] : r[0] === r[1] ? SLOT_2[r[0]] : 0, win = Math.floor(casBet * m); if (win) addCoins(win);
+    casSlot = {r, win}; refreshCoins(); drawTown(); const el = document.querySelector('.slot'); if (el) { el.classList.remove('spin'); void el.offsetWidth; el.classList.add('spin'); } }
+  function casHLGo(L, a){
+    if (a === 'start') { if (coins < casBet || casBet > casMax(L)) return; addCoins(-casBet); casHL = {c: 1 + Math.floor(Math.random() * 13), pot: casBet, n: 0}; casMsg = ''; refreshCoins(); drawTown(); return; }
+    if (!casHL) return;
+    if (a === 'take') { addCoins(casHL.pot); casMsg = '受け取った！ +' + casHL.pot.toLocaleString(); casHL = null; refreshCoins(); drawTown(); return; }
+    const up = a === 'hi', mul = hlMul(casHL.c, up); if (!mul) return; const nx = 1 + Math.floor(Math.random() * 13), ok = up ? nx > casHL.c : nx < casHL.c;
+    if (!ok) { casMsg = '次は ' + hlName(nx) + '…はずれ（' + casHL.pot.toLocaleString() + ' なくなった）'; casHL = null; drawTown(); return; }
+    casHL.pot = Math.floor(casHL.pot * mul); casHL.n++; casHL.c = nx;
+    if (casHL.n >= 5) { addCoins(casHL.pot); casMsg = '5回連続！ +' + casHL.pot.toLocaleString(); casHL = null; refreshCoins(); }
+    drawTown(); }
+  // ===== 商店の5タナ（2026-11-28 本人「シルバーで買えるものと同じものや、ここでしか買えないものを設置する。5タナ限定でランダムでも良い」）
+  //   毎日0時に並びが変わる。ゴールド20ですぐ並べかえ（早く進める＝ゴールド）。グレードは商店のLvまで
+  const SHOP_POOL = [
+    {k: 'stampot', n: 1, p: 500, w: 10}, {k: 'gticket', n: 1, p: 100, w: 10}, {k: 'gticket', n: 3, p: 280, w: 6, only: 1},
+    {k: 'r_wood', n: 5, p: 120, w: 8, g: 1}, {k: 'r_stone', n: 5, p: 120, w: 8, g: 1}, {k: 'r_metal', n: 5, p: 120, w: 8, g: 1}, {k: 'r_meat', n: 5, p: 100, w: 5, g: 1},
+    {k: 'pot_N', n: 1, p: 400, w: 6, only: 1}, {k: 'pot_R', n: 1, p: 1500, w: 3, only: 1}, {k: 'st', n: 1, p: 600, w: 5, only: 1}, {k: 'twtime', n: 1, p: 2000, w: 3, only: 1}];
+  const shopLvMax = () => Math.max(0, ...town.p.filter(x => x && x.b === 'shop').map(lvNow));
+  function shopGen(){ const L = Math.max(1, shopLvMax()), out = [], tw = SHOP_POOL.reduce((a, o) => a + o.w, 0);
+    for (let i = 0; i < 5; i++) { let r = Math.random() * tw, o = SHOP_POOL[0]; for (const q of SHOP_POOL) { if (r < q.w) { o = q; break; } r -= q.w; }
+      let k = o.k, p = o.p; if (o.g) { const g = 1 + Math.floor(Math.random() * L); k = o.k + '_' + g; p = o.p * g; } if (k === 'st') k = 'st_' + Object.keys(STONE_N)[Math.floor(Math.random() * 8)] + '_0';
+      out.push({k, n: o.n, p, only: !!o.only, sold: false}); }
+    town.shop = {day: dmKey(), it: out}; saveTown(); }
+  const shopLabel = k => EX_MAT[k] ? EX_MAT[k][0] : itemLabel(k);
+  const shopImg = k => EX_MAT[k] ? icMat(k) : k.startsWith('pot_') ? '<img class="ic" alt="" src="' + potImg(k.slice(4)) + '">' : '<img class="ic" alt="" src="' + tkImg(k) + '">';
+  function shopHTML(){ if (!town.shop || town.shop.day !== dmKey()) shopGen();
+    return '<h5>' + ic('box') + ' 今日の5タナ <small>毎日0時に入れかわる・シルバーで買える・1つ1回</small></h5><div class="tana">' + town.shop.it.map((o, i) => '<div' + (o.sold ? ' class="sold"' : '') + '>' + shopImg(o.k) +
+      '<b>' + shopLabel(o.k) + (o.n > 1 ? ' ×' + o.n : '') + '</b>' + (o.only ? '<em>ここだけ</em>' : '') + '<button data-tana="' + i + '"' + (o.sold || coins < o.p ? ' disabled' : '') + '>' + (o.sold ? '売り切れ' : ic('silver') + o.p.toLocaleString()) + '</button></div>').join('') + '</div>' +
+      '<button class="twbuy" data-tanare="1">' + ic('gold') + '20 ですぐ並べかえる</button>'; }
+  function shopBuy(i){ const o = town.shop && town.shop.it[i]; if (!o || o.sold || coins < o.p) return; addCoins(-o.p); giveItem(o.k, o.n); o.sold = true; saveTown(); refreshCoins(); toast(shopLabel(o.k) + ' ×' + o.n + ' を買いました'); drawTown(); }
   function casinoHTML(L){
     const today = dmKey(), used = town.spin && town.spin.day === today ? town.spin.n : 0, left = Math.max(0, L - used);
     return '<h5>🎡 ルーレット <small>きょうはあと' + left + '回（毎日0時にもどる）</small></h5><div class="twspin"><div class="wheel" id="twWheel">🎡</div><button data-spin="1"' + (left ? '' : ' disabled') + '>回す</button></div>' +
