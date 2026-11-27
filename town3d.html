@@ -47,7 +47,7 @@
 </style></head><body>
 <div class="bar"><button class="w" id="back">‹ もどる</button><b>🏝 わたしの街</b><button class="w" id="gr">📋 一覧</button><button id="ag" class="w">📐</button><button id="tm">🕒</button></div>
 <div class="side"><button id="cl" class="claim">受け取る<small id="clv">🪙0</small></button><button id="bd" class="w">🏗 建てる</button><button id="ed" class="w">🌳 かざる</button><span class="coins" id="cn">🪙0</span></div>
-<div class="hint" id="hint">2本指で広げると全体が見える／建物をタップで育てる／「🏗 建てる」で建物、「🌳 かざる」で木や道を置ける</div>
+<div class="hint" id="hint">2本指で広げると全体が見える／建物をタップで育てる／長押しでうごかせる／「🏗 建てる」で建物、「🌳 かざる」で木や道を置ける</div>
 <div class="pal" id="pal"><p id="palp">置きたいものをえらんで、島をタップ</p><div class="row" id="palrow"></div></div>
 <div class="bl" id="bl"><p id="blp"></p><div class="list" id="blist"></div><div class="mini"><span id="blm"></span><button id="blre">📋 えらびなおす</button></div></div>
 <div class="ask" id="ask"><button id="askok">✔ ここに建てる</button><button class="w" id="askno">✖ やめる</button></div>
@@ -389,14 +389,14 @@ const TOOLS = [{k: 'road', n: '道', i: '🟫'},
   // 2026-11-26 本人「将来、敵が攻めてくる。街の壁や城壁も建てたい」：絵ができたものから出る（img/town3d/○○.webp があるもの）
   {k: 'wall1', n: '木の壁', opt: 1}, {k: 'wall2', n: '石の壁', opt: 1}, {k: 'wall3', n: '城壁', opt: 1}, {k: 'gate1', n: '門', opt: 1}, {k: 'tower1', n: '見張り塔', opt: 1},
   {k: 'bridge1', n: '木の橋', i: '🌉'}, {k: 'bridge2', n: '石の橋', i: '🌁'},
-  {k: 'move', n: 'うごかす', i: '✋'}, {k: 'erase', n: 'とりのぞく', i: '🧹'}, {k: 'map', n: '島をかえる', i: '🗺'}];
+  {k: 'erase', n: 'とりのぞく', i: '🧹'}, {k: 'map', n: '島をかえる', i: '🗺'}];
 TOOLS.forEach(t => { if (!t.opt) return; t.hide = 1; const im = new Image(); im.onload = () => { t.hide = 0; if (edit) drawPal(); }; im.src = 'img/town3d/' + t.k + '.webp'; });
 let edit = false, tool = 'road', coins = 0, moving = null, placing = null, blist = null;
 const szTxt = k => DSZ[k] ? DSZ[k][0] + '×' + DSZ[k][1] : '';
 function drawPal(){
   $('palrow').innerHTML = TOOLS.filter(t => !t.hide).map(t => '<button data-k="' + t.k + '"' + (t.k === tool ? ' class="sel"' : '') + '>' + (t.i ? '<i>' + t.i + '</i>' : '<img alt="" src="img/town3d/' + t.k + '.webp">') + t.n +
     (szTxt(t.k) ? '<em>' + szTxt(t.k) + 'マス</em>' : '') + (PRICE[t.k] ? '<small>🪙' + PRICE[t.k].toLocaleString() + '</small>' : '') + '</button>').join('');
-  $('palp').textContent = tool === 'road' ? '島をタップ・なぞると土の道ができる（1マス🪙' + (PRICE.road || 0) + '・川には橋を置いてね）' : tool === 'erase' ? '木・飾り・道をタップするとなくなる（お金はもどらない）' : tool === 'move' ? (moving ? 'うごかす先をタップ' : 'うごかしたい建物・木・飾りをタップ') : '置きたい場所をタップ'; }
+  $('palp').textContent = tool === 'road' ? '島をタップ・なぞると土の道ができる（1マス🪙' + (PRICE.road || 0) + '・川には橋を置いてね）' : tool === 'erase' ? '木・飾り・道をタップするとなくなる（お金はもどらない）' :  '置きたい場所をタップ'; }
 $('palrow').onclick = e => { const b = e.target.closest('[data-k]'); if (!b) return;
   if (b.dataset.k === 'map') { openMaps(true); return; } tool = b.dataset.k; if (moving) { moving.mat.opacity = 1; moving = null; } drawPal(); };
 const setEdit = on => { edit = on; $('pal').classList.toggle('on', on); $('ed').textContent = on ? '✔ おわる' : '🌳 かざる'; $('hint').style.opacity = 0; if (moving) { moving.mat.opacity = 1; moving = null; } if (on) { endBuild(); drawPal(); if (cam.dist > 50) cam.dist = 34; } };
@@ -437,15 +437,6 @@ async function editTap(cx, cy){
     const k = ck(ix, iz); if (roads.has(k)) { roads.delete(k); const r = await req('roads', {list: [...roads], add: 0}); if (!r.ok) { roads.add(k); return toast(r.msg || 'できませんでした'); } drawRoads(); send({type: 'room', room: roomAll()}); }
     return; }
   if (tool === 'road') return;                                // 道は押した・なぞったところ（下の paintRoad）
-  if (tool === 'move' && !moving) {
-    if (!here) return toast('うごかしたい建物・木・飾りをタップしてね');
-    moving = here.kind === 'bld' || here.kind === 'ofc' ? here.spr : here.s; moving.mat.opacity = .5; drawPal(); return; }
-  if (moving) { const mo = moving.o, [nx, nz] = cellFor(x, z, mo.w, mo.d); if (!rectFree(nx, nz, mo.w, mo.d, mo)) { showGhost(nx, nz, mo.w, mo.d, false); setTimeout(() => ghost.visible = false, 700); return toast('ここには置けません'); }
-    const isB = mo.kind === 'bld', isO = mo.kind === 'ofc', r = isO ? await req('moveO', {x: nx, z: nz}) : isB ? await req('moveB', {i: mo.i, x: nx, z: nz}) : await req('move', {d: moving.d, to: {k: moving.d.k, x: nx, z: nz}});
-    moving.mat.opacity = 1; const ms = moving; moving = null; drawPal();
-    if (!r.ok) return toast(r.msg || 'お金が足りません');
-    if (isO) { delOffice(); addOffice(nx, nz); } else if (isB) { const p = Object.assign({}, mo.p, {x: nx, z: nz}); delBld(mo); addBld(mo.i, p); } else { delDeco(ms); addDeco({k: ms.d.k, x: nx, z: nz}); }
-    setCoins(r.coins); send({type: 'room', room: roomAll()}); return; }
   if (!inIsland(x, z, .9)) return toast('島の上に置いてね');
   if (BRIDGE[tool]) { if (riverD(x, z) > RW + .8) return toast('橋は川の上に置いてね'); const {px, pz} = riverDir(x, z);
     if (decoS.some(s => s.kind === 'bridge' && Math.hypot(s.x - px, s.z - pz) < 3.5)) return toast('ほかの橋と近すぎます');
@@ -457,6 +448,28 @@ async function editTap(cx, cy){
   const d = {k: tool, x: nx, z: nz}; const r = await req('place', {d});
   if (!r.ok) return toast(r.msg || 'お金が足りません'); addDeco(d); setCoins(r.coins); send({type: 'room', room: roomAll()});
 }
+// うごかす（2026-11-27 本人「移動はそのものを長押しして移動させるようにして」）：長押し→指でずらす→はなすと置く
+//   建物🪙moveB・木や飾り🪙move・管理事務所は無料。「うごかす」の道具はなくした
+let lp = null;                                                  // {s: 絵, o: 場所, x0, z0: 元の絵の位置, nx, nz}
+function objAt(cx, cy){
+  let best = null;
+  sprites.forEach(s => { if (!s.o || s.kind === 'char') return; const [x0, y0] = scr(s.x - s.h * .4, GY, s.z), [x1, y1] = scr(s.x + s.h * .4, GY + s.h * .9, s.z);
+    if (cx >= Math.min(x0, x1) && cx <= Math.max(x0, x1) && cy >= Math.min(y0, y1) && cy <= Math.max(y0, y1) && (!best || s.z > best.z)) best = s; });
+  if (!best) { const [x, z] = groundAt(cx, cy), o = occ.get(ck(Math.floor(x), Math.floor(z))); if (o) best = o.kind === 'deco' ? o.s : o.spr; }
+  return best && best.o ? best : null; }
+function lpStart(s){ lp = {s, o: s.o, x0: s.grp.position.x, z0: s.grp.position.z, nx: s.o.cx, nz: s.o.cz}; s.mat.opacity = .55; s.grp.position.y = GY + .4;
+  try { navigator.vibrate && navigator.vibrate(25); } catch (_) {}
+  const o = s.o, c = o.kind === 'ofc' ? 0 : o.kind === 'bld' ? PRICE.moveB : PRICE.move; toast('指をずらして、はなすと置けます' + (c ? '（🪙' + c + '）' : '（無料）')); showGhost(o.cx, o.cz, o.w, o.d, true); }
+function lpMove(cx, cy){ const o = lp.o, [x, z] = groundAt(cx, cy), [nx, nz] = cellFor(x, z, o.w, o.d); lp.nx = nx; lp.nz = nz;
+  const dx = nx - o.cx, dz = nz - o.cz; lp.s.grp.position.x = lp.x0 + dx; lp.s.grp.position.z = lp.z0 + dz; showGhost(nx, nz, o.w, o.d, rectFree(nx, nz, o.w, o.d, o)); }
+function lpBack(){ if (!lp) return; lp.s.grp.position.set(lp.x0, GY, lp.z0); lp.s.mat.opacity = 1; ghost.visible = false; }
+async function lpEnd(){ const L = lp; lp = null; ghost.visible = false; const o = L.o, {nx, nz} = L;
+  if (nx === o.cx && nz === o.cz) { lp = L; lpBack(); lp = null; return; }
+  if (!rectFree(nx, nz, o.w, o.d, o)) { lp = L; lpBack(); lp = null; return toast('ここには置けません（川・道・ほかのものと重なる）'); }
+  const isB = o.kind === 'bld', isO = o.kind === 'ofc', s = L.s, r = isO ? await req('moveO', {x: nx, z: nz}) : isB ? await req('moveB', {i: o.i, x: nx, z: nz}) : await req('move', {d: s.d, to: {k: s.d.k, x: nx, z: nz}});
+  if (!r.ok) { lp = L; lpBack(); lp = null; return toast(r.msg || 'お金が足りません'); }
+  if (isO) { delOffice(); addOffice(nx, nz); } else if (isB) { const p = Object.assign({}, o.p, {x: nx, z: nz}); delBld(o); addBld(o.i, p); } else { delDeco(s); addDeco({k: s.d.k, x: nx, z: nz}); }
+  setCoins(r.coins); send({type: 'room', room: roomAll()}); }
 let painted = 0;
 async function paintRoad(cx, cy, end){
   if (!end) { const [x, z] = groundAt(cx, cy), ix = Math.floor(x), iz = Math.floor(z), k = ck(ix, iz);
@@ -492,15 +505,20 @@ function tap(cx, cy){
 }
 el.addEventListener('pointerdown', e => { el.setPointerCapture(e.pointerId); pts.set(e.pointerId, [e.clientX, e.clientY]); moved = 0;
   if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch = {d: Math.hypot(a[0] - b[0], a[1] - b[1]), z: cam.dist}; drag = null; painted && paintRoad(0, 0, true); }
-  else { drag = {x: e.clientX, y: e.clientY, tx: cam.tx, tz: cam.tz, road: edit && tool === 'road' && !moving}; if (drag.road) paintRoad(e.clientX, e.clientY); } });
+  else { drag = {x: e.clientX, y: e.clientY, tx: cam.tx, tz: cam.tz, road: edit && tool === 'road' && !moving}; if (drag.road) paintRoad(e.clientX, e.clientY);
+    clearTimeout(lpT); if (!placing && !$('maps').classList.contains('on')) { const cx = e.clientX, cy = e.clientY, s = objAt(cx, cy);
+      if (s) lpT = setTimeout(() => { if (pts.size === 1 && moved < 8 && drag) { if (drag.road) { painted = 0; roads = new Set(DATA.roadsSaved || []); drawRoads(); } drag = null; lpStart(s); } }, 450); } } });
+let lpT = 0;
 el.addEventListener('pointermove', e => { if (!pts.has(e.pointerId)) return; pts.set(e.pointerId, [e.clientX, e.clientY]);
+  if (lp) { lpMove(e.clientX, e.clientY); return; }
   if (pinch && pts.size === 2) { moved = 99; const [a, b] = [...pts.values()]; cam.dist = Math.max(ZMIN, Math.min(ZMAX, pinch.z * pinch.d / Math.hypot(a[0] - b[0], a[1] - b[1]))); return; }
   if (!drag) return; moved = Math.max(moved, Math.hypot(e.clientX - drag.x, e.clientY - drag.y));
   if (drag.road) { paintRoad(e.clientX, e.clientY); return; }
   const k = cam.dist / innerHeight * .55, lim = M.base + 6; cam.tx = Math.max(-lim, Math.min(lim, drag.tx - (e.clientX - drag.x) * k)); cam.tz = Math.max(-lim, Math.min(lim, drag.tz - (e.clientY - drag.y) * k * 1.4)); });
-const up = e => { if (pts.size === 1 && drag) { if (drag.road) paintRoad(0, 0, true); else if (moved < 8) { if ($('maps').classList.contains('on')) {} else if (placing) buildTap(e.clientX, e.clientY); else if (edit) editTap(e.clientX, e.clientY); else if (!blist) tap(e.clientX, e.clientY); } }
+const up = e => { clearTimeout(lpT); if (lp) { pts.delete(e.pointerId); drag = null; lpEnd(); return; }
+  if (pts.size === 1 && drag) { if (drag.road) paintRoad(0, 0, true); else if (moved < 8) { if ($('maps').classList.contains('on')) {} else if (placing) buildTap(e.clientX, e.clientY); else if (edit) editTap(e.clientX, e.clientY); else if (!blist) tap(e.clientX, e.clientY); } }
   pts.delete(e.pointerId); if (pts.size < 2) pinch = null; if (!pts.size) drag = null; };
-el.addEventListener('pointerup', up); el.addEventListener('pointercancel', e => { pts.delete(e.pointerId); pinch = null; drag = null; painted && paintRoad(0, 0, true); });
+el.addEventListener('pointerup', up); el.addEventListener('pointercancel', e => { clearTimeout(lpT); if (lp) { lpBack(); lp = null; } pts.delete(e.pointerId); pinch = null; drag = null; painted && paintRoad(0, 0, true); });
 el.addEventListener('wheel', e => { e.preventDefault(); cam.dist = Math.max(ZMIN, Math.min(ZMAX, cam.dist * (e.deltaY > 0 ? 1.1 : .9))); }, {passive: false});
 $('back').onclick = () => send({type: 'close'});
 $('gr').onclick = () => send({type: 'grid'});

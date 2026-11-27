@@ -761,6 +761,10 @@ body.on-menu .battlemain{opacity:0;}
   .ofsay b{display:block;font-size:11px;color:#a0702a} .ofsay p{margin:0}
   .oftabs{display:flex;gap:6px;margin-bottom:10px} .oftabs button{flex:1;border:0;border-radius:10px;padding:8px 4px;font:inherit;font-weight:800;font-size:12.5px;background:rgba(255,255,255,.12);color:#fff} .oftabs button.on{background:#ffd34d;color:#3a2a00}
   .ofget{display:block;width:100%;margin:0 0 10px;border:0;border-radius:12px;padding:9px;font:inherit;font-weight:900;font-size:15px;color:#fff;background:linear-gradient(#5fd36a,#2fa83c);text-align:center} .ofget small{display:block;font-size:12px;font-weight:700;margin-top:2px} .ofget.off{background:rgba(255,255,255,.1);font-size:13px;font-weight:700;opacity:.8}
+  .twwork{margin:8px 0;padding:8px;border-radius:10px;background:rgba(255,255,255,.07);font-size:13px} .twwb{display:flex;gap:6px;margin-top:6px}
+  .twwb button{flex:1;border:0;border-radius:10px;padding:8px 4px;font:inherit;font-weight:800;font-size:13px;background:#ffd34d;color:#3a2a00} .twwb button.g{background:linear-gradient(#ffe27a,#f0a81c)} .twwb button:disabled{opacity:.45}
+  .twwb small,.twbuy small{display:block;font-size:10.5px;font-weight:700} .twbuy{display:block;margin-top:5px;border:0;border-radius:8px;padding:5px 8px;font:inherit;font-size:12px;font-weight:800;background:#f0a81c;color:#3a2a00}
+  .ofbw{margin-top:6px;font-size:13px;font-weight:800}
   .ofadv{margin:0;padding-left:20px;font-size:13px;line-height:1.7} .ofadv li{margin-bottom:6px} .ofgo{display:block;width:100%;margin-top:10px;border:0;border-radius:12px;padding:11px;font:inherit;font-weight:900;font-size:15px;color:#3a2a00;background:linear-gradient(#ffe27a,#ffbf1f)}
   .ofst{display:grid;grid-template-columns:1fr 1fr;gap:6px} .ofst div{background:rgba(255,255,255,.08);border-radius:10px;padding:7px 9px} .ofst span{display:block;font-size:11px;opacity:.8} .ofst b{font-size:15px}
   .ofh{margin:12px 0 6px;font-size:13px} .oflist div{display:flex;gap:8px;align-items:center;padding:5px 2px;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px} .oflist i{font-style:normal} .oflist span{margin-left:auto;font-size:12px;opacity:.85}
@@ -7767,7 +7771,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   // 月間ランキングのごほうび：先月の順位でアイテムがもらえる（起動したとき・登録したときに確認）
   const RW_MODE = {sixty: '60秒アタック', rank: 'エンドレス', ta: 'タイムアタック（前の記録）', sv: 'サバイバル'};
-  const TICKET_LABEL = {gticket: 'ガチャチケット', gticket_hi: 'SR以上確定チケット', aticket: 'スキップチケット', stampot: 'スタミナポット', exticket: '遠征すぐ帰る券'};
+  const TICKET_LABEL = {gticket: 'ガチャチケット', gticket_hi: 'SR以上確定チケット', aticket: 'スキップチケット', stampot: 'スタミナポット', exticket: '遠征すぐ帰る券', twtime: '建築時短券（1時間）', twslot: '建築許可証（工事枠+1）'};
   // スタミナポットの絵（まだ画像がないので図で描く：黄色い薬びんに⚡）
   const STAMPOT_IMG = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff59a"/><stop offset="1" stop-color="#ffb21e"/></linearGradient></defs>' +
     '<rect x="25" y="6" width="14" height="9" rx="3" fill="#b8742a"/><path d="M27 15h10v8l11 14c4 6 0 21-16 21S12 43 16 37l11-14z" fill="url(#g)" stroke="#8a4b00" stroke-width="3"/>' +
@@ -8041,7 +8045,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.342';
+  const APP_VER = '0.9.343';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -9285,11 +9289,11 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   ];
   function passClaim(kind){
     const T = []; const give = (k, n) => { if (k === 'silver') addCoins(n); else giveItem(k, n); T.push((k === 'silver' ? 'シルバー ' + n : itemLabel(k) + ' ×' + n)); };
-    if (kind === 'free') { if (load('passf_day', '') === today()) return; save('passf_day', today()); give('silver', PASS_FREE_SILVER); }
+    if (kind === 'free') { if (load('passf_day', '') === today()) return; save('passf_day', today()); give('silver', PASS_FREE_SILVER); give('twtime', 1); }   // 2026-11-27 無料でも1日1枚の時短券
     else { if (!passOn() || load('pass_day', '') === today()) return; save('pass_day', today());
-      if (passTier() === 'gold') { give('exticket', 1); give('stampot', 1); give('gticket', 3);
+      if (passTier() === 'gold') { give('exticket', 1); give('stampot', 1); give('gticket', 3); give('twtime', 3);
         const m = today().slice(0, 7); if (load('passg_m', '') !== m) { save('passg_m', m); give('gticket_hi', 3); } }
-      else { give('stampot', 1); give('gticket', 2); } }
+      else { give('stampot', 1); give('gticket', 2); give('twtime', 1); } }
     try { sndLevelUp(true); } catch (_) {}
     msgLog('get', '🎫 ' + ({free: '無料パス', silver: 'シルバーパス', gold: 'ゴールドパス'}[kind]) + '：' + T.join('・'));
     toast('🎫 受け取りました：' + T.join('・'));
@@ -11679,11 +11683,17 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   const petBonus = fx => PETS.reduce((a, p) => a + (p.fx === fx && town.pets && town.pets[p.k] ? town.pets[p.k] * 2 : 0), 0) / 100;
   const TAPT = {pol: '政治', biz: '商売', tec: '技術', cha: '魅力', pow: '力仕事'};
   const TYPE_APT = {atk: 'pow', spd: 'biz', hp: 'cha', def: 'tec'};
-  const BUILD_MIN = [0, 1, 10, 60, 180, 480];                 // そのレベルにするのにかかる分（くるリスで短くなる）
+  const BUILD_MIN = [0, 10, 30, 60, 180, 480];                // 2026-11-27 本人「簡単に建てられすぎ」「1⇨10分」（Lv2も10→30分に）                 // そのレベルにするのにかかる分（くるリスで短くなる）
   const buildMs = lv => BUILD_MIN[lv] * 6e4 * (1 - petBonus('build'));
   const tSilverCost = (b, lv) => Math.round((b === 'home' ? 1000 : 500) * Math.pow(3, lv - 1));
   const tMatTier = lv => lv <= 2 ? 0 : lv <= 4 ? 1 : 2;      // 建物Lv1〜2＝1段目、3〜4＝2段目、5＝3段目
-  const tMatCost = (b, lv) => { const f = b === 'iron' ? 'wood' : b === 'lumber' ? 'metal' : lv % 2 ? 'wood' : 'metal', t = Math.max(0, tMatTier(lv) - 1); return [['m_' + f + '_' + t, (b === 'home' ? 4 : 2) + 2 * lv]]; };
+  // 2026-11-27 本人「建てる費用はそのままで素材の種類を増やす」：建物ごとに2〜3種類（Lv3から3種類目）。数の合計は前と同じくらい
+  const TB_MATS = {home: ['wood', 'metal', 'cloth'], castle: ['metal', 'gem', 'craft'], house: ['wood', 'cloth', 'craft'], farm: ['wood', 'hide', 'mech'], shop: ['wood', 'craft', 'cloth'],
+    tavern: ['wood', 'cloth', 'gem'], lumber: ['metal', 'mech', 'polish'], iron: ['wood', 'mech', 'polish'], hunter: ['wood', 'beast', 'hide'], casino: ['gem', 'craft', 'mech'],
+    petshop: ['wood', 'hide', 'beast'], alchemy: ['gem', 'polish', 'craft'], dojo: ['wood', 'hide', 'cloth'], trial: ['metal', 'gem', 'polish']};
+  const tMatCost = (b, lv) => { const F = TB_MATS[b] || ['wood', 'metal'], t = Math.max(0, tMatTier(lv) - 1), N = (b === 'home' ? 4 : 2) + 2 * lv, a = Math.ceil(N * .6), L = [['m_' + F[0] + '_' + t, a], ['m_' + F[1] + '_' + t, N - a]];
+    if (lv >= 3 && F[2]) L.push(['m_' + F[2] + '_' + t, lv - 1]); return L; };
+  const tMatCostOld = (b, lv) => { const f = b === 'iron' ? 'wood' : b === 'lumber' ? 'metal' : lv % 2 ? 'wood' : 'metal', t = Math.max(0, tMatTier(lv) - 1); return [['m_' + f + '_' + t, (b === 'home' ? 4 : 2) + 2 * lv]]; };
   const tDayCap = lv => 4000 * lv;                            // 1日に入るシルバーの上限（家のレベル×4,000）
   let town = loadJ('town', null);
   if (!town || !Array.isArray(town.p)) { town = {p: Array(TOWN_N * TOWN_N).fill(null), day: '', got: 0}; town.p[TOWN_HOME] = {b: 'home', lv: 1, crew: [], t: Date.now()}; }
@@ -11744,8 +11754,36 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   function tCostHTML(b, lv){
     const sv = tSilverCost(b, lv), mc = tMatCost(b, lv);
     return '<span class="tcost' + (coins >= sv ? '' : ' ng') + '">🪙' + sv.toLocaleString() + '</span>' + mc.map(([k, n]) => '<span class="tcost' + (own(k) >= n ? '' : ' ng') + '">' + EX_MAT[k][1] + EX_MAT[k][0] + '×' + n + '（' + own(k) + '）</span>').join('') +
-      '<span class="tcost">⏱' + (BUILD_MIN[lv] >= 60 ? BUILD_MIN[lv] / 60 + '時間' : BUILD_MIN[lv] + '分') + '</span>';
+      '<span class="tcost">⏱' + (BUILD_MIN[lv] >= 60 ? BUILD_MIN[lv] / 60 + '時間' : BUILD_MIN[lv] + '分') + '</span>' +
+      (() => { const sh = matShort(mc); return coins >= sv && sh.ok && sh.cost ? '<button class="twbuy" data-twbuy="' + b + ':' + lv + '">足りない素材をゴールド ' + sh.cost + ' で買う</button>' : ''; })();
   }
+  // 2026-11-27 本人「同時は1個、2件同時とかは枠開放アイテムかゴールド」「早めるには短縮アイテムが必要」「できるだけ課金を増やすが、無料でも遊べる」
+  //   工事枠：はじめ1つ。建築許可証（アイテム）かゴールドで、ずっと＋1（最大3）。時短券：1枚で工事が1時間はやく終わる。ゴールドならすぐ完成
+  const TW_SLOT_MAX = 3, TW_SLOT_GOLD = [0, 1000, 3000], TW_RUSH_GOLD_H = 30;
+  const twSlots = () => 1 + Math.min(TW_SLOT_MAX - 1, town.slot | 0);
+  const twBusy = () => town.p.filter(isBuilding).length;
+  const twCanStart = () => twBusy() < twSlots();
+  const twBusyMsg = () => '工事中の建物があります（同時に工事できるのは' + twSlots() + '軒）。時短券かゴールドで早めるか、工事枠をふやしてね';
+  const twRushGold = x => Math.max(10, Math.ceil((x.done - Date.now()) / 36e5) * TW_RUSH_GOLD_H);
+  function twTime(i){ const x = town.p[i]; if (!isBuilding(x) || ownAny('twtime') <= 0) return; save('twtime', String(ownAny('twtime') - 1));
+    x.done = Math.max(Date.now() - 1, x.done - 36e5); saveTown(); toast(isBuilding(x) ? '⏱ 1時間はやくなりました（のこり ' + tLeft(x) + '）' : '⏱ 工事が終わりました！'); twRefresh(); }
+  function twRush(i){ const x = town.p[i]; if (!isBuilding(x)) return; const c = twRushGold(x);
+    payAsk('ゴールド ' + c + ' で「' + TB[x.b].n + '」の工事をすぐ終わらせますか？', async () => { if (!(await spendGold(c, 'town-rush'))) return; x.done = Date.now() - 1; saveTown(); refreshCoins(); toast('⚡ 工事が終わりました！'); twRefresh(); }); }
+  function twSlotUp(useItem){ if (twSlots() >= TW_SLOT_MAX) return;
+    if (useItem) { if (ownAny('twslot') <= 0) return; save('twslot', String(ownAny('twslot') - 1)); town.slot = (town.slot | 0) + 1; saveTown(); toast('🏗 工事枠が' + twSlots() + 'つになりました'); twRefresh(); return; }
+    const c = TW_SLOT_GOLD[twSlots()]; payAsk('ゴールド ' + c.toLocaleString() + ' で、工事枠をずっと1つ増やしますか？（' + twSlots() + '→' + (twSlots() + 1) + '）', async () => {
+      if (!(await spendGold(c, 'town-slot'))) return; town.slot = (town.slot | 0) + 1; saveTown(); refreshCoins(); toast('🏗 工事枠が' + twSlots() + 'つになりました'); twRefresh(); }); }
+  function twBuyMat(b, lv){ const sh = matShort(tMatCost(b, lv)); if (!sh.ok || !sh.cost) return;
+    payAsk('足りない素材（' + sh.list.map(([k, n]) => EX_MAT[k][0] + '×' + n).join('・') + '）をゴールド ' + sh.cost + ' で買いますか？', async () => { if (!(await spendGold(sh.cost, 'town-mat'))) return; sh.list.forEach(([k, n]) => giveNt(k, n)); refreshCoins(); toast('素材を買いました'); twRefresh(); }); }
+  const twRefresh = () => { drawTown(); try { const w = $('tw3d'); if (w && w.style.display !== 'none') w.querySelector('iframe').contentWindow.postMessage({src: 'game', type: 'hud', hud: twHud()}, location.origin); } catch (_) {} };
+  // 工事まわりのボタン（建物の画面・管理事務所で使う）
+  function twWorkHTML(i){ const x = town.p[i], tm = ownAny('twtime');
+    let h = '<div class="twwork">';
+    if (isBuilding(x)) h += '<b>🔨 工事中（あと' + tLeft(x) + '）</b><div class="twwb"><button data-twtime="' + i + '"' + (tm ? '' : ' disabled') + '>⏱ 時短券（1時間）<small>のこり' + tm + '枚</small></button><button class="g" data-twrush="' + i + '">⚡ すぐ完成<small>ゴールド ' + twRushGold(x) + '</small></button></div>';
+    return h + '</div>'; }
+  function twSlotHTML(){ const n = twSlots(), it = ownAny('twslot');
+    return '<div class="twwork"><b>🏗 工事枠 ' + twBusy() + ' / ' + n + '（同時に工事できる数）</b>' + (n < TW_SLOT_MAX ? '<div class="twwb">' + (it ? '<button data-twslot="item">📜 建築許可証を使う<small>のこり' + it + '枚</small></button>' : '') +
+      '<button class="g" data-twslot="gold">＋ 枠をふやす<small>ゴールド ' + TW_SLOT_GOLD[n].toLocaleString() + '</small></button></div>' : '<small>（最大）</small>') + '</div>'; }
   const tCanPay = (b, lv) => coins >= tSilverCost(b, lv) && tMatCost(b, lv).every(([k, n]) => own(k) >= n);
   function tPay(b, lv){ addCoins(-tSilverCost(b, lv)); tMatCost(b, lv).forEach(([k, n]) => useMat(k, n)); saveInv(); }
   const tLeft = x => { const ms = Math.max(0, x.done - Date.now()), m = Math.ceil(ms / 6e4); return m >= 60 ? Math.floor(m / 60) + '時間' + (m % 60) + '分' : m + '分'; };
@@ -11783,7 +11821,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     const cl = tClaimable();
     if (cl.txt) L.push([100, '受け取れるものがたまってるよ（' + cl.txt + '）。上の「ここで受け取る」でどうぞ。8時間ぶんでたまるのが止まっちゃうから、こまめにね。']);
     town.p.forEach(x => { if (x && TB[x.b].needCrew && lvNow(x) >= 1 && !x.crew.some(unitOf)) L.push([95, TB[x.b].n + 'は、キャラを置くまで動かないよ。建物をタップして、育てたいキャラを置いてね。']); });
-    if (free > 0) L.push([90, 'あと' + free + '軒建てられるよ。3Dの街の「🏗 建てる」から選んでね。']);
+    if (free > 0 && twCanStart()) L.push([90, 'あと' + free + '軒建てられるよ。3Dの街の「🏗 建てる」から選んでね。']);
     if (!tHas('house')) L.push([85, 'まずは民家を建てよう！ 人口がふえると、城の税金もふえるんだ。']);
     if (!tHas('shop')) L.push([80, '商店を建てると、シルバーが毎時間入ってくるよ。']);
     if (!tHas('castle') && pop >= 60) L.push([75, '人口が' + pop + '人になったね。城を建てると、人口に合わせて税金（シルバー）が入るよ。']);
@@ -11793,7 +11831,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       L.push([55, b.n + 'が建てられるよ。' + b.d.split('。')[0] + '。']); });
     if (!tHas('lumber') || !tHas('iron')) L.push([50, '伐採所と製鉄所で、鍛冶屋で使う素材（木材・金属）が取れるよ。']);
     { const nc = town.p.filter(x => x && !TB[x.b].fixed && !TB[x.b].needCrew && lvNow(x) >= 1 && !x.crew.some(unitOf)); if (nc.length) L.push([45, '建物にキャラを置くと、向いているステータスに合わせて効率が上がるよ。（' + nc.slice(0, 3).map(x => TB[x.b].n).join('・') + 'はまだだれもいないよ）']); }
-    town.p.forEach(x => { if (x && isBuilding(x)) L.push([30, TB[x.b].n + 'は工事中。あと' + tLeft(x) + 'でできあがるよ。']); });
+    town.p.forEach(x => { if (x && isBuilding(x)) L.push([30, TB[x.b].n + 'は工事中。あと' + tLeft(x) + 'でできあがるよ。' + (ownAny('twtime') ? '時短券が' + ownAny('twtime') + '枚あるよ（「街のようす」から使えるよ）。' : '')]); });
+    if (!twCanStart() && free > 0) L.push([88, '同時に工事できるのは' + twSlots() + '軒まで。工事枠をふやすと、何軒も一度に建てられるよ。']);
     if ((town.deco || []).length < 5) L.push([20, '木や花を置くと、街がにぎやかになるよ。3Dの街の「🌳 かざる」からどうぞ。']);
     if (!L.length) L.push([0, 'いい街になってきたね！ この調子でいこう。']);
     return L.sort((a, b) => b[0] - a[0]).map(x => x[1]);
@@ -11811,6 +11850,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       h += '<div class="ofst">' + [['👥 人口', townPop().toLocaleString() + '人'], ['🏠 自分の家', 'Lv' + homeLv()], ['🏘 建物', bs.length + ' / ' + (bs.length + tFree()) + '軒'],
         ['🪙 1時間のシルバー', Math.round(sum.silver).toLocaleString()], ['🧱 1時間の素材', Math.round(sum.mat * 10) / 10 + '個'], ['🍖 1時間の肉', Math.round(sum.meat * 10) / 10 + '個'],
         ['📅 今日のシルバー', got.toLocaleString() + ' / ' + cap.toLocaleString()], ['📦 受け取れる分', tClaimable().txt || 'なし']].map(([a, b]) => '<div><span>' + a + '</span><b>' + b + '</b></div>').join('') + '</div>' +
+        '<h4 class="ofh">工事</h4>' + twSlotHTML() + town.p.map((x, i) => isBuilding(x) ? '<div class="ofbw">' + TB[x.b].i + ' ' + TB[x.b].n + ' Lv' + x.lv + twWorkHTML(i) + '</div>' : '').join('') +
         '<h4 class="ofh">建物のようす</h4><div class="oflist">' + town.p.filter(Boolean).map(x => '<div><i>' + TB[x.b].i + '</i><b>' + TB[x.b].n + '</b><span>Lv' + Math.max(1, lvNow(x)) + (isBuilding(x) ? '・🔨' + tLeft(x) : '') + '・👤' + x.crew.filter(unitOf).length + '</span></div>').join('') + '</div>';
     } else {
       h += '<div class="ofguide">' + ['home'].concat(TB_ORDER).map(k => { const b = TB[k], have = town.p.filter(x => x && x.b === k);
@@ -11851,7 +11891,9 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         const list = units.filter(u => !cs.has(u.u)).map(u => ({u, v: aptOf(u, b.apt)})).sort((a, c) => c.v - a.v).slice(0, 40);
         h += '<div class="twpick"><h5>置くキャラを選ぶ（向いている順）</h5>' + (list.length ? list.map(({u, v}) => '<button data-twput="' + u.u + '"><span class="tic" data-ci="' + ciOf(u) + '"></span><b>' + evoName(u) + '</b><small>LV' + u.lv + '　' + '★'.repeat(aptStars(v)) + '</small></button>').join('') : '<p class="twd">置けるキャラがいません</p>') + '</div>';
       }
-      if (lvNow(x) < TOWN_MAXLV && !bld) h += lvNow(x) >= maxLv ? '<p class="twd">家をLv' + (x.lv + 1) + 'にすると、もっと上げられます</p>'
+      if (bld) h += twWorkHTML(townSel);
+      if (lvNow(x) < TOWN_MAXLV && !bld && !twCanStart()) h += '<div class="twup"><b>Lv' + (x.lv + 1) + 'に上げる</b><p class="twd">⚠ ' + twBusyMsg() + '</p></div>' + twSlotHTML();
+      else if (lvNow(x) < TOWN_MAXLV && !bld) h += lvNow(x) >= maxLv ? '<p class="twd">家をLv' + (x.lv + 1) + 'にすると、もっと上げられます</p>'
         : twNoRoom(townSel) ? '<div class="twup"><b>Lv' + (x.lv + 1) + 'に上げる</b><p class="twd">⚠ Lv' + (x.lv + 1) + 'は' + twRoom[townSel].s + '×' + twRoom[townSel].s + 'マスに広がります（左右と奥に広がる）。まわりを空けてね（3Dの街の「🌳 かざる」で木や道をどかせます）</p><button disabled>まわりを空けてね</button></div>'
         : '<div class="twup"><b>Lv' + (x.lv + 1) + 'に上げる</b><div>' + tCostHTML(x.b, x.lv + 1) + '</div><button data-twup="1"' + (tCanPay(x.b, x.lv + 1) ? '' : ' disabled') + '>⬆ 上げる</button></div>';
       if (!b.fixed) h += '<button class="twdel" data-twdel="1">こわす（お金・素材は戻りません）</button>';
@@ -11900,11 +11942,11 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     // 建てられるものの一覧
     if (d.op === 'blist') { const fr = twFreeSlot();
       return {ok: true, free: plotOrder.filter(i => plotOk(i) && !town.p[i]).length, list: TB_ORDER.map(k => { const b = TB[k], dup = b.one && town.p.some(p => p && p.b === k), lock = b.needHome && homeLv() < b.needHome;
-        const why = fr == null ? '建てられる数がいっぱい' : dup ? '1つだけ' : lock ? '家Lv' + b.needHome + 'から' : !tCanPay(k, 1) ? '足りない：' + tCostTxt(k, 1) : '';
+        const why = fr == null ? '建てられる数がいっぱい' : !twCanStart() ? '工事中（同時に' + twSlots() + '軒まで）' : dup ? '1つだけ' : lock ? '家Lv' + b.needHome + 'から' : !tCanPay(k, 1) ? '足りない：' + tCostTxt(k, 1) : '';
         return {k, n: b.n, ok: !why, why, cost: tCostTxt(k, 1), d: b.d, tags: twTags(b)}; })}; }
     if (d.op === 'build') { const k = d.b, b = TB[k], i = twFreeSlot(); if (!b || b.fixed || i == null || !twInt(d.x) || !twInt(d.z)) return {ok: false, msg: '建てられません'};
       if (b.one && town.p.some(p => p && p.b === k)) return {ok: false, msg: '1つだけ建てられます'}; if (b.needHome && homeLv() < b.needHome) return {ok: false, msg: '家Lv' + b.needHome + 'から'};
-      if (!tCanPay(k, 1)) return {ok: false, msg: 'シルバーか素材が足りません'}; const now = Date.now(); tPay(k, 1);
+      if (!tCanPay(k, 1)) return {ok: false, msg: 'シルバーか素材が足りません'}; if (!twCanStart()) return {ok: false, msg: twBusyMsg()}; const now = Date.now(); tPay(k, 1);
       town.p[i] = {b: k, lv: 1, crew: [], t: now, done: now + buildMs(1), x: d.x, z: d.z}; saveTown(); return {ok: true, i, plot: twPlot(town.p[i]), coins}; }
     if (d.op === 'moveB') { const x = town.p[d.i]; if (!x || !twInt(d.x) || !twInt(d.z)) return {ok: false}; if (!pay(TW_PRICE.moveB)) return {ok: false, msg: 'シルバーが足りません（建物をうごかすのは🪙' + TW_PRICE.moveB + '）'};
       x.x = d.x; x.z = d.z; saveTown(); return {ok: true, coins}; }
@@ -11947,11 +11989,15 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if ((t = q('data-tw')) && t.dataset.tw === 'office') { townSel = 'office'; officeTab = 'advice'; drawTown(); return; }
     if ((t = q('data-tw')) && t.dataset.tw === 'claim') { townClaim(); return; }
     if (t && t.dataset.tw === '3d') { open3DTown(); return; }
+    if ((t = q('data-twtime'))) { twTime(+t.dataset.twtime); return; }
+    if ((t = q('data-twrush'))) { twRush(+t.dataset.twrush); return; }
+    if ((t = q('data-twslot'))) { twSlotUp(t.dataset.twslot === 'item'); return; }
+    if ((t = q('data-twbuy'))) { const [b, lv] = t.dataset.twbuy.split(':'); twBuyMat(b, +lv); return; }
     if ((t = q('data-twp'))) { const i = +t.dataset.twp; townSel = townSel === i ? -1 : i; townPick = null; drawTown(); return; }
     const x = town.p[townSel];
-    if ((t = q('data-twbuild'))) { const k = t.dataset.twbuild; if (!tCanPay(k, 1) || x || (TB[k].needHome && homeLv() < TB[k].needHome)) return; tPay(k, 1); town.p[townSel] = {b: k, lv: 1, crew: [], t: now, done: now + buildMs(1)}; saveTown(); toast(TB[k].i + TB[k].n + 'を建てはじめました'); drawTown(); return; }
+    if ((t = q('data-twbuild'))) { const k = t.dataset.twbuild; if (!tCanPay(k, 1) || x || (TB[k].needHome && homeLv() < TB[k].needHome)) return; if (!twCanStart()) return toast(twBusyMsg()); tPay(k, 1); town.p[townSel] = {b: k, lv: 1, crew: [], t: now, done: now + buildMs(1)}; saveTown(); toast(TB[k].i + TB[k].n + 'を建てはじめました'); drawTown(); return; }
     if (!x) return;
-    if ((t = q('data-twup'))) { if (!tCanPay(x.b, x.lv + 1) || isBuilding(x) || twNoRoom(townSel)) return; const rm = twRoom && twRoom[townSel]; if (rm && rm.ok && Number.isInteger(rm.x)) { x.x = rm.x; x.z = rm.z; } townClaimQuiet(); tPay(x.b, x.lv + 1); x.lv++; x.done = now + buildMs(x.lv); saveTown(); toast('🔨 Lv' + x.lv + 'に工事を始めました'); drawTown(); return; }
+    if ((t = q('data-twup'))) { if (!tCanPay(x.b, x.lv + 1) || isBuilding(x) || twNoRoom(townSel)) return; if (!twCanStart()) return toast(twBusyMsg()); const rm = twRoom && twRoom[townSel]; if (rm && rm.ok && Number.isInteger(rm.x)) { x.x = rm.x; x.z = rm.z; } townClaimQuiet(); tPay(x.b, x.lv + 1); x.lv++; x.done = now + buildMs(x.lv); saveTown(); toast('🔨 Lv' + x.lv + 'に工事を始めました'); drawTown(); return; }
     if ((t = q('data-petget'))) { const pt = PETS.find(p => p.k === t.dataset.petget); if (!pt || town.pets && town.pets[pt.k] || coins < pt.sv || (town.meat || 0) < petAdoptMeat) return;
       addCoins(-pt.sv); town.meat -= petAdoptMeat; town.pets = town.pets || {}; town.pets[pt.k] = 1; saveTown(); toast(pt.i + ' ' + pt.n + 'をお迎えしました！'); msgLog('get', '🐾 ペット：' + pt.n + 'をお迎えしました'); drawTown(); return; }
     if ((t = q('data-petfeed'))) { const pt = PETS.find(p => p.k === t.dataset.petfeed), lv = town.pets && town.pets[pt.k]; if (!lv || lv >= PET_MAX || (town.meat || 0) < petMeat(lv)) return;
@@ -12658,8 +12704,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   //   グレードで「どの箱か」が決まり、箱の中身から1つ（数字は箱の中の重み）
   const IG_BOX = {
     N:  [['pot_N', 55], ['refresh30', 20], ['star3', 15], ['slow', 10]],
-    R:  [['pot_R', 45], ['stampot', 25], ['refresh50', 12], ['bomb', 10], ['star6', 8]],
-    SR: [['pot_SR', 60], ['exticket', 20], ['star9', 20]],
+    R:  [['pot_R', 45], ['stampot', 25], ['refresh50', 12], ['bomb', 10], ['star6', 8], ['twtime', 12]],
+    SR: [['pot_SR', 60], ['exticket', 20], ['star9', 20], ['twslot', 4]],
     MR: [['pot_MR', 75], ['evo_c', 25]],
     LR: [['pot_LR', 70], ['evo_g', 30]],
   };
