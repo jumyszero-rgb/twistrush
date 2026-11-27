@@ -512,7 +512,7 @@ function start(D){ const first = D.map == null; const mv = build(D, first ? 0 : 
   if (first) openMaps(false); else { focusHome(); if (mv) saveLayout(); else send({type: 'room', room: roomAll()}); } }
 addEventListener('message', e => { if (e.origin !== location.origin || !e.data || e.data.src !== 'game') return; const d = e.data;
   if (d.type === 'town' && !DATA) { PRICE = d.town.price || {}; setCoins(d.town.coins); start(d.town); }
-  if (d.type === 'hud') { const h = d.hud; $('clv').textContent = '🪙' + h.silver.toLocaleString(); $('cl').classList.toggle('dot', h.silver > 0 || h.mats); setCoins(h.coins); }
+  if (d.type === 'hud') { const h = d.hud; $('clv').textContent = '🪙' + h.silver.toLocaleString() + (h.n ? '・📦' + h.n : h.mats ? '・🥋' : ''); $('cl').classList.toggle('dot', h.silver > 0 || h.mats); setCoins(h.coins); }
   if (d.type === 'openBuild' && DATA && !$('maps').classList.contains('on')) openBuild();
   if (d.type === 'res' && waits[d.id]) { const f = waits[d.id]; delete waits[d.id]; f(d); } });
 send({type: 'ready'});

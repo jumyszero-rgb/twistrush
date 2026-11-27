@@ -8040,7 +8040,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.340';
+  const APP_VER = '0.9.341';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -11770,10 +11770,17 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   const tHas = k => town.p.some(p => p && p.b === k);
   const tFree = () => plotOrder.filter(i => plotOk(i) && !town.p[i]).length;
   // アドバイス：いま一番やるといいことから順に（p が大きいほど先）
+  function tClaimable(){                                     // 受け取れるもの（2026-11-27 本人「受け取れるものが溜まってるよって言ってるけど、0って表示されてるよ」→中身を出す）
+    const pd = townPending(), today = dmKey(), got = town.day === today ? town.got : 0, silver = Math.min(pd.silver, Math.max(0, tDayCap(homeLv()) - got)), L = [];
+    let mat = 0, meat = 0, evo = 0, train = 0;
+    Object.keys(pd.mats).forEach(b => { const n = Math.floor(pd.mats[b]); if (n < 1) return;
+      if (b === '_meat') meat += n; else if (b === '_evo' || b === '_evog') evo += n; else if (/^_(xp|tr):/.test(b)) { if (unitOf(b.slice(4))) train += n; } else mat += n; });
+    if (silver > 0) L.push('🪙' + silver.toLocaleString()); if (mat) L.push('🧱素材×' + mat); if (meat) L.push('🍖肉×' + meat); if (evo) L.push('💎進化素材×' + evo); if (train) L.push('🥋修行の成果');
+    return {silver, mat, meat, evo, train, txt: L.join('・')}; }
   function townAdvice(){
     const L = [], pd = townPending(), today = dmKey(), got = town.day === today ? town.got : 0, cap = tDayCap(homeLv()), pop = townPop(), free = tFree();
-    const claimable = Math.min(pd.silver, Math.max(0, cap - got)) > 0 || Object.keys(pd.mats).some(b => !/^_(xp|tr):/.test(b) && Math.floor(pd.mats[b]) > 0);
-    if (claimable) L.push([100, '受け取れるものがたまってるよ！ 街の右上の「受け取る」を押してね。8時間ぶんでたまるのが止まっちゃうから、こまめにね。']);
+    const cl = tClaimable();
+    if (cl.txt) L.push([100, '受け取れるものがたまってるよ（' + cl.txt + '）。3Dの街の右上の「受け取る」を押してね。8時間ぶんでたまるのが止まっちゃうから、こまめにね。']);
     town.p.forEach(x => { if (x && TB[x.b].needCrew && lvNow(x) >= 1 && !x.crew.some(unitOf)) L.push([95, TB[x.b].n + 'は、キャラを置くまで動かないよ。建物をタップして、育てたいキャラを置いてね。']); });
     if (free > 0) L.push([90, 'あと' + free + '軒建てられるよ。3Dの街の「🏗 建てる」から選んでね。']);
     if (!tHas('house')) L.push([85, 'まずは民家を建てよう！ 人口がふえると、城の税金もふえるんだ。']);
@@ -11801,7 +11808,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       const sum = {silver: 0, mat: 0, meat: 0}; town.p.forEach(x => { if (!x) return; const r = perHour(x); sum.silver += r.silver; sum.mat += r.mat; sum.meat += r.meat; });
       h += '<div class="ofst">' + [['👥 人口', townPop().toLocaleString() + '人'], ['🏠 自分の家', 'Lv' + homeLv()], ['🏘 建物', bs.length + ' / ' + (bs.length + tFree()) + '軒'],
         ['🪙 1時間のシルバー', Math.round(sum.silver).toLocaleString()], ['🧱 1時間の素材', Math.round(sum.mat * 10) / 10 + '個'], ['🍖 1時間の肉', Math.round(sum.meat * 10) / 10 + '個'],
-        ['📅 今日のシルバー', got.toLocaleString() + ' / ' + cap.toLocaleString()], ['📦 受け取れる分', '🪙' + pd.silver.toLocaleString()]].map(([a, b]) => '<div><span>' + a + '</span><b>' + b + '</b></div>').join('') + '</div>' +
+        ['📅 今日のシルバー', got.toLocaleString() + ' / ' + cap.toLocaleString()], ['📦 受け取れる分', tClaimable().txt || 'なし']].map(([a, b]) => '<div><span>' + a + '</span><b>' + b + '</b></div>').join('') + '</div>' +
         '<h4 class="ofh">建物のようす</h4><div class="oflist">' + town.p.filter(Boolean).map(x => '<div><i>' + TB[x.b].i + '</i><b>' + TB[x.b].n + '</b><span>Lv' + Math.max(1, lvNow(x)) + (isBuilding(x) ? '・🔨' + tLeft(x) : '') + '・👤' + x.crew.filter(unitOf).length + '</span></div>').join('') + '</div>';
     } else {
       h += '<div class="ofguide">' + ['home'].concat(TB_ORDER).map(k => { const b = TB[k], have = town.p.filter(x => x && x.b === k);
@@ -11910,7 +11917,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   // 2026-11-26 本人「最初から3Dでやりたい」：わたしの街は3Dの島から始まる。土地をタップ → その土地の画面（街の画面の下半分だけ）→ もどると3Dへ
   const twHud = () => { const pd = townPending(), today = dmKey(), got = town.day === today ? town.got : 0, cap = tDayCap(homeLv());
-    return {coins, silver: Math.min(pd.silver, Math.max(0, cap - got)), mats: Object.keys(pd.mats).some(b => !/^_(xp|tr):/.test(b) && pd.mats[b] >= 1)}; };
+    const c = tClaimable(); return {coins, silver: c.silver, mats: c.mat + c.meat + c.evo > 0 || c.train > 0, n: c.mat + c.meat + c.evo}; };
   function open3DTown(){
     let w = $('tw3d'); if (w) { w.style.display = ''; return; }
     w = document.createElement('div'); w.id = 'tw3d'; w.innerHTML = '<iframe title="わたしの街 3D" src="town3d.html?v=' + APP_VER + '"></iframe>'; document.body.appendChild(w);
