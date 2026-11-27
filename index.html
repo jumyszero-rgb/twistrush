@@ -756,7 +756,7 @@ body.on-menu .battlemain{opacity:0;}
   .twp s{position:absolute;inset:auto 0 0 0;text-decoration:none;font-size:9px;font-weight:800;background:rgba(255,140,0,.85);text-align:center} .twp.bld i{opacity:.55}
   .twp.b-home{background:rgba(255,211,77,.28)}
   .twmap{position:relative} .tw3dbtn{display:block;margin-top:4px;border:0;border-radius:999px;padding:5px 11px;font:inherit;font-weight:900;font-size:12px;color:#123;background:linear-gradient(#bff3ff,#6fd6e8);box-shadow:0 2px 0 #2f8fc0;cursor:pointer}
-  .ofc{padding:4px 2px 20px} .ofnpc{display:flex;gap:10px;align-items:flex-end;margin-bottom:10px} .ofnpc img{width:96px;height:96px;object-fit:contain;flex:0 0 96px} .ofnpc i{font-style:normal;font-size:72px;line-height:96px;flex:0 0 96px;text-align:center}
+  .ofc{padding:4px 2px 20px} .ofnpc{display:flex;gap:10px;align-items:flex-end;margin-bottom:10px} .ofnpc>img{width:96px;height:96px;object-fit:contain;flex:0 0 96px} .ofnpc>i{font-style:normal;font-size:72px;line-height:96px;flex:0 0 96px;text-align:center}
   .ofsay{flex:1;position:relative;background:#fff;color:#3a2a14;border-radius:14px;padding:8px 12px;font-size:13px;line-height:1.6;box-shadow:0 2px 6px rgba(0,0,0,.25)} .ofsay::before{content:'';position:absolute;left:-8px;bottom:16px;border:8px solid transparent;border-right-color:#fff;border-left:0}
   .ofsay b{display:block;font-size:11px;color:#a0702a} .ofsay p{margin:0}
   .oftabs{display:flex;gap:6px;margin-bottom:10px} .oftabs button{flex:1;border:0;border-radius:10px;padding:8px 4px;font:inherit;font-weight:800;font-size:12.5px;background:rgba(255,255,255,.12);color:#fff} .oftabs button.on{background:#ffd34d;color:#3a2a00}
@@ -770,6 +770,8 @@ body.on-menu .battlemain{opacity:0;}
   .ofname input{flex:1;min-width:0;font:inherit;font-size:16px;padding:7px 9px;border-radius:9px;border:2px solid #ffd34d;background:#fff;color:#222}
   .twgot{margin:0 0 10px;padding:9px 12px;border-radius:12px;background:linear-gradient(#2f8f3d,#1f6e2c);color:#fff;font-size:13.5px;animation:twgot .3s} .twgot b{display:block;margin-bottom:3px}
   .twgot ul{margin:0;padding-left:18px;line-height:1.65} @keyframes twgot{from{transform:scale(.95);opacity:0}to{transform:none;opacity:1}}
+  .ic{width:1.25em;height:1.25em;object-fit:contain;vertical-align:-.25em;display:inline-block} .ice{font-style:normal}
+  .oflist .ic{width:28px;height:28px} .twpanel h4 .ic{width:34px;height:34px;vertical-align:middle} .twhead b .ic{width:1.6em;height:1.6em} .ofbw .ic{width:24px;height:24px}
   .ofadv{margin:0;padding-left:20px;font-size:13px;line-height:1.7} .ofadv li{margin-bottom:6px} .ofgo{display:block;width:100%;margin-top:10px;border:0;border-radius:12px;padding:11px;font:inherit;font-weight:900;font-size:15px;color:#3a2a00;background:linear-gradient(#ffe27a,#ffbf1f)}
   .ofst{display:grid;grid-template-columns:1fr 1fr;gap:6px} .ofst div{background:rgba(255,255,255,.08);border-radius:10px;padding:7px 9px} .ofst span{display:block;font-size:11px;opacity:.8} .ofst b{font-size:15px}
   .ofh{margin:12px 0 6px;font-size:13px} .oflist div{display:flex;gap:8px;align-items:center;padding:5px 2px;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px} .oflist i{font-style:normal} .oflist span{margin-left:auto;font-size:12px;opacity:.85}
@@ -8050,7 +8052,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.345';
+  const APP_VER = '0.9.346';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -11735,34 +11737,46 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     return {silver: Math.floor(silver), mats};
   }
   let twGot = null;
-  const twGotHTML = () => twGot && Date.now() - twGot.t < 15000 ? '<div class="twgot"><b>🏡 受け取ったもの</b><ul>' + twGot.list.map(g => '<li>' + g + '</li>').join('') + '</ul></div>' : '';
+  const twGotHTML = () => twGot && Date.now() - twGot.t < 15000 ? '<div class="twgot"><b>' + ic('box') + ' 受け取ったもの</b><ul>' + twGot.list.map(g => '<li>' + g + '</li>').join('') + '</ul></div>' : '';
   function townClaim(){
     const pd = townPending(), today = dmKey(); if (town.day !== today) { town.day = today; town.got = 0; }
     const room = Math.max(0, tDayCap(homeLv()) - town.got), s = Math.min(room, pd.silver), got = [];
-    if (s > 0) { addCoins(s); town.got += s; got.push('シルバー ' + s.toLocaleString()); }
+    if (s > 0) { addCoins(s); town.got += s; got.push(ic('silver') + 'シルバー ' + s.toLocaleString()); }
     Object.keys(pd.mats).forEach(b => { const n = Math.floor(pd.mats[b]); if (n < 1) return;
-      if (b === '_meat') { town.meat = (town.meat || 0) + n; got.push('🍖肉 ×' + n); return; }
+      if (b === '_meat') { town.meat = (town.meat || 0) + n; got.push(ic('meat') + '肉 ×' + n); return; }
       if (b.startsWith('_xp:')) { const u = unitOf(b.slice(4)); if (!u) return; const cap = capOf(u), lv0 = u.lv; let lv = u.lv, exp = (u.exp || 0) + n;
         while (lv < cap && exp >= expNeed(lv)) { exp -= expNeed(lv); lv++; } if (lv >= cap) exp = Math.min(exp, expNeed(lv) - 1);
-        u.lv = lv; u.exp = exp; saveUnits(); got.push('🥋' + evoName(u) + (lv > lv0 ? ' LV' + lv : ' 経験値+' + n)); return; }
+        u.lv = lv; u.exp = exp; saveUnits(); got.push(ic('xp') + evoName(u) + (lv > lv0 ? ' LV' + lv : ' 経験値+' + n)); return; }
       if (b.startsWith('_tr:')) { const u = unitOf(b.slice(4)); if (!u) return; const tx = town.p.find(p => p && p.b === 'trial'), cap = trCap(tx ? Math.max(1, lvNow(tx)) : 1);
         u.tr = (u.tr || [0, 0, 0, 0]).slice(0, 4); const ord = TR_ORD[CHAR_STAT[u.id] ? CHAR_STAT[u.id].type : 'hp'] || [0, 1, 2, 3]; let add = 0;
         for (let k = 0; k < n; k++) { const tot = u.tr.reduce((a, v) => a + v, 0), j = ord.map((_, q) => ord[(tot + q) % 4]).find(i => u.tr[i] < cap); if (j == null) break; u.tr[j]++; add++; }
-        if (add) { saveUnits(); got.push('⛩' + evoName(u) + ' ＋' + add); } return; }
-      if (b === '_evo' || b === '_evog') { const k = b === '_evo' ? 'evo_c' : 'evo_g'; giveItem(k, n); got.push(EX_MAT[k][1] + EX_MAT[k][0] + ' ×' + n); return; }
+        if (add) { saveUnits(); got.push(ic('tr') + evoName(u) + ' ＋' + add); } return; }
+      if (b === '_evo' || b === '_evog') { const k = b === '_evo' ? 'evo_c' : 'evo_g'; giveItem(k, n); got.push(ic(k) + EX_MAT[k][0] + ' ×' + n); return; }
       const fs = famsOf(b), cnt = {}; for (let k = 0; k < n; k++) { const f = fs[Math.floor(Math.random() * fs.length)], t = Math.min(tMatTier(Math.max(...town.p.filter(p => p && p.b === b).map(lvNow))), Math.random() < 0.7 ? 0 : Math.random() < 0.75 ? 1 : 2); giveItem('m_' + f + '_' + t, 1); cnt[f] = (cnt[f] || 0) + 1; }
-      Object.keys(cnt).forEach(f => got.push(MAT_FAM[f].i + MAT_FAM[f].n + ' ×' + cnt[f])); });
+      Object.keys(cnt).forEach(f => got.push(ic(f) + MAT_FAM[f].n + ' ×' + cnt[f])); });
     const now = Date.now(); town.p.forEach(x => { if (x) x.t = now; }); town.bank = {silver: 0, mats: Object.fromEntries(Object.entries(pd.mats).map(([k, v]) => [k, v - Math.floor(v)]))}; saveTown();   // シルバーの上限をこえた分は捨てる。素材の1個に満たない分は次に持ちこす
     twGot = got.length ? {list: got, t: Date.now()} : null;   // 2026-11-27 本人「受け取るが全部表示されてないよ」：受け取ったものを1つずつ並べて出す
-    if (got.length) { toast('🏡 ' + got.length + '種類 受け取りました'); msgLog('get', '🏡 街：' + got.join('・')); }
+    if (got.length) { toast('🏡 ' + got.length + '種類 受け取りました'); msgLog('get', '🏡 街：' + got.map(g => g.replace(/<[^>]*>/g, '')).join('・')); }
     else toast(room <= 0 ? '今日のシルバーは上限です（明日またたまります）' : 'まだたまっていません');
     drawTown(); return got;
   }
   let townSel = -1, townPick = null;
+  // 2026-11-28 本人「街のアイコンとか画像で出した方がよいよ。端末によって表示が違う」：絵文字をやめて絵にする
+  //   コイン・建物は今ある絵。素材などは img/town3d/ic/<k>.webp（2枚のシートで描いてもらう）。絵がとどくまでは TWIC_ART=false で絵文字のまま
+  const TWIC_ART = false;
+  const TWIC_EMO = {silver: '🪙', gold: '🟡', pop: '👥', meat: '🍖', wood: '🪵', metal: '⛏', beast: '🦴', mech: '⚙️', polish: '🔨', hide: '🧣', cloth: '🧵', gem: '💎', craft: '🔗',
+    evo_c: '💠', evo_g: '🔮', xp: '🥋', tr: '⛩', box: '📦', twtime: '⏱', twslot: '📜', hammer: '🔨', clock: '⏱', rush: '⚡', bulb: '💡', chart: '📊', book: '📖', tag: '🏷',
+    crane: '🏗', tree: '🌳', island: '🏝', crew: '👤', day: '📅', bld: '🏘', lock: '🔒'};
+  function ic(k){ if (k === 'silver' || k === 'gold') return '<img class="ic" alt="" src="' + gImg(k === 'silver' ? 'coin_silver' : 'coin_gold') + '">';
+    if (k === 'office') return '<img class="ic" alt="" src="img/town3d/office.webp">';
+    if (TB[k]) return '<img class="ic" alt="" src="img/town3d/' + k + '_' + (k === 'home' ? 1 : 3) + '.webp">';
+    if (MAT_FAM[k] || TWIC_EMO[k]) return TWIC_ART ? '<img class="ic" alt="" src="img/town3d/ic/' + k + '.webp">' : '<i class="ice">' + (TWIC_EMO[k] || MAT_FAM[k].i) + '</i>';
+    return ''; }
+  const icMat = k => EX_MAT[k] ? (/^m_/.test(k) ? ic(k.split('_')[1]) : k === 'evo_c' || k === 'evo_g' ? ic(k) : '<i class="ice">' + EX_MAT[k][1] + '</i>') : '';
   function tCostHTML(b, lv){
     const sv = tSilverCost(b, lv), mc = tMatCost(b, lv);
-    return '<span class="tcost' + (coins >= sv ? '' : ' ng') + '">🪙' + sv.toLocaleString() + '</span>' + mc.map(([k, n]) => '<span class="tcost' + (own(k) >= n ? '' : ' ng') + '">' + EX_MAT[k][1] + EX_MAT[k][0] + '×' + n + '（' + own(k) + '）</span>').join('') +
-      '<span class="tcost">⏱' + (BUILD_MIN[lv] >= 60 ? BUILD_MIN[lv] / 60 + '時間' : BUILD_MIN[lv] + '分') + '</span>' +
+    return '<span class="tcost' + (coins >= sv ? '' : ' ng') + '">' + ic('silver') + sv.toLocaleString() + '</span>' + mc.map(([k, n]) => '<span class="tcost' + (own(k) >= n ? '' : ' ng') + '">' + icMat(k) + EX_MAT[k][0] + '×' + n + '（' + own(k) + '）</span>').join('') +
+      '<span class="tcost">' + ic('clock') + (BUILD_MIN[lv] >= 60 ? BUILD_MIN[lv] / 60 + '時間' : BUILD_MIN[lv] + '分') + '</span>' +
       (() => { const sh = matShort(mc); return coins >= sv && sh.ok && sh.cost ? '<button class="twbuy" data-twbuy="' + b + ':' + lv + '">足りない素材をゴールド ' + sh.cost + ' で買う</button>' : ''; })();
   }
   // 2026-11-27 本人「同時は1個、2件同時とかは枠開放アイテムかゴールド」「早めるには短縮アイテムが必要」「できるだけ課金を増やすが、無料でも遊べる」
@@ -11787,11 +11801,11 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   // 工事まわりのボタン（建物の画面・管理事務所で使う）
   function twWorkHTML(i){ const x = town.p[i], tm = ownAny('twtime');
     let h = '<div class="twwork">';
-    if (isBuilding(x)) h += '<b>🔨 工事中（あと' + tLeft(x) + '）</b><div class="twwb"><button data-twtime="' + i + '"' + (tm ? '' : ' disabled') + '>⏱ 時短券（1時間）<small>のこり' + tm + '枚</small></button><button class="g" data-twrush="' + i + '">⚡ すぐ完成<small>ゴールド ' + twRushGold(x) + '</small></button></div>';
+    if (isBuilding(x)) h += '<b>' + ic('hammer') + ' 工事中（あと' + tLeft(x) + '）</b><div class="twwb"><button data-twtime="' + i + '"' + (tm ? '' : ' disabled') + '>' + ic('twtime') + ' 時短券（1時間）<small>のこり' + tm + '枚</small></button><button class="g" data-twrush="' + i + '">' + ic('rush') + ' すぐ完成<small>' + ic('gold') + twRushGold(x) + '</small></button></div>';
     return h + '</div>'; }
   function twSlotHTML(){ const n = twSlots(), it = ownAny('twslot');
-    return '<div class="twwork"><b>🏗 工事枠 ' + twBusy() + ' / ' + n + '（同時に工事できる数）</b>' + (n < TW_SLOT_MAX ? '<div class="twwb">' + (it ? '<button data-twslot="item">📜 建築許可証を使う<small>のこり' + it + '枚</small></button>' : '') +
-      '<button class="g" data-twslot="gold">＋ 枠をふやす<small>ゴールド ' + TW_SLOT_GOLD[n].toLocaleString() + '</small></button></div>' : '<small>（最大）</small>') + '</div>'; }
+    return '<div class="twwork"><b>' + ic('crane') + ' 工事枠 ' + twBusy() + ' / ' + n + '（同時に工事できる数）</b>' + (n < TW_SLOT_MAX ? '<div class="twwb">' + (it ? '<button data-twslot="item">' + ic('twslot') + ' 建築許可証を使う<small>のこり' + it + '枚</small></button>' : '') +
+      '<button class="g" data-twslot="gold">＋ 枠をふやす<small>' + ic('gold') + TW_SLOT_GOLD[n].toLocaleString() + '</small></button></div>' : '<small>（最大）</small>') + '</div>'; }
   const tCanPay = (b, lv) => coins >= tSilverCost(b, lv) && tMatCost(b, lv).every(([k, n]) => own(k) >= n);
   function tPay(b, lv){ addCoins(-tSilverCost(b, lv)); tMatCost(b, lv).forEach(([k, n]) => useMat(k, n)); saveInv(); }
   const tLeft = x => { const ms = Math.max(0, x.done - Date.now()), m = Math.ceil(ms / 6e4); return m >= 60 ? Math.floor(m / 60) + '時間' + (m % 60) + '分' : m + '分'; };
@@ -11825,7 +11839,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     let mat = 0, meat = 0, evo = 0, train = 0;
     Object.keys(pd.mats).forEach(b => { const n = Math.floor(pd.mats[b]); if (n < 1) return;
       if (b === '_meat') meat += n; else if (b === '_evo' || b === '_evog') evo += n; else if (/^_(xp|tr):/.test(b)) { if (unitOf(b.slice(4))) train += n; } else mat += n; });
-    if (silver > 0) L.push('🪙' + silver.toLocaleString()); if (mat) L.push('🧱素材×' + mat); if (meat) L.push('🍖肉×' + meat); if (evo) L.push('💎進化素材×' + evo); if (train) L.push('🥋修行の成果');
+    if (silver > 0) L.push(ic('silver') + silver.toLocaleString()); if (mat) L.push(ic('wood') + '素材×' + mat); if (meat) L.push(ic('meat') + '肉×' + meat); if (evo) L.push(ic('evo_c') + '進化素材×' + evo); if (train) L.push(ic('xp') + '修行の成果');
     return {silver, mat, meat, evo, train, txt: L.join('・')}; }
   function townAdvice(){
     const L = [], pd = townPending(), today = dmKey(), got = town.day === today ? town.got : 0, cap = tDayCap(homeLv()), pop = townPop(), free = tFree();
@@ -11851,21 +11865,21 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   function officeHTML(){
     const nm = ofNameEd ? '<div class="ofname ed"><input id="ofNameIn" maxlength="12" placeholder="例：いちごタウン" value="' + (town.name || '') + '"><button data-of="nameok">決定</button></div>'
-      : '<div class="ofname">🏷 <b>' + townName() + '</b><button data-of="name">' + (town.name ? '名前をかえる' : '名前をつける') + '</button></div>';
-    const tabs = [['advice', '💡 アドバイス'], ['town', '📊 街のようす'], ['guide', '📖 建物ガイド']], adv = townAdvice();
+      : '<div class="ofname">' + ic('tag') + ' <b>' + townName() + '</b><button data-of="name">' + (town.name ? '名前をかえる' : '名前をつける') + '</button></div>';
+    const tabs = [['advice', ic('bulb') + ' アドバイス'], ['town', ic('chart') + ' 街のようす'], ['guide', ic('book') + ' 建物ガイド']], adv = townAdvice();
     let h = '<div class="ofc"><div class="ofnpc"><img alt="" src="' + OFFICE.npcImg + '" onerror="this.replaceWith(Object.assign(document.createElement(\'i\'),{textContent:\'🦉\'}))">' +
       '<div class="ofsay"><b>' + OFFICE.npcT + 'の' + OFFICE.npc + '</b><p>' + adv[0] + '</p></div></div>' +
       nm + '<div class="oftabs">' + tabs.map(([k, n]) => '<button data-of="' + k + '"' + (officeTab === k ? ' class="on"' : '') + '>' + n + '</button>').join('') + '</div>';
-    { const cl = tClaimable(); h += cl.txt ? '<button class="ofget" data-tw="claim">📦 ここで受け取る<small>' + cl.txt + '</small></button>' : '<div class="ofget off">📦 いま受け取れるものはありません</div>'; }   // 2026-11-27 本人「管理事務所で受け取れればよくない？」
-    if (officeTab === 'advice') h += '<ol class="ofadv">' + adv.slice(0, 5).map(t => '<li>' + t + '</li>').join('') + '</ol><button class="ofgo" data-of="build">🏗 建てに行く</button>';
+    { const cl = tClaimable(); h += cl.txt ? '<button class="ofget" data-tw="claim">' + ic('box') + ' ここで受け取る<small>' + cl.txt + '</small></button>' : '<div class="ofget off">' + ic('box') + ' いま受け取れるものはありません</div>'; }   // 2026-11-27 本人「管理事務所で受け取れればよくない？」
+    if (officeTab === 'advice') h += '<ol class="ofadv">' + adv.slice(0, 5).map(t => '<li>' + t + '</li>').join('') + '</ol><button class="ofgo" data-of="build">' + ic('crane') + ' 建てに行く</button>';
     else if (officeTab === 'town') {
       const pd = townPending(), today = dmKey(), got = town.day === today ? town.got : 0, cap = tDayCap(homeLv()), bs = town.p.filter(x => x && !TB[x.b].fixed);
       const sum = {silver: 0, mat: 0, meat: 0}; town.p.forEach(x => { if (!x) return; const r = perHour(x); sum.silver += r.silver; sum.mat += r.mat; sum.meat += r.meat; });
-      h += '<div class="ofst">' + [['👥 人口', townPop().toLocaleString() + '人'], ['🏠 自分の家', 'Lv' + homeLv()], ['🏘 建物', bs.length + ' / ' + (bs.length + tFree()) + '軒'],
-        ['🪙 1時間のシルバー', Math.round(sum.silver).toLocaleString()], ['🧱 1時間の素材', Math.round(sum.mat * 10) / 10 + '個'], ['🍖 1時間の肉', Math.round(sum.meat * 10) / 10 + '個'],
-        ['📅 今日のシルバー', got.toLocaleString() + ' / ' + cap.toLocaleString()], ['📦 受け取れる分', tClaimable().txt || 'なし']].map(([a, b]) => '<div><span>' + a + '</span><b>' + b + '</b></div>').join('') + '</div>' +
-        '<h4 class="ofh">工事</h4>' + twSlotHTML() + town.p.map((x, i) => isBuilding(x) ? '<div class="ofbw">' + TB[x.b].i + ' ' + TB[x.b].n + ' Lv' + x.lv + twWorkHTML(i) + '</div>' : '').join('') +
-        '<h4 class="ofh">建物のようす</h4><div class="oflist">' + town.p.filter(Boolean).map(x => '<div><i>' + TB[x.b].i + '</i><b>' + TB[x.b].n + '</b><span>Lv' + Math.max(1, lvNow(x)) + (isBuilding(x) ? '・🔨' + tLeft(x) : '') + '・👤' + x.crew.filter(unitOf).length + '</span></div>').join('') + '</div>';
+      h += '<div class="ofst">' + [[ic('pop') + ' 人口', townPop().toLocaleString() + '人'], [ic('home') + ' 自分の家', 'Lv' + homeLv()], [ic('house') + ' 建物', bs.length + ' / ' + (bs.length + tFree()) + '軒'],
+        [ic('silver') + ' 1時間のシルバー', Math.round(sum.silver).toLocaleString()], [ic('wood') + ' 1時間の素材', Math.round(sum.mat * 10) / 10 + '個'], [ic('meat') + ' 1時間の肉', Math.round(sum.meat * 10) / 10 + '個'],
+        [ic('day') + ' 今日のシルバー', got.toLocaleString() + ' / ' + cap.toLocaleString()], [ic('box') + ' 受け取れる分', tClaimable().txt || 'なし']].map(([a, b]) => '<div><span>' + a + '</span><b>' + b + '</b></div>').join('') + '</div>' +
+        '<h4 class="ofh">工事</h4>' + twSlotHTML() + town.p.map((x, i) => isBuilding(x) ? '<div class="ofbw">' + ic(x.b) + ' ' + TB[x.b].n + ' Lv' + x.lv + twWorkHTML(i) + '</div>' : '').join('') +
+        '<h4 class="ofh">建物のようす</h4><div class="oflist">' + town.p.filter(Boolean).map(x => '<div>' + ic(x.b) + '<b>' + TB[x.b].n + '</b><span>Lv' + Math.max(1, lvNow(x)) + (isBuilding(x) ? '・' + ic('hammer') + tLeft(x) : '') + '・' + ic('crew') + x.crew.filter(unitOf).length + '</span></div>').join('') + '</div>';
     } else {
       h += '<div class="ofguide">' + ['home'].concat(TB_ORDER).map(k => { const b = TB[k], have = town.p.filter(x => x && x.b === k);
         return '<div><img alt="" src="img/town3d/' + k + '_1.webp"><div><b>' + b.n + (have.length ? '<em>持っている：' + have.map(x => 'Lv' + Math.max(1, lvNow(x))).join('・') + '</em>' : '') + '</b>' +
@@ -11877,9 +11891,9 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     { const h2 = $('town').querySelector('h2'); if (h2) h2.textContent = townName(); }
     if (townSel === 'office') { $('townBody').innerHTML = twGotHTML() + officeHTML(); return; }
     const pd = townPending(), today = dmKey(), got = town.day === today ? town.got : 0, cap = tDayCap(homeLv()), cs = crewSet();
-    let h = twGotHTML() + '<div class="twhead"><div><b>🏡 ' + townName() + '</b><span>家 Lv' + homeLv() + '・人口 ' + townPop().toLocaleString() + '人</span><button class="tw3dbtn" data-tw="3d">🏝 3Dで見る</button><button class="tw3dbtn" data-tw="office">🏢 管理事務所</button></div>' +
-      '<button class="twclaim" data-tw="claim">受け取る<small>🪙' + Math.min(pd.silver, Math.max(0, cap - got)).toLocaleString() + Object.keys(pd.mats).filter(b => !/^_(xp|tr):/.test(b)).map(b => Math.floor(pd.mats[b]) ? '・' + (b === '_meat' ? '🍖' : b === '_evo' ? '💠' : b === '_evog' ? '🔮' : MAT_FAM[famsOf(b)[0]].i) + Math.floor(pd.mats[b]) : '').join('') + (Object.keys(pd.mats).some(b => /^_xp:/.test(b) && pd.mats[b] >= 1) ? '・🥋' : '') + (Object.keys(pd.mats).some(b => /^_tr:/.test(b) && pd.mats[b] >= 1) ? '・⛩' : '') + '</small></button></div>' +
-      '<div class="twcap">今日のシルバー ' + got.toLocaleString() + ' / ' + cap.toLocaleString() + '　<small>閉じているあいだも' + TOWN_CAP_H + '時間ぶんまでたまる</small></div>' +
+    let h = twGotHTML() + '<div class="twhead"><div><b>' + ic('home') + ' ' + townName() + '</b><span>家 Lv' + homeLv() + '・人口 ' + townPop().toLocaleString() + '人</span><button class="tw3dbtn" data-tw="3d">' + ic('island') + ' 3Dで見る</button><button class="tw3dbtn" data-tw="office">' + ic('office') + ' 管理事務所</button></div>' +
+      '<button class="twclaim" data-tw="claim">受け取る<small>' + ic('silver') + Math.min(pd.silver, Math.max(0, cap - got)).toLocaleString() + Object.keys(pd.mats).filter(b => !/^_(xp|tr):/.test(b)).map(b => Math.floor(pd.mats[b]) ? '・' + ic(b === '_meat' ? 'meat' : b === '_evo' ? 'evo_c' : b === '_evog' ? 'evo_g' : famsOf(b)[0]) + Math.floor(pd.mats[b]) : '').join('') + (Object.keys(pd.mats).some(b => /^_xp:/.test(b) && pd.mats[b] >= 1) ? '・' + ic('xp') : '') + (Object.keys(pd.mats).some(b => /^_tr:/.test(b) && pd.mats[b] >= 1) ? '・' + ic('tr') : '') + '</small></button></div>' +
+      '<div class="twcap">' + ic('silver') + '今日のシルバー ' + got.toLocaleString() + ' / ' + cap.toLocaleString() + '　<small>閉じているあいだも' + TOWN_CAP_H + '時間ぶんまでたまる</small></div>' +
       '<div class="twmap"><div class="twgrid">' + town.p.map((x, i) => {
         if (!plotOk(i)) return TOWN_ART ? '<div class="twp lock deco"><img alt="" src="img/town3d/' + TW_DECO[i % TW_DECO.length] + '.webp"><b>🔒</b></div>' : '<div class="twp lock">🔒</div>';
         if (!x) return '<button class="twp empty' + (townSel === i ? ' sel' : '') + '" data-twp="' + i + '">＋</button>';
@@ -11894,7 +11908,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
           '<button data-twbuild="' + k + '"' + (dup || lock || !tCanPay(k, 1) ? ' disabled' : '') + '>' + (dup ? '1つだけ' : lock ? '家Lv' + b.needHome + 'から' : '建てる') + '</button></div>'; }).join('') + '</div>';
     } else if (x) {
       const b = TB[x.b], r = perHour(x), bld = isBuilding(x), maxLv = x.b === 'home' ? TOWN_MAXLV : Math.min(TOWN_MAXLV, homeLv());
-      h += '<div class="twpanel"><h4>' + b.i + ' ' + b.n + ' <span>Lv' + Math.max(1, lvNow(x)) + (bld ? '（Lv' + x.lv + 'に工事中・あと' + tLeft(x) + '）' : '') + '</span></h4><p class="twd">' + b.d + '</p>' +
+      h += '<div class="twpanel"><h4>' + ic(x.b) + ' ' + b.n + ' <span>Lv' + Math.max(1, lvNow(x)) + (bld ? '（Lv' + x.lv + 'に工事中・あと' + tLeft(x) + '）' : '') + '</span></h4><p class="twd">' + b.d + '</p>' +
         '<p class="twd">' + (b.needCrew && !x.crew.some(unitOf) ? '⚠ キャラを置くと動きます　' : '') + (b.pop ? '人口 +' + Math.round(b.pop * Math.max(0, lvNow(x)) * crewMul(x)) + '人　' : '') + (r.silver ? '🪙 ' + Math.round(r.silver).toLocaleString() + ' / 時間　' : '') + (r.mat ? famsOf(x.b).map(f => MAT_FAM[f].i).join('') + ' ' + r.mat.toFixed(1) + '個 / 時間　' : '') + (r.meat ? '🍖 ' + r.meat.toFixed(1) + '個 / 時間' : '') + (r.evo ? '💠 ' + (r.evo * 24).toFixed(1) + '個 / 日' : '') + (r.evog ? '　🔮 ' + (r.evog * 24).toFixed(1) + '個 / 日' : '') + (r.xp ? '📈 経験値 ' + Math.round(r.xp) + ' / 時間（1人）' : '') + (r.tr ? '➕ 約' + Math.round(1 / r.tr) + '時間ごとに＋1（1人・1つのステータスは＋' + trCap(lvNow(x)) + 'まで）' : '') + (x.b === 'home' ? '建てられる数 ' + plotsOpen() + 'こ（自分の家もふくむ）・建物はLv' + homeLv() + 'まで' : '') + '</p>' +
         '<h5>運営するキャラ（3人まで・向いている：' + TAPT[b.apt] + '）<small>育てるほど生産が上がる</small></h5><div class="twcrew">' +
         [0, 1, 2].map(k => { const u = unitOf(x.crew[k]); return u ? '<button class="twc" data-twoff="' + k + '"><span class="tic" data-ci="' + ciOf(u) + '"></span><b>' + evoName(u) + '</b><small>' + '★'.repeat(aptStars(aptOf(u, b.apt))) + '</small></button>'

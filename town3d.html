@@ -37,6 +37,7 @@
   .ask.on{display:flex}
   .toast{position:fixed;left:50%;top:40%;transform:translateX(-50%);padding:8px 14px;border-radius:12px;background:rgba(20,12,40,.85);font-size:13px;font-weight:800;pointer-events:none;opacity:0;transition:opacity .3s;text-align:center;max-width:80%}
   .toast.on{opacity:1}
+  .ic{width:1.25em;height:1.25em;object-fit:contain;vertical-align:-.25em;display:inline-block}
   .got{position:fixed;left:50%;top:30%;transform:translateX(-50%);min-width:200px;max-width:85%;padding:12px 18px;border-radius:14px;background:rgba(24,110,44,.94);color:#fff;font-size:14px;font-weight:800;line-height:1.7;text-align:center;pointer-events:none;opacity:0;transition:opacity .3s;z-index:60}
   .got b{display:block;font-size:15px;color:#ffe27a;margin-bottom:2px} .got.on{opacity:1}
   .maps{position:fixed;inset:0;display:none;flex-direction:column;justify-content:flex-end;pointer-events:none}
@@ -47,9 +48,9 @@
   .maps .row button.sel{border-color:#ffd34d;background:rgba(255,211,77,.25)}
   .maps .ok{display:block;width:100%;margin-top:10px;border:0;border-radius:12px;padding:11px;font:inherit;font-weight:900;font-size:15px;color:#3a2a00;background:linear-gradient(#ffe27a,#ffbf1f);box-shadow:0 3px 0 #c98a00;cursor:pointer}
 </style></head><body>
-<div class="bar"><button class="w" id="back">‹ もどる</button><b id="tnm">🏝 わたしの街</b><button class="w" id="gr">📋 一覧</button><button id="ag" class="w">📐</button><button id="tm">🕒</button></div>
-<div class="side"><button id="cl" class="claim">受け取る<small id="clv">🪙0</small></button><button id="bd" class="w">🏗 建てる</button><button id="ed" class="w">🌳 かざる</button><span class="coins" id="cn">🪙0</span></div>
-<div class="hint" id="hint">2本指で広げると全体が見える／建物をタップで育てる／長押しでうごかせる／「🏗 建てる」で建物、「🌳 かざる」で木や道を置ける</div>
+<div class="bar"><button class="w" id="back">‹ もどる</button><b id="tnm">わたしの街</b><button class="w" id="gr">一覧</button><button id="ag" class="w">📐</button><button id="tm">🕒</button></div>
+<div class="side"><button id="cl" class="claim">受け取る<small id="clv">🪙0</small></button><button id="bd" class="w">建てる</button><button id="ed" class="w">かざる</button><span class="coins" id="cn">🪙0</span></div>
+<div class="hint" id="hint">2本指で広げると全体が見える／建物をタップで育てる／長押しでうごかせる／「建てる」で建物、「かざる」で木や道を置ける</div>
 <div class="pal" id="pal"><p id="palp">置きたいものをえらんで、島をタップ</p><div class="row" id="palrow"></div></div>
 <div class="bl" id="bl"><p id="blp"></p><div class="list" id="blist"></div><div class="mini"><span id="blm"></span><button id="blre">📋 えらびなおす</button></div></div>
 <div class="ask" id="ask"><button id="askok">✔ ここに建てる</button><button class="w" id="askno">✖ やめる</button></div>
@@ -57,6 +58,9 @@
 <div class="toast" id="toast"></div><div class="got" id="got"></div>
 <script type="importmap">{"imports":{"three":"./lib/three.module.min.js"}}</script>
 <script type="module">
+// 2026-11-28 本人「アイコンは画像で（端末によって表示が違う）」：コインは絵。ほかは絵がとどいたら TWIC_ART=true（ゲーム側と同じ img/town3d/ic/）
+const TWIC_ART = false, ICE = {box: '📦', xp: '🥋', crane: '🏗', tree: '🌳', list: '📋', angle: '📐', clock: '🕒'};
+const IC = k => k === 'silver' ? '<img class="ic" alt="" src="img/gacha/coin_silver.webp">' : TWIC_ART ? '<img class="ic" alt="" src="img/town3d/ic/' + k + '.webp">' : (ICE[k] || '');
 /* 2026-11-26 わたしの街（3Dの島）
    本人：「建物・木・地面は3D、キャラは2Dのちび絵を板にして立たせる。ペーパーマリオ風」「最初から3Dで」
          「最初はまっさらで、自宅と島と川があるだけ、道も1本くらい。マップは5種類から選べる（川の位置や島の形が違う）」
@@ -335,9 +339,9 @@ const TIMES = [{n: '朝', sky: 0xffd9b8, tint: [1.05, .98, .92], spr: 0xfff2e6, 
   {n: '夜', sky: 0x16204a, tint: [.75, .82, 1.1], spr: 0x6c78b8, hi: .45, si: .25, night: 1}];
 let ti = (h => h >= 5 && h < 9 ? 0 : h < 16 ? 1 : h < 19 ? 2 : 3)(new Date().getHours()), curT = null;
 function setTime(){ const T = curT = TIMES[ti]; scene.background = new THREE.Color(T.sky); scene.fog = new THREE.Fog(T.sky, 80, 200); hemi.intensity = T.hi; sun.intensity = T.si;
-  sprites.forEach(s => s.mat.color.set(T.spr)); seaM.uniforms.night.value = T.night; post.material.uniforms.tint.value.set(...T.tint); $('tm').textContent = '🕒 ' + T.n; }
+  sprites.forEach(s => s.mat.color.set(T.spr)); seaM.uniforms.night.value = T.night; post.material.uniforms.tint.value.set(...T.tint); $('tm').innerHTML = IC('clock') + ' ' + T.n; }
 $('tm').onclick = () => { ti = (ti + 1) % 4; setTime(); };
-const agLabel = () => $('ag').textContent = '📐 ' + ANGLES[angI].n; agLabel();
+const agLabel = () => $('ag').innerHTML = IC('angle') + ' ' + ANGLES[angI].n; agLabel();
 $('ag').onclick = () => { angI = (angI + 1) % ANGLES.length; agLabel(); try { localStorage.setItem('twistrush.tw3dAng', angI); } catch (_) {} };
 
 // ---- カメラ（最初は自分の家に寄っている。2本指で引ける）
@@ -397,11 +401,11 @@ let edit = false, tool = 'road', coins = 0, moving = null, placing = null, blist
 const szTxt = k => DSZ[k] ? DSZ[k][0] + '×' + DSZ[k][1] : '';
 function drawPal(){
   $('palrow').innerHTML = TOOLS.filter(t => !t.hide).map(t => '<button data-k="' + t.k + '"' + (t.k === tool ? ' class="sel"' : '') + '>' + (t.i ? '<i>' + t.i + '</i>' : '<img alt="" src="img/town3d/' + t.k + '.webp">') + t.n +
-    (szTxt(t.k) ? '<em>' + szTxt(t.k) + 'マス</em>' : '') + (PRICE[t.k] ? '<small>🪙' + PRICE[t.k].toLocaleString() + '</small>' : '') + '</button>').join('');
+    (szTxt(t.k) ? '<em>' + szTxt(t.k) + 'マス</em>' : '') + (PRICE[t.k] ? '<small>' + IC('silver') + PRICE[t.k].toLocaleString() + '</small>' : '') + '</button>').join('');
   $('palp').textContent = tool === 'road' ? '島をタップ・なぞると土の道ができる（1マス🪙' + (PRICE.road || 0) + '・川には橋を置いてね）' : tool === 'erase' ? '木・飾り・道をタップするとなくなる（お金はもどらない）' :  '置きたい場所をタップ'; }
 $('palrow').onclick = e => { const b = e.target.closest('[data-k]'); if (!b) return;
   if (b.dataset.k === 'map') { openMaps(true); return; } tool = b.dataset.k; if (moving) { moving.mat.opacity = 1; moving = null; } drawPal(); };
-const setEdit = on => { edit = on; $('pal').classList.toggle('on', on); $('ed').textContent = on ? '✔ おわる' : '🌳 かざる'; $('hint').style.opacity = 0; if (moving) { moving.mat.opacity = 1; moving = null; } if (on) { endBuild(); drawPal(); if (cam.dist > 50) cam.dist = 34; } };
+const setEdit = on => { edit = on; $('pal').classList.toggle('on', on); $('ed').textContent = on ? '✔ おわる' : 'かざる'; $('hint').style.opacity = 0; if (moving) { moving.mat.opacity = 1; moving = null; } if (on) { endBuild(); drawPal(); if (cam.dist > 50) cam.dist = 34; } };
 $('ed').onclick = () => setEdit(!edit);
 
 // ---- 建てる（2026-11-26 マス目）：建物をえらぶ → 島をタップ（緑なら置ける）→「ここに建てる」
@@ -421,7 +425,7 @@ function drawBPal(){
 $('blist').onclick = e => { const b = e.target.closest('[data-b]'); if (!b) return; const it = blist.list.find(x => x.k === b.dataset.b); if (!it) return;
   if (!it.ok) return toast(it.why || '今は建てられません'); placing = {b: it.k, s: bsz(it.k, 1), it}; ghost.visible = false; $('ask').classList.remove('on'); drawBPal(); };
 $('blre').onclick = () => { placing = null; ghost.visible = false; $('ask').classList.remove('on'); drawBPal(); };
-function endBuild(){ blist = null; placing = null; ghost.visible = false; $('ask').classList.remove('on'); $('bd').textContent = '🏗 建てる'; $('bl').classList.remove('on', 'min'); }
+function endBuild(){ blist = null; placing = null; ghost.visible = false; $('ask').classList.remove('on'); $('bd').textContent = '建てる'; $('bl').classList.remove('on', 'min'); }
 $('bd').onclick = openBuild;
 function buildTap(cx, cy){ const [x, z] = groundAt(cx, cy), s = placing.s, [ix, iz] = cellFor(x, z, s, s), ok = rectFree(ix, iz, s, s);
   showGhost(ix, iz, s, s, ok); placing.at = ok ? [ix, iz] : null; $('ask').classList.toggle('on', ok); if (!ok) toast('ここには建てられません（川・道・ほかのものと重なる）'); }
@@ -479,7 +483,7 @@ async function paintRoad(cx, cy, end){
   if (!painted) return; const n = painted; painted = 0; const r = await req('roads', {list: [...roads], add: n});
   if (!r.ok) { toast(r.msg || 'お金が足りません'); roads = new Set(DATA.roadsSaved || []); drawRoads(); return; } DATA.roadsSaved = [...roads]; setCoins(r.coins); send({type: 'room', room: roomAll()});
 }
-const setCoins = c => { if (c == null) return; coins = c; $('cn').textContent = '🪙' + c.toLocaleString(); };
+const setCoins = c => { if (c == null) return; coins = c; $('cn').innerHTML = IC('silver') + c.toLocaleString(); };
 
 // ---- 島をえらぶ
 let mapSel = 0;
@@ -531,9 +535,9 @@ loop();
 function start(D){ const first = D.map == null; const mv = build(D, first ? 0 : D.map); DATA.roadsSaved = [...roads];
   if (first) openMaps(false); else { focusHome(); if (mv) saveLayout(); else send({type: 'room', room: roomAll()}); } }
 addEventListener('message', e => { if (e.origin !== location.origin || !e.data || e.data.src !== 'game') return; const d = e.data;
-  if (d.type === 'town' && d.town.name) $('tnm').textContent = '🏝 ' + d.town.name;
+  if (d.type === 'town' && d.town.name) $('tnm').textContent = d.town.name;
   if (d.type === 'town' && !DATA) { PRICE = d.town.price || {}; setCoins(d.town.coins); start(d.town); }
-  if (d.type === 'hud') { const h = d.hud; $('clv').textContent = '🪙' + h.silver.toLocaleString() + (h.n ? '・📦' + h.n : h.mats ? '・🥋' : ''); $('cl').classList.toggle('dot', h.silver > 0 || h.mats); setCoins(h.coins); }
+  if (d.type === 'hud') { const h = d.hud; $('clv').innerHTML = IC('silver') + h.silver.toLocaleString() + (h.n ? '・' + IC('box') + h.n : h.mats ? '・' + IC('xp') : ''); $('cl').classList.toggle('dot', h.silver > 0 || h.mats); setCoins(h.coins); }
   if (d.type === 'openBuild' && DATA && !$('maps').classList.contains('on')) openBuild();
   if (d.type === 'got') { const e = $('got'); e.innerHTML = d.list.length ? '<b>受け取りました</b>' + d.list.map(g => '<div>' + esc(g) + '</div>').join('') : '<b>まだたまっていません</b>'; e.classList.add('on'); clearTimeout(e.k); e.k = setTimeout(() => e.classList.remove('on'), 2600 + d.list.length * 700); }
   if (d.type === 'res' && waits[d.id]) { const f = waits[d.id]; delete waits[d.id]; f(d); } });
