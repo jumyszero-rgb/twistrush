@@ -778,6 +778,7 @@ body.on-menu .battlemain{opacity:0;}
   .ofproc>div{display:flex;align-items:center;gap:6px;padding:6px 2px;border-bottom:1px solid rgba(255,255,255,.08);font-size:12.5px} .ofproc span{flex:1;line-height:1.45}
   .ofproc button{border:0;border-radius:9px;padding:6px 8px;font:inherit;font-weight:800;font-size:12px;background:#ffd34d;color:#3a2a00} .ofproc button:disabled{opacity:.4} .ofproc small{display:block;font-size:10px}
   .oftabs button{font-size:11.5px}
+  .lbmats button.intm{opacity:.45} .lbmats button.warn{box-shadow:0 0 0 2px #ff6b6b inset} .lbconf{display:block;margin:8px 0;text-align:left;font-size:13px;line-height:1.7;max-height:40vh;overflow:auto} .lbconf .lbc{display:block} .lbconf .odd{color:#ff8a8a;font-weight:800} .lbwarn{color:#ff8a8a}
   .ofadv{margin:0;padding-left:20px;font-size:13px;line-height:1.7} .ofadv li{margin-bottom:6px} .ofgo{display:block;width:100%;margin-top:10px;border:0;border-radius:12px;padding:11px;font:inherit;font-weight:900;font-size:15px;color:#3a2a00;background:linear-gradient(#ffe27a,#ffbf1f)}
   .ofst{display:grid;grid-template-columns:1fr 1fr;gap:6px} .ofst div{background:rgba(255,255,255,.08);border-radius:10px;padding:7px 9px} .ofst span{display:block;font-size:11px;opacity:.8} .ofst b{font-size:15px}
   .ofh{margin:12px 0 6px;font-size:13px} .oflist div{display:flex;gap:8px;align-items:center;padding:5px 2px;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px} .oflist i{font-style:normal} .oflist span{margin-left:auto;font-size:12px;opacity:.85}
@@ -8058,7 +8059,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.348';
+  const APP_VER = '0.9.349';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -13080,6 +13081,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   const BOX_PER = 40, MAT_PER = 30;
   const GR5 = ['N', 'R', 'SR', 'MR', 'LR'];
   let boxOpt = false;                                     // 並べかえ・しぼりこみは、ふだんは折りたたむ
+  let boxFS = 'all';                                        // 2026-11-28 本人「限界突破できるキャラ（レベルがMAXまでいってるキャラ）を抽出できるように」
+  const canLB = u => u.lv >= capOf(u) && (u.star || 0) < starMaxOf(u);
   let boxPage = 0, boxFG = 'all', boxFT = 'all', matPage = 0, matF = 'all', feedSel = new Set();
   function pagerHTML(page, total, per, key){
     const n = Math.max(1, Math.ceil(total / per)); if (n <= 1) return '';
@@ -13110,14 +13113,14 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       const all = sortUnits();
       // 2026-11-20 本人：チームの枠を選んで入れかえるときは、遠征中のキャラ（今のチームにいる人は除く）を出さない
       const exHide = boxSlot >= 0 ? exBusyUids() : null;
-      const list0 = all.filter(u => (boxFG === 'all' || CHAR_STAT[u.id].grade === boxFG) && (boxFT === 'all' || CHAR_STAT[u.id].type === boxFT) && !(exHide && exHide.has(u.u) && !curTeam().includes(u.u)));
+      const list0 = all.filter(u => (boxFG === 'all' || CHAR_STAT[u.id].grade === boxFG) && (boxFT === 'all' || CHAR_STAT[u.id].type === boxFT) && (boxFS === 'all' || canLB(u)) && !(exHide && exHide.has(u.u) && !curTeam().includes(u.u)));
       const pn = Math.max(1, Math.ceil(list0.length / BOX_PER)); if (boxPage >= pn) boxPage = pn - 1; if (boxPage < 0) boxPage = 0;
       const list = list0.slice(boxPage * BOX_PER, boxPage * BOX_PER + BOX_PER);
       const cnt = {}; units.forEach(u => cnt[u.id] = (cnt[u.id] || 0) + 1);
       h += '<section><h3>持ちキャラ（' + (list0.length === all.length ? all.length : list0.length + ' / ' + all.length) + '体）</h3>' +
            (() => { const sn = (SORTS.find(x => x[0] === boxSort) || ['', '入手順'])[1] + (boxAsc ? '↑' : '↓');
-             const fg = boxFG === 'all' ? '' : '・' + boxFG, ft = boxFT === 'all' ? '' : '・' + TYPE_INFO[boxFT].name;
-             const dirty = boxSort !== 'grade' || boxAsc || boxFG !== 'all' || boxFT !== 'all';
+             const fg = boxFG === 'all' ? '' : '・' + boxFG, ft = (boxFT === 'all' ? '' : '・' + TYPE_INFO[boxFT].name) + (boxFS === 'all' ? '' : '・突破できる');
+             const dirty = boxSort !== 'grade' || boxAsc || boxFG !== 'all' || boxFT !== 'all' || boxFS !== 'all';
              return '<div class="coptbar"><button data-copt="1" class="copt">' + (boxOpt ? '▲' : '▼') + ' 並べかえ・しぼりこみ<small>' + sn + fg + ft + '</small></button>' +
                '<button data-creset="1" class="creset"' + (dirty ? '' : ' disabled') + '>一括解除</button></div>'; })() +
            '<div class="copts' + (boxOpt ? ' open' : '') + '"><div class="clegend">枠の色＝グレード：' + ['N', 'R', 'SR', 'MR', 'LR'].map(g => '<i class="g-' + g + '">' + g + '</i>').join('') +
@@ -13125,6 +13128,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
            SORTS.map(([k, n]) => '<button data-sort="' + k + '" class="' + (boxSort === k ? 'on' : '') + '">' + n + (boxSort === k ? (boxAsc ? '↑' : '↓') : '') + '</button>').join('') +
            '</div><div class="cfilt"><b>グレード</b>' + ['all'].concat(GR5).map(g => '<button data-fg="' + g + '" class="' + (boxFG === g ? 'on' : '') + '">' + (g === 'all' ? '全部' : g) + '</button>').join('') +
            '</div><div class="cfilt"><b>タイプ</b><button data-ft="all" class="' + (boxFT === 'all' ? 'on' : '') + '">全部</button>' + Object.keys(TYPE_INFO).map(k => '<button data-ft="' + k + '" class="' + (boxFT === k ? 'on' : '') + '">' + TYPE_INFO[k].mark + ' ' + TYPE_INFO[k].name + '</button>').join('') +
+           '</div><div class="cfilt"><b>状態</b><button data-fs="all" class="' + (boxFS === 'all' ? 'on' : '') + '">全部</button><button data-fs="cap" class="' + (boxFS === 'cap' ? 'on' : '') + '">★ 限界突破できる（LVが上限）</button>' +
            '</div></div>' + pagerHTML(boxPage, list0.length, BOX_PER, 'box') + '<div class="cgrid">';
       if (!list.length) h += '<p>この条件のキャラはいません。</p>';
       list.forEach(u => {
@@ -13309,7 +13313,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         '<p>いま ' + starsHTMLu(u) + '　レベル上限 LV' + capOf(u) + (full ? '（最大）' : ' → LV' + Math.min(lvMaxOf(u), capOf(u) + 10)) + '</p>' +
         (!full && u.lv < capOf(u) ? '<p class="dwarn">限界突破は、レベルが上限（LV' + capOf(u) + '）に届いてからできます。いまは LV' + u.lv + '。先に「LVアップ（合成）」で上げてください。</p>' : '') +
         (full ? '<p>これ以上★は上がりません。</p>' : mats.length ? '<div class="lbmats">' + mats.map(m => '<button data-mat="' + m.u + '"' + (m.lock ? ' class="lk"' : '') + '><span class="tic" data-ci="' + ci + '"></span>LV' + m.lv + (m.star ? ' ★' + m.star : '') + (m.lock ? '<i>🔒ロック中</i>' : teams.some(tt => tt.includes(m.u)) ? '<i>編成中</i>' : '') + '</button>').join('') + '</div>' + pagerHTML(matPage, matsAll.length, MAT_PER, 'mat') : '<p>同じキャラがもう1体いると、★を上げられます。</p>') + '</div>';
-      if (!full) h += lbExtraHTML(u);
+      // 2026-11-28 本人「突破するキャラと同じキャラがいない時のみ、一覧で同グレードを並べて全て出して」
+      if (!full) h += lbExtraHTML(u, matsAll.length > 0);
     }
     body.innerHTML = h;
     body.querySelectorAll('.tic').forEach(el => el.appendChild(charIcon(+el.dataset.ci, 40)));
@@ -13449,21 +13454,24 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   function lbOthers(u){
     const g = CHAR_STAT[u.id].grade;
     // 2026-11-20 本人：全部出す・キャラごとに並べる・ロック中（とチームに入っている）キャラは出さない
-    return units.filter(x => x.u !== u.u && CHAR_STAT[x.id] && !x.lock && ((x.id !== u.id && CHAR_STAT[x.id].grade === g && !teams.some(t => t.includes(x.u))) || isUpMat(u, x)))
+    // 2026-11-28 本人「ロックかかってないもの全て」：チームに入っているキャラも出す（選べない印つき）
+    return units.filter(x => x.u !== u.u && CHAR_STAT[x.id] && !x.lock && ((x.id !== u.id && CHAR_STAT[x.id].grade === g) || isUpMat(u, x)))
       .sort((a, b) => (isUpMat(u, b) - isUpMat(u, a)) || ciOf(a) - ciOf(b) || (a.star || 0) - (b.star || 0) || a.lv - b.lv);
   }
-  function lbExtraHTML(u){
-    const g = CHAR_STAT[u.id].grade, ot = lbOthers(u);
+  function lbExtraHTML(u, hasSame){
+    const g = CHAR_STAT[u.id].grade, ot = hasSame ? [] : lbOthers(u);
+    if (hasSame) lbSel.clear();
     [...lbSel].forEach(id => { if (!ot.some(m => m.u === id)) lbSel.delete(id); });
     const need = lbOtherNeed(u), pn = potNeed(u), have = own(potKey(g)), rd = u.lv >= capOf(u);
-    let h = '<div class="dsec lbsub"><p><b>ほかのキャラで限界突破</b>：同じグレード（' + g + '）のほかのキャラ <b>' + need + '体</b>で★+1（同じキャラの3倍以上かかります' + (g === 'LR' ? '。LRで中の段が違うキャラがまざると4体' : '') + '）。' +
+    let h = hasSame ? '<div class="dsec lbsub"><p><b>ほかのキャラで限界突破</b>：同じキャラがいるあいだは出ません（同じキャラ1体で★+1できます）</p>' : '<div class="dsec lbsub"><p><b>ほかのキャラで限界突破</b>：同じグレード（' + g + '）のほかのキャラ <b>' + need + '体</b>で★+1（同じキャラの3倍以上かかります' + (g === 'LR' ? '。LRで中の段が違うキャラがまざると4体' : '') + '）。' +
       (GRADE_DOWN[g] ? '<br><small>' + GRADE_DOWN[g] + 'で★もレベルも最大（<i class="maxmk">MAX</i>）まで育てたキャラも使えます。使うと消えずに LV1・★1 に戻ります。</small>' : '') + '</p>';
     const grp = []; ot.forEach(m => { const key = (isUpMat(u, m) ? 'up:' : '') + m.id, last = grp[grp.length - 1]; if (last && last.key === key) last.list.push(m); else grp.push({key, m, list: [m]}); });
     h += ot.length ? '<div class="lbgrps">' + grp.map(G => '<div class="lbgrp"><div class="lbgh">' + fullName(ALLC[ciOf(G.m)]) + ' <small>×' + G.list.length + (isUpMat(u, G.m) ? '・' + CHAR_STAT[G.m.id].grade + ' MAX' : '') + '</small></div><div class="lbmats">' +
-         G.list.map(m => '<button data-osel="' + m.u + '" class="' + (lbSel.has(m.u) ? 'sel' : '') + '"><span class="tic" data-ci="' + ciOf(m) + '"></span>' + (isUpMat(u, m) ? '<i class="maxmk">' + CHAR_STAT[m.id].grade + ' MAX</i>' : '') + 'LV' + m.lv + (m.star ? ' ★' + m.star : '') + '</button>').join('') + '</div></div>').join('') + '</div>' +
+         G.list.map(m => { const inT = !isUpMat(u, m) && teams.some(t => t.includes(m.u)), warn = !isUpMat(u, m) && (m.lv > 1 || (m.star || 0) > 0);
+           return '<button data-osel="' + m.u + '" class="' + (lbSel.has(m.u) ? 'sel' : '') + (inT ? ' intm' : '') + (warn ? ' warn' : '') + '"><span class="tic" data-ci="' + ciOf(m) + '"></span>' + (isUpMat(u, m) ? '<i class="maxmk">' + CHAR_STAT[m.id].grade + ' MAX</i>' : '') + 'LV' + m.lv + (m.star ? ' ★' + m.star : '') + (inT ? '<i>編成中</i>' : '') + '</button>'; }).join('') + '</div></div>').join('') + '</div>' +
          '<button class="lbgo" data-ogo="1"' + (rd && lbSel.size >= need ? '' : ' disabled') + '>選んだ' + lbSel.size + '体で★+1（必要 ' + need + '体）</button>'
-       : '<p>材料にできる同じグレードのほかのキャラがいません。</p>';
-    h += '<p class="lbnote"><small>ロック中のキャラと、チームに入っているキャラは出ません。</small></p>';
+       : hasSame ? '' : '<p>材料にできる同じグレードのほかのキャラがいません。</p>';
+    if (!hasSame) h += '<p class="lbnote"><small>ロック中のキャラは出ません。チームに入っているキャラ（編成中）は選べません。選べるのは' + need + '体まで。LV1・★なしでないキャラは赤い枠です。</small></p>';
     if (isXpPot(g)) return h + '</div>';                // N・Rは限界突破ポットなし（同じキャラ・ほかのキャラで上げる）
     h += '</div><div class="dsec lbsub"><p><b>ポットで限界突破</b>：' + potName(g) + 'を <b>' + pn + '個</b>使って★+1。ポットはアイテムガチャと、ゴールドの秘密のショップで手に入ります。</p>' +
          '<button class="lbgo potbtn" data-pot="1"' + (rd && have >= pn ? '' : ' disabled') + '><img src="' + potImg(g) + '" alt="">ポットを使う（所持 ' + have + '個／必要 ' + pn + '個）</button></div>';
@@ -13490,7 +13498,10 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     const use = pick.slice(0, need).map(m => m.u);
     const nKeep = use.filter(id => isUpMat(u, unitOf(id))).length, nGone = use.length - nKeep;
     if (guardLose(use.filter(id => !isUpMat(u, unitOf(id))))) return;   // MAXのキャラは消えないので数えない
-    askYes('選んだ' + use.length + '体を材料にして、★を1つ上げますか？<br>レベル上限 LV' + capOf(u) + ' → LV' + Math.min(lvMaxOf(u), capOf(u) + 10) +
+    // 2026-11-28 本人「稀に間違って、ロックし忘れたキャラを入れる可能性があるため使う前に、確認を入れて」
+    const odd = use.filter(id => { const m = unitOf(id); return !isUpMat(u, m) && (m.lv > 1 || (m.star || 0) > 0); });
+    const lst = '<span class="lbconf">' + use.map(id => { const m = unitOf(id), o = odd.includes(id); return '<span class="lbc' + (o ? ' odd' : '') + '">' + (o ? '⚠ ' : '・') + fullName(ALLC[ciOf(m)]) + '　LV' + m.lv + (m.star ? ' ★' + m.star : '') + (isUpMat(u, m) ? '（MAX・LV1に戻る）' : '') + '</span>'; }).join('') + '</span>';
+    askYes('この' + use.length + '体を材料にして、★を1つ上げますか？' + lst + (odd.length ? '<b class="lbwarn">⚠ LV1・★なしでないキャラが' + odd.length + '体入っています。ロックし忘れていないか確認してください</b><br>' : '') + 'レベル上限 LV' + capOf(u) + ' → LV' + Math.min(lvMaxOf(u), capOf(u) + 10) +
       (nGone ? '<br>材料にしたキャラ（' + nGone + '体）はいなくなります。' : '') + (nKeep ? '<br>MAXのキャラ（' + nKeep + '体）は、いなくならずに LV1・★1 に戻ります。' : ''), () => lbStarUp(u, use, 'ほかのキャラ ' + use.length + '体で突破'));
   }
   function limitBreakPot(uid){
@@ -13739,9 +13750,10 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     const pgb = e.target.closest('[data-pg]');
     if (pgb && !pgb.disabled) { const [k, v] = pgb.dataset.pg.split(':'); if (k === 'box') boxPage = +v; else matPage = +v; drawBox(); const sec = $('boxBody').querySelector(k === 'box' ? '.coptbar' : '.lbmats'); if (sec) sec.scrollIntoView({block: 'start'}); return; }
     if (e.target.closest('[data-copt]')) { boxOpt = !boxOpt; drawBox(); return; }
-    if (e.target.closest('[data-creset]')) { boxSort = 'grade'; boxAsc = false; boxFG = 'all'; boxFT = 'all'; boxPage = 0; save('boxsort2', 'grade'); save('boxasc', '0'); drawBox(); toast('並べかえ・しぼりこみを元に戻しました'); return; }
+    if (e.target.closest('[data-creset]')) { boxSort = 'grade'; boxAsc = false; boxFG = 'all'; boxFT = 'all'; boxFS = 'all'; boxPage = 0; save('boxsort2', 'grade'); save('boxasc', '0'); drawBox(); toast('並べかえ・しぼりこみを元に戻しました'); return; }
     const fgb = e.target.closest('[data-fg]'); if (fgb) { boxFG = fgb.dataset.fg; boxPage = 0; drawBox(); return; }
     const ftb = e.target.closest('[data-ft]'); if (ftb) { boxFT = ftb.dataset.ft; boxPage = 0; drawBox(); return; }
+    const fsb = e.target.closest('[data-fs]'); if (fsb) { boxFS = fsb.dataset.fs; boxPage = 0; drawBox(); return; }
     const so = e.target.closest('[data-sort]');
     if (so) { const k = so.dataset.sort; if (boxSort === k) boxAsc = !boxAsc; else { boxSort = k; boxAsc = false; } save('boxsort2', boxSort); save('boxasc', boxAsc ? '1' : '0'); boxPage = 0; drawBox(); return; }
     const ta = e.target.closest('[data-tact]');
@@ -13755,7 +13767,9 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       if (e.target.closest('[data-act="back"]')) { boxDetail = null; lbSel.clear(); drawBox(); if (boxTab === 'dex') $('boxBody').scrollTop = dexBackTop; return; }
       if (e.target.closest('[data-act="dlock"]')) { toggleLock(unitOf(boxDetail)); drawBox(); return; }
       const mb2 = e.target.closest('[data-mat]'); if (mb2) { limitBreak(boxDetail, mb2.dataset.mat); return; }
-      const os = e.target.closest('[data-osel]'); if (os) { const id = os.dataset.osel, m = unitOf(id); if (m && m.lock) { toast('ロック中のキャラは材料にできません'); return; } if (m && !isUpMat(unitOf(boxDetail), m) && teams.some(t => t.includes(id))) { toast('チームに入っているキャラは材料にできません'); return; } lbSel.has(id) ? lbSel.delete(id) : lbSel.add(id); drawBox(); return; }
+      const os = e.target.closest('[data-osel]'); if (os) { const id = os.dataset.osel, m = unitOf(id); if (m && m.lock) { toast('ロック中のキャラは材料にできません'); return; } if (m && !isUpMat(unitOf(boxDetail), m) && teams.some(t => t.includes(id))) { toast('チームに入っているキャラは材料にできません'); return; }
+        if (lbSel.has(id)) lbSel.delete(id); else { const u0 = unitOf(boxDetail); lbSel.add(id); if (lbSel.size > lbOtherNeed(u0)) { lbSel.delete(id); toast('選べるのは' + lbOtherNeed(u0) + '体までです'); return; } }   // 2026-11-28 本人「3キャラしか選べないという仕様に」
+        drawBox(); return; }
       if (e.target.closest('[data-ogo]')) { limitBreakOthers(boxDetail); return; }
       if (e.target.closest('[data-pot]')) { limitBreakPot(boxDetail); return; }
       const xb = e.target.closest('[data-xp]'); if (xb) { const [g, m] = xb.dataset.xp.split(':'); useXpPot(boxDetail, g, m); return; }
