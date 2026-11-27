@@ -37,6 +37,7 @@
   .ask.on{display:flex}
   .toast{position:fixed;left:50%;top:40%;transform:translateX(-50%);padding:8px 14px;border-radius:12px;background:rgba(20,12,40,.85);font-size:13px;font-weight:800;pointer-events:none;opacity:0;transition:opacity .3s;text-align:center;max-width:80%}
   .toast.on{opacity:1}
+  .ic.tcn{filter:sepia(1) saturate(2.6) hue-rotate(-18deg) brightness(.95)}
   .ic{width:1.25em;height:1.25em;object-fit:contain;vertical-align:-.25em;display:inline-block}
   .got{position:fixed;left:50%;top:30%;transform:translateX(-50%);min-width:200px;max-width:85%;padding:12px 18px;border-radius:14px;background:rgba(24,110,44,.94);color:#fff;font-size:14px;font-weight:800;line-height:1.7;text-align:center;pointer-events:none;opacity:0;transition:opacity .3s;z-index:60}
   .got b{display:block;font-size:15px;color:#ffe27a;margin-bottom:2px} .got.on{opacity:1}
@@ -49,7 +50,7 @@
   .maps .ok{display:block;width:100%;margin-top:10px;border:0;border-radius:12px;padding:11px;font:inherit;font-weight:900;font-size:15px;color:#3a2a00;background:linear-gradient(#ffe27a,#ffbf1f);box-shadow:0 3px 0 #c98a00;cursor:pointer}
 </style></head><body>
 <div class="bar"><button class="w" id="back">‹ もどる</button><b id="tnm">わたしの街</b><button class="w" id="gr">一覧</button><button id="ag" class="w">📐</button><button id="tm">🕒</button></div>
-<div class="side"><button id="cl" class="claim">受け取る<small id="clv">🪙0</small></button><button id="bd" class="w">建てる</button><button id="ed" class="w">かざる</button><span class="coins" id="cn">🪙0</span></div>
+<div class="side"><button id="cl" class="claim">受け取る<small id="clv">0</small></button><button id="bd" class="w">建てる</button><button id="ed" class="w">かざる</button><span class="coins" id="cn">0</span></div>
 <div class="hint" id="hint">2本指で広げると全体が見える／建物をタップで育てる／長押しでうごかせる／「建てる」で建物、「かざる」で木や道を置ける</div>
 <div class="pal" id="pal"><p id="palp">置きたいものをえらんで、島をタップ</p><div class="row" id="palrow"></div></div>
 <div class="bl" id="bl"><p id="blp"></p><div class="list" id="blist"></div><div class="mini"><span id="blm"></span><button id="blre">📋 えらびなおす</button></div></div>
@@ -60,7 +61,7 @@
 <script type="module">
 // 2026-11-28 本人「アイコンは画像で（端末によって表示が違う）」：コインは絵。ほかは絵がとどいたら TWIC_ART=true（ゲーム側と同じ img/town3d/ic/）
 const TWIC_ART = false, ICE = {box: '📦', xp: '🥋', crane: '🏗', tree: '🌳', list: '📋', angle: '📐', clock: '🕒'};
-const IC = k => k === 'silver' ? '<img class="ic" alt="" src="img/gacha/coin_silver.webp">' : TWIC_ART ? '<img class="ic" alt="" src="img/town3d/ic/' + k + '.webp">' : (ICE[k] || '');
+const IC = k => k === 'silver' || k === 'tc' ? '<img class="ic tcn" alt="街コイン" src="img/gacha/coin_silver.webp">' : TWIC_ART ? '<img class="ic" alt="" src="img/town3d/ic/' + k + '.webp">' : (ICE[k] || '');
 /* 2026-11-26 わたしの街（3Dの島）
    本人：「建物・木・地面は3D、キャラは2Dのちび絵を板にして立たせる。ペーパーマリオ風」「最初から3Dで」
          「最初はまっさらで、自宅と島と川があるだけ、道も1本くらい。マップは5種類から選べる（川の位置や島の形が違う）」
@@ -402,7 +403,7 @@ const szTxt = k => DSZ[k] ? DSZ[k][0] + '×' + DSZ[k][1] : '';
 function drawPal(){
   $('palrow').innerHTML = TOOLS.filter(t => !t.hide).map(t => '<button data-k="' + t.k + '"' + (t.k === tool ? ' class="sel"' : '') + '>' + (t.i ? '<i>' + t.i + '</i>' : '<img alt="" src="img/town3d/' + t.k + '.webp">') + t.n +
     (szTxt(t.k) ? '<em>' + szTxt(t.k) + 'マス</em>' : '') + (PRICE[t.k] ? '<small>' + IC('silver') + PRICE[t.k].toLocaleString() + '</small>' : '') + '</button>').join('');
-  $('palp').textContent = tool === 'road' ? '島をタップ・なぞると土の道ができる（1マス🪙' + (PRICE.road || 0) + '・川には橋を置いてね）' : tool === 'erase' ? '木・飾り・道をタップするとなくなる（お金はもどらない）' :  '置きたい場所をタップ'; }
+  $('palp').textContent = tool === 'road' ? '島をタップ・なぞると土の道ができる（1マス 街コイン' + (PRICE.road || 0) + '・川には橋を置いてね）' : tool === 'erase' ? '木・飾り・道をタップするとなくなる（お金はもどらない）' :  '置きたい場所をタップ'; }
 $('palrow').onclick = e => { const b = e.target.closest('[data-k]'); if (!b) return;
   if (b.dataset.k === 'map') { openMaps(true); return; } tool = b.dataset.k; if (moving) { moving.mat.opacity = 1; moving = null; } drawPal(); };
 const setEdit = on => { edit = on; $('pal').classList.toggle('on', on); $('ed').textContent = on ? '✔ おわる' : 'かざる'; $('hint').style.opacity = 0; if (moving) { moving.mat.opacity = 1; moving = null; } if (on) { endBuild(); drawPal(); if (cam.dist > 50) cam.dist = 34; } };
@@ -447,7 +448,7 @@ async function editTap(cx, cy){
   if (BRIDGE[tool]) { if (riverD(x, z) > RW + .8) return toast('橋は川の上に置いてね'); const {px, pz} = riverDir(x, z);
     if (decoS.some(s => s.kind === 'bridge' && Math.hypot(s.x - px, s.z - pz) < 3.5)) return toast('ほかの橋と近すぎます');
     if (!inIsland(px, pz, 2)) return toast('島の中の川に置いてね');
-    const d = {k: tool, x: Math.round(px * 100) / 100, z: Math.round(pz * 100) / 100}, r = await req('place', {d}); if (!r.ok) return toast(r.msg || 'シルバーが足りません'); addDeco(d); setCoins(r.coins); return; }
+    const d = {k: tool, x: Math.round(px * 100) / 100, z: Math.round(pz * 100) / 100}, r = await req('place', {d}); if (!r.ok) return toast(r.msg || '街コインが足りません'); addDeco(d); setCoins(r.coins); return; }
   const [w, dd] = dsz(tool), [nx, nz] = cellFor(x, z, w, dd);
   if (!rectFree(nx, nz, w, dd)) { showGhost(nx, nz, w, dd, false); setTimeout(() => ghost.visible = false, 700); return toast('ここには置けません（川・道・ほかのものと重なる）'); }
   if (decoS.length >= 300) return toast('置けるのは300こまで');
@@ -465,7 +466,7 @@ function objAt(cx, cy){
   return best && best.o ? best : null; }
 function lpStart(s){ lp = {s, o: s.o, x0: s.grp.position.x, z0: s.grp.position.z, nx: s.o.cx, nz: s.o.cz}; s.mat.opacity = .55; s.grp.position.y = GY + .4;
   try { navigator.vibrate && navigator.vibrate(25); } catch (_) {}
-  const o = s.o, c = o.kind === 'ofc' ? 0 : o.kind === 'bld' ? PRICE.moveB : PRICE.move; toast('指をずらして、はなすと置けます' + (c ? '（🪙' + c + '）' : '（無料）')); showGhost(o.cx, o.cz, o.w, o.d, true); }
+  const o = s.o, c = o.kind === 'ofc' ? 0 : o.kind === 'bld' ? PRICE.moveB : PRICE.move; toast('指をずらして、はなすと置けます' + (c ? '（街コイン ' + c + '）' : '（無料）')); showGhost(o.cx, o.cz, o.w, o.d, true); }
 function lpMove(cx, cy){ const o = lp.o, [x, z] = groundAt(cx, cy), [nx, nz] = cellFor(x, z, o.w, o.d); lp.nx = nx; lp.nz = nz;
   const dx = nx - o.cx, dz = nz - o.cz; lp.s.grp.position.x = lp.x0 + dx; lp.s.grp.position.z = lp.z0 + dz; showGhost(nx, nz, o.w, o.d, rectFree(nx, nz, o.w, o.d, o)); }
 function lpBack(){ if (!lp) return; lp.s.grp.position.set(lp.x0, GY, lp.z0); lp.s.mat.opacity = 1; ghost.visible = false; }
