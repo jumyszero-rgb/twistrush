@@ -92,7 +92,7 @@ const toast = t => { const e = $('toast'); e.textContent = t; e.classList.add('o
 // 建物：レベル1〜5の広さ（正方形の1辺）
 const BSZ = {home: [3, 3, 4, 4, 5], castle: [5, 5, 6, 7, 8], farm: [4, 5, 5, 6, 7],
   house: [2, 2, 3, 3, 3], shop: [2, 2, 3, 3, 3], petshop: [2, 2, 3, 3, 3], alchemy: [2, 2, 3, 3, 3], hunter: [2, 2, 3, 3, 3],
-  tavern: [3, 3, 3, 4, 4], lumber: [3, 3, 3, 4, 4], iron: [3, 3, 3, 4, 4], dojo: [3, 3, 3, 4, 4],
+  tavern: [3, 3, 3, 4, 4], lumber: [3, 3, 3, 4, 4], quarry: [3, 3, 3, 4, 4], iron: [3, 3, 3, 4, 4], dojo: [3, 3, 3, 4, 4],
   casino: [3, 4, 4, 5, 5], trial: [3, 4, 4, 5, 5]};
 const bsz = (b, lv) => (BSZ[b] || [2, 2, 2, 2, 2])[Math.max(1, Math.min(5, lv || 1)) - 1];
 // 飾り：[よこ, たて, 絵の高さ]
@@ -147,7 +147,7 @@ function tex(url, paper){ if (typeof url !== 'string') return url; const key = u
     kg.globalCompositeOperation = 'source-in'; kg.fillStyle = '#fffdf6'; kg.fillRect(0, 0, W, H);
     g.globalAlpha = .25; g.drawImage(k, p * .6, p * .9); g.globalAlpha = 1; g.filter = 'brightness(0)'; g.globalAlpha = .18; g.drawImage(k, p * .6, p * .9); g.filter = 'none'; g.globalAlpha = 1;
     g.drawImage(k, 0, 0); g.drawImage(im, 0, 0); t.dispose(); t.image = c; t.needsUpdate = true; };
-  im.onerror = () => { const fb = TEX_FB[url]; if (fb && im.src.indexOf(fb) < 0) im.src = fb; }; im.src = url; return TEX[key] = t; }
+  im.onerror = () => { const fb = TEX_FB[url] || (/\/quarry_\d/.test(url) ? url.replace('quarry_', 'iron_') : null); /* 採石場の絵がとどくまで製鉄所の絵 */ if (fb && im.src.indexOf(fb) < 0) im.src = fb; }; im.src = url; return TEX[key] = t; }
 const TEX_FB = {'img/town3d/office.webp': 'img/town3d/house_2.webp'};   // 管理事務所の絵がとどくまでは民家の絵
 const radial = (c0, c1) => { const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d'); const gr = x.createRadialGradient(64, 64, 0, 64, 64, 64); gr.addColorStop(0, c0); gr.addColorStop(1, c1); x.fillStyle = gr; x.fillRect(0, 0, 128, 128); return new THREE.CanvasTexture(c); };
 const shadowM = bend(new THREE.MeshBasicMaterial({map: radial('rgba(0,0,0,.4)', 'rgba(0,0,0,0)'), transparent: true, depthWrite: false}));
