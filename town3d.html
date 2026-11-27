@@ -140,7 +140,8 @@ function tex(url, paper){ if (typeof url !== 'string') return url; const key = u
     kg.globalCompositeOperation = 'source-in'; kg.fillStyle = '#fffdf6'; kg.fillRect(0, 0, W, H);
     g.globalAlpha = .25; g.drawImage(k, p * .6, p * .9); g.globalAlpha = 1; g.filter = 'brightness(0)'; g.globalAlpha = .18; g.drawImage(k, p * .6, p * .9); g.filter = 'none'; g.globalAlpha = 1;
     g.drawImage(k, 0, 0); g.drawImage(im, 0, 0); t.dispose(); t.image = c; t.needsUpdate = true; };
-  im.src = url; return TEX[key] = t; }
+  im.onerror = () => { const fb = TEX_FB[url]; if (fb && im.src.indexOf(fb) < 0) im.src = fb; }; im.src = url; return TEX[key] = t; }
+const TEX_FB = {'img/town3d/office.webp': 'img/town3d/house_2.webp'};   // 管理事務所の絵がとどくまでは民家の絵
 const radial = (c0, c1) => { const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d'); const gr = x.createRadialGradient(64, 64, 0, 64, 64, 64); gr.addColorStop(0, c0); gr.addColorStop(1, c1); x.fillStyle = gr; x.fillRect(0, 0, 128, 128); return new THREE.CanvasTexture(c); };
 const shadowM = bend(new THREE.MeshBasicMaterial({map: radial('rgba(0,0,0,.4)', 'rgba(0,0,0,0)'), transparent: true, depthWrite: false}));
 const GY = .6;
@@ -217,6 +218,12 @@ function addBld(i, p){
   const s = bsz(p.b, p.lv), o = {kind: 'bld', i, p, cx: p.x, cz: p.z, w: s, d: s};
   o.spr = billboard(p.img, p.x + s / 2, p.z + s * .78, s * 1.5, {sw: .62, kind: 'bld', plot: i}); o.spr.tag = p.tag; o.spr.busy = p.busy; o.spr.o = o;
   claim(o); blds.push(o); return o; }
+// 管理事務所（2026-11-27）：3×3・島に1つ・なくせない。タップで管理人のところへ
+let office = null;
+function addOffice(x, z){ const s = 3, o = {kind: 'ofc', cx: x, cz: z, w: s, d: s};
+  o.spr = billboard('img/town3d/office.webp', x + s / 2, z + s * .78, s * 1.5, {sw: .62, kind: 'bld', plot: 'office'}); o.spr.tag = '🏢 管理事務所'; o.spr.o = o;
+  claim(o); office = o; return o; }
+function delOffice(){ if (!office) return; unclaim(office); unbill(office.spr); office = null; }
 function delBld(o){ unclaim(o); unbill(o.spr); blds.splice(blds.indexOf(o), 1); }
 // 次のレベルの広さが空いているか（2026-11-26 本人「A：まわりを空けてね と出てレベルアップできない」）
 // 広がるのは左右と奥。手前（道のある側）はそのまま
@@ -265,7 +272,7 @@ function defaultRoad(hx, hz, s){
 function build(D, mapIdx){
   DATA = D; M = MAPS[mapIdx] || MAPS[0];
   if (world) { scene.remove(world); sprites.slice().forEach(unbill); walkers.forEach(w => w.el && w.el.remove()); walkers.length = 0; decoS.length = 0; blds.length = 0; document.querySelectorAll('.tag').forEach(e => e.remove()); }
-  occ.clear(); world = new THREE.Group(); scene.add(world);
+  occ.clear(); office = null; world = new THREE.Group(); scene.add(world);
   const u = seaM.uniforms; u.base.value = M.base; u.amp.value.set(...M.amp); u.fr.value.set(...M.fr); u.ph.value.set(...M.ph);
   const sTex = (() => { const c = document.createElement('canvas'); c.width = c.height = 256; const s2 = c.getContext('2d'); s2.fillStyle = '#f2dfa4'; s2.fillRect(0, 0, 256, 256); for (let i = 0; i < 1500; i++) { s2.fillStyle = rnd() < .5 ? 'rgba(200,170,110,.25)' : 'rgba(255,250,220,.4)'; s2.fillRect(rnd() * 256, rnd() * 256, 2, 2); } const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(.25, .25); return t; })();
   const top = new THREE.Mesh(new THREE.ExtrudeGeometry(shapeOf(0), {depth: 1, bevelEnabled: true, bevelThickness: .35, bevelSize: .4, bevelSegments: 4, curveSegments: 1}), [lam({map: grassT}), lam({color: 0x9b7048})]);
@@ -292,6 +299,8 @@ function build(D, mapIdx){
   if (hp) put(D.plots.indexOf(hp), hp);
   if (old || D.roads == null) { const h = blds[0]; if (h) roads = defaultRoad(h.cx, h.cz, h.w); moved = true; }
   D.plots.forEach((p, i) => { if (p && p.t === 'bld' && p !== hp) put(i, p); });
+  { const o = D.office; if (o && typeof o.x === 'number' && rectFree(o.x, o.z, 3, 3)) addOffice(o.x, o.z);
+    else { const h = blds[0], sp = findSpot(3, 3, h ? h.cx + h.w + 2.5 : M.home[0] + 4, h ? h.cz + h.d / 2 : M.home[1]); if (sp) { addOffice(sp[0], sp[1]); moved = true; } } }
   drawRoads();
   // 住人
   const h0 = blds[0]; D.walkers.forEach(w => { let x, z, k = 0; const hx = h0 ? h0.cx + h0.w / 2 : M.home[0], hz = h0 ? h0.cz + h0.d + 1 : M.home[1]; do { x = hx + (rnd() - .5) * 16; z = hz + (rnd() - .5) * 16; } while (!free(x, z) && ++k < 300);
@@ -300,7 +309,7 @@ function build(D, mapIdx){
   return moved;
 }
 // 場所を決めた・置きなおしたら、ゲームに保存してもらう（お金はかからない）
-const saveLayout = () => req('layout', {pos: blds.map(o => ({i: o.i, x: o.cx, z: o.cz})), deco: decoS.map(s => s.d), roads: [...roads]}).then(() => send({type: 'room', room: roomAll()}));
+const saveLayout = () => req('layout', {pos: blds.map(o => ({i: o.i, x: o.cx, z: o.cz})), office: office ? {x: office.cx, z: office.cz} : null, deco: decoS.map(s => s.d), roads: [...roads]}).then(() => send({type: 'room', room: roomAll()}));
 const free = (x, z) => { if (!inIsland(x, z, .8)) return false; if (onRiver(x, z)) return onBridge(x, z); return !occ.has(ck(Math.floor(x), Math.floor(z))); };
 function pickT(w){ for (let i = 0; i < 30; i++) { const x = w.x + (rnd() - .5) * 10, z = w.z + (rnd() - .5) * 10; let ok = free(x, z); for (let k = 1; ok && k <= 14; k++) ok = free(w.x + (x - w.x) * k / 14, w.z + (z - w.z) * k / 14); if (ok) { w.tx = x; w.tz = z; return; } } w.wait = 1; }
 const SAY = ['いい天気！', 'お店に行こうかな', 'ふぁ〜', 'パズルしたい！', '♪', 'こんにちは！', 'いい街だね', 'がんばるぞ！', '木がふえたね'];
@@ -424,17 +433,18 @@ async function editTap(cx, cy){
     const br = decoS.find(s => s.kind === 'bridge' && Math.hypot(s.x - x, s.z - z) < 1.6);
     if (br || (here && here.kind === 'deco')) { const s = br || here.s, r = await req('unplace', {d: s.d}); if (!r.ok) return toast(r.msg || 'できませんでした'); delDeco(s); send({type: 'room', room: roomAll()}); return; }
     if (here && here.kind === 'bld') return toast('建物は、建物をタップした画面の「こわす」でなくせます');
+    if (here && here.kind === 'ofc') return toast('管理事務所はなくせません（うごかすのは無料）');
     const k = ck(ix, iz); if (roads.has(k)) { roads.delete(k); const r = await req('roads', {list: [...roads], add: 0}); if (!r.ok) { roads.add(k); return toast(r.msg || 'できませんでした'); } drawRoads(); send({type: 'room', room: roomAll()}); }
     return; }
   if (tool === 'road') return;                                // 道は押した・なぞったところ（下の paintRoad）
   if (tool === 'move' && !moving) {
     if (!here) return toast('うごかしたい建物・木・飾りをタップしてね');
-    moving = here.kind === 'bld' ? here.spr : here.s; moving.mat.opacity = .5; drawPal(); return; }
+    moving = here.kind === 'bld' || here.kind === 'ofc' ? here.spr : here.s; moving.mat.opacity = .5; drawPal(); return; }
   if (moving) { const mo = moving.o, [nx, nz] = cellFor(x, z, mo.w, mo.d); if (!rectFree(nx, nz, mo.w, mo.d, mo)) { showGhost(nx, nz, mo.w, mo.d, false); setTimeout(() => ghost.visible = false, 700); return toast('ここには置けません'); }
-    const isB = mo.kind === 'bld', r = isB ? await req('moveB', {i: mo.i, x: nx, z: nz}) : await req('move', {d: moving.d, to: {k: moving.d.k, x: nx, z: nz}});
+    const isB = mo.kind === 'bld', isO = mo.kind === 'ofc', r = isO ? await req('moveO', {x: nx, z: nz}) : isB ? await req('moveB', {i: mo.i, x: nx, z: nz}) : await req('move', {d: moving.d, to: {k: moving.d.k, x: nx, z: nz}});
     moving.mat.opacity = 1; const ms = moving; moving = null; drawPal();
     if (!r.ok) return toast(r.msg || 'お金が足りません');
-    if (isB) { const p = Object.assign({}, mo.p, {x: nx, z: nz}); delBld(mo); addBld(mo.i, p); } else { delDeco(ms); addDeco({k: ms.d.k, x: nx, z: nz}); }
+    if (isO) { delOffice(); addOffice(nx, nz); } else if (isB) { const p = Object.assign({}, mo.p, {x: nx, z: nz}); delBld(mo); addBld(mo.i, p); } else { delDeco(ms); addDeco({k: ms.d.k, x: nx, z: nz}); }
     setCoins(r.coins); send({type: 'room', room: roomAll()}); return; }
   if (!inIsland(x, z, .9)) return toast('島の上に置いてね');
   if (BRIDGE[tool]) { if (riverD(x, z) > RW + .8) return toast('橋は川の上に置いてね'); const {px, pz} = riverDir(x, z);
@@ -476,7 +486,8 @@ function tap(cx, cy){
   let best = null;
   sprites.forEach(s => { if (s.plot == null) return; const [x0, y0] = scr(s.x - s.h * .4, GY, s.z), [x1, y1] = scr(s.x + s.h * .4, GY + s.h * .9, s.z);
     if (cx >= Math.min(x0, x1) && cx <= Math.max(x0, x1) && cy >= Math.min(y0, y1) && cy <= Math.max(y0, y1) && (!best || s.z > best.z)) best = s; });
-  if (!best) { const [x, z] = groundAt(cx, cy), o = occ.get(ck(Math.floor(x), Math.floor(z))); if (o && o.kind === 'bld') best = o.spr; }
+  if (!best) { const [x, z] = groundAt(cx, cy), o = occ.get(ck(Math.floor(x), Math.floor(z))); if (o && (o.kind === 'bld' || o.kind === 'ofc')) best = o.spr; }
+  if (best && best.plot === 'office') return send({type: 'office'});
   if (best) send({type: 'tap', i: best.plot, room: roomAll()});
 }
 el.addEventListener('pointerdown', e => { el.setPointerCapture(e.pointerId); pts.set(e.pointerId, [e.clientX, e.clientY]); moved = 0;
@@ -502,6 +513,7 @@ function start(D){ const first = D.map == null; const mv = build(D, first ? 0 : 
 addEventListener('message', e => { if (e.origin !== location.origin || !e.data || e.data.src !== 'game') return; const d = e.data;
   if (d.type === 'town' && !DATA) { PRICE = d.town.price || {}; setCoins(d.town.coins); start(d.town); }
   if (d.type === 'hud') { const h = d.hud; $('clv').textContent = '🪙' + h.silver.toLocaleString(); $('cl').classList.toggle('dot', h.silver > 0 || h.mats); setCoins(h.coins); }
+  if (d.type === 'openBuild' && DATA && !$('maps').classList.contains('on')) openBuild();
   if (d.type === 'res' && waits[d.id]) { const f = waits[d.id]; delete waits[d.id]; f(d); } });
 send({type: 'ready'});
 setTimeout(() => { $('hint').style.opacity = 0; }, 7000);
