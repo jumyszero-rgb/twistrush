@@ -760,6 +760,7 @@ body.on-menu .battlemain{opacity:0;}
   .ofsay{flex:1;position:relative;background:#fff;color:#3a2a14;border-radius:14px;padding:8px 12px;font-size:13px;line-height:1.6;box-shadow:0 2px 6px rgba(0,0,0,.25)} .ofsay::before{content:'';position:absolute;left:-8px;bottom:16px;border:8px solid transparent;border-right-color:#fff;border-left:0}
   .ofsay b{display:block;font-size:11px;color:#a0702a} .ofsay p{margin:0}
   .oftabs{display:flex;gap:6px;margin-bottom:10px} .oftabs button{flex:1;border:0;border-radius:10px;padding:8px 4px;font:inherit;font-weight:800;font-size:12.5px;background:rgba(255,255,255,.12);color:#fff} .oftabs button.on{background:#ffd34d;color:#3a2a00}
+  .ofget{display:block;width:100%;margin:0 0 10px;border:0;border-radius:12px;padding:9px;font:inherit;font-weight:900;font-size:15px;color:#fff;background:linear-gradient(#5fd36a,#2fa83c);text-align:center} .ofget small{display:block;font-size:12px;font-weight:700;margin-top:2px} .ofget.off{background:rgba(255,255,255,.1);font-size:13px;font-weight:700;opacity:.8}
   .ofadv{margin:0;padding-left:20px;font-size:13px;line-height:1.7} .ofadv li{margin-bottom:6px} .ofgo{display:block;width:100%;margin-top:10px;border:0;border-radius:12px;padding:11px;font:inherit;font-weight:900;font-size:15px;color:#3a2a00;background:linear-gradient(#ffe27a,#ffbf1f)}
   .ofst{display:grid;grid-template-columns:1fr 1fr;gap:6px} .ofst div{background:rgba(255,255,255,.08);border-radius:10px;padding:7px 9px} .ofst span{display:block;font-size:11px;opacity:.8} .ofst b{font-size:15px}
   .ofh{margin:12px 0 6px;font-size:13px} .oflist div{display:flex;gap:8px;align-items:center;padding:5px 2px;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px} .oflist i{font-style:normal} .oflist span{margin-left:auto;font-size:12px;opacity:.85}
@@ -8040,7 +8041,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.341';
+  const APP_VER = '0.9.342';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -11780,7 +11781,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   function townAdvice(){
     const L = [], pd = townPending(), today = dmKey(), got = town.day === today ? town.got : 0, cap = tDayCap(homeLv()), pop = townPop(), free = tFree();
     const cl = tClaimable();
-    if (cl.txt) L.push([100, '受け取れるものがたまってるよ（' + cl.txt + '）。3Dの街の右上の「受け取る」を押してね。8時間ぶんでたまるのが止まっちゃうから、こまめにね。']);
+    if (cl.txt) L.push([100, '受け取れるものがたまってるよ（' + cl.txt + '）。上の「ここで受け取る」でどうぞ。8時間ぶんでたまるのが止まっちゃうから、こまめにね。']);
     town.p.forEach(x => { if (x && TB[x.b].needCrew && lvNow(x) >= 1 && !x.crew.some(unitOf)) L.push([95, TB[x.b].n + 'は、キャラを置くまで動かないよ。建物をタップして、育てたいキャラを置いてね。']); });
     if (free > 0) L.push([90, 'あと' + free + '軒建てられるよ。3Dの街の「🏗 建てる」から選んでね。']);
     if (!tHas('house')) L.push([85, 'まずは民家を建てよう！ 人口がふえると、城の税金もふえるんだ。']);
@@ -11802,6 +11803,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     let h = '<div class="ofc"><div class="ofnpc"><img alt="" src="' + OFFICE.npcImg + '" onerror="this.replaceWith(Object.assign(document.createElement(\'i\'),{textContent:\'🦉\'}))">' +
       '<div class="ofsay"><b>' + OFFICE.npcT + 'の' + OFFICE.npc + '</b><p>' + adv[0] + '</p></div></div>' +
       '<div class="oftabs">' + tabs.map(([k, n]) => '<button data-of="' + k + '"' + (officeTab === k ? ' class="on"' : '') + '>' + n + '</button>').join('') + '</div>';
+    { const cl = tClaimable(); h += cl.txt ? '<button class="ofget" data-tw="claim">📦 ここで受け取る<small>' + cl.txt + '</small></button>' : '<div class="ofget off">📦 いま受け取れるものはありません</div>'; }   // 2026-11-27 本人「管理事務所で受け取れればよくない？」
     if (officeTab === 'advice') h += '<ol class="ofadv">' + adv.slice(0, 5).map(t => '<li>' + t + '</li>').join('') + '</ol><button class="ofgo" data-of="build">🏗 建てに行く</button>';
     else if (officeTab === 'town') {
       const pd = townPending(), today = dmKey(), got = town.day === today ? town.got : 0, cap = tDayCap(homeLv()), bs = town.p.filter(x => x && !TB[x.b].fixed);
