@@ -60,7 +60,7 @@
 <script type="importmap">{"imports":{"three":"./lib/three.module.min.js"}}</script>
 <script type="module">
 // 2026-11-28 本人「アイコンは画像で（端末によって表示が違う）」：コインは絵。ほかは絵がとどいたら TWIC_ART=true（ゲーム側と同じ img/town3d/ic/）
-const TWIC_ART = false, ICE = {box: '📦', xp: '🥋', crane: '🏗', tree: '🌳', list: '📋', angle: '📐', clock: '🕒'};
+const TWIC_ART = true, ICE = {box: '📦', xp: '🥋', crane: '🏗', tree: '🌳', list: '📋', angle: '📐', clock: '🕒'};
 const IC = k => k === 'silver' || k === 'tc' ? '<img class="ic tcn" alt="街コイン" src="img/gacha/coin_silver.webp">' : TWIC_ART ? '<img class="ic" alt="" src="img/town3d/ic/' + k + '.webp">' : (ICE[k] || '');
 /* 2026-11-26 わたしの街（3Dの島）
    本人：「建物・木・地面は3D、キャラは2Dのちび絵を板にして立たせる。ペーパーマリオ風」「最初から3Dで」
