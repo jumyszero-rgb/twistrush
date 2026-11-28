@@ -78,8 +78,11 @@ const IC = k => k === 'silver' || k === 'tc' ? '<img class="ic tcn" alt="街コ�
    ・大きさの表はここ（BSZ／DSZ）だけにある。ゲームには「次のレベルの広さが空いているか」を伝える */
 import * as THREE from 'three';
 const $ = id => document.getElementById(id);
-const renderer = new THREE.WebGLRenderer({antialias: false});
-const DPR = Math.min(2, devicePixelRatio || 1);
+const renderer = new THREE.WebGLRenderer({antialias: false, powerPreference: 'high-performance'});
+// 2026-11-28 本人（Galaxy A22）「街のボタンの反応が悪い。戻るとか、+とかラグがある」：描くのが重くてボタンの処理が遅れていた
+//   ゲーム本体が「軽く」で動いている端末（設定の「軽く」・メモリ4GB以下のAndroid）は、細かさを下げ・仕上げ（ぼかし）を省き・1秒30回にする
+const LITE = (() => { try { const m = localStorage.getItem('twistrush.lite') || 'auto'; return m === 'on' || (m === 'auto' && localStorage.getItem('twistrush.liteauto') === '1'); } catch (_) { return false; } })();
+const DPR = LITE ? 1 : Math.min(2, devicePixelRatio || 1);
 renderer.setPixelRatio(DPR); renderer.setSize(innerWidth, innerHeight); document.body.prepend(renderer.domElement);
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(30, innerWidth / innerHeight, 0.5, 1500);
@@ -361,7 +364,10 @@ $('ag').onclick = () => { angI = (angI + 1) % ANGLES.length; agLabel(); try { lo
 const cam = {tx: 0, tz: 0, dist: 26}; const ZMIN = 12, ZMAX = 150;
 const clock = new THREE.Clock(); const v = new THREE.Vector3();
 function scr(x, y, z){ v.set(x, y, z).applyMatrix4(camera.matrixWorldInverse); v.y -= v.z * v.z * BEND.value; v.applyMatrix4(camera.projectionMatrix); return [(v.x * .5 + .5) * innerWidth, (-v.y * .5 + .5) * innerHeight]; }
-function loop(){
+let lastDraw = 0, paused = false;
+function loop(now){
+  if (paused) { requestAnimationFrame(loop); return; }   // ゲーム側で街の画面がかくれている間は描かない
+  if (LITE && now && now - lastDraw < 30) { requestAnimationFrame(loop); return; } lastDraw = now || 0;
   const dt = Math.min(.05, clock.getDelta()), t = clock.elapsedTime;
   walkers.forEach(w => {
     w.sayT = (w.sayT || 0) - dt; if (w.el && w.sayT <= 0) { w.el.remove(); w.el = null; }
@@ -397,7 +403,8 @@ function loop(){
       s.tagE.classList.toggle('fin', left <= 0); }
     s.tagE.style.display = showTag || s.done ? '' : 'none'; const [sx, sy] = scr(s.x, GY - .1, s.z + .3); s.tagE.style.left = sx + 'px'; s.tagE.style.top = sy + 'px'; });
   post.material.uniforms.blur.value = Math.min(1, Math.max(0, (cam.dist - 18) / 24));
-  renderer.setRenderTarget(rt); renderer.render(scene, camera); renderer.setRenderTarget(null); post.material.uniforms.tD.value = rt.texture; post.material.uniforms.res.value.set(innerWidth, innerHeight); renderer.render(postScene, postCam);
+  if (LITE) renderer.render(scene, camera);
+  else { renderer.setRenderTarget(rt); renderer.render(scene, camera); renderer.setRenderTarget(null); post.material.uniforms.tD.value = rt.texture; post.material.uniforms.res.value.set(innerWidth, innerHeight); renderer.render(postScene, postCam); }
   requestAnimationFrame(loop);
 }
 
@@ -563,6 +570,7 @@ loop();
 function start(D){ const first = D.map == null; const mv = build(D, first ? 0 : D.map); DATA.roadsSaved = [...roads]; ldStarted = true; setTimeout(ldCheck, 50);
   if (first) openMaps(false); else { focusHome(); if (mv) saveLayout(); else send({type: 'room', room: roomAll()}); } }
 addEventListener('message', e => { if (e.origin !== location.origin || !e.data || e.data.src !== 'game') return; const d = e.data;
+  if (d.type === 'pause') { paused = !!d.on; if (!paused) clock.getDelta(); return; }
   if (d.type === 'town' && d.town.name) $('tnm').textContent = d.town.name;
   if (d.type === 'town' && !DATA) { PRICE = d.town.price || {}; setCoins(d.town.coins); start(d.town); }
   else if (d.type === 'town' && d.upd && DATA && d.town.map != null) { const c = Object.assign({}, cam); PRICE = d.town.price || PRICE; setCoins(d.town.coins); build(d.town, d.town.map); DATA.roadsSaved = [...roads]; Object.assign(cam, c); send({type: 'room', room: roomAll()}); }   // 建物の画面からもどったとき：カメラはそのまま
