@@ -49,7 +49,7 @@
   .maps .row button.sel{border-color:#ffd34d;background:rgba(255,211,77,.25)}
   .maps .ok{display:block;width:100%;margin-top:10px;border:0;border-radius:12px;padding:11px;font:inherit;font-weight:900;font-size:15px;color:#3a2a00;background:linear-gradient(#ffe27a,#ffbf1f);box-shadow:0 3px 0 #c98a00;cursor:pointer}
 </style></head><body>
-<div class="bar"><button class="w" id="back">‹ もどる</button><b id="tnm">わたしの街</b><button class="w" id="gr">一覧</button><button id="ag" class="w">📐</button><button id="tm">🕒</button></div>
+<div class="bar"><button class="w" id="back">‹ もどる</button><b id="tnm">わたしの街</b><button id="ag" class="w">📐</button><button id="tm">🕒</button></div>
 <div class="side"><button id="cl" class="claim">受け取る<small id="clv">0</small></button><button id="bd" class="w">建てる</button><button id="ed" class="w">かざる</button><span class="coins" id="cn">0</span></div>
 <div class="hint" id="hint">2本指で広げると全体が見える／建物をタップで育てる／長押しでうごかせる／「建てる」で建物、「かざる」で木や道を置ける</div>
 <div class="pal" id="pal"><p id="palp">置きたいものをえらんで、島をタップ</p><div class="row" id="palrow"></div></div>
@@ -77,7 +77,7 @@ const renderer = new THREE.WebGLRenderer({antialias: false});
 const DPR = Math.min(2, devicePixelRatio || 1);
 renderer.setPixelRatio(DPR); renderer.setSize(innerWidth, innerHeight); document.body.prepend(renderer.domElement);
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(30, innerWidth / innerHeight, 0.5, 500);
+const camera = new THREE.PerspectiveCamera(30, innerWidth / innerHeight, 0.5, 1500);
 // カメラの角度（2026-11-26 本人「角度を変えられる」）：上から45度／ななめ30度／横から18度
 const ANGLES = [{n: '上から', p: Math.PI / 4}, {n: 'ななめ', p: Math.PI / 6}, {n: '横から', p: Math.PI / 10}];
 let angI = (() => { try { return +localStorage.getItem('twistrush.tw3dAng') || 0; } catch (_) { return 0; } })() % 3; let PITCH = ANGLES[angI].p;
@@ -197,26 +197,26 @@ function drawRoads(){
   roadI.count = roadEI.count = n; roadI.instanceMatrix.needsUpdate = roadEI.instanceMatrix.needsUpdate = true;
 }
 // マス目の線（置くときだけ見える）
-const gridM = new THREE.ShaderMaterial({transparent: true, depthWrite: false, uniforms: {on: {value: 0}},
-  vertexShader: 'varying vec2 vP; void main(){ vec4 w = modelMatrix * vec4(position,1.); vP = w.xz; vec4 mv = viewMatrix * w; mv.y -= mv.z*mv.z*0.0012; gl_Position = projectionMatrix * mv; }',
+const gridM = new THREE.ShaderMaterial({transparent: true, depthWrite: false, uniforms: {on: {value: 0}, uBend: BEND},
+  vertexShader: 'uniform float uBend; varying vec2 vP; varying float vD; void main(){ vec4 w = modelMatrix * vec4(position,1.); vP = w.xz; vec4 mv = viewMatrix * w; vD = -mv.z; mv.y -= mv.z*mv.z*uBend; gl_Position = projectionMatrix * mv; }',
   fragmentShader: 'uniform float on; varying vec2 vP; void main(){ vec2 f = abs(fract(vP) - .5); vec2 w = fwidth(vP) * 1.2; float l = 1. - min(smoothstep(.5 - w.x, .5, f.x) + smoothstep(.5 - w.y, .5, f.y), 1.); gl_FragColor = vec4(1., 1., 1., (1. - l) * .32 * on); }'});
 // 置く場所のしるし（緑＝置ける／赤＝置けない）
 const ghostM = bend(new THREE.MeshBasicMaterial({color: 0x4cff7a, transparent: true, opacity: .45, depthWrite: false}));
 const ghost = new THREE.Mesh(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2), ghostM); ghost.visible = false; ghost.renderOrder = 3;
 function showGhost(x, z, w, d, ok){ ghost.visible = true; ghost.scale.set(w, 1, d); ghost.position.set(x + w / 2, GY + .05, z + d / 2); ghostM.color.set(ok ? 0x4cff7a : 0xff4d5a); }
 
-const seaM = new THREE.ShaderMaterial({uniforms: {t: {value: 0}, deep: {value: new THREE.Color(0x2f8fc0)}, shal: {value: new THREE.Color(0x6fd6e8)}, night: {value: 0}, base: {value: 16}, amp: {value: new THREE.Vector4()}, fr: {value: new THREE.Vector4()}, ph: {value: new THREE.Vector4()}},
-  vertexShader: 'varying vec2 vP; void main(){ vec4 w = modelMatrix * vec4(position,1.); vP = w.xz; vec4 mv = viewMatrix * w; mv.y -= mv.z*mv.z*0.0012; gl_Position = projectionMatrix * mv; }',
-  fragmentShader: `uniform float t; uniform vec3 deep, shal; uniform float night, base; uniform vec4 amp, fr, ph; varying vec2 vP;
+const seaM = new THREE.ShaderMaterial({uniforms: {uBend: BEND, fogC: {value: new THREE.Color(0x7fc8e8)}, fogN: {value: 80}, fogF: {value: 200}, t: {value: 0}, deep: {value: new THREE.Color(0x2f8fc0)}, shal: {value: new THREE.Color(0x6fd6e8)}, night: {value: 0}, base: {value: 16}, amp: {value: new THREE.Vector4()}, fr: {value: new THREE.Vector4()}, ph: {value: new THREE.Vector4()}},
+  vertexShader: 'uniform float uBend; varying vec2 vP; varying float vD; void main(){ vec4 w = modelMatrix * vec4(position,1.); vP = w.xz; vec4 mv = viewMatrix * w; vD = -mv.z; mv.y -= mv.z*mv.z*uBend; gl_Position = projectionMatrix * mv; }',
+  fragmentShader: `uniform float t; uniform vec3 deep, shal, fogC; uniform float night, base, fogN, fogF; varying float vD; uniform vec4 amp, fr, ph; varying vec2 vP;
     float R(float a){ return base + amp.x*sin(fr.x*a+ph.x) + amp.y*sin(fr.y*a+ph.y) + amp.z*sin(fr.z*a+ph.z) + amp.w*sin(fr.w*a+ph.w); }
     void main(){ float a = atan(-vP.y, vP.x); float d = length(vP) - (R(a) + 4.0);
       vec3 c = mix(shal, deep, smoothstep(0., 14., d));
       float sp = sin(vP.x*1.7 + t*1.3) * sin(vP.y*2.1 - t*1.1); c += smoothstep(.82, 1., sp) * .22;
       float foam = smoothstep(.9, .0, abs(d - .35 - .25*sin(t*1.5 + a*9.))); c = mix(c, vec3(1.), foam * .75);
-      c *= mix(1., .38, night); gl_FragColor = vec4(c, 1.);
+      c *= mix(1., .38, night); c = mix(c, fogC, smoothstep(fogN, fogF, vD)); gl_FragColor = vec4(c, 1.);
       #include <colorspace_fragment>
     }`});
-const sea = new THREE.Mesh(new THREE.PlaneGeometry(700, 700), seaM); sea.rotation.x = -Math.PI / 2; sea.position.y = -1.0; scene.add(sea);
+const sea = new THREE.Mesh(new THREE.PlaneGeometry(2400, 2400, 160, 160), seaM); sea.rotation.x = -Math.PI / 2; sea.position.y = -1.0; scene.add(sea);
 const hemi = new THREE.HemisphereLight(0xffffff, 0x9fbf80, 1.1); scene.add(hemi);
 const sun = new THREE.DirectionalLight(0xffffff, 1.5); sun.position.set(-10, 20, 12); scene.add(sun);
 
@@ -370,7 +370,12 @@ function loop(){
   const pt = ANGLES[angI].p; if (Math.abs(PITCH - pt) > 1e-4) { PITCH += (pt - PITCH) * Math.min(1, dt * 5); sprites.forEach(s => s.mesh.rotation.x = -PITCH * .35); }
   camera.position.set(cam.tx, Math.sin(PITCH) * cam.dist, cam.tz + Math.cos(PITCH) * cam.dist); camera.lookAt(cam.tx, 0, cam.tz); camera.updateMatrixWorld();
   // 2026-11-28 本人「マップの地平線の位置がおかしい」：低い角度だと島のはし（まっすぐな線）が地平線に見えていた → 角度が低いほど霧を手前にして、はしを空の色にとかす
-  if (scene.fog) { const k = Math.max(0, Math.min(1, (PITCH - Math.PI / 10) / (Math.PI / 4 - Math.PI / 10))); scene.fog.near = cam.dist * (1.1 + .1 * (1 - k)) + 30 * k; scene.fog.far = cam.dist * (3.2 - k) + 90 * k; }
+  //   → 本人「島が斜め、横から見たら宙に浮いてる」：丸く下げる量（BEND）が横からだと強すぎて、海が下に消えて島が空に浮いて見えていた
+  //     角度が低いほど BEND を弱く（横から＝2割）、海を大きく・遠くまで描いて、海にも霧をかける → 水平線は海と空の境目になる
+  { const k = Math.max(0, Math.min(1, (PITCH - Math.PI / 10) / (Math.PI / 4 - Math.PI / 10)));
+    BEND.value = 0.0012 * (.2 + .8 * k);
+    if (scene.fog) { scene.fog.near = cam.dist * 1.1 + 30 + 60 * (1 - k); scene.fog.far = cam.dist * 2.2 + 90 + 260 * (1 - k);
+      seaM.uniforms.fogC.value.copy(scene.fog.color); seaM.uniforms.fogN.value = scene.fog.near; seaM.uniforms.fogF.value = scene.fog.far; } }
   const showTag = cam.dist < 60;
   sprites.forEach(s => { if (!s.tag) return; if (!s.tagE) { s.tagE = document.createElement('div'); s.tagE.className = 'tag' + (s.busy ? ' bld' : ''); s.tagE.textContent = s.tag; document.body.appendChild(s.tagE); }
     s.tagE.style.display = showTag ? '' : 'none'; const [sx, sy] = scr(s.x, GY - .1, s.z + .3); s.tagE.style.left = sx + 'px'; s.tagE.style.top = sy + 'px'; });
@@ -529,7 +534,7 @@ const up = e => { clearTimeout(lpT); if (lp) { pts.delete(e.pointerId); drag = n
 el.addEventListener('pointerup', up); el.addEventListener('pointercancel', e => { clearTimeout(lpT); if (lp) { lpBack(); lp = null; } pts.delete(e.pointerId); pinch = null; drag = null; painted && paintRoad(0, 0, true); });
 el.addEventListener('wheel', e => { e.preventDefault(); cam.dist = Math.max(ZMIN, Math.min(ZMAX, cam.dist * (e.deltaY > 0 ? 1.1 : .9))); }, {passive: false});
 $('back').onclick = () => send({type: 'close'});
-$('gr').onclick = () => send({type: 'grid'});
+// 一覧ボタンはなくした（2026-11-28 本人「一覧いらなくない？見てもよくわからんし」）
 $('cl').onclick = () => send({type: 'claim'});
 loop();
 
