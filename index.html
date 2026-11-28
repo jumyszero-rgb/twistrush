@@ -798,6 +798,8 @@ body.on-menu .battlemain{opacity:0;}
   .tana button{border:0;border-radius:7px;padding:4px 2px;width:100%;font:inherit;font-weight:800;font-size:10.5px;background:#ffd34d;color:#3a2a00} .tana button .ic{width:12px;height:12px} .tana .sold{opacity:.45} .tana button:disabled{opacity:.6}
   .tpet{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin:8px 0 2px;font-size:12.5px} .tpet>b{margin-right:4px} .tpet button{border:2px solid rgba(255,255,255,.25);border-radius:10px;padding:4px 8px;font:inherit;font-size:12px;font-weight:800;background:rgba(255,255,255,.08);color:#fff}
   .tpet button.on{border-color:#ffd34d;background:rgba(255,211,77,.25)} .tpet .ic{width:22px;height:22px} .tpet small{display:block;font-size:10px;font-weight:700;opacity:.85}
+  .rentl{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px} .rentl>div{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px;border-radius:10px;background:rgba(255,255,255,.07);text-align:center;font-size:12px}
+  .rentl small{font-size:10.5px;opacity:.85;line-height:1.4} .rentl button,.trs>button{border:0;border-radius:8px;padding:5px 8px;font:inherit;font-weight:800;font-size:12px;background:#ffd34d;color:#3a2a00} .rentl button:disabled{opacity:.4} .rentl .ic{width:14px;height:14px}
   .ofadv{margin:0;padding-left:20px;font-size:13px;line-height:1.7} .ofadv li{margin-bottom:6px} .ofgo{display:block;width:100%;margin-top:10px;border:0;border-radius:12px;padding:11px;font:inherit;font-weight:900;font-size:15px;color:#3a2a00;background:linear-gradient(#ffe27a,#ffbf1f)}
   .ofst{display:grid;grid-template-columns:1fr 1fr;gap:6px} .ofst div{background:rgba(255,255,255,.08);border-radius:10px;padding:7px 9px} .ofst span{display:block;font-size:11px;opacity:.8} .ofst b{font-size:15px}
   .ofh{margin:12px 0 6px;font-size:13px} .oflist div{display:flex;gap:8px;align-items:center;padding:5px 2px;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px} .oflist i{font-style:normal} .oflist span{margin-left:auto;font-size:12px;opacity:.85}
@@ -8078,7 +8080,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.355';
+  const APP_VER = '0.9.356';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -10084,7 +10086,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   const LR_TIER = {};                                          // 例：LR_TIER['x_g99'] = 3（LR3）
   const tierOf = id => (CHAR_STAT[id] && CHAR_STAT[id].grade === 'LR') ? (LR_TIER[id] || CHAR_STAT[id].tier || 0) : 0;
   const lvMaxOf = u => (LV_MAX[CHAR_STAT[u.id].grade] || 50) + 10 * tierOf(u.id) + EVO2_LV[evoOf(u)];
-  const capOf = u => Math.min(lvMaxOf(u), 10 + 10 * (u.star || 0));
+  const capOf = u => u.rent ? u.lv : Math.min(lvMaxOf(u), 10 + 10 * (u.star || 0));   // 借りたキャラは成長しない
   const starMaxOf = u => (STAR_MAX[CHAR_STAT[u.id].grade] || 4) + tierOf(u.id) + EVO2_STAR[evoOf(u)];
   const starsHTMLu = u => { let h = ''; for (let k = 0; k < starMaxOf(u); k++) h += k < (u.star || 0) ? '★' : '☆'; return '<span class="ustar">' + h + '</span>'; };
   const expNeed = lv => Math.round(20 * Math.pow(lv, 1.6));   // 次のレベルまでに必要な経験値
@@ -10104,7 +10106,11 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     saveUnits();
   }
   units = units.filter(u => CHAR_STAT[u.id]);
-  const unitOf = uid => units.find(u => u.u === uid) || null;
+  // 借りたキャラ（酒場・2026-11-28）：units には入れない。チームには入れられる。成長しない・登録したときのステータス（rs）で固定・24時間
+  let rentU = loadJ('rentu', []); if (!Array.isArray(rentU)) rentU = [];
+  const rentPrune = () => { const n = rentU.length; rentU = rentU.filter(r => r && r.rent && r.rent.until > Date.now()); if (rentU.length !== n) save('rentu', JSON.stringify(rentU)); };
+  rentPrune();
+  const unitOf = uid => units.find(u => u.u === uid) || (uid && uid[0] === 'R' ? (rentPrune(), rentU.find(u => u.u === uid)) : null) || null;
   const ALLC_IDX = new Map(ALLC.map((c, i) => [c.id, i]));
   const ciOf = u => ALLC_IDX.has(u.id) ? ALLC_IDX.get(u.id) : -1;
   // ストーリーでボスを倒すと、そのキャラが1体もらえる（1人1回）
@@ -10153,7 +10159,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       return b + add;
     });
   }
-  const unitStats = u => { const b = statsOf(ciOf(u), u.lv, evoOf(u)).map((v, k) => v + ((u.tr && u.tr[k]) | 0)); /* 試練場の＋（2026-11-26） */ try { const w = gearBonus(u), pc = eqPctOf(eqItemsOf(u), u); return b.map((v, k) => Math.round((v + w[k]) * (1 + pc[k] / 100))); } catch(_) { return b; } };
+  const unitStats = u => { if (u.rs) return u.rs.slice(); const b = statsOf(ciOf(u), u.lv, evoOf(u)).map((v, k) => v + ((u.tr && u.tr[k]) | 0)); /* 試練場の＋（2026-11-26） */ try { const w = gearBonus(u), pc = eqPctOf(eqItemsOf(u), u); return b.map((v, k) => Math.round((v + w[k]) * (1 + pc[k] / 100))); } catch(_) { return b; } };
   // ---- チーム（1人目がメイン）。4つまで保存して切りかえられる ----
   let teams = loadJ('teams', null), teamNo = +load('teamno', '0') || 0;
   if (!Array.isArray(teams) || teams.length !== 4) teams = [0, 1, 2, 3].map(() => [null, null, null, null]);   // 最初は空。自分で選んで入れる
@@ -11694,7 +11700,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     house:  {n: '民家', i: '🏘', apt: 'cha', d: '住める人がふえる（1レベルで20人）。人口がふえるのは民家だけ', pop: 20},
     farm:   {n: '農場', i: '🌾', apt: 'pow', d: '食べものを作る。食べものが足りないと人が出ていく（1レベルで25人分）', food: 25},
     shop:   {n: '商店', i: '🏪', apt: 'biz', d: 'もうけ（街コイン）が入る。「今日の5タナ」でシルバーの買い物ができる（ここだけの品も）', silver: 60},
-    tavern: {n: '酒場', i: '🍺', apt: 'cha', d: 'もうけ（街コイン）が少し入る。キャラの貸し借りは準備中', silver: 30},
+    tavern: {n: '酒場', i: '🍺', apt: 'cha', d: 'もうけ（街コイン）が少し入る。ほかの人とキャラの貸し借りができる（ログインがいる）', silver: 30},
     lumber: {n: '伐採所', i: '🪓', apt: 'pow', d: '木材が取れる（Lvでグレードが上がる）', raw: 'wood'},
     quarry: {n: '採石場', i: '⛏', apt: 'pow', d: '石材が取れる（Lvでグレードが上がる）', raw: 'stone'},
     iron:   {n: '製鉄所', i: '🔥', apt: 'tec', d: '金属が取れる（Lvでグレードが上がる）', raw: 'metal'},
@@ -12067,6 +12073,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       if (x.b === 'petshop' && lvNow(x) >= 1) h += petHTML(lvNow(x));
       if (x.b === 'casino' && lvNow(x) >= 1) h += casGamesHTML(lvNow(x)) + casinoHTML(lvNow(x));
       if (x.b === 'shop' && lvNow(x) >= 1) h += shopHTML();
+      if (x.b === 'tavern' && lvNow(x) >= 1) h += rentHTML(lvNow(x));
       if (x.b === 'alchemy' && lvNow(x) >= 1) h += alcHTML(lvNow(x));
       if (townPick != null) {
         const list = units.filter(u => !cs.has(u.u)).map(u => ({u, v: aptOf(u, b.apt)})).sort((a, c) => c.v - a.v).slice(0, 40);
@@ -12196,6 +12203,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if ((t = q('data-petfeed'))) { const pt = PETS.find(p => p.k === t.dataset.petfeed), lv = town.pets && town.pets[pt.k]; if (!lv || lv >= PET_MAX || (town.meat || 0) < petMeat(lv)) return;
       townClaimQuiet(); useMeat(petMeat(lv)); town.pets[pt.k] = lv + 1; saveTown(); toast(pt.n + ' が Lv' + (lv + 1) + ' になった！'); drawTown(); return; }
     if ((t = q('data-spin'))) { casinoSpin(lvNow(x)); return; }
+    if ((t = q('data-rent'))) { const [a, ...v] = t.dataset.rent.split(':'); rentDo(a, v.join(':'), lvNow(x)); return; }
     if ((t = q('data-casbet'))) { casBet = +t.dataset.casbet; drawTown(); return; }
     if ((t = q('data-casslot'))) { casSlotGo(lvNow(x)); return; }
     if ((t = q('data-cashl'))) { casHLGo(lvNow(x), t.dataset.cashl); return; }
@@ -12293,6 +12301,49 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       '<b>' + shopLabel(o.k) + (o.n > 1 ? ' ×' + o.n : '') + '</b>' + (o.only ? '<em>ここだけ</em>' : '') + '<button data-tana="' + i + '"' + (o.sold || coins < o.p ? ' disabled' : '') + '>' + (o.sold ? '売り切れ' : ic('silver') + o.p.toLocaleString()) + '</button></div>').join('') + '</div>' +
       '<button class="twbuy" data-tanare="1">' + ic('gold') + '20 ですぐ並べかえる</button>'; }
   function shopBuy(i){ const o = town.shop && town.shop.it[i]; if (!o || o.sold || coins < o.p) return; addCoins(-o.p); giveItem(o.k, o.n); o.sold = true; saveTown(); refreshCoins(); toast(shopLabel(o.k) + ' ×' + o.n + ' を買いました'); drawTown(); }
+  // ===== 酒場の貸し借り（2026-11-28 本人「強さによって必要な街コインが必要。貸し出ししてても自分でも使える。使ってもらった回数に応じて経験値ポッド。
+  //   借りたものはチームに編成可能。成長はしない。貸し出し登録した時のステータスが有効」）
+  //   貸す枠＝酒場のLv（3まで）。借りられる数＝同時に1人（Lv3で2人・Lv5で3人）・24時間。借りるのに街コイン＝(200＋強さ÷2)。1回使ってもらうと経験値ポット小1つ
+  let rentData = null, rentBusy = false, rentPickSlot = -1;
+  const rentCost = pow => Math.round((200 + pow / 2) / 10) * 10, rentMax = L => 1 + Math.floor((L - 1) / 2);
+  async function rentLoad(){ if (rentBusy || !rankTok()) return; rentBusy = true; try { rentData = await api('/api/rent', {tok: rankTok()}); } catch (e) { rentData = {err: 'サーバーにつながりませんでした'}; } rentBusy = false; drawTown(); }
+  function rentHTML(L){
+    if (!rankTok()) return '<h5>🍺 キャラの貸し借り</h5><p class="twd">ログインすると、ほかの人とキャラの貸し借りができます</p>';
+    if (!rentData) { setTimeout(rentLoad, 0); return '<h5>🍺 キャラの貸し借り</h5><p class="twd">読みこみ中…</p>'; }
+    if (rentData.err) return '<h5>🍺 キャラの貸し借り</h5><p class="twd">' + rentData.err + ' <button class="twmini" data-rent="reload">もう一度</button></p>';
+    rentPrune(); const now = Date.now(), mx = rentMax(L);
+    let h = '<h5>🍺 借りているキャラ ' + rentU.length + ' / ' + mx + ' <small>24時間・成長しない・チームに入れられる</small></h5><div class="trn">' +
+      (rentU.length ? rentU.map(u => '<div class="trs"><span class="tic" data-ci="' + ciOf(u) + '"></span><div><b>' + fullName(ALLC[ciOf(u)]) + '</b><small>LV' + u.lv + (u.star ? ' ★' + u.star : '') + '・' + esc2(u.rent.name || '？') + 'さんから</small><small>あと' + fmtLeft(u.rent.until - now) + '</small></div>' +
+        (curTeam().includes(u.u) ? '<small>チーム' + (teamNo + 1) + 'に入っている</small>' : '<button data-rent="team:' + u.u + '">チーム' + (teamNo + 1) + 'に入れる</button>') + '</div>').join('') : '<p class="twd">まだ借りていません</p>') + '</div>';
+    h += '<h5>借りる <small>今日 ' + (rentData.today || 0) + ' / ' + rentData.dayMax + '回・同じキャラは1日1回</small></h5><div class="rentl">' + ((rentData.list || []).length ? rentData.list.map(r => { const ci = ALLC_IDX.get(r.cid); if (ci == null) return '';
+        const c = rentCost(r.pow), used = (rentData.used || []).includes(r.rid), dis = used || rentU.length >= mx || tcN() < c || (rentData.today || 0) >= rentData.dayMax;
+        return '<div><span class="tic" data-ci="' + ci + '"></span><b>' + fullName(ALLC[ci]) + '</b><small>LV' + r.lv + (r.star ? ' ★' + r.star : '') + '・強さ ' + r.pow.toLocaleString() + '<br>' + esc2(r.name || '？') + 'さん</small><button data-rent="use:' + r.rid + '"' + (dis ? ' disabled' : '') + '>' + (used ? '借りた' : ic('tc') + c.toLocaleString()) + '</button></div>'; }).join('')
+      : '<p class="twd">まだ貸している人がいません</p>') + '</div><button class="twmini" data-rent="reload">ほかの人を見る</button>';
+    const mine = rentData.mine || [], unpaid = mine.reduce((a, r) => a + (r.unpaid || 0), 0), slots = Math.min(3, L);
+    h += '<h5>貸す ' + mine.length + ' / ' + slots + ' <small>貸していても自分で使える・登録したときの強さで貸す・使ってもらうと経験値ポット</small></h5><div class="trn">';
+    for (let k = 0; k < slots; k++) { const r = mine.find(m => m.slot === k), ci = r ? ALLC_IDX.get(r.cid) : null;
+      h += '<div class="trs">' + (r && ci != null ? '<span class="tic" data-ci="' + ci + '"></span><div><b>' + fullName(ALLC[ci]) + '</b><small>LV' + r.lv + (r.star ? ' ★' + r.star : '') + '・強さ ' + r.pow.toLocaleString() + '</small><small>使ってもらった ' + r.uses + '回</small></div><button data-rent="pick:' + k + '">入れかえ</button><button class="twmini" data-rent="del:' + k + '">やめる</button>'
+        : '<div><small>あいている枠</small></div><button data-rent="pick:' + k + '">＋ 貸す</button>') + '</div>'; }
+    h += '</div>' + (unpaid ? '<button class="casgo" data-rent="claim">' + ic('box') + ' 経験値ポット小 ×' + unpaid + ' を受け取る</button>' : '');
+    if (rentPickSlot >= 0) { const list = units.filter(u => CHAR_STAT[u.id]).sort((a, b) => statPow(unitStats(b)) - statPow(unitStats(a))).slice(0, 30);
+      h += '<p class="twd">貸すキャラを選んでね（いまの強さで登録されます）<button class="twmini" data-rent="pick:-1">やめる</button></p><div class="twpick">' + list.map(u => '<button data-rent="put:' + u.u + '"><span class="tic" data-ci="' + ciOf(u) + '"></span><b>' + evoName(u) + '</b><small>LV' + u.lv + '・強さ ' + statPow(unitStats(u)).toLocaleString() + '</small></button>').join('') + '</div>'; }
+    return h; }
+  const esc2 = t => String(t).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'})[c]);
+  async function rentDo(a, v, L){
+    const post = (p, b) => api('/api/rent/' + p, {tok: rankTok(), method: 'POST', body: JSON.stringify(b)});
+    if (a === 'reload') { rentData = null; return drawTown(); }
+    if (a === 'pick') { rentPickSlot = +v; return drawTown(); }
+    if (a === 'team') { fixTeam(); const t = teams[teamNo]; let k = t.indexOf(null); if (k < 0) k = 3; t[k] = v; save('teams', JSON.stringify(teams)); fixTeam(); toast('チーム' + (teamNo + 1) + 'に入れました'); return drawTown(); }
+    try {
+      if (a === 'put') { const u = unitOf(v); if (!u) return; const r = await post('put', {slot: rentPickSlot, cid: u.id, lv: u.lv, star: u.star || 0, evo: evoOf(u), st: unitStats(u)}); if (r.error) return toast(r.error); rentPickSlot = -1; toast(evoName(u) + 'を貸し出しました'); return rentLoad(); }
+      if (a === 'del') { const r = await post('del', {slot: +v}); if (r.error) return toast(r.error); toast('貸すのをやめました'); return rentLoad(); }
+      if (a === 'claim') { const r = await post('claim', {}); if (r.error) return toast(r.error); if (r.n) { giveItem('pot_N', r.n); toast('経験値ポット小 ×' + r.n + ' を受け取りました'); } return rentLoad(); }
+      if (a === 'use') { const row = (rentData.list || []).find(r => r.rid === v); if (!row) return; const c = rentCost(row.pow); if (tcN() < c) return toast('街コインが足りません'); if (rentU.length >= rentMax(L)) return toast('いまは' + rentMax(L) + '人まで借りられます');
+        const r = await post('use', {rid: v}); if (r.error) return toast(r.error); const w = r.unit; addTc(-c);
+        rentU.push({u: 'R' + w.rid, id: w.cid, lv: w.lv, star: w.star, evo: w.evo, exp: 0, rs: w.st, rent: {rid: w.rid, name: w.name, until: Date.now() + 864e5}}); save('rentu', JSON.stringify(rentU));
+        toast(fullName(ALLC[ALLC_IDX.get(w.cid)]) + 'を借りました（24時間）'); return rentLoad(); }
+    } catch (e) { toast(e.message || 'サーバーにつながりませんでした'); }
+  }
   function casinoHTML(L){
     const today = dmKey(), used = town.spin && town.spin.day === today ? town.spin.n : 0, left = Math.max(0, L - used);
     return '<h5>🎡 ルーレット <small>きょうはあと' + left + '回（毎日0時にもどる）</small></h5><div class="twspin"><div class="wheel" id="twWheel">🎡</div><button data-spin="1"' + (left ? '' : ' disabled') + '>回す</button></div>' +
@@ -13259,7 +13310,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       '<span>' + (page + 1) + ' / ' + n + '</span><button data-pg="' + key + ':' + (page + 1) + '"' + (page >= n - 1 ? ' disabled' : '') + '>›</button><button data-pg="' + key + ':' + (n - 1) + '"' + (page >= n - 1 ? ' disabled' : '') + '>»</button></div>';
   }
   function openBox(tab, pick){ audio(); if (tab) boxTab = tab; boxPick = pick || null; boxPage = 0; boxSel = null; boxSlot = -1; boxPut = null; boxDetail = null; $('box').classList.remove('hidden'); drawBox(); }
-  const openDetail = (uid, tab) => { boxDetail = uid; detTab = tab || 'info'; matPage = 0; matF = 'all'; feedSel.clear(); lbSel.clear(); boxSel = null; boxSlot = -1; drawBox(); $('boxBody').scrollTop = 0; };
+  const openDetail = (uid, tab) => { { const ru = unitOf(uid); if (ru && ru.rent) { toast('借りているキャラ（' + (ru.rent.name || '？') + 'さんから・成長しない）'); return; } } boxDetail = uid; detTab = tab || 'info'; matPage = 0; matF = 'all'; feedSel.clear(); lbSel.clear(); boxSel = null; boxSlot = -1; drawBox(); $('boxBody').scrollTop = 0; };
   function drawBox(){
     // 2026-11-15：アイテムのタブを描き直すと、中に入れていた「持っていくアイテム」の枠ごと消えて、タブが押せなくなっていた → 先に元の場所へ戻す
     { const lo0 = $('loadout'); if (lo0 && $('boxBody').contains(lo0)) { lo0.classList.remove('inbox'); $('teamBox').after(lo0); } }
