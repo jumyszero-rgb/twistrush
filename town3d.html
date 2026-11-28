@@ -228,7 +228,7 @@ function addBld(i, p){
 // 管理事務所（2026-11-27）：3×3・島に1つ・なくせない。タップで管理人のところへ
 let office = null;
 function addOffice(x, z){ const s = 3, o = {kind: 'ofc', cx: x, cz: z, w: s, d: s};
-  o.spr = billboard('img/town3d/office.webp', x + s / 2, z + s * .78, s * 1.5, {sw: .62, kind: 'bld', plot: 'office'}); o.spr.tag = '🏢 管理事務所'; o.spr.o = o;
+  o.spr = billboard('img/town3d/office.webp', x + s / 2, z + s * .78, s * 1.5, {sw: .62, kind: 'bld', plot: 'office'}); o.spr.tag = '管理事務所'; o.spr.o = o;
   claim(o); office = o; return o; }
 function delOffice(){ if (!office) return; unclaim(office); unbill(office.spr); office = null; }
 function delBld(o){ unclaim(o); unbill(o.spr); blds.splice(blds.indexOf(o), 1); }
@@ -544,6 +544,7 @@ function start(D){ const first = D.map == null; const mv = build(D, first ? 0 : 
 addEventListener('message', e => { if (e.origin !== location.origin || !e.data || e.data.src !== 'game') return; const d = e.data;
   if (d.type === 'town' && d.town.name) $('tnm').textContent = d.town.name;
   if (d.type === 'town' && !DATA) { PRICE = d.town.price || {}; setCoins(d.town.coins); start(d.town); }
+  else if (d.type === 'town' && d.upd && DATA && d.town.map != null) { const c = Object.assign({}, cam); PRICE = d.town.price || PRICE; setCoins(d.town.coins); build(d.town, d.town.map); DATA.roadsSaved = [...roads]; Object.assign(cam, c); send({type: 'room', room: roomAll()}); }   // 建物の画面からもどったとき：カメラはそのまま
   if (d.type === 'hud') { const h = d.hud; $('clv').innerHTML = IC('silver') + h.silver.toLocaleString() + (h.n ? '・' + IC('box') + h.n : h.mats ? '・' + IC('xp') : ''); $('cl').classList.toggle('dot', h.silver > 0 || h.mats); setCoins(h.coins); }
   if (d.type === 'openBuild' && DATA && !$('maps').classList.contains('on')) openBuild();
   if (d.type === 'got') { const e = $('got'); e.innerHTML = d.list.length ? '<b>受け取りました</b>' + d.list.map(g => '<div>' + esc(g) + '</div>').join('') : '<b>まだたまっていません</b>'; e.classList.add('on'); clearTimeout(e.k); e.k = setTimeout(() => e.classList.remove('on'), 2600 + d.list.length * 700); }
