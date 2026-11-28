@@ -823,7 +823,7 @@ body.on-menu .battlemain{opacity:0;}
   .tana button{border:0;border-radius:7px;padding:4px 2px;width:100%;font:inherit;font-weight:800;font-size:10.5px;background:#ffd34d;color:#3a2a00} .tana button .ic{width:12px;height:12px} .tana .sold{opacity:.45} .tana button:disabled{opacity:.6}
   .tpet{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin:8px 0 2px;font-size:12.5px} .tpet>b{margin-right:4px} .tpet button{border:2px solid rgba(255,255,255,.25);border-radius:10px;padding:4px 8px;font:inherit;font-size:12px;font-weight:800;background:rgba(255,255,255,.08);color:#fff}
   .tpet button.on{border-color:#ffd34d;background:rgba(255,211,77,.25)} .tpet .ic{width:22px;height:22px} .tpet small{display:block;font-size:10px;font-weight:700;opacity:.85}
-  .rentl{display:flex;flex-direction:column;gap:5px;margin-bottom:6px;max-height:380px;overflow-y:auto;-webkit-overflow-scrolling:touch} .rentl>div{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:10px;background:rgba(255,255,255,.07);font-size:12px;flex:none} .rentl>div>p{flex:1;margin:0;min-width:0;display:flex;flex-direction:column} .rentl>div>p b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis} .rents{display:flex;flex-wrap:wrap;gap:5px;margin:2px 0 6px} .rents button{border:0;border-radius:999px;padding:4px 10px;font:inherit;font-size:11.5px;font-weight:800;background:rgba(255,255,255,.12);color:#fff} .rents button.on{background:#ffd34d;color:#3a2a00} .rents .rld{margin-left:auto}
+  .rentl{display:flex;flex-direction:column;gap:5px;margin-bottom:6px;max-height:380px;overflow-y:auto;-webkit-overflow-scrolling:touch} .rentl>div{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:10px;background:rgba(255,255,255,.07);font-size:12px;flex:none} .rentl>div>p{flex:1;margin:0;min-width:0;display:flex;flex-direction:column} .rentl>div>p b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis} .rents{display:flex;flex-wrap:wrap;gap:5px;margin:2px 0 6px} .rents button{border:0;border-radius:999px;padding:4px 10px;font:inherit;font-size:11.5px;font-weight:800;background:rgba(255,255,255,.12);color:#fff} .rents button.on{background:#ffd34d;color:#3a2a00} .rents .rld{margin-left:auto} .rentf{display:flex;flex-direction:column;gap:6px;padding:8px;margin:0 0 6px;border-radius:10px;background:rgba(0,0,0,.25);font-size:12px} .rentf>div{display:flex;flex-wrap:wrap;align-items:center;gap:4px} .rentf b{width:4.2em;flex:none;font-size:11.5px;opacity:.9} .rentf button{border:0;border-radius:999px;padding:3px 9px;font:inherit;font-size:11.5px;font-weight:800;background:rgba(255,255,255,.12);color:#fff} .rentf button.on{background:#ffd34d;color:#3a2a00} .rentf .rld{margin-left:auto;background:rgba(255,90,120,.3)} .rentf input{width:4.2em;padding:4px 6px;border-radius:8px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);color:#fff;font:inherit;font-size:13px} .rentf small{opacity:.7;font-size:10.5px}
   .rentl small{font-size:10.5px;opacity:.85;line-height:1.4} .rentl button,.trs>button{border:0;border-radius:8px;padding:5px 8px;font:inherit;font-weight:800;font-size:12px;background:#ffd34d;color:#3a2a00} .rentl button:disabled{opacity:.4} .rentl .ic{width:14px;height:14px}
   .bcaps{display:flex;flex-direction:column;gap:5px} .bcap{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-radius:10px;background:rgba(255,255,255,.06);font-size:13px}
   .bcap b{margin-left:6px} .bcap b.full{color:#ff8a8a} .bcap button{border:0;border-radius:8px;padding:4px 10px;font:inherit;font-weight:800;font-size:12px;background:#ffd34d;color:#3a2a00} .bcap button small{margin-left:4px} .bcap button img{width:13px;height:13px;vertical-align:-2px}
@@ -8114,7 +8114,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.375';
+  const APP_VER = '0.9.376';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -12236,6 +12236,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   function openTown(){ if (TOWN_ART) { open3DTown(); return; } townSel = -1; townPick = null; $('town').classList.remove('p3d'); drawTown(); $('town').classList.remove('hidden'); }
   $('townBtn').addEventListener('click', openTown);
   $('townBack').addEventListener('click', () => { $('town').classList.add('hidden'); if (TOWN_ART) { $('town').classList.remove('p3d'); open3DTown(); } });   // 3Dから来たときは3Dへもどる
+  $('townBody').addEventListener('change', e => { const t = e.target.closest('[data-rentlv]'); if (!t) return; const v = t.value === '' ? '' : String(Math.max(1, Math.min(200, Math.floor(+t.value) || 1))); rentF[t.dataset.rentlv] = v; drawTown(); });
   $('townBody').addEventListener('click', e => {
     const q = (a) => e.target.closest('[' + a + ']'), now = Date.now();
     let t;
@@ -12439,7 +12440,27 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   let rentData = null, rentBusy = false, rentPickSlot = -1;
   const rentCost = pow => Math.round((200 + pow / 2) / 10) * 10, rentMax = L => 1 + Math.floor((L - 1) / 2);
   async function rentLoad(){ if (rentBusy || !rankTok()) return; rentBusy = true; try { rentData = await api('/api/rent', {tok: rankTok()}); } catch (e) { rentData = {err: 'サーバーにつながりませんでした'}; } rentBusy = false; drawTown(); }
-  let rentSort = 'pow', rentOnly = false;
+  // 2026-11-28 本人「レベル○以上・○以下、属性、タイプ、とか。and or検索付き。あとレベル順、グレード順」
+  //   同じ項目の中で複数えらぶと「どれか」、項目どうしは「すべて満たす（AND）」か「どれか満たす（OR）」を切りかえ
+  let rentSort = 'pow', rentOnly = false, rentFOpen = false;
+  const rentF = {lmin: '', lmax: '', at: new Set(), ty: new Set(), gr: new Set(), mode: 'and'};
+  const rentFN = () => (rentF.lmin !== '' || rentF.lmax !== '' ? 1 : 0) + (rentF.at.size ? 1 : 0) + (rentF.ty.size ? 1 : 0) + (rentF.gr.size ? 1 : 0);
+  function rentFOk(r){
+    const cs = CHAR_STAT[r.cid] || {}, c = [];
+    if (rentF.lmin !== '' || rentF.lmax !== '') c.push((rentF.lmin === '' || r.lv >= +rentF.lmin) && (rentF.lmax === '' || r.lv <= +rentF.lmax));
+    if (rentF.at.size) c.push(rentF.at.has(attrOf(r.cid)));
+    if (rentF.ty.size) c.push(rentF.ty.has(cs.type));
+    if (rentF.gr.size) c.push(rentF.gr.has(cs.grade));
+    return !c.length || (rentF.mode === 'or' ? c.some(Boolean) : c.every(Boolean)); }
+  function rentFHTML(){
+    const chip = (k, v, n, on) => '<button data-rent="f' + k + ':' + v + '"' + (on ? ' class="on"' : '') + '>' + n + '</button>';
+    return '<div class="rentf">' +
+      '<div><b>レベル</b><input type="number" inputmode="numeric" min="1" max="200" placeholder="下限" data-rentlv="lmin" value="' + rentF.lmin + '"><span>以上</span><input type="number" inputmode="numeric" min="1" max="200" placeholder="上限" data-rentlv="lmax" value="' + rentF.lmax + '"><span>以下</span></div>' +
+      '<div><b>属性</b>' + Object.keys(ATTR).map(k => chip('at', k, ATTR[k].n, rentF.at.has(k))).join('') + '</div>' +
+      '<div><b>タイプ</b>' + Object.keys(TYPE_INFO).map(k => chip('ty', k, TYPE_INFO[k].name, rentF.ty.has(k))).join('') + '</div>' +
+      '<div><b>グレード</b>' + Object.keys(GT).map(k => chip('gr', k, k, rentF.gr.has(k))).join('') + '</div>' +
+      '<div><b>条件</b>' + chip('mode', 'and', 'すべて満たす（AND）', rentF.mode === 'and') + chip('mode', 'or', 'どれか満たす（OR）', rentF.mode === 'or') + '<button data-rent="fclear:1" class="rld">条件をクリア</button></div>' +
+      '<small>同じ項目の中で複数えらぶと「どれか」になります</small></div>'; }
   function rentHTML(L){
     if (!rankTok()) return '<h5>' + ic('tavern') + ' キャラの貸し借り</h5><p class="twd">ログインすると、ほかの人とキャラの貸し借りができます</p>';
     if (!rentData) { setTimeout(rentLoad, 0); return '<h5>' + ic('tavern') + ' キャラの貸し借り</h5><p class="twd">読みこみ中…</p>'; }
@@ -12449,11 +12470,12 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       (rentU.length ? rentU.map(u => '<div class="trs"><span class="tic" data-ci="' + ciOf(u) + '"></span><div><b>' + fullName(ALLC[ciOf(u)]) + '</b><small>LV' + u.lv + (u.star ? ' ★' + u.star : '') + '・' + esc2(u.rent.name || '？') + 'さんから</small><small>あと' + fmtLeft(u.rent.until - now) + '</small></div>' +
         (curTeam().includes(u.u) ? '<small>チーム' + (teamNo + 1) + 'に入っている</small>' : '<button data-rent="team:' + u.u + '">チーム' + (teamNo + 1) + 'に入れる</button>') + '</div>').join('') : '<p class="twd">まだ借りていません</p>') + '</div>';
     // 2026-11-28 本人「借りるキャラは一覧で出そうね。いちいち他の人ってみるのめんどい」：全部を一覧にして、並べかえ・しぼりこみ
-    const RS = [['pow', '強い順'], ['cost', '安い順'], ['new', '新着順']], canUse = r => !(rentData.used || []).includes(r.rid) && rentU.length < mx && tcN() >= rentCost(r.pow) && (rentData.today || 0) < rentData.dayMax;
-    let rl = (rentData.list || []).filter(r => ALLC_IDX.get(r.cid) != null && (!rentOnly || canUse(r)));
-    rl = rl.sort(rentSort === 'cost' ? (a, b) => a.pow - b.pow : rentSort === 'new' ? (a, b) => (b.at || 0) - (a.at || 0) : (a, b) => b.pow - a.pow);
-    h += '<h5>借りる <small>今日 ' + (rentData.today || 0) + ' / ' + rentData.dayMax + '回・同じキャラは1日1回・' + (rentData.list || []).length + '人</small></h5>' +
-      '<div class="rents">' + RS.map(([k, n]) => '<button data-rent="sort:' + k + '"' + (rentSort === k ? ' class="on"' : '') + '>' + n + '</button>').join('') + '<button data-rent="only"' + (rentOnly ? ' class="on"' : '') + '>借りられるものだけ</button><button data-rent="reload" class="rld">更新</button></div>' +
+    const RS = [['pow', '強い順'], ['cost', '安い順'], ['lv', 'レベル順'], ['grade', 'グレード順'], ['new', '新着順']], canUse = r => !(rentData.used || []).includes(r.rid) && rentU.length < mx && tcN() >= rentCost(r.pow) && (rentData.today || 0) < rentData.dayMax;
+    let rl = (rentData.list || []).filter(r => ALLC_IDX.get(r.cid) != null && (!rentOnly || canUse(r)) && rentFOk(r));
+    const grOf = r => GT[(CHAR_STAT[r.cid] || {}).grade] || 0;
+    rl = rl.sort(rentSort === 'cost' ? (a, b) => a.pow - b.pow : rentSort === 'new' ? (a, b) => (b.at || 0) - (a.at || 0) : rentSort === 'lv' ? (a, b) => b.lv - a.lv || b.pow - a.pow : rentSort === 'grade' ? (a, b) => grOf(b) - grOf(a) || b.pow - a.pow : (a, b) => b.pow - a.pow);
+    h += '<h5>借りる <small>今日 ' + (rentData.today || 0) + ' / ' + rentData.dayMax + '回・同じキャラは1日1回・' + (rentData.list || []).length + '人' + (rl.length !== (rentData.list || []).length ? '（表示 ' + rl.length + '人）' : '') + '</small></h5>' +
+      '<div class="rents">' + RS.map(([k, n]) => '<button data-rent="sort:' + k + '"' + (rentSort === k ? ' class="on"' : '') + '>' + n + '</button>').join('') + '<button data-rent="only"' + (rentOnly ? ' class="on"' : '') + '>借りられるものだけ</button><button data-rent="fopen"' + (rentFOpen || rentFN() ? ' class="on"' : '') + '>しぼりこみ' + (rentFN() ? '（' + rentFN() + '）' : '') + (rentFOpen ? ' ▲' : ' ▼') + '</button><button data-rent="reload" class="rld">更新</button></div>' + (rentFOpen ? rentFHTML() : '') +
       '<div class="rentl">' + (rl.length ? rl.map(r => { const ci = ALLC_IDX.get(r.cid), c = rentCost(r.pow), used = (rentData.used || []).includes(r.rid), dis = !canUse(r);
         return '<div><span class="tic" data-ci="' + ci + '"></span><p><b>' + fullName(ALLC[ci]) + '</b><small>LV' + r.lv + (r.star ? ' ★' + r.star : '') + '・強さ ' + r.pow.toLocaleString() + '・' + esc2(r.name || '？') + 'さん</small></p><button data-rent="use:' + r.rid + '"' + (dis ? ' disabled' : '') + '>' + (used ? '借りた' : ic('tc') + c.toLocaleString()) + '</button></div>'; }).join('')
       : '<p class="twd">' + ((rentData.list || []).length ? '条件に合うキャラがいません' : 'まだ貸している人がいません') + '</p>') + '</div>';
@@ -12472,6 +12494,10 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (a === 'reload') { rentData = null; return drawTown(); }
     if (a === 'sort') { rentSort = v; return drawTown(); }
     if (a === 'only') { rentOnly = !rentOnly; return drawTown(); }
+    if (a === 'fopen') { rentFOpen = !rentFOpen; return drawTown(); }
+    if (a === 'fat' || a === 'fty' || a === 'fgr') { const S = rentF[a.slice(1)]; S.has(v) ? S.delete(v) : S.add(v); return drawTown(); }
+    if (a === 'fmode') { rentF.mode = v; return drawTown(); }
+    if (a === 'fclear') { rentF.lmin = rentF.lmax = ''; rentF.at.clear(); rentF.ty.clear(); rentF.gr.clear(); rentF.mode = 'and'; return drawTown(); }
     if (a === 'pick') { rentPickSlot = +v; return drawTown(); }
     if (a === 'team') { fixTeam(); const t = teams[teamNo]; let k = t.indexOf(null); if (k < 0) k = 3; t[k] = v; save('teams', JSON.stringify(teams)); fixTeam(); toast('チーム' + (teamNo + 1) + 'に入れました'); return drawTown(); }
     try {
