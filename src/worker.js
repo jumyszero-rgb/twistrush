@@ -64,8 +64,17 @@ async function gate(ctx) {
 }
 
 // Workers（静的アセットつき）の入口：すべてのリクエストをここで受けて、通すときは静的ファイルを返す
+// Google Play の Android アプリ（TWA）とサイトを結びつける。合言葉のゲートより先に返す（Google が確認しに来るため）
+// 指紋（SHA-256）は Play Console の「アプリの署名」から。公開情報なのでコードに書いてよい
+const ASSETLINKS = [{
+  relation: ['delegate_permission/common.handle_all_urls'],
+  target: {namespace: 'android_app', package_name: 'com.twistrush.app', sha256_cert_fingerprints: []},
+}];
+
 export default {
   async fetch(request, env) {
+    if (new URL(request.url).pathname === '/.well-known/assetlinks.json')
+      return new Response(JSON.stringify(ASSETLINKS), {headers: {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'public, max-age=300'}});
     // 確認用：合言葉の仕組みが動いているか（合言葉そのものは出さない）
     if (new URL(request.url).pathname === '/__gate_status')
       return new Response('worker: ok\ngate: ' + (env && env.TESTER_PASS ? 'on（合言葉あり）' : 'off（TESTER_PASS が見つからない）') + '\n', {headers: {'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store'}});

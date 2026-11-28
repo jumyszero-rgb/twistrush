@@ -9,6 +9,8 @@
 <link rel="icon" type="image/png" sizes="32x32" href="img/app/icon-32.png">
 <link rel="apple-touch-icon" href="img/app/icon-180.png">
 <script>
+  // Google Play の Android アプリ（TWA）で開いたかどうか。Play では Stripe で売れないので、購入を止める（Play課金はあとで入れる）
+  try { if (/^android-app:\/\//.test(document.referrer) || /[?&]twa=1/.test(location.search)) sessionStorage.setItem('twa', '1'); if (sessionStorage.getItem('twa') === '1') document.documentElement.classList.add('is-twa'); } catch (e) {}
   // テスト用サイト（staging.twistrush.com）は、ホーム画面に入れても本番と見分けがつくように、名前・アイコン・表示を変える
   if (/^staging\./.test(location.hostname)) {
     document.querySelector('link[rel="manifest"]').href = 'manifest-staging.webmanifest';
@@ -236,6 +238,7 @@ body.on-menu .battlemain{opacity:0;}
   .volrow{display:flex;align-items:center;gap:10px;margin:8px 0;font-size:13px;font-weight:800;}
   .acctbtns{display:flex;flex-direction:column;gap:8px;margin:8px 0;} .abtn{border:none;border-radius:12px;padding:12px;font-family:inherit;font-weight:900;font-size:14px;cursor:pointer;}
   .toplogin{display:flex;flex-direction:column;align-items:center;gap:3px;margin:4px auto 6px;max-width:320px;} .toplogin.hidden{display:none;} .toplogin .abtn{padding:9px 22px;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,.35);} .toplogin small{font-size:11px;font-weight:700;color:#fff;background:rgba(0,0,0,.55);border-radius:8px;padding:2px 8px;}
+  .is-twa a[href="/payment.html"]{display:none;}
   .abtn.hidden{display:none;} .abtn.google{background:#fff;color:#333;} .abtn.line{background:#06c755;color:#fff;} .abtn.ms{background:#2f2f2f;color:#fff;border:1px solid #777;} .abtn.dev{background:#555;color:#fff;}
   .acctnote{font-size:11px !important;} .srvset{margin-top:10px;font-size:12px;color:#e6dcff;} .srvset summary{cursor:pointer;}
   .volrow span{width:4em;flex:none;} .volrow input{flex:1;accent-color:#ff7fb0;height:28px;} .volrow b{width:3em;text-align:right;flex:none;font-variant-numeric:tabular-nums;}
@@ -8111,7 +8114,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.368';
+  const APP_VER = '0.9.369';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -9405,6 +9408,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   function passBuy(sku){
     const p = PACKS.find(x => x.sku === sku); if (!p) return;
+    if (IS_TWA) { twaPay(); return; }
     if (payOn) {
       if (!acctToken) { payAsk('購入には<b>ログイン</b>が必要です。<br>設定の「アカウント」からログインしてください。'); return; }
       payBuy(sku === 'gold' && passTier() === 'silver' ? Object.assign({}, p, {yen: Math.max(0, 4980 - (+load('pass_credit', '0') || 0)), name: 'ゴールドパスにアップグレード', price: '¥' + Math.max(0, 4980 - (+load('pass_credit', '0') || 0)).toLocaleString() + '（初月・シルバーの残りを引いたあと。2か月目から¥4,980）'}) : p); return; }
@@ -9418,7 +9422,9 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   document.addEventListener('click', e => { if (e.target.closest('[data-openpass]')) { e.preventDefault(); try { $('shop').classList.add('hidden'); } catch (_) {} openPassPg(); } });
   document.addEventListener('click', e => {
-    if (!e.target.closest('[data-pass]') || payOn) return;
+    if (!e.target.closest('[data-pass]')) return;
+    if (IS_TWA) { e.preventDefault(); e.stopPropagation(); twaPay(); return; }
+    if (payOn) return;
     payAsk('【テスト】月パス（¥980・30日）を' + (passOn() ? '延長' : '開始') + 'しますか？ 本番では決済のあとに有効になります。', () => {
       save('pass_end', String(Math.max(Date.now(), passEnd()) + 30 * 86400000)); passNotify(); toast('月パスが有効になりました（のこり' + passLeft() + '日）'); try { drawShop(); } catch(_) {}
     });
@@ -9438,6 +9444,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   //   買うにはログイン（Googleなど）が必要。押すと Stripe の支払いページへ → 戻ってきたら反映（?pay=ok）
   //   ゴールドはサーバーの財布へ。初回パックのアイテムは「受け取り待ち」をこの端末で受け取る。月パス・広告削除はサーバーの記録に合わせる
   let payOn = false, payBusy = false;
+  const IS_TWA = document.documentElement.classList.contains('is-twa');
+  function twaPay(){ payAsk('Androidアプリでのゴールドコインの購入は、ただいま準備中です。<br><small>ゲームはすべて遊べます。購入できるようになったらお知らせします。</small>'); }
   // 2026-11-18 本人：広告削除（買い切り）は売るのをやめ、月パスの特典「広告なし」にした。前に買った人はそのまま広告なし
   const noAds = () => passOn() || load('noads', '') === '1';
   function drawPayPacks(){
@@ -9471,7 +9479,9 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       return; }
     const pt = e.target.closest('[data-portal]');
     if (pt) { e.preventDefault(); e.stopPropagation(); try { const r = await api('/api/pay/portal', {method: 'POST', body: '{}'}); if (r.url) location.href = r.url; else toast(r.error || '開けませんでした'); } catch (_) { toast('サーバーにつながりませんでした'); } return; }
-    const b = e.target.closest('[data-sku]'); if (!b || !payOn) return;
+    const b = e.target.closest('[data-sku]');
+    if (b && IS_TWA) { e.preventDefault(); e.stopPropagation(); twaPay(); return; }
+    if (!b || !payOn) return;
     e.preventDefault(); e.stopPropagation(); if (b.disabled || payBusy) return;
     const p = PACKS.find(x => x.sku === b.dataset.sku); if (!p) return;
     if (!acctToken) { payAsk('購入には<b>ログイン</b>が必要です。<br>設定の「アカウント」からログインしてください。', () => { $('shop').classList.add('hidden'); $('setBtn').click(); setTimeout(() => { const a = $('acctState'); if (a) a.scrollIntoView({block: 'center'}); }, 300); }); return; }
@@ -9491,6 +9501,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     });
   }
   async function payBuy(p){
+    if (IS_TWA) { twaPay(); return; }
     if (!payLim || !payLim.birth) { try { const s = await api('/api/pay/status'); payLim = s.limit || null; } catch (_) {} }
     if (!payLim || !payLim.birth) { birthAsk(() => payBuy(p)); return; }
     const left = payLim.cap ? Math.max(0, payLim.cap - payLim.spent) : -1, yen = p.yen != null ? p.yen : (+String(p.price).replace(/[^\d]/g, '') || 0);
@@ -10047,7 +10058,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   };
   const packOf = sku => PACKS.find(x => x.sku === sku);
   function offerPop(k){
-    const o = OFFER[k], p = o && packOf(o.sku); if (!p || !acctToken || running) return;
+    const o = OFFER[k], p = o && packOf(o.sku); if (!p || !acctToken || running || IS_TWA) return;
     const key = 'offer_' + k, last = load(key, ''); if (o.once ? last : last === dmKey()) return;
     save(key, dmKey());
     askChoice('<b>' + o.t + '</b><br><br><b>' + p.name + '</b>　' + p.price + '<br><small>' + p.desc + '</small>', '見てみる', 'いまはいい', () => payBuy(p), () => {});
