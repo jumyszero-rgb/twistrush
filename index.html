@@ -7891,7 +7891,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   const itemLabel = k => k.startsWith('chr_') ? 'SR ' + fullName(ALLC[chrCi(k)]) : TICKET_LABEL[k] || (k.startsWith('pot_') ? potName(k.slice(4)) : (ITEMS[k] ? ITEMS[k].name : k));
   const invImg = k => k.startsWith('chr_') ? zakoImgOf(k.slice(4)) : TICKET_LABEL[k] ? tkImg(k) : k.startsWith('pot_') ? potImg(k.slice(4)) : itemImg(k);
   const ownAny = k => k.startsWith('chr_') ? units.filter(u => u.id === 'x_' + k.slice(4)).length : TICKET_LABEL[k] ? (+load(k, '0') || 0) : own(k);
-  function giveItem(k, n){ if (TICKET_LABEL[k]) save(k, String((+load(k, '0') || 0) + n)); else { const room = Math.max(0, ITEM_MAX - own(k)), put = Math.min(n, room);
+  function giveItem(k, n){ if (TICKET_LABEL[k]) save(k, String((+load(k, '0') || 0) + n)); else { const room = Math.max(0, itemMax(k) - own(k)), put = Math.min(n, room);
       if (put > 0) { inv[k] = own(k) + put; saveInv(); } if (n > put) { azk.push({t: 'i', k, n: n - put, at: Date.now()}); saveAzk(); azkNote('アイテム（1種' + ITEM_MAX + '個まで）'); } } }
   async function checkRewards(){
     if (!rankTok()) return;
@@ -8156,7 +8156,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.396';
+  const APP_VER = '0.9.397';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -8930,6 +8930,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   const today = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
   const loadJ = (k, def) => { try { const v = JSON.parse(load(k, '')); return v == null ? def : v; } catch(e) { return def; } };
   const BOX_STEP = 10, BOX_GOLD = 50, BOX_TOP = 500, ITEM_MAX = 999, AZK_DAYS = 30;
+  const itemMax = k => /^r_/.test(k) ? 9999 : ITEM_MAX;   // 2026-11-29 街の素材だけ 9,999
   const boxCap = k => Math.min(BOX_TOP, 200 + BOX_STEP * (+load('boxx_' + k, '0') || 0));
   let azk = loadJ('azk', []); if (!Array.isArray(azk)) azk = [];
   const saveAzk = () => setTimeout(() => save('azk', JSON.stringify(azk)), 0);
@@ -11839,7 +11840,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   //   上の段ほど時間がかかる（1段目の 1/3・1/8）
   //   → 2026-11-28 作りなおし：えらぶのではなく、建物のLv（段階）でグレードの出かたが決まる
   //   本人「生産1段階目で1と2が生産でき、1が90%程度、2が5〜10%、2段階目は1が45%、2が45%、3が5〜10%」
-  const RAW_H = 1.5;                                          // 2026-11-28 本人「肉しか回収がない」：素材 0.5→1.5／時間（肉と同じくらい）
+  const RAW_H = 1.5, RAW_B = .5;                                          // 2026-11-28 本人「肉しか回収がない」：素材 0.5→1.5／時間（肉と同じくらい）
   const GRADE_P = [null, {1: .9, 2: .1}, {1: .45, 2: .45, 3: .1}, {2: .45, 3: .45, 4: .1}, {3: .45, 4: .45, 5: .1}, {4: .5, 5: .5}];
   const rawFams = b => [].concat(TB[b].raw || []);
   // ペット（このゲームだけの子）：お迎え＝シルバー＋肉、肉をあげて Lv1〜10。ボーナスは Lv×2%（全部のペットが効く）
@@ -11861,7 +11862,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   //   ・ごはんは1日1回。2回目からはゴールド（早く進めたい人向け）。肉は 30×Lv（Lv5からG2以上・Lv8からG3以上）、街コイン 100×Lv
   const PET_ART = true, PET_LV_CH = 5, PET_TOWN_P = 1.5, PET_TEAM_P = .5, PET_FEEDS = [0, 4, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29];
   const petMaxNow = () => PET_LV_CH * 1;   // 第1章。章を開いたら章の数をかける
-  const PET_MAX = 25, petMeat = lv => 30 * lv, petAdoptMeat = 30, petMinG = lv => lv >= 8 ? 3 : lv >= 5 ? 2 : 1, petTc = lv => 100 * lv, petGold = lv => 20 * lv;
+  const PET_MAX = 25, petMeat = lv => 10 * lv, petAdoptMeat = 20, petMinG = lv => lv >= 8 ? 3 : lv >= 5 ? 2 : 1, petTc = lv => 100 * lv, petGold = lv => 20 * lv;
   const petNeed = lv => PET_FEEDS[lv] || 30, petAff = k => (town.petAff && town.petAff[k]) || 0;
   const petFedToday = k => { const f = town.petFed; return !!(f && f.d === dmKey() && (f.k || []).includes(k)); };
   const petFedMark = k => { if (!town.petFed || town.petFed.d !== dmKey()) town.petFed = {d: dmKey(), k: []}; if (!town.petFed.k.includes(k)) town.petFed.k.push(k); };
@@ -11884,9 +11885,14 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   const TB_RAW = {home: ['wood', 'stone', 'metal'], castle: ['stone', 'metal', 'wood'], house: ['wood', 'stone'], farm: ['wood', 'stone'], shop: ['wood', 'stone'], tavern: ['wood', 'stone'],
     lumber: ['stone', 'metal'], quarry: ['wood', 'metal'], iron: ['stone', 'wood'], hunter: ['wood', 'metal'], casino: ['stone', 'metal', 'wood'], petshop: ['wood', 'stone'], alchemy: ['stone', 'metal'],
     dojo: ['wood', 'stone'], trial: ['stone', 'metal', 'wood']};
+  // 同じ種類の生産の建物は2つまで（2026-11-29）。1つだけの建物（城・カジノなど）はそのまま
+  const tIsProd = k => !!(TB[k] && (TB[k].raw || TB[k].meat)), tCount = k => town.p.filter(p => p && p.b === k).length;
+  const tDup = k => (TB[k].one && tCount(k) >= 1) || (tIsProd(k) && tCount(k) >= 2), tDupTxt = k => TB[k].one ? '1つだけ' : '2つまで';
   const tMatCost = (b, lv) => { const F = TB_RAW[b] || ['wood', 'stone'], k = b === 'home' ? 2 : 1, r = (f, g) => 'r_' + f + '_' + g;
     if (lv <= 1) return [];   // 2026-11-28 本人「初期の時って木材とかないと思う。LV1はシルバーコインだけで良いのでは？」
-    const L = [[r(F[0], lv - 1), 2 * lv * k], [r(F[1], lv - 1), lv * k], [r(F[0], lv), (lv - 1) * k]]; if (F[2]) L.push([r(F[2], lv), (lv - 1) * k]); return L; };
+    // 2026-11-29：合計 Lv2 約30／Lv3 約100／Lv4 約250／Lv5 約500（前は数個〜十数個）。前のグレード65%・そのLvのグレード35%
+    const T = ({2: 30, 3: 100, 4: 250, 5: 500})[lv] || 500 * (lv - 4), q = x => Math.max(1, Math.round(T * x * k));
+    const L = [[r(F[0], lv - 1), q(.4)], [r(F[1], lv - 1), q(.25)], [r(F[0], lv), q(F[2] ? .2 : .35)]]; if (F[2]) L.push([r(F[2], lv), q(.15)]); return L; };
   const tMatCostOld = (b, lv) => { const f = b === 'iron' ? 'wood' : b === 'lumber' ? 'metal' : lv % 2 ? 'wood' : 'metal', t = Math.max(0, tMatTier(lv) - 1); return [['m_' + f + '_' + t, (b === 'home' ? 4 : 2) + 2 * lv]]; };
   const tDayCap = lv => 10000 * lv;                           // 1日に入る街コインの上限（家のレベル×10,000。2026-11-28 本人「1日の街コインの上限を上げよう」4,000→10,000）
   let town = loadJ('town', null);
@@ -11989,8 +11995,10 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (x.b === 'shop' || x.b === 'tavern') silver *= 1 + petBonus('biz'); if (x.b === 'casino') silver *= 1 + petBonus('luck');
     const pm = x.b === 'hunter' ? 1 + petBonus('hunt') : 1 + petBonus('mat');
     const w = JOBS[x.b] ? .4 + .6 * workRate() : 1; silver *= w;   // 人手が足りないと生産が下がる（2026-11-28 人手0でも4割は動く：本人「肉しか回収がない」）
-    const rw = b.raw ? RAW_H * L * m * pm * w * [].concat(b.raw).length : 0;   // 素材は1種類あたり RAW_H×Lv／時間（ハンター協会は皮・魔物素材それぞれ）
-    return {silver, raw: rw, mat: rw, meat: b.meat ? b.meat * L * m * pm * w : 0, evo: b.evo ? b.evo * L * m : 0, evog: b.evo && L >= 5 ? b.evo * .25 * m : 0, xp: 0, tr: 0};
+    // 2026-11-29 本人「最終のレベルで担当者をつけた時に1日にどうなるのかを考えないと、ただただ余る」：最終形（Lv5・強いキャラ3人・ペット）で1種類1日約130個になるように
+    //   1時間 = RAW_B ×（1＋0.5×（Lv−1））× キャラの倍率 × ペット。前は 1.5×Lv（最終形で1日約650個）
+    const lf = RAW_B * (1 + .5 * (L - 1)), rw = b.raw ? lf * m * pm * w * [].concat(b.raw).length : 0;
+    return {silver, raw: rw, mat: rw, meat: b.meat ? lf * m * pm * w : 0, evo: b.evo ? b.evo * L * m : 0, evog: b.evo && L >= 5 ? b.evo * .25 * m : 0, xp: 0, tr: 0};
   }
   function townPending(){                                    // まだ受け取っていない分（8時間まで）
     const bk = town.bank || {silver: 0, mats: {}}; let silver = bk.silver || 0; const mats = Object.assign({}, bk.mats || {}), now = Date.now();
@@ -12156,14 +12164,16 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   // 加工（2026-11-28 本人「木材や皮などの魔物素材や、肉などはグレードに合わせて加工すると素材になる。とすると他とも合ってくる」）
   //   街の素材 G1〜G5 を3個 → 鍛冶屋の素材（同じ段）1個。石材は仕上げ剤（砥石…）に。肉はペットのごはん（加工なし）
-  const PROC = {wood: 'wood', stone: 'polish', metal: 'metal', hide: 'hide', beast: 'beast'}, PROC_N = 3;
-  function procHTML(){ let h = '<p class="twd">街の素材 ' + PROC_N + '個で、鍛冶屋の素材1個に加工できます（グレードが同じ段の素材になります）</p><div class="ofproc">';
+  // 2026-11-29 本人「武器素材とするなら、もっと多くないとダメ。失敗は必要。錬成加工で一気になくなる」：10個で1回の錬成、グレードが高いほど失敗しやすい（失敗すると素材は消える）
+  const PROC = {wood: 'wood', stone: 'polish', metal: 'metal', hide: 'hide', beast: 'beast'}, PROC_N = 10, PROC_OK = [0, .9, .8, .65, .5, .35];
+  function procHTML(){ let h = '<p class="twd">錬成：街の素材 ' + PROC_N + '個で1回。成功すると鍛冶屋の素材1個（同じ段のグレード）。成功率 G1 90%・G2 80%・G3 65%・G4 50%・G5 35%。失敗すると素材は消えます</p><div class="ofproc">';
     let any = false;
     Object.keys(PROC).forEach(f => [1, 2, 3, 4, 5].forEach(g => { const k = 'r_' + f + '_' + g, o = own(k); if (o < 1) return; any = true; const m = 'm_' + PROC[f] + '_' + (g - 1), n = Math.floor(o / PROC_N);
-      h += '<div>' + icMat(k) + '<span><b>' + EX_MAT[k][0] + '</b> ×' + o + '<br>→ ' + icMat(m) + EX_MAT[m][0] + '（' + own(m) + '）</span><button data-ofmk="' + k + ':1"' + (n ? '' : ' disabled') + '>1個</button><button data-ofmk="' + k + ':' + n + '"' + (n > 1 ? '' : ' disabled') + '>全部<small>' + n + '個</small></button></div>'; }));
+      h += '<div>' + icMat(k) + '<span><b>' + EX_MAT[k][0] + '</b> ×' + o + '<br>→ ' + icMat(m) + EX_MAT[m][0] + '（' + own(m) + '）・成功率' + Math.round(PROC_OK[g] * 100) + '%</span><button data-ofmk="' + k + ':1"' + (n ? '' : ' disabled') + '>1回</button><button data-ofmk="' + k + ':' + n + '"' + (n > 1 ? '' : ' disabled') + '>全部<small>' + n + '回</small></button></div>'; }));
     return h + (any ? '' : '<p class="twd">まだ街の素材がありません。伐採所・採石場・製鉄所・ハンター協会で取れます</p>') + '</div>'; }
   function procDo(k, n){ const f = k.split('_')[1], g = +k.split('_')[2], m = 'm_' + PROC[f] + '_' + (g - 1); n = Math.min(n, Math.floor(own(k) / PROC_N)); if (!PROC[f] || n < 1) return;
-    useMat(k, n * PROC_N); giveItem(m, n); saveInv(); toast(EX_MAT[m][0] + ' ×' + n + ' に加工しました'); drawTown(); }
+    let ok = 0; for (let i = 0; i < n; i++) if (Math.random() < (PROC_OK[g] || .35)) ok++;
+    useMat(k, n * PROC_N); if (ok) giveItem(m, ok); saveInv(); toast('錬成 ' + n + '回：成功 ' + ok + '回・失敗 ' + (n - ok) + '回' + (ok ? '（' + EX_MAT[m][0] + ' ×' + ok + '）' : '')); drawTown(); }
   function officeHTML(){
     const nm = ofNameEd ? '<div class="ofname ed"><input id="ofNameIn" maxlength="12" placeholder="例：いちごタウン" value="' + (town.name || '') + '"><button data-of="nameok">決定</button></div>'
       : '<div class="ofname">' + ic('tag') + ' <b>' + townName() + '</b><button data-of="name">' + (town.name ? '名前をかえる' : '名前をつける') + '</button></div>';
@@ -12213,9 +12223,9 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
           '<em>Lv' + Math.max(1, lvNow(x)) + '</em>' + (x.crew.length ? '<u>' + ic('crew') + x.crew.length + '</u>' : '') + (bld ? '<s>' + ic('hammer') + tLeft(x) + '</s>' : '') + '</button>'; }).join('') + '</div>' + twWalkers() + '</div>';
     const x = townSel >= 0 ? town.p[townSel] : null;
     if (townSel >= 0 && !x) {
-      h += '<div class="twpanel"><h4>ここに建てる</h4>' + TB_ORDER.map(k => { const b = TB[k], dup = b.one && town.p.some(p => p && p.b === k), lock = b.needHome && homeLv() < b.needHome;
+      h += '<div class="twpanel"><h4>ここに建てる</h4>' + TB_ORDER.map(k => { const b = TB[k], dup = tDup(k), lock = b.needHome && homeLv() < b.needHome;
         return '<div class="twbrow">' + (TOWN_ART ? '<img class="twbi" alt="" src="img/town3d/' + bImg(k) + '_3.webp">' : '<i>' + b.i + '</i>') + '<div><b>' + b.n + '</b><small>' + b.d + '・向いている：' + TAPT[b.apt] + '</small><div>' + tCostHTML(k, 1) + '</div></div>' +
-          '<button data-twbuild="' + k + '"' + (dup || lock || !tCanPay(k, 1) ? ' disabled' : '') + '>' + (dup ? '1つだけ' : lock ? '家Lv' + b.needHome + 'から' : '建てる') + '</button></div>'; }).join('') + '</div>';
+          '<button data-twbuild="' + k + '"' + (dup || lock || !tCanPay(k, 1) ? ' disabled' : '') + '>' + (dup ? tDupTxt(k) : lock ? '家Lv' + b.needHome + 'から' : '建てる') + '</button></div>'; }).join('') + '</div>';
     } else if (x) {
       const b = TB[x.b], r = perHour(x), bld = isBuilding(x), maxLv = x.b === 'home' ? TOWN_MAXLV : Math.min(TOWN_MAXLV, homeLv());
       let pickH = '';
@@ -12276,7 +12286,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   const JOB_IC = {'商業': 'shop', '農業': 'farm', '生産': 'hammer'};
   const twTags = b => { const k = Object.keys(TB).find(q => TB[q] === b), job = k in JOBS ? JOBS[k][0] : '';
     return [b.pop && ic('pop') + '住まい', b.food && ic('farm') + '食べもの', job && ic(JOB_IC[job] || 'crew') + job, b.silver && ic('tc') + '街コイン', b.raw && ic('box') + '素材', b.meat && ic('meat') + '肉', b.evo && ic('evo_c') + '進化素材',
-      b.train === 'xp' && ic('xp') + '経験値', b.train === 'tr' && ic('tr') + 'ステータス', b === TB.petshop && '<img class="ic" alt="" src="img/pet/koro.webp">ペット', b === TB.casino && ic('casino') + 'ルーレット', b.one && '1つだけ'].filter(Boolean); };
+      b.train === 'xp' && ic('xp') + '経験値', b.train === 'tr' && ic('tr') + 'ステータス', b === TB.petshop && '<img class="ic" alt="" src="img/pet/koro.webp">ペット', b === TB.casino && ic('casino') + 'ルーレット', b.one ? '1つだけ' : (b.raw || b.meat) && '2つまで'].filter(Boolean); };
   const twFreeSlot = () => plotOrder.find(i => plotOk(i) && !town.p[i]);
   const tCostTxt = (b, lv) => (lv <= 1 ? 'シルバー ' : '街コイン ') + tSilverCost(b, lv).toLocaleString() + tMatCost(b, lv).map(([k, n]) => '・' + EX_MAT[k][0] + '×' + n).join('');
   // 2026-11-28 本人「それぞれのボタンを押したときは、確認をだしなよ。いきなりアイテム変えちゃったでしょ？」：使う・買う・建てるボタンは、何を使うかを見せてから
@@ -12296,11 +12306,11 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (d.op === 'moveO') { if (!twInt(d.x) || !twInt(d.z)) return {ok: false}; town.office = {x: d.x, z: d.z}; saveTown(); return {ok: true, coins: tcN()}; }   // 管理事務所をうごかすのは無料
     // 建てられるものの一覧
     if (d.op === 'blist') { const fr = twFreeSlot();
-      return {ok: true, free: plotOrder.filter(i => plotOk(i) && !town.p[i]).length, list: TB_ORDER.map(k => { const b = TB[k], dup = b.one && town.p.some(p => p && p.b === k), lock = b.needHome && homeLv() < b.needHome;
-        const why = fr == null ? '建てられる数がいっぱい' : !twCanStart() ? '工事中（同時に' + twSlots() + '軒まで）' : dup ? '1つだけ' : lock ? '家Lv' + b.needHome + 'から' : !tCanPay(k, 1) ? '足りない：' + tCostTxt(k, 1) : '';
+      return {ok: true, free: plotOrder.filter(i => plotOk(i) && !town.p[i]).length, list: TB_ORDER.map(k => { const b = TB[k], dup = tDup(k), lock = b.needHome && homeLv() < b.needHome;
+        const why = fr == null ? '建てられる数がいっぱい' : !twCanStart() ? '工事中（同時に' + twSlots() + '軒まで）' : dup ? tDupTxt(k) : lock ? '家Lv' + b.needHome + 'から' : !tCanPay(k, 1) ? '足りない：' + tCostTxt(k, 1) : '';
         return {k, n: b.n, ok: !why, why, cost: tCostTxt(k, 1), d: b.d, tagsH: twTags(b)}; })}; }
     if (d.op === 'build') { const k = d.b, b = TB[k], i = twFreeSlot(); if (!b || b.fixed || i == null || !twInt(d.x) || !twInt(d.z)) return {ok: false, msg: '建てられません'};
-      if (b.one && town.p.some(p => p && p.b === k)) return {ok: false, msg: '1つだけ建てられます'}; if (b.needHome && homeLv() < b.needHome) return {ok: false, msg: '家Lv' + b.needHome + 'から'};
+      if (tDup(k)) return {ok: false, msg: b.one ? '1つだけ建てられます' : '同じ建物は2つまでです'}; if (b.needHome && homeLv() < b.needHome) return {ok: false, msg: '家Lv' + b.needHome + 'から'};
       if (!tCanPay(k, 1)) return {ok: false, msg: '街コインか素材が足りません'}; if (!twCanStart()) return {ok: false, msg: twBusyMsg()}; const now = Date.now(); tPay(k, 1);
       town.p[i] = {b: k, lv: 1, crew: [], t: now, done: now + buildMs(1), x: d.x, z: d.z}; saveTown(); return {ok: true, i, plot: twPlot(town.p[i]), coins: tcN()}; }
     if (d.op === 'moveB') { const x = town.p[d.i]; if (!x || !twInt(d.x) || !twInt(d.z)) return {ok: false}; if (!pay(TW_PRICE.moveB)) return {ok: false, msg: '街コインが足りません（建物をうごかすのは ' + TW_PRICE.moveB + '）'};
@@ -12345,7 +12355,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     let t;
     if ((t = q('data-larder'))) { const n = +t.dataset.larder; if (meatN() < n) return; return twAsk('食料庫に肉を' + n + '個入れますか？<br><small>住める人の食べものになります（もどせません）</small>', '肉×' + n + '（低いグレードから）', () => { if (meatN() < n) return; townClaimQuiet(); popTick(); useMeat(n); town.larder = (town.larder || 0) + n; saveTown(); toast('食料庫に肉を' + n + '個入れました'); drawTown(); }); }
     if ((t = q('data-ofmk'))) { const [k, n0] = t.dataset.ofmk.split(':'), n = Math.min(+n0, Math.floor(own(k) / PROC_N)); if (n < 1) return; const f = k.split('_')[1], g = +k.split('_')[2], m = 'm_' + PROC[f] + '_' + (g - 1);
-      return twAsk(EX_MAT[m][0] + ' ×' + n + ' に加工しますか？', EX_MAT[k][0] + '×' + n * PROC_N, () => procDo(k, n)); }
+      return twAsk(EX_MAT[m][0] + ' を ' + n + '回 錬成しますか？（成功率' + Math.round((PROC_OK[g] || .35) * 100) + '%・失敗すると素材は消えます）', EX_MAT[k][0] + '×' + n * PROC_N, () => procDo(k, n)); }
     if ((t = q('data-of')) && t.dataset.of === 'name') { ofNameEd = true; drawTown(); const i = $('ofNameIn'); if (i) { i.focus(); i.select(); i.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); const b = $('townBody').querySelector('[data-of="nameok"]'); b && b.click(); } }; } return; }
     if ((t = q('data-of')) && t.dataset.of === 'nameok') { const v = twNameClean($('ofNameIn') && $('ofNameIn').value); ofNameEd = false;
       if (v && v !== town.name) { town.name = v; saveTown(); toast('🏷 街の名前を「' + v + '」にしました'); } drawTown(); return; }
@@ -13608,7 +13618,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   function azkTake(i){ const a = azk[i]; if (!a) return false;
     if (a.t === 'u') { if (units.length >= boxCap('u')) return toast('キャラのボックスがいっぱいです'), false; units.push(a.u); saveUnits(); }
     else if (a.t === 'g') { if (gear.length >= boxCap('g')) return toast('装備のボックスがいっぱいです'), false; gear.push(a.g); saveGear(); }
-    else { const room = Math.max(0, ITEM_MAX - own(a.k)); if (!room) return toast(azkName(a) + '：持てる数（' + ITEM_MAX + '）がいっぱいです'), false; const put = Math.min(room, a.n); inv[a.k] = own(a.k) + put; saveInv(); a.n -= put; if (a.n > 0) { saveAzk(); return true; } }
+    else { const room = Math.max(0, itemMax(a.k) - own(a.k)); if (!room) return toast(azkName(a) + '：持てる数（' + ITEM_MAX + '）がいっぱいです'), false; const put = Math.min(room, a.n); inv[a.k] = own(a.k) + put; saveInv(); a.n -= put; if (a.n > 0) { saveAzk(); return true; } }
     azk.splice(i, 1); saveAzk(); return true; }
   function drawBox(){
     // 2026-11-15：アイテムのタブを描き直すと、中に入れていた「持っていくアイテム」の枠ごと消えて、タブが押せなくなっていた → 先に元の場所へ戻す
