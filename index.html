@@ -8114,7 +8114,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.376';
+  const APP_VER = '0.9.377';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -16034,6 +16034,46 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   setHand(load('hand', 'two'));
   resize();
   requestAnimationFrame(render);
+})();
+</script>
+<script>
+// ===== 画面切りかえの「読みこみ中」（2026-11-28 本人「ストーリー画面とか、画面切り替えがあるページは切り替わりに読み込み中をだす」）=====
+//   画面（.overlay）が開いたら、見えるところの絵（img と背景の絵）がそろうまで「読みこみ中…」を出す
+//   すぐ読めたとき（スマホに残っている絵）は出さない（0.15秒待ってから出す）。最大6秒で必ず消す
+(() => {
+  const ld = document.createElement('div'); ld.id = 'scrLd'; ld.innerHTML = '<i></i><b>読みこみ中…</b>'; document.body.appendChild(ld);
+  const st = document.createElement('style');
+  st.textContent = '#scrLd{position:fixed;inset:0;z-index:8500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:radial-gradient(circle at 50% 40%,#3b2566,#1f1236);opacity:0;pointer-events:none;transition:opacity .2s}' +
+    '#scrLd.on{opacity:1;pointer-events:auto}#scrLd i{width:46px;height:46px;border-radius:50%;border:5px solid rgba(255,233,168,.25);border-top-color:#ffd34d;animation:scrLdR .8s linear infinite}' +
+    '#scrLd b{font-size:15px;color:#ffe9a8;letter-spacing:1px;font-family:inherit}@keyframes scrLdR{to{transform:rotate(360deg)}}';
+  document.head.appendChild(st);
+  let token = 0, showT = 0, maxT = 0;
+  const vis = el => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && r.bottom > 0 && r.right > 0 && r.top < innerHeight && r.left < innerWidth; };
+  const urlsOf = bg => { const out = []; String(bg || '').replace(/url\(["']?([^"')]+)["']?\)/g, (_, u) => { if (!/^data:/.test(u)) out.push(u); }); return out; };
+  function pending(root){
+    const ps = [], els = [root, ...root.querySelectorAll('*')].slice(0, 600);
+    for (const el of els) {
+      if (el.tagName === 'IMG') { if (el.src && !el.complete && vis(el)) ps.push(new Promise(r => { el.addEventListener('load', r, {once: true}); el.addEventListener('error', r, {once: true}); })); continue; }
+      const bg = getComputedStyle(el).backgroundImage; if (!bg || bg === 'none' || !vis(el)) continue;
+      urlsOf(bg).forEach(u => { const im = new Image(); im.src = u; if (!im.complete) ps.push(new Promise(r => { im.onload = im.onerror = r; })); });
+    }
+    return ps;
+  }
+  function hide(){ clearTimeout(showT); clearTimeout(maxT); ld.classList.remove('on'); }
+  function watch(root){
+    const my = ++token; hide();
+    requestAnimationFrame(() => setTimeout(() => {          // 開いた画面の中身が描かれてから調べる
+      if (my !== token) return; const ps = pending(root); if (!ps.length) return;
+      showT = setTimeout(() => { if (my === token) ld.classList.add('on'); }, 150);
+      maxT = setTimeout(() => { if (my === token) hide(); }, 6000);
+      Promise.all(ps).then(() => { if (my === token) hide(); });
+    }, 30));
+  }
+  const shown = el => !el.classList.contains('hidden') && el.style.display !== 'none';
+  const mo = new MutationObserver(ms => { for (const m of ms) { const el = m.target; const was = /(^|\s)hidden(\s|$)/.test(m.oldValue || '');
+    if (was && shown(el)) { watch(el); return; } if (!was && !shown(el) && ld.classList.contains('on')) { token++; hide(); } } });
+  document.querySelectorAll('.overlay, .mview').forEach(el => mo.observe(el, {attributes: true, attributeFilter: ['class'], attributeOldValue: true}));
+  // ゲーム中の背景（stageBg）は見張らない：カウントダウン中に盤面をかくしてしまうため
 })();
 </script>
 
