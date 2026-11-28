@@ -8096,7 +8096,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.358';
+  const APP_VER = '0.9.359';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -12131,7 +12131,9 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   // 建物が何に効くか（2026-11-26 本人「なにがどんな効果があるのか基準が必要」）
   const twTags = b => [b.pop && '🏠 住まい', b.food && '🌾 食べもの', (Object.keys(TB).find(k => TB[k] === b) in JOBS) && '💼 ' + JOBS[Object.keys(TB).find(k => TB[k] === b)][0], b.silver && '🪙 街コイン', b.raw && '🧱 素材', b.meat && '🍖 肉', b.evo && '💎 進化素材', b.train === 'xp' && '📈 経験値', b.train === 'tr' && '💪 ステータス', b === TB.petshop && '🐾 ペット', b === TB.casino && '🎰 ルーレット', b.one && '1つだけ'].filter(Boolean);
   const twFreeSlot = () => plotOrder.find(i => plotOk(i) && !town.p[i]);
-  const tCostTxt = (b, lv) => '🪙' + tSilverCost(b, lv).toLocaleString() + tMatCost(b, lv).map(([k, n]) => '・' + EX_MAT[k][1] + '×' + n).join('');
+  const tCostTxt = (b, lv) => (lv <= 1 ? 'シルバー ' : '街コイン ') + tSilverCost(b, lv).toLocaleString() + tMatCost(b, lv).map(([k, n]) => '・' + EX_MAT[k][0] + '×' + n).join('');
+  // 2026-11-28 本人「それぞれのボタンを押したときは、確認をだしなよ。いきなりアイテム変えちゃったでしょ？」：使う・買う・建てるボタンは、何を使うかを見せてから
+  const twAsk = (msg, use, fn) => askYes(msg + (use ? '<br><small>使うもの：' + use + '</small>' : ''), fn);
   function town3DReq(d){
     const pay = n => { if (tcN() < n) return false; addTc(-n); return true; }, ok = {ok: true};   // 街の中は街コイン
     const fit = o => o && TW_PRICE[o.k] && typeof o.x === 'number' && typeof o.z === 'number' && Math.abs(o.x) < 80 && Math.abs(o.z) < 80;
@@ -12191,7 +12193,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   $('townBody').addEventListener('click', e => {
     const q = (a) => e.target.closest('[' + a + ']'), now = Date.now();
     let t;
-    if ((t = q('data-ofmk'))) { const [k, n] = t.dataset.ofmk.split(':'); procDo(k, +n); return; }
+    if ((t = q('data-ofmk'))) { const [k, n0] = t.dataset.ofmk.split(':'), n = Math.min(+n0, Math.floor(own(k) / PROC_N)); if (n < 1) return; const f = k.split('_')[1], g = +k.split('_')[2], m = 'm_' + PROC[f] + '_' + (g - 1);
+      return twAsk(EX_MAT[m][0] + ' ×' + n + ' に加工しますか？', EX_MAT[k][0] + '×' + n * PROC_N, () => procDo(k, n)); }
     if ((t = q('data-of')) && t.dataset.of === 'name') { ofNameEd = true; drawTown(); const i = $('ofNameIn'); if (i) { i.focus(); i.select(); i.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); const b = $('townBody').querySelector('[data-of="nameok"]'); b && b.click(); } }; } return; }
     if ((t = q('data-of')) && t.dataset.of === 'nameok') { const v = twNameClean($('ofNameIn') && $('ofNameIn').value); ofNameEd = false;
       if (v && v !== town.name) { town.name = v; saveTown(); toast('🏷 街の名前を「' + v + '」にしました'); } drawTown(); return; }
@@ -12200,34 +12203,44 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if ((t = q('data-tw')) && t.dataset.tw === 'claim') { townClaim(); return; }
     if (t && t.dataset.tw === '3d') { open3DTown(); return; }
     if ((t = q('data-trpick'))) { trnPickU = t.dataset.trpick || null; drawTown(); return; }
-    if ((t = q('data-trgo'))) { const x2 = town.p[townSel], u = unitOf(trnPickU), tt = +t.dataset.trgo; if (!x2 || !u) return; x2.ts = x2.ts || [];
+    if ((t = q('data-trgo')) && !t.dataset.ok) { const u = unitOf(trnPickU), tt = +t.dataset.trgo, b0 = t; if (!u) return;
+      return twAsk(evoName(u) + 'を' + TRN[tt].n + 'のところへ' + TRN[tt].h + '時間出しますか？' + (teams.some(tm => tm.includes(u.u)) ? '<br><small>チームから外れます</small>' : ''), '', () => { b0.dataset.ok = 1; b0.click(); }); }
+    if ((t = q('data-trgo'))) { delete t.dataset.ok; const x2 = town.p[townSel], u = unitOf(trnPickU), tt = +t.dataset.trgo; if (!x2 || !u) return; x2.ts = x2.ts || [];
       if (x2.ts.length >= lvNow(x2) || trnUids().has(u.u) || crewSet().has(u.u)) return;
       try { if (exBusyUids().has(u.u)) { toast('遠征中のキャラは出せません'); return; } } catch (_) {}
       teams = teams.map(tm => tm.map(v => v === u.u ? null : v)); try { fixTeam(); } catch (_) {}
       const now = Date.now(); x2.ts.push({u: u.u, t: tt, s: now, e: now + TRN[tt].h * 36e5}); trnPickU = null; saveTown(); toast(evoName(u) + 'が' + TRN[tt].n + 'のところへ（' + TRN[tt].h + '時間）'); drawTown(); return; }
     if ((t = q('data-trrush'))) { const x2 = town.p[townSel], a = x2 && x2.ts && x2.ts[+t.dataset.trrush]; if (!a) return; const c = Math.max(10, Math.ceil((a.e - Date.now()) / 36e5) * TW_RUSH_GOLD_H);
       payAsk('ゴールド ' + c + ' で、すぐ終わらせますか？', async () => { if (!(await spendGold(c, 'town-train'))) return; a.e = Date.now() - 1; saveTown(); refreshCoins(); drawTown(); }); return; }
-    if ((t = q('data-twtime'))) { twTime(+t.dataset.twtime); return; }
+    if ((t = q('data-twtime'))) { const i = +t.dataset.twtime; return twAsk('時短券を使って、工事を1時間はやくしますか？', '建築時短券×1（のこり' + ownAny('twtime') + '枚）', () => twTime(i)); }
     if ((t = q('data-twrush'))) { twRush(+t.dataset.twrush); return; }
-    if ((t = q('data-twslot'))) { twSlotUp(t.dataset.twslot === 'item'); return; }
+    if ((t = q('data-twslot'))) { if (t.dataset.twslot === 'item') return twAsk('建築許可証を使って、工事枠を1つふやしますか？', '建築許可証×1', () => twSlotUp(true)); twSlotUp(false); return; }
     if ((t = q('data-twbuy'))) { const [b, lv] = t.dataset.twbuy.split(':'); twBuyMat(b, +lv); return; }
     if ((t = q('data-twp'))) { const i = +t.dataset.twp; townSel = townSel === i ? -1 : i; townPick = null; drawTown(); return; }
     const x = town.p[townSel];
-    if ((t = q('data-twbuild'))) { const k = t.dataset.twbuild; if (!tCanPay(k, 1) || x || (TB[k].needHome && homeLv() < TB[k].needHome)) return; if (!twCanStart()) return toast(twBusyMsg()); tPay(k, 1); town.p[townSel] = {b: k, lv: 1, crew: [], t: now, done: now + buildMs(1)}; saveTown(); toast(TB[k].i + TB[k].n + 'を建てはじめました'); drawTown(); return; }
+    if ((t = q('data-twbuild')) && !t.dataset.ok) { const k = t.dataset.twbuild, b0 = t; if (!tCanPay(k, 1) || x || (TB[k].needHome && homeLv() < TB[k].needHome)) return; if (!twCanStart()) return toast(twBusyMsg());
+      twAsk('「' + TB[k].n + '」を建てますか？', tCostTxt(k, 1) + '・' + BUILD_MIN[1] + '分', () => { b0.dataset.ok = 1; b0.click(); }); return; }
+    if ((t = q('data-twbuild'))) { delete t.dataset.ok; const k = t.dataset.twbuild; if (!tCanPay(k, 1) || x || (TB[k].needHome && homeLv() < TB[k].needHome)) return; if (!twCanStart()) return toast(twBusyMsg()); tPay(k, 1); town.p[townSel] = {b: k, lv: 1, crew: [], t: now, done: now + buildMs(1)}; saveTown(); toast(TB[k].i + TB[k].n + 'を建てはじめました'); drawTown(); return; }
     if (!x) return;
-    if ((t = q('data-twup'))) { if (!tCanPay(x.b, x.lv + 1) || isBuilding(x) || twNoRoom(townSel)) return; if (!twCanStart()) return toast(twBusyMsg()); const rm = twRoom && twRoom[townSel]; if (rm && rm.ok && Number.isInteger(rm.x)) { x.x = rm.x; x.z = rm.z; } townClaimQuiet(); tPay(x.b, x.lv + 1); x.lv++; x.done = now + buildMs(x.lv); saveTown(); toast('🔨 Lv' + x.lv + 'に工事を始めました'); drawTown(); return; }
+    if ((t = q('data-twup')) && !t.dataset.ok) { const b0 = t; if (!tCanPay(x.b, x.lv + 1) || isBuilding(x) || twNoRoom(townSel)) return; if (!twCanStart()) return toast(twBusyMsg());
+      const mn = BUILD_MIN[x.lv + 1]; twAsk('「' + TB[x.b].n + '」をLv' + (x.lv + 1) + 'に上げますか？', tCostTxt(x.b, x.lv + 1) + '・' + (mn >= 60 ? mn / 60 + '時間' : mn + '分'), () => { b0.dataset.ok = 1; b0.click(); }); return; }
+    if ((t = q('data-twup'))) { delete t.dataset.ok; if (!tCanPay(x.b, x.lv + 1) || isBuilding(x) || twNoRoom(townSel)) return; if (!twCanStart()) return toast(twBusyMsg()); const rm = twRoom && twRoom[townSel]; if (rm && rm.ok && Number.isInteger(rm.x)) { x.x = rm.x; x.z = rm.z; } townClaimQuiet(); tPay(x.b, x.lv + 1); x.lv++; x.done = now + buildMs(x.lv); saveTown(); toast('🔨 Lv' + x.lv + 'に工事を始めました'); drawTown(); return; }
     if ((t = q('data-petget'))) { const pt = PETS.find(p => p.k === t.dataset.petget); if (!pt || town.pets && town.pets[pt.k] || tcN() < pt.sv || meatN() < petAdoptMeat) return;
-      addTc(-pt.sv); useMeat(petAdoptMeat); town.pets = town.pets || {}; town.pets[pt.k] = 1; saveTown(); toast(pt.n + 'をお迎えしました！'); msgLog('get', '🐾 ペット：' + pt.n + 'をお迎えしました'); drawTown(); return; }
-    if ((t = q('data-petfeed'))) { const pt = PETS.find(p => p.k === t.dataset.petfeed), lv = town.pets && town.pets[pt.k]; if (!lv || lv >= PET_MAX || (town.meat || 0) < petMeat(lv)) return;
-      townClaimQuiet(); useMeat(petMeat(lv)); town.pets[pt.k] = lv + 1; saveTown(); toast(pt.n + ' が Lv' + (lv + 1) + ' になった！'); drawTown(); return; }
+      return twAsk(pt.n + 'をお迎えしますか？', '街コイン ' + pt.sv.toLocaleString() + '・肉×' + petAdoptMeat + '（低いグレードから）', () => { if (tcN() < pt.sv || meatN() < petAdoptMeat) return; addTc(-pt.sv); useMeat(petAdoptMeat); town.pets = town.pets || {}; town.pets[pt.k] = 1; saveTown(); toast(pt.n + 'をお迎えしました！'); msgLog('get', '🐾 ペット：' + pt.n + 'をお迎えしました'); drawTown(); }); }
+    if ((t = q('data-petfeed'))) { const pt = PETS.find(p => p.k === t.dataset.petfeed), lv = town.pets && town.pets[pt.k]; if (!lv || lv >= PET_MAX || meatN() < petMeat(lv)) return;
+      return twAsk(pt.n + 'に肉をあげて、Lv' + (lv + 1) + 'にしますか？', '肉×' + petMeat(lv) + '（低いグレードから）', () => { if (meatN() < petMeat(lv)) return; townClaimQuiet(); useMeat(petMeat(lv)); town.pets[pt.k] = lv + 1; saveTown(); toast(pt.n + ' が Lv' + (lv + 1) + ' になった！'); drawTown(); }); }
     if ((t = q('data-spin'))) { casinoSpin(lvNow(x)); return; }
-    if ((t = q('data-rent'))) { const [a, ...v] = t.dataset.rent.split(':'); rentDo(a, v.join(':'), lvNow(x)); return; }
+    if ((t = q('data-rent'))) { const [a, ...v] = t.dataset.rent.split(':'), val = v.join(':'), L = lvNow(x), go = () => rentDo(a, val, L);
+      if (a === 'use') { const row = rentData && (rentData.list || []).find(r => r.rid === val); if (!row) return; return twAsk(fullName(ALLC[ALLC_IDX.get(row.cid)]) + 'を24時間借りますか？', '街コイン ' + rentCost(row.pow).toLocaleString(), go); }
+      if (a === 'put') { const u = unitOf(val); if (!u) return; return twAsk(evoName(u) + '（LV' + u.lv + '）を貸し出しますか？<br><small>いまの強さで登録されます。貸していても自分で使えます</small>', '', go); }
+      if (a === 'del') return twAsk('貸すのをやめますか？', '', go);
+      go(); return; }
     if ((t = q('data-casbet'))) { casBet = +t.dataset.casbet; drawTown(); return; }
     if ((t = q('data-casslot'))) { casSlotGo(lvNow(x)); return; }
     if ((t = q('data-cashl'))) { casHLGo(lvNow(x), t.dataset.cashl); return; }
-    if ((t = q('data-tana'))) { shopBuy(+t.dataset.tana); return; }
+    if ((t = q('data-tana'))) { const i = +t.dataset.tana, o = town.shop && town.shop.it[i]; if (!o) return; return twAsk(shopLabel(o.k) + (o.n > 1 ? ' ×' + o.n : '') + ' を買いますか？', '街コイン ' + o.p.toLocaleString(), () => shopBuy(i)); }
     if ((t = q('data-tanare'))) { payAsk('ゴールド 20 で、今日の5タナを並べかえますか？', async () => { if (!(await spendGold(20, 'town-shop'))) return; shopGen(); refreshCoins(); drawTown(); }); return; }
-    if ((t = q('data-alc'))) { alcMake(t.dataset.alc, lvNow(x)); return; }
+    if ((t = q('data-alc'))) { const r = ALC[t.dataset.alc], L = lvNow(x); if (!r) return; return twAsk(EX_MAT[r.k][0] + 'を作りますか？', '街コイン ' + r.sv.toLocaleString() + r.cost.map(([k, n]) => '・' + (EX_MAT[k] ? EX_MAT[k][0] : k) + '×' + n).join(''), () => alcMake(t.dataset.alc, L)); }
     if ((t = q('data-twadd'))) { townPick = +t.dataset.twadd; drawTown(); return; }
     if ((t = q('data-twput'))) { townClaimQuiet(); x.crew.push(t.dataset.twput); x.crew = x.crew.slice(0, 3); townPick = null; saveTown(); drawTown(); return; }
     if ((t = q('data-twoff'))) { townClaimQuiet(); x.crew.splice(+t.dataset.twoff, 1); saveTown(); drawTown(); return; }
