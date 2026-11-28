@@ -8154,7 +8154,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.391';
+  const APP_VER = '0.9.392';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -11839,7 +11839,13 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     {k: 'hane',   n: 'はねうさ',   i: '🐇', d: '小さな羽で飛ぶうさぎ',               fx: 'hunt',  t: 'ハンター協会の取れる量', need: 4, sv: 15000},
     {k: 'octan',  n: 'オクタン',   i: '🐙', d: 'オクタブロックから生まれた8本足の子', fx: 'luck',  t: 'カジノのもうけ・税金',   need: 5, sv: 25000},
   ];
-  const PET_ART = true, PET_MAX = 10, petMeat = lv => 5 * lv, petAdoptMeat = 10;
+  // 2026-11-28 本人「ペット簡単に上がりすぎ。1日でマックスってそりゃない」：
+  //   ・ごはんはペットごとに1日1回（2回目からはゴールドで。早く進めるのはゴールド）
+  //   ・肉の数は 20×Lv、Lv5からはG2以上・Lv8からはG3以上の肉、街コインも 300×Lv
+  //   → 毎日あげても Lv10 まで9日。肉のグレードも要るので、ハンター協会を育てる必要がある
+  const PET_ART = true, PET_MAX = 10, petMeat = lv => 20 * lv, petAdoptMeat = 10, petMinG = lv => lv >= 8 ? 3 : lv >= 5 ? 2 : 1, petTc = lv => 300 * lv, petGold = lv => 20 * lv;
+  const petFedToday = k => { const f = town.petFed; return !!(f && f.d === dmKey() && (f.k || []).includes(k)); };
+  const petFedMark = k => { if (!town.petFed || town.petFed.d !== dmKey()) town.petFed = {d: dmKey(), k: []}; if (!town.petFed.k.includes(k)) town.petFed.k.push(k); };
   const petBonus = fx => PETS.reduce((a, p) => a + (p.fx === fx && town.pets && town.pets[p.k] ? town.pets[p.k] * 2 : 0), 0) / 100;
   const TAPT = {pol: '政治', biz: '商売', tec: '技術', cha: '魅力', pow: '力仕事'};
   const TYPE_APT = {atk: 'pow', spd: 'biz', hp: 'cha', def: 'tec'};
@@ -11870,8 +11876,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   if (town.tc == null) town.tc = 0;
   town.p.forEach(x => { if (x && (x.b === 'dojo' || x.b === 'trial') && x.crew && x.crew.length) x.crew = []; });   // 2026-11-28 道場・試練場は「置く」をやめて修行の枠に                          // 2026-11-28 本人「3000コインを与えるのではなく」
   if (town.meat) { setTimeout(() => { giveItem('r_meat_1', town.meat); town.meat = 0; saveTown(); saveInv(); }, 0); }   // 前の肉 → 肉 G1
-  const meatN = () => [1, 2, 3, 4, 5].reduce((a, g) => a + own('r_meat_' + g), 0);
-  function useMeat(n){ for (let g = 1; g <= 5 && n > 0; g++) { const k = 'r_meat_' + g, u = Math.min(n, own(k)); if (u) { useMat(k, u); n -= u; } } saveInv(); }
+  const meatN = (minG) => [1, 2, 3, 4, 5].filter(g => g >= (minG || 1)).reduce((a, g) => a + own('r_meat_' + g), 0);
+  function useMeat(n, minG){ for (let g = minG || 1; g <= 5 && n > 0; g++) { const k = 'r_meat_' + g, u = Math.min(n, own(k)); if (u) { useMat(k, u); n -= u; } } saveInv(); }
   const tcN = () => town.tc | 0, addTc = n => { town.tc = Math.max(0, tcN() + n); saveTown(); };
   const homeLv = () => town.p[TOWN_HOME].lv;
   const plotsOpen = () => Math.min(TOWN_N * TOWN_N, 5 + 5 * homeLv());   // Lv1 10か所 … Lv4 25か所
@@ -12340,8 +12346,12 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if ((t = q('data-twup'))) { delete t.dataset.ok; if (!tCanPay(x.b, x.lv + 1) || isBuilding(x) || twNoRoom(townSel)) return; if (!twCanStart()) return toast(twBusyMsg()); const rm = twRoom && twRoom[townSel]; if (rm && rm.ok && Number.isInteger(rm.x)) { x.x = rm.x; x.z = rm.z; } townClaimQuiet(); tPay(x.b, x.lv + 1); x.lv++; x.done = now + buildMs(x.lv); saveTown(); toast('🔨 Lv' + x.lv + 'に工事を始めました'); drawTown(); return; }
     if ((t = q('data-petget'))) { const pt = PETS.find(p => p.k === t.dataset.petget); if (!pt || town.pets && town.pets[pt.k] || tcN() < pt.sv || meatN() < petAdoptMeat) return;
       return twAsk(pt.n + 'をお迎えしますか？', '街コイン ' + pt.sv.toLocaleString() + '・肉×' + petAdoptMeat + '（低いグレードから）', () => { if (tcN() < pt.sv || meatN() < petAdoptMeat) return; addTc(-pt.sv); useMeat(petAdoptMeat); town.pets = town.pets || {}; town.pets[pt.k] = 1; saveTown(); toast(pt.n + 'をお迎えしました！'); msgLog('get', '🐾 ペット：' + pt.n + 'をお迎えしました'); drawTown(); }); }
-    if ((t = q('data-petfeed'))) { const pt = PETS.find(p => p.k === t.dataset.petfeed), lv = town.pets && town.pets[pt.k]; if (!lv || lv >= PET_MAX || meatN() < petMeat(lv)) return;
-      return twAsk(pt.n + 'に肉をあげて、Lv' + (lv + 1) + 'にしますか？', '肉×' + petMeat(lv) + '（低いグレードから）', () => { if (meatN() < petMeat(lv)) return; townClaimQuiet(); useMeat(petMeat(lv)); town.pets[pt.k] = lv + 1; saveTown(); toast(pt.n + ' が Lv' + (lv + 1) + ' になった！'); drawTown(); }); }
+    if ((t = q('data-petfeed'))) { const pt = PETS.find(p => p.k === t.dataset.petfeed), lv = town.pets && town.pets[pt.k]; if (!lv || lv >= PET_MAX) return;
+      const mg = petMinG(lv), mn = petMeat(lv), tc = petTc(lv), fed = petFedToday(pt.k), gc = fed ? petGold(lv) : 0;
+      if (meatN(mg) < mn) { toast('肉（G' + mg + '以上）が' + mn + '個いります'); return; } if (tcN() < tc) { toast('街コインが' + tc.toLocaleString() + 'いります'); return; }
+      return twAsk(pt.n + 'にごはんをあげて、Lv' + (lv + 1) + 'にしますか？' + (fed ? '<br><small>今日はもうあげたので、2回目はゴールドがいります</small>' : ''), '肉（G' + mg + '以上）×' + mn + '・街コイン ' + tc.toLocaleString() + (gc ? '・ゴールド ' + gc : ''), async () => {
+        if (meatN(mg) < mn || tcN() < tc) return; if (gc && !(await spendGold(gc, 'pet'))) return;
+        townClaimQuiet(); useMeat(mn, mg); addTc(-tc); petFedMark(pt.k); town.pets[pt.k] = lv + 1; saveTown(); refreshCoins(); toast(pt.n + ' が Lv' + (lv + 1) + ' になった！'); drawTown(); }); }
     if ((t = q('data-spin'))) { casinoSpin(lvNow(x)); return; }
     if ((t = q('data-rent'))) { const [a, ...v] = t.dataset.rent.split(':'), val = v.join(':'), L = lvNow(x), go = () => rentDo(a, val, L);
       if (a === 'use') { const row = rentData && (rentData.list || []).find(r => r.rid === val); if (!row) return; return twAsk(fullName(ALLC[ALLC_IDX.get(row.cid)]) + 'を24時間借りますか？', '街コイン ' + rentCost(row.pow).toLocaleString(), go); }
@@ -12380,12 +12390,12 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   function petHTML(L){
     const ps = town.pets || {};
-    return '<h5>ペット <small>肉 ' + meatN() + '（ハンター協会で取れる・どのグレードでも）・ボーナスは全部のペットが効く</small></h5><div class="petlist">' + PETS.map(p => {
+    return '<h5>ペット <small>肉 ' + meatN() + '（ハンター協会で取れる）・ごはんは1日1回（2回目からはゴールド）・Lv5からG2以上、Lv8からG3以上の肉・ボーナスは全部のペットが効く</small></h5><div class="petlist">' + PETS.map(p => {
       const lv = ps[p.k] || 0, pic = PET_ART ? '<img alt="" src="img/pet/' + p.k + '.webp">' : '<i>' + p.i + '</i>';
       if (!lv) return '<div class="petrow' + (L < p.need ? ' lock' : '') + '">' + pic + '<div><b>' + p.n + '</b><small>' + p.d + '<br>街：' + p.t + ' +2〜20%／チーム：' + PET_BT[p.k][1] + ' +1〜10%</small></div>' +
         (L < p.need ? '<em>店Lv' + p.need + 'で</em>' : '<button data-petget="' + p.k + '"' + (tcN() >= p.sv && meatN() >= petAdoptMeat ? '' : ' disabled') + '>お迎え<small>' + ic('tc') + '' + p.sv.toLocaleString() + '・' + ic('meat') + petAdoptMeat + '</small></button>') + '</div>';
       return '<div class="petrow on">' + pic + '<div><b>' + p.n + ' <span>Lv' + lv + '</span></b><small>街：' + p.t + ' +' + lv * 2 + '%／チーム：' + PET_BT[p.k][1] + ' +' + lv + '%</small></div>' +
-        (lv >= PET_MAX ? '<em>MAX</em>' : '<button data-petfeed="' + p.k + '"' + (meatN() >= petMeat(lv) ? '' : ' disabled') + '>ごはん<small>' + ic('meat') + petMeat(lv) + '</small></button>') + '</div>'; }).join('') + '</div>';
+        (lv >= PET_MAX ? '<em>MAX</em>' : '<button data-petfeed="' + p.k + '"' + (meatN(petMinG(lv)) >= petMeat(lv) && tcN() >= petTc(lv) ? '' : ' disabled') + '>' + (petFedToday(p.k) ? '今日はあげた<small>' + ic('gold') + petGold(lv) + 'でもう1回</small>' : 'ごはん<small>' + ic('meat') + 'G' + petMinG(lv) + '+×' + petMeat(lv) + '・' + ic('tc') + petTc(lv).toLocaleString() + '</small>') + '</button>') + '</div>'; }).join('') + '</div>';
   }
   // カジノのルーレット：1日にカジノのレベルの回数だけ無料（シルバーをかけるものではない）
   const ROULETTE = [{w: 45, t: 'あたり', f: L => ({silver: 300 * L})}, {w: 20, t: 'いい感じ', f: L => ({silver: 1000 * L})}, {w: 15, t: 'あたり', f: L => ({meat: 5 + 3 * L})},
