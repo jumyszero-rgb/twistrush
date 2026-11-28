@@ -2,7 +2,7 @@
 //   「酒場では、キャラの貸し借りができるようにすると面白いかもしれない。強さによって必要な街コインが必要。貸し出ししてても自分でも使える。
 //    貸し出して使ってもらえたら、使ってもらった回数に応じて、経験値ポッドを取得可能。借りたものはチームに編成可能。成長はしない。貸し出し登録したら時のステータスが有効」
 //   ・貸す：自分のキャラを登録（登録したときのLV・★・進化・ステータスで固定）。枠は3つまで（ゲーム側で酒場のLvまで）
-//   ・借りる：ほかの人の登録から。同じ人の同じ枠は1日1回、1日10回まで。街コインはゲーム側で払う
+//   ・借りる：ほかの人の登録から（2026-11-28 本人「借りるキャラは一覧で出そう」：ランダム30件 → 強い順に最大300件の一覧）。同じ人の同じ枠は1日1回、1日10回まで。街コインはゲーム側で払う
 //   ・使ってもらった回数ぶん、貸した人が経験値ポットを受け取れる
 export const RENT_SLOTS = 3, RENT_DAY_MAX = 10;
 export const RENT_SCHEMA = [
@@ -14,11 +14,11 @@ const powOf = st => Math.round(st[0] * 3 + st[1] * 4 + st[2] * 3 + st[3] * 2);  
 const dayOf = t => new Date((t + 9 * 3600) * 1000).toISOString().slice(0, 10);      // 日本時間の日付
 // 相手のアカウントIDは見せない：登録ごとの番号（rid）で借りる
 const newRid = () => [...crypto.getRandomValues(new Uint8Array(9))].map(v => v.toString(16).padStart(2, '0')).join('');
-const row = r => ({ rid: r.rid, slot: r.slot, cid: r.cid, lv: r.lv, star: r.star, evo: r.evo, st: JSON.parse(r.st), pow: r.pow, name: r.name || '', uses: r.uses });
+const row = r => ({ rid: r.rid, slot: r.slot, cid: r.cid, lv: r.lv, star: r.star, evo: r.evo, st: JSON.parse(r.st), pow: r.pow, name: r.name || '', uses: r.uses, at: r.created_at });
 
 export async function rentHome(env, me, now) {
   const mine = (await env.DB.prepare('SELECT * FROM rent WHERE owner = ? ORDER BY slot').bind(me.id).all()).results || [];
-  const list = (await env.DB.prepare('SELECT r.*, a.name FROM rent r JOIN accounts a ON a.id = r.owner WHERE r.owner != ? AND a.banned = 0 ORDER BY RANDOM() LIMIT 30').bind(me.id).all()).results || [];
+  const list = (await env.DB.prepare('SELECT r.*, a.name FROM rent r JOIN accounts a ON a.id = r.owner WHERE r.owner != ? AND a.banned = 0 ORDER BY r.pow DESC LIMIT 300').bind(me.id).all()).results || [];
   const used = (await env.DB.prepare('SELECT r.rid FROM rent_use u JOIN rent r ON r.owner = u.owner AND r.slot = u.slot WHERE u.day = ? AND u.borrower = ?').bind(dayOf(now), me.id).all()).results || [];
   const n = (await env.DB.prepare('SELECT COUNT(*) AS n FROM rent_use WHERE day = ? AND borrower = ?').bind(dayOf(now), me.id).first()) || { n: 0 };
   return { mine: mine.map(r => Object.assign(row(r), { unpaid: r.unpaid })), list: list.map(row), used: used.map(u => u.rid), today: n.n, dayMax: RENT_DAY_MAX };
