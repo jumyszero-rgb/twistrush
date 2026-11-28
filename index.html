@@ -12192,9 +12192,9 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (!x) return;
     if ((t = q('data-twup'))) { if (!tCanPay(x.b, x.lv + 1) || isBuilding(x) || twNoRoom(townSel)) return; if (!twCanStart()) return toast(twBusyMsg()); const rm = twRoom && twRoom[townSel]; if (rm && rm.ok && Number.isInteger(rm.x)) { x.x = rm.x; x.z = rm.z; } townClaimQuiet(); tPay(x.b, x.lv + 1); x.lv++; x.done = now + buildMs(x.lv); saveTown(); toast('🔨 Lv' + x.lv + 'に工事を始めました'); drawTown(); return; }
     if ((t = q('data-petget'))) { const pt = PETS.find(p => p.k === t.dataset.petget); if (!pt || town.pets && town.pets[pt.k] || tcN() < pt.sv || meatN() < petAdoptMeat) return;
-      addTc(-pt.sv); useMeat(petAdoptMeat); town.pets = town.pets || {}; town.pets[pt.k] = 1; saveTown(); toast(pt.i + ' ' + pt.n + 'をお迎えしました！'); msgLog('get', '🐾 ペット：' + pt.n + 'をお迎えしました'); drawTown(); return; }
+      addTc(-pt.sv); useMeat(petAdoptMeat); town.pets = town.pets || {}; town.pets[pt.k] = 1; saveTown(); toast(pt.n + 'をお迎えしました！'); msgLog('get', '🐾 ペット：' + pt.n + 'をお迎えしました'); drawTown(); return; }
     if ((t = q('data-petfeed'))) { const pt = PETS.find(p => p.k === t.dataset.petfeed), lv = town.pets && town.pets[pt.k]; if (!lv || lv >= PET_MAX || (town.meat || 0) < petMeat(lv)) return;
-      townClaimQuiet(); useMeat(petMeat(lv)); town.pets[pt.k] = lv + 1; saveTown(); toast(pt.i + ' ' + pt.n + ' が Lv' + (lv + 1) + ' になった！'); drawTown(); return; }
+      townClaimQuiet(); useMeat(petMeat(lv)); town.pets[pt.k] = lv + 1; saveTown(); toast(pt.n + ' が Lv' + (lv + 1) + ' になった！'); drawTown(); return; }
     if ((t = q('data-spin'))) { casinoSpin(lvNow(x)); return; }
     if ((t = q('data-casbet'))) { casBet = +t.dataset.casbet; drawTown(); return; }
     if ((t = q('data-casslot'))) { casSlotGo(lvNow(x)); return; }
