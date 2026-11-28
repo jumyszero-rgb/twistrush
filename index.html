@@ -834,8 +834,8 @@ body.on-menu .battlemain{opacity:0;}
   .ofst{display:grid;grid-template-columns:1fr 1fr;gap:6px} .ofst div{background:rgba(255,255,255,.08);border-radius:10px;padding:7px 9px} .ofst span{display:block;font-size:11px;opacity:.8} .ofst b{font-size:15px}
   .ofh{margin:12px 0 6px;font-size:13px} .oflist div{display:flex;gap:8px;align-items:center;padding:5px 2px;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px} .oflist i{font-style:normal} .oflist span{margin-left:auto;font-size:12px;opacity:.85}
   .ofguide>div{display:flex;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.08)} .ofguide img{width:56px;height:56px;object-fit:contain;flex:0 0 56px} .ofguide b{font-size:14px} .ofguide em{font-style:normal;font-size:11px;margin-left:6px;color:#ffd34d}
-  .ofguide .tg{display:flex;flex-wrap:wrap;gap:3px;margin:3px 0} .ofguide .tg span{font-size:10.5px;font-weight:800;padding:1px 6px;border-radius:999px;background:rgba(255,211,77,.22);color:#ffe9a8} .ofguide small{font-size:11.5px;line-height:1.5;opacity:.9}
-  #tw3d{position:fixed;inset:0;z-index:9000;background:#7fc8e8} #town.p3d .twmap,#town.p3d .twcap,#town.p3d .tw3dbtn,#town.p3d .twd.tip,#town.p3d .twhead{display:none} #tw3d iframe{width:100%;height:100%;border:0;display:block} .twwalk{position:absolute;inset:8px;pointer-events:none;overflow:hidden}
+  .ofguide .tg{display:flex;flex-wrap:wrap;gap:3px;margin:3px 0} .ofguide .tg span{font-size:10.5px;font-weight:800;padding:1px 6px;border-radius:999px;background:rgba(255,211,77,.22);color:#ffe9a8} .tg span .ic{width:15px;height:15px;vertical-align:-3px} .ofguide small{font-size:11.5px;line-height:1.5;opacity:.9}
+  #tw3d{position:fixed;inset:0;z-index:9000;background:#1f1236} #town.p3d .twmap,#town.p3d .twcap,#town.p3d .tw3dbtn,#town.p3d .twd.tip,#town.p3d .twhead{display:none} #tw3d iframe{width:100%;height:100%;border:0;display:block} .twwalk{position:absolute;inset:8px;pointer-events:none;overflow:hidden}
   .twwalk img{position:absolute;left:0;width:13%;max-width:56px;animation:twWalk linear infinite,twBob ease-in-out infinite alternate;filter:drop-shadow(0 3px 2px rgba(0,0,0,.35))}
   @keyframes twWalk{0%{left:-14%;transform:scaleX(1)}49%{left:100%;transform:scaleX(1)}50%{left:100%;transform:scaleX(-1)}99%{left:-14%;transform:scaleX(-1)}100%{left:-14%;transform:scaleX(1)}}
   @keyframes twBob{to{margin-top:-3px}}
@@ -856,7 +856,7 @@ body.on-menu .battlemain{opacity:0;}
   .petrow>i{font-style:normal;font-size:30px;text-align:center} .petrow>img{width:40px;height:40px;object-fit:contain} .petrow b{font-size:14px} .petrow b span{font-size:12px;color:#ffd34d} .petrow small{display:block;font-size:11px;color:#eee6ff;line-height:1.45}
   .petrow.lock{opacity:.5} .petrow.on{background:rgba(255,211,77,.12)} .petrow em{font-style:normal;font-size:12px;font-weight:900;color:#ffd34d}
   .petrow button{border:0;border-radius:10px;padding:6px 10px;font:inherit;font-weight:900;font-size:13px;color:#3a2a00;background:#ffd34d;cursor:pointer} .petrow button small{color:#3a2a00;font-size:10px} .petrow button:disabled{opacity:.4}
-  .twspin{display:flex;align-items:center;gap:14px} .twspin .wheel{font-size:44px} .twspin .wheel.go{animation:twSpin 1s cubic-bezier(.2,.8,.3,1)} .twspin button{flex:1;border:0;border-radius:12px;padding:10px;font:inherit;font-weight:900;font-size:16px;color:#fff;background:linear-gradient(#ff6fa0,#e23a75);box-shadow:0 3px 0 #a3204f;cursor:pointer} .twspin button:disabled{opacity:.4}
+  .twspin{display:flex;align-items:center;gap:14px} .twspin .wheel{width:56px;height:56px;flex:none;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4);background:conic-gradient(#ff5d7a 0 45deg,#ffd23f 0 90deg,#4fc3ff 0 135deg,#7be06a 0 180deg,#ff5d7a 0 225deg,#ffd23f 0 270deg,#4fc3ff 0 315deg,#b98cff 0 360deg);position:relative} .twspin .wheel::after{content:'';position:absolute;left:50%;top:50%;width:12px;height:12px;margin:-6px;border-radius:50%;background:#fff} .twspin .wheel.go{animation:twSpin 1s cubic-bezier(.2,.8,.3,1)} .twspin button{flex:1;border:0;border-radius:12px;padding:10px;font:inherit;font-weight:900;font-size:16px;color:#fff;background:linear-gradient(#ff6fa0,#e23a75);box-shadow:0 3px 0 #a3204f;cursor:pointer} .twspin button:disabled{opacity:.4}
   @keyframes twSpin{from{transform:rotate(0)}to{transform:rotate(1440deg)}}
   .twdel{margin-top:10px;width:100%;border:1px solid rgba(255,120,140,.5);border-radius:10px;padding:7px;background:transparent;color:#ff9fb2;font:inherit;font-size:12px;cursor:pointer}
   .srpity{grid-column:1/-1;width:100%;text-align:center;font-size:12px;font-weight:800;color:#fff;margin:2px 0;text-shadow:0 1px 3px rgba(0,0,0,.9)} .srpity b{color:#ffd24a}
@@ -1997,13 +1997,13 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
 <button class="mtile" id="hubVsBtn" data-tip="ほかのプレイヤーと対戦。ランダム対戦・アリーナ・キャラ対戦・フレンド"><span class="mi"><img data-mimg="online" alt=""></span><span class="ml">対戦</span></button>
 </div>
 <div class="mgrid mview hidden" id="mvStory">
-<div class="mvhead"><button class="mvback" data-mvback="1">‹ もどる</button><b>ストーリー</b></div><button class="mtile wide story" id="storyBtn" data-tip="CPUと1対1で戦うメインのモード。ボスに勝つとキャラが仲間になる"><span class="mi"><img data-mimg="story" alt=""></span><span class="ml">冒険に出る<small></small></span></button><button class="mtile" id="gachaBtn" data-tip="虹の祭壇でガチャを引いて、仲間のキャラを呼ぶ"><span class="mi"><img data-gimg="cube" alt=""></span><span class="ml">ガチャ</span></button><button class="mtile" id="boxBtn" data-tip="持っているキャラとアイテムを見る。チームの4人と、持っていくアイテムをセットする"><span class="mi"><img data-mimg="box" alt=""></span><span class="ml">ボックス</span></button><button class="mtile passbtn" id="passBtn" data-tip="パス：無料・シルバー・ゴールドをくらべる。毎日の受け取りもここ"><span class="mi"><img data-mimg="pass" alt=""></span><span class="ml">パス</span></button><button class="mtile" id="expdHubBtn" data-tip="遠征：チームを送り出して、時間がたつと素材を持って帰ってくる"><span class="mi"><b class="mie">🧭</b></span><span class="ml">遠征</span></button><button class="mtile" id="forgeBtn" data-forge="1" data-tip="鍛冶屋：遠征で集めた素材で武器を作る。装備ガチャもここ"><span class="mi"><img data-mimg="forge" alt=""></span><span class="ml">鍛冶屋</span></button><button class="mtile" id="shopBtn" data-tip="コインでアイテムを買う"><span class="mi"><img data-mimg="shop" alt=""></span><span class="ml">ショップ</span></button><button class="mtile" id="mktBtn" data-tip="ミケの店：いらない武器や素材をニャンコインに換える。ほかのプレイヤーと預けて売り買いもできる"><span class="mi"><img data-mimg="market" alt=""></span><span class="ml">ミケの店</span></button><button class="mtile" id="townBtn" data-tip="わたしの街：建物を建てて、キャラを置いて運営させる。シルバーと鍛冶屋の素材がたまる"><span class="mi"><b class="mie">🏡</b></span><span class="ml">わたしの街</span></button>
+<div class="mvhead"><button class="mvback" data-mvback="1">‹ もどる</button><b>ストーリー</b></div><button class="mtile wide story" id="storyBtn" data-tip="CPUと1対1で戦うメインのモード。ボスに勝つとキャラが仲間になる"><span class="mi"><img data-mimg="story" alt=""></span><span class="ml">冒険に出る<small></small></span></button><button class="mtile" id="gachaBtn" data-tip="虹の祭壇でガチャを引いて、仲間のキャラを呼ぶ"><span class="mi"><img data-gimg="cube" alt=""></span><span class="ml">ガチャ</span></button><button class="mtile" id="boxBtn" data-tip="持っているキャラとアイテムを見る。チームの4人と、持っていくアイテムをセットする"><span class="mi"><img data-mimg="box" alt=""></span><span class="ml">ボックス</span></button><button class="mtile passbtn" id="passBtn" data-tip="パス：無料・シルバー・ゴールドをくらべる。毎日の受け取りもここ"><span class="mi"><img data-mimg="pass" alt=""></span><span class="ml">パス</span></button><button class="mtile" id="expdHubBtn" data-tip="遠征：チームを送り出して、時間がたつと素材を持って帰ってくる"><span class="mi"><img alt="" src="img/town3d/ic/island.webp"></span><span class="ml">遠征</span></button><button class="mtile" id="forgeBtn" data-forge="1" data-tip="鍛冶屋：遠征で集めた素材で武器を作る。装備ガチャもここ"><span class="mi"><img data-mimg="forge" alt=""></span><span class="ml">鍛冶屋</span></button><button class="mtile" id="shopBtn" data-tip="コインでアイテムを買う"><span class="mi"><img data-mimg="shop" alt=""></span><span class="ml">ショップ</span></button><button class="mtile" id="mktBtn" data-tip="ミケの店：いらない武器や素材をニャンコインに換える。ほかのプレイヤーと預けて売り買いもできる"><span class="mi"><img data-mimg="market" alt=""></span><span class="ml">ミケの店</span></button><button class="mtile" id="townBtn" data-tip="わたしの街：建物を建てて、キャラを置いて運営させる。シルバーと鍛冶屋の素材がたまる"><span class="mi"><img alt="" src="img/town3d/home_2.webp"></span><span class="ml">わたしの街</span></button>
 </div>
 <div class="mgrid mview hidden" id="mvChal">
 <div class="mvhead"><button class="mvback" data-mvback="1">‹ もどる</button><b>チャレンジ</b></div><button class="mtile wide dmwide" id="dmBtn" data-tip="今日の崩しミッション：毎日かわる。みんな同じ盤面で、決まった手数で点数を競う"><span class="mi"><img data-mimg="chal" alt=""></span><span class="ml">今日の崩し<small>毎日かわる・みんな同じ盤面で点数を競う</small></span></button><button class="mtile" id="sixtyBtn" data-tip="60秒で何点取れるか。記録はランキングに残る"><span class="mi"><img data-mimg="sixty" alt=""></span><span class="ml">60秒アタック</span></button><button class="mtile" id="startBtn" data-tip="カラーHPがどれか30になるまで、どれだけ長く生き残れるか。時間がたつほど厳しくなる。壊した中身と生き残った時間から、サバイバルレートが決まる。記録あり・コンティニュー1回"><span class="mi"><img data-mimg="endless" alt=""></span><span class="ml">サバイバル</span></button><button class="mtile" id="chalBtn" data-tip="毎週3つのお題：みんな同じ盤面・同じ条件で点数を競う。週間ランキングの順位でごほうび"><span class="mi"><img data-mimg="chal" alt=""></span><span class="ml">週のお題</span></button><button class="mtile" id="easyBtn" data-tip="イージー・ノーマル・ハードで練習。CPUのお手本も見られる。記録なし"><span class="mi"><img data-mimg="practice" alt=""></span><span class="ml">練習</span></button><button class="mtile" id="rankBtn" data-tip="60秒アタックとサバイバルの順位を見る"><span class="mi"><img data-mimg="ranking" alt=""></span><span class="ml">ランキング</span></button>
 </div>
 <div class="mgrid mview hidden" id="mvVs">
-<div class="mvhead"><button class="mvback" data-mvback="1">‹ もどる</button><b>対戦</b></div><button class="mtile wide vswide" id="vsBtn" data-tip="ほかの人と対戦する（準備中）"><span class="mi"><img data-mimg="online" alt=""></span><span class="ml">対戦する<small>ランダム対戦・部屋を作る</small></span></button><button class="mtile" id="olArenaBtn" data-tip="アリーナ：オートで戦う。相手のチームと勝負"><span class="mi"><b class="mie">🛡</b></span><span class="ml">アリーナ</span></button><button class="mtile" id="olCharaBtn" data-tip="チームのキャラで対戦する"><span class="mi"><b class="mie">⚔️</b></span><span class="ml">キャラ対戦</span></button><button class="mtile" id="olFrBtn" data-tip="フレンドの申請・招待・ひとこと"><span class="mi"><b class="mie">👥</b></span><span class="ml">フレンド</span></button><button class="mtile" id="olRankBtn" data-tip="対戦のレートの順位"><span class="mi"><b class="mie">🏆</b></span><span class="ml">対戦ランキング</span></button><button class="mtile" id="olShopBtn" data-tip="対戦メダルでアイテムと交換"><span class="mi"><b class="mie">🏅</b></span><span class="ml">メダル交換</span></button><button class="mtile" id="olJoinBtn" data-tip="友だちの部屋の番号で入る"><span class="mi"><b class="mie">🔢</b></span><span class="ml">番号で入る</span></button>
+<div class="mvhead"><button class="mvback" data-mvback="1">‹ もどる</button><b>対戦</b></div><button class="mtile wide vswide" id="vsBtn" data-tip="ほかの人と対戦する（準備中）"><span class="mi"><img data-mimg="online" alt=""></span><span class="ml">対戦する<small>ランダム対戦・部屋を作る</small></span></button><button class="mtile" id="olArenaBtn" data-tip="アリーナ：オートで戦う。相手のチームと勝負"><span class="mi"><img alt="" src="img/menu/online.webp"></span><span class="ml">アリーナ</span></button><button class="mtile" id="olCharaBtn" data-tip="チームのキャラで対戦する"><span class="mi"><img alt="" src="img/menu/forge.webp"></span><span class="ml">キャラ対戦</span></button><button class="mtile" id="olFrBtn" data-tip="フレンドの申請・招待・ひとこと"><span class="mi"><img alt="" src="img/town3d/ic/crew.webp"></span><span class="ml">フレンド</span></button><button class="mtile" id="olRankBtn" data-tip="対戦のレートの順位"><span class="mi"><img alt="" src="img/menu/ranking.webp"></span><span class="ml">対戦ランキング</span></button><button class="mtile" id="olShopBtn" data-tip="対戦メダルでアイテムと交換"><span class="mi"><img alt="" src="img/menu/achv.webp"></span><span class="ml">メダル交換</span></button><button class="mtile" id="olJoinBtn" data-tip="友だちの部屋の番号で入る"><span class="mi"><img alt="" src="img/town3d/ic/tag.webp"></span><span class="ml">番号で入る</span></button>
 </div>
         <div class="mtip hidden" id="menuTip"></div>
         <p class="mhint">長押しで説明が出ます</p>
@@ -8114,7 +8114,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.370';
+  const APP_VER = '0.9.372';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -11958,6 +11958,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   function ic(k){ if (k === 'tc') return '<img class="ic tcn" alt="街コイン" src="' + gImg('coin_silver') + '">';   // 街コインの絵がとどくまで：銀コインを銅色にして見分ける
     if (k === 'silver' || k === 'gold') return '<img class="ic" alt="" src="' + gImg(k === 'silver' ? 'coin_silver' : 'coin_gold') + '">';
     if (k === 'office') return '<img class="ic" alt="" src="img/town3d/office.webp">';
+    if (k === 'stone' && !TWIC_HAS.has('stone')) return '<img class="ic" alt="" src="img/town3d/quarry_3.webp">';   // 石の絵がとどくまで：採石場の絵
     if (TB[k]) return '<img class="ic" alt="" src="img/town3d/' + bImg(k) + '_' + (k === 'home' ? 1 : 3) + '.webp">';
     if (MAT_FAM[k] || TWIC_EMO[k]) return TWIC_ART && TWIC_HAS.has(k) ? '<img class="ic" alt="" src="img/town3d/ic/' + k + '.webp">' : '<i class="ice">' + (TWIC_EMO[k] || MAT_FAM[k].i) + '</i>';
     return ''; }
@@ -12036,7 +12037,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     { const dn = trnSess().filter(a => a.e <= Date.now()).length; if (dn) L.push([99, '道場・試練場から' + dn + '人帰ってきたよ。「受け取る」で結果が見られるよ。']); }
     if (cl.txt) L.push([100, '受け取れるものがたまってるよ（' + cl.txt + '）。上の「ここで受け取る」でどうぞ。8時間ぶんでたまるのが止まっちゃうから、こまめにね。']);
     town.p.forEach(x => { if (x && TB[x.b].needCrew && lvNow(x) >= 1 && !x.crew.some(unitOf)) L.push([95, TB[x.b].n + 'は、キャラを置くまで動かないよ。建物をタップして、育てたいキャラを置いてね。']); });
-    if (free > 0 && twCanStart()) L.push([90, 'あと' + free + '軒建てられるよ。3Dの街の「🏗 建てる」から選んでね。']);
+    if (free > 0 && twCanStart()) L.push([90, 'あと' + free + '軒建てられるよ。3Dの街の「建てる」から選んでね。']);
     if (!tHas('house')) L.push([85, 'まずは民家を建てよう！ 人がふえるのは民家だけ。人口がふえると、城の税金もふえるんだ。']);
     { const st = townStat(), w = workRate(), p = townPop();
       if (st.target < p - 1) L.push([92, (st.target === st.food ? '食べものが足りなくて' : st.target < st.home && st.target < st.food ? '仕事が足りなくて' : '住む所が足りなくて') + '、人が出ていってるよ（' + p + '人 → ' + st.target + '人）。' + (st.target === st.food ? '農場を建てるかLvを上げよう。' : st.target < st.home ? '商店・伐採所・採石場など、働く所をふやそう。' : '民家をふやそう。')]);
@@ -12053,7 +12054,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     { const nc = town.p.filter(x => x && !TB[x.b].fixed && !TB[x.b].needCrew && lvNow(x) >= 1 && !x.crew.some(unitOf)); if (nc.length) L.push([45, '建物にキャラを置くと、向いているステータスに合わせて効率が上がるよ。（' + nc.slice(0, 3).map(x => TB[x.b].n).join('・') + 'はまだだれもいないよ）']); }
     town.p.forEach(x => { if (x && isBuilding(x)) L.push([30, TB[x.b].n + 'は工事中。あと' + tLeft(x) + 'でできあがるよ。' + (ownAny('twtime') ? '時短券が' + ownAny('twtime') + '枚あるよ（「街のようす」から使えるよ）。' : '')]); });
     if (!twCanStart() && free > 0) L.push([88, '同時に工事できるのは' + twSlots() + '軒まで。工事枠をふやすと、何軒も一度に建てられるよ。']);
-    if ((town.deco || []).length < 5) L.push([20, '木や花を置くと、街がにぎやかになるよ。3Dの街の「🌳 かざる」からどうぞ。']);
+    if ((town.deco || []).length < 5) L.push([20, '木や花を置くと、街がにぎやかになるよ。3Dの街の「かざる」からどうぞ。']);
     if (!town.name) L.push([22, '街に名前をつけてみない？ 上の「名前をつける」からどうぞ。「〇〇タウン」みたいにね。']);
     if (!L.length) L.push([0, 'いい街になってきたね！ この調子でいこう。']);
     return L.sort((a, b) => b[0] - a[0]).map(x => x[1]);
@@ -12111,7 +12112,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         const b = TB[x.b], bld = isBuilding(x);
         return '<button class="twp b-' + x.b + (townSel === i ? ' sel' : '') + (bld ? ' bld' : '') + '" data-twp="' + i + '">' +
           (TOWN_ART ? '<img alt="" src="img/town3d/' + bImg(x.b) + '_' + Math.max(1, Math.min(5, lvNow(x))) + '.webp">' : '<i>' + b.i + '</i>') +
-          '<em>Lv' + Math.max(1, lvNow(x)) + '</em>' + (x.crew.length ? '<u>👤' + x.crew.length + '</u>' : '') + (bld ? '<s>🔨' + tLeft(x) + '</s>' : '') + '</button>'; }).join('') + '</div>' + twWalkers() + '</div>';
+          '<em>Lv' + Math.max(1, lvNow(x)) + '</em>' + (x.crew.length ? '<u>' + ic('crew') + x.crew.length + '</u>' : '') + (bld ? '<s>' + ic('hammer') + tLeft(x) + '</s>' : '') + '</button>'; }).join('') + '</div>' + twWalkers() + '</div>';
     const x = townSel >= 0 ? town.p[townSel] : null;
     if (townSel >= 0 && !x) {
       h += '<div class="twpanel"><h4>ここに建てる</h4>' + TB_ORDER.map(k => { const b = TB[k], dup = b.one && town.p.some(p => p && p.b === k), lock = b.needHome && homeLv() < b.needHome;
@@ -12120,7 +12121,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     } else if (x) {
       const b = TB[x.b], r = perHour(x), bld = isBuilding(x), maxLv = x.b === 'home' ? TOWN_MAXLV : Math.min(TOWN_MAXLV, homeLv());
       h += '<div class="twpanel"><h4>' + ic(x.b) + ' ' + b.n + ' <span>Lv' + Math.max(1, lvNow(x)) + (bld ? '（Lv' + x.lv + 'に工事中・あと' + tLeft(x) + '）' : '') + '</span></h4><p class="twd">' + b.d + '</p>' +
-        '<p class="twd">' + (b.needCrew && !x.crew.some(unitOf) ? '⚠ キャラを置くと動きます　' : '') + (b.pop ? '住める +' + Math.round(b.pop * Math.max(0, lvNow(x)) * crewMul(x)) + '人　' : '') + (b.food ? '食べもの +' + Math.round(b.food * Math.max(0, lvNow(x)) * crewMul(x)) + '人分　' : '') + (JOBS[x.b] && lvNow(x) >= 1 ? '働き口 ' + JOBS[x.b][1] * lvNow(x) + '人（' + JOBS[x.b][0] + '・人手 ' + Math.round(workRate() * 100) + '%）　' : '') + (r.silver ? ic('tc') + ' ' + Math.round(r.silver).toLocaleString() + ' / 時間　' : '') + (r.raw ? rawFams(x.b).map(f => TRAW[f][0]).join('・') + ' ' + r.raw.toFixed(1) + '個 / 時間　' : '') + (r.meat ? '🍖 ' + r.meat.toFixed(1) + '個 / 時間' : '') + (r.evo ? '💠 ' + (r.evo * 24).toFixed(1) + '個 / 日' : '') + (r.evog ? '　🔮 ' + (r.evog * 24).toFixed(1) + '個 / 日' : '') + (r.xp ? '📈 経験値 ' + Math.round(r.xp) + ' / 時間（1人）' : '') + (r.tr ? '➕ 約' + Math.round(1 / r.tr) + '時間ごとに＋1（1人・1つのステータスは＋' + trCap(lvNow(x)) + 'まで）' : '') + (x.b === 'home' ? '建てられる数 ' + plotsOpen() + 'こ（自分の家もふくむ）・建物はLv' + homeLv() + 'まで' : '') + '</p>' +
+        '<p class="twd">' + (b.needCrew && !x.crew.some(unitOf) ? '※キャラを置くと動きます　' : '') + (b.pop ? '住める +' + Math.round(b.pop * Math.max(0, lvNow(x)) * crewMul(x)) + '人　' : '') + (b.food ? '食べもの +' + Math.round(b.food * Math.max(0, lvNow(x)) * crewMul(x)) + '人分　' : '') + (JOBS[x.b] && lvNow(x) >= 1 ? '働き口 ' + JOBS[x.b][1] * lvNow(x) + '人（' + JOBS[x.b][0] + '・人手 ' + Math.round(workRate() * 100) + '%）　' : '') + (r.silver ? ic('tc') + ' ' + Math.round(r.silver).toLocaleString() + ' / 時間　' : '') + (r.raw ? rawFams(x.b).map(f => TRAW[f][0]).join('・') + ' ' + r.raw.toFixed(1) + '個 / 時間　' : '') + (r.meat ? ic('meat') + ' ' + r.meat.toFixed(1) + '個 / 時間' : '') + (r.evo ? ic('evo_c') + ' ' + (r.evo * 24).toFixed(1) + '個 / 日' : '') + (r.evog ? '　' + ic('evo_g') + ' ' + (r.evog * 24).toFixed(1) + '個 / 日' : '') + (r.xp ? ic('xp') + ' 経験値 ' + Math.round(r.xp) + ' / 時間（1人）' : '') + (r.tr ? ic('tr') + ' 約' + Math.round(1 / r.tr) + '時間ごとに＋1（1人・1つのステータスは＋' + trCap(lvNow(x)) + 'まで）' : '') + (x.b === 'home' ? '建てられる数 ' + plotsOpen() + 'こ（自分の家もふくむ）・建物はLv' + homeLv() + 'まで' : '') + '</p>' +
         (b.train ? (lvNow(x) >= 1 ? trnHTML(x) : '') : '<h5>運営するキャラ（3人まで・向いている：' + TAPT[b.apt] + '）<small>育てるほど生産が上がる</small></h5><div class="twcrew">' +
         [0, 1, 2].map(k => { const u = unitOf(x.crew[k]); return u ? '<button class="twc" data-twoff="' + k + '"><span class="tic" data-ci="' + ciOf(u) + '"></span><b>' + evoName(u) + '</b><small>' + '★'.repeat(aptStars(aptOf(u, b.apt))) + '</small></button>'
           : '<button class="twc add" data-twadd="' + k + '">＋ 置く</button>'; }).join('') + '</div>');
@@ -12137,9 +12138,9 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         h += '<div class="twpick"><h5>置くキャラを選ぶ（向いている順）</h5>' + (list.length ? list.map(({u, v}) => '<button data-twput="' + u.u + '"><span class="tic" data-ci="' + ciOf(u) + '"></span><b>' + evoName(u) + '</b><small>LV' + u.lv + '　' + '★'.repeat(aptStars(v)) + '</small></button>').join('') : '<p class="twd">置けるキャラがいません</p>') + '</div>';
       }
       if (bld) h += twWorkHTML(townSel);
-      if (lvNow(x) < TOWN_MAXLV && !bld && !twCanStart()) h += '<div class="twup"><b>Lv' + (x.lv + 1) + 'に上げる</b><p class="twd">⚠ ' + twBusyMsg() + '</p></div>' + twSlotHTML();
+      if (lvNow(x) < TOWN_MAXLV && !bld && !twCanStart()) h += '<div class="twup"><b>Lv' + (x.lv + 1) + 'に上げる</b><p class="twd">※' + twBusyMsg() + '</p></div>' + twSlotHTML();
       else if (lvNow(x) < TOWN_MAXLV && !bld) h += lvNow(x) >= maxLv ? '<p class="twd">家をLv' + (x.lv + 1) + 'にすると、もっと上げられます</p>'
-        : twNoRoom(townSel) ? '<div class="twup"><b>Lv' + (x.lv + 1) + 'に上げる</b><p class="twd">⚠ Lv' + (x.lv + 1) + 'は' + twRoom[townSel].s + '×' + twRoom[townSel].s + 'マスに広がります（左右と奥に広がる）。まわりを空けてね（3Dの街の「🌳 かざる」で木や道をどかせます）</p><button disabled>まわりを空けてね</button></div>'
+        : twNoRoom(townSel) ? '<div class="twup"><b>Lv' + (x.lv + 1) + 'に上げる</b><p class="twd">※Lv' + (x.lv + 1) + 'は' + twRoom[townSel].s + '×' + twRoom[townSel].s + 'マスに広がります（左右と奥に広がる）。まわりを空けてね（3Dの街の「かざる」で木や道をどかせます）</p><button disabled>まわりを空けてね</button></div>'
         : '<div class="twup"><b>Lv' + (x.lv + 1) + 'に上げる</b><div>' + tCostHTML(x.b, x.lv + 1) + '</div><button data-twup="1"' + (tCanPay(x.b, x.lv + 1) ? '' : ' disabled') + '>⬆ 上げる</button></div>';
       if (!b.fixed) h += '<button class="twdel" data-twdel="1">こわす（お金・素材は戻りません）</button>';
       h += '</div>';
@@ -12163,12 +12164,16 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   // 2026-11-26 マス目：建物の場所（x,z＝左奥のマス）と広さのもとになるレベル（工事中は工事後のレベルで場所をとる）
   const twPlot = x => { const L = Math.max(1, Math.min(5, lvNow(x))), bld = isBuilding(x);
-    return {t: 'bld', b: x.b, lv: x.lv, x: x.x, z: x.z, img: 'img/town3d/' + x.b + '_' + L + '.webp', tag: TB[x.b].n + ' Lv' + L + (bld ? ' 🔨' : ''), busy: bld}; };
+    return {t: 'bld', b: x.b, lv: x.lv, x: x.x, z: x.z, img: 'img/town3d/' + x.b + '_' + L + '.webp', tag: TB[x.b].n + ' Lv' + L + (bld ? '（工事中）' : ''), busy: bld}; };
   let twRoom = null;
   const twNoRoom = i => TOWN_ART && twRoom && twRoom[i] && twRoom[i].ok === false;   // 2026-11-26 本人「A：まわりを空けてね と出てレベルアップできない」                 // 3Dの島から：建物ごとに次のレベルの広さが空いているか {i: {ok, s}}
   const twInt = v => Number.isInteger(v) && Math.abs(v) < 80;
   // 建物が何に効くか（2026-11-26 本人「なにがどんな効果があるのか基準が必要」）
-  const twTags = b => [b.pop && '🏠 住まい', b.food && '🌾 食べもの', (Object.keys(TB).find(k => TB[k] === b) in JOBS) && '💼 ' + JOBS[Object.keys(TB).find(k => TB[k] === b)][0], b.silver && '🪙 街コイン', b.raw && '🧱 素材', b.meat && '🍖 肉', b.evo && '💎 進化素材', b.train === 'xp' && '📈 経験値', b.train === 'tr' && '💪 ステータス', b === TB.petshop && '🐾 ペット', b === TB.casino && '🎰 ルーレット', b.one && '1つだけ'].filter(Boolean);
+  // 2026-11-28 本人「商業とかのアイコンが機種固有なのでおかしい」：絵文字をやめて絵にする（3Dの街にも同じHTMLを送る）
+  const JOB_IC = {'商業': 'shop', '農業': 'farm', '生産': 'hammer'};
+  const twTags = b => { const k = Object.keys(TB).find(q => TB[q] === b), job = k in JOBS ? JOBS[k][0] : '';
+    return [b.pop && ic('pop') + '住まい', b.food && ic('farm') + '食べもの', job && ic(JOB_IC[job] || 'crew') + job, b.silver && ic('tc') + '街コイン', b.raw && ic('box') + '素材', b.meat && ic('meat') + '肉', b.evo && ic('evo_c') + '進化素材',
+      b.train === 'xp' && ic('xp') + '経験値', b.train === 'tr' && ic('tr') + 'ステータス', b === TB.petshop && '<img class="ic" alt="" src="img/pet/koro.webp">ペット', b === TB.casino && ic('casino') + 'ルーレット', b.one && '1つだけ'].filter(Boolean); };
   const twFreeSlot = () => plotOrder.find(i => plotOk(i) && !town.p[i]);
   const tCostTxt = (b, lv) => (lv <= 1 ? 'シルバー ' : '街コイン ') + tSilverCost(b, lv).toLocaleString() + tMatCost(b, lv).map(([k, n]) => '・' + EX_MAT[k][0] + '×' + n).join('');
   // 2026-11-28 本人「それぞれのボタンを押したときは、確認をだしなよ。いきなりアイテム変えちゃったでしょ？」：使う・買う・建てるボタンは、何を使うかを見せてから
@@ -12190,7 +12195,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (d.op === 'blist') { const fr = twFreeSlot();
       return {ok: true, free: plotOrder.filter(i => plotOk(i) && !town.p[i]).length, list: TB_ORDER.map(k => { const b = TB[k], dup = b.one && town.p.some(p => p && p.b === k), lock = b.needHome && homeLv() < b.needHome;
         const why = fr == null ? '建てられる数がいっぱい' : !twCanStart() ? '工事中（同時に' + twSlots() + '軒まで）' : dup ? '1つだけ' : lock ? '家Lv' + b.needHome + 'から' : !tCanPay(k, 1) ? '足りない：' + tCostTxt(k, 1) : '';
-        return {k, n: b.n, ok: !why, why, cost: tCostTxt(k, 1), d: b.d, tags: twTags(b)}; })}; }
+        return {k, n: b.n, ok: !why, why, cost: tCostTxt(k, 1), d: b.d, tagsH: twTags(b)}; })}; }
     if (d.op === 'build') { const k = d.b, b = TB[k], i = twFreeSlot(); if (!b || b.fixed || i == null || !twInt(d.x) || !twInt(d.z)) return {ok: false, msg: '建てられません'};
       if (b.one && town.p.some(p => p && p.b === k)) return {ok: false, msg: '1つだけ建てられます'}; if (b.needHome && homeLv() < b.needHome) return {ok: false, msg: '家Lv' + b.needHome + 'から'};
       if (!tCanPay(k, 1)) return {ok: false, msg: '街コインか素材が足りません'}; if (!twCanStart()) return {ok: false, msg: twBusyMsg()}; const now = Date.now(); tPay(k, 1);
@@ -12310,9 +12315,9 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     return '<h5>ペット <small>肉 ' + meatN() + '（ハンター協会で取れる・どのグレードでも）・ボーナスは全部のペットが効く</small></h5><div class="petlist">' + PETS.map(p => {
       const lv = ps[p.k] || 0, pic = PET_ART ? '<img alt="" src="img/pet/' + p.k + '.webp">' : '<i>' + p.i + '</i>';
       if (!lv) return '<div class="petrow' + (L < p.need ? ' lock' : '') + '">' + pic + '<div><b>' + p.n + '</b><small>' + p.d + '<br>街：' + p.t + ' +2〜20%／チーム：' + PET_BT[p.k][1] + ' +1〜10%</small></div>' +
-        (L < p.need ? '<em>店Lv' + p.need + 'で</em>' : '<button data-petget="' + p.k + '"' + (tcN() >= p.sv && meatN() >= petAdoptMeat ? '' : ' disabled') + '>お迎え<small>' + ic('tc') + '' + p.sv.toLocaleString() + '・🍖' + petAdoptMeat + '</small></button>') + '</div>';
+        (L < p.need ? '<em>店Lv' + p.need + 'で</em>' : '<button data-petget="' + p.k + '"' + (tcN() >= p.sv && meatN() >= petAdoptMeat ? '' : ' disabled') + '>お迎え<small>' + ic('tc') + '' + p.sv.toLocaleString() + '・' + ic('meat') + petAdoptMeat + '</small></button>') + '</div>';
       return '<div class="petrow on">' + pic + '<div><b>' + p.n + ' <span>Lv' + lv + '</span></b><small>街：' + p.t + ' +' + lv * 2 + '%／チーム：' + PET_BT[p.k][1] + ' +' + lv + '%</small></div>' +
-        (lv >= PET_MAX ? '<em>MAX</em>' : '<button data-petfeed="' + p.k + '"' + (meatN() >= petMeat(lv) ? '' : ' disabled') + '>ごはん<small>🍖' + petMeat(lv) + '</small></button>') + '</div>'; }).join('') + '</div>';
+        (lv >= PET_MAX ? '<em>MAX</em>' : '<button data-petfeed="' + p.k + '"' + (meatN() >= petMeat(lv) ? '' : ' disabled') + '>ごはん<small>' + ic('meat') + petMeat(lv) + '</small></button>') + '</div>'; }).join('') + '</div>';
   }
   // カジノのルーレット：1日にカジノのレベルの回数だけ無料（シルバーをかけるものではない）
   const ROULETTE = [{w: 45, t: 'あたり', f: L => ({silver: 300 * L})}, {w: 20, t: 'いい感じ', f: L => ({silver: 1000 * L})}, {w: 15, t: 'あたり', f: L => ({meat: 5 + 3 * L})},
@@ -12331,7 +12336,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   async function casTopSend(kind, val, info){ if (!rankTok() || !val) return; try { const r = await api('/api/casino/top', {tok: rankTok(), method: 'POST', body: JSON.stringify({kind, val, info})}); if (r && r.top) casTop = r.top; } catch (_) {} }
   const casTopHTML = () => { if (!casTop) return rankTok() ? '' : '<p class="twd">ログインすると「今日のハイスコア」に参加できます</p>';
     const col = (t, L) => '<div><b>' + t + '</b>' + (L && L.length ? '<ol>' + L.map(x => '<li><span>' + esc2(x.name) + '</span><em>' + ic('silver') + x.v.toLocaleString() + '</em><small>' + esc2(x.i || '') + '</small></li>').join('') + '</ol>' : '<p>まだだれも</p>') + '</div>';
-    return '<div class="castop"><h5>🏆 今日のハイスコア <small>全員・毎日0時にリセット</small></h5><div class="ctg">' + col('🎰 スロット', casTop.slot) + col('🃏 ハイ＆ロー', casTop.hl) + '</div></div>'; };
+    return '<div class="castop"><h5>今日のハイスコア <small>全員・毎日0時にリセット</small></h5><div class="ctg">' + col('スロット', casTop.slot) + col('ハイ＆ロー', casTop.hl) + '</div></div>'; };
   document.addEventListener('visibilitychange', () => { if (document.hidden) casLogSend(true); });
   async function casLogSend(force){ if (!rankTok() || !casLog.n || (!force && casLog.n < 5)) return; const b = casLog; casLog = {bet: 0, pay: 0, n: 0};
     try { const r = await api('/api/casino/log', {tok: rankTok(), method: 'POST', body: JSON.stringify(b)}); if (r && r.luck) { casLuck = r.luck; casLuckT = Date.now(); } } catch (_) {} }
@@ -12355,13 +12360,13 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     let h = '<h5>' + ic('silver') + ' シルバーをかける <small>所持 ' + coins.toLocaleString() + '・1回 ' + mx.toLocaleString() + 'まで（カジノのLvで上がる）</small></h5><div class="casbet">' +
       CAS_BETS.map(b => '<button data-casbet="' + b + '"' + (b === casBet ? ' class="on"' : '') + (b > mx ? ' disabled' : '') + '>' + b.toLocaleString() + '</button>').join('') + '</div>';
     // スロット
-    h += '<div class="cas cslot"><b>🎰 スロット</b><div class="slot" id="casReels">' + (casSlot ? casSlot.r : ['box', 'gem', 'rush']).map(k => '<span class="reel"><i class="strip"><em>' + ic(k) + '</em></i></span>').join('') + '<div class="payline"></div></div>' +
+    h += '<div class="cas cslot"><b>スロット</b><div class="slot" id="casReels">' + (casSlot ? casSlot.r : ['box', 'gem', 'rush']).map(k => '<span class="reel"><i class="strip"><em>' + ic(k) + '</em></i></span>').join('') + '<div class="payline"></div></div>' +
       '<small>3つそろう：' + Object.keys(SLOT_3).map(k => ic(k) + '×' + SLOT_3[k]).join(' ') + '<br>2つそろう（どこでも）：' + Object.keys(SLOT_2).map(k => ic(k) + '×' + SLOT_2[k]).join(' ') + '</small>' +
-      '<p class="casres ' + (casSlot ? (casSlot.win ? 'w' : 'l') : '') + '" id="casSlotRes">' + (casSlot ? (casSlot.win ? (casSlot.why || '') + (casSlot.big ? '🎉 大当たり！ +' : casSlot.win < casBet ? '少しもどった +' : '当たり！ +') + casSlot.win.toLocaleString() : 'はずれ…') : '　') + '</p>' +
+      '<p class="casres ' + (casSlot ? (casSlot.win ? 'w' : 'l') : '') + '" id="casSlotRes">' + (casSlot ? (casSlot.win ? (casSlot.why || '') + (casSlot.big ? '大当たり！ +' : casSlot.win < casBet ? '少しもどった +' : '当たり！ +') + casSlot.win.toLocaleString() : 'はずれ…') : '　') + '</p>' +
       (casLuck > 1.02 ? '<div class="cpity"><b>いま全体で当たりやすい日！</b></div>' : '') +
       '<button class="casgo" data-casslot="1"' + (coins >= casBet && !casAnim ? '' : ' disabled') + '>' + casBet.toLocaleString() + ' かけて回す</button></div>';
     // ハイ＆ロー
-    h += '<div class="cas"><b>🃏 ハイ＆ロー</b><small>次のカードが大きいか小さいかを当てる（同じ数はドロー）。当たると続けられる（5回まで）。続けて当てるほど、受け取るときにボーナス</small>';
+    h += '<div class="cas"><b>ハイ＆ロー</b><small>次のカードが大きいか小さいかを当てる（同じ数はドロー）。当たると続けられる（5回まで）。続けて当てるほど、受け取るときにボーナス</small>';
     if (!casHL) h += (casMsg ? '<p class="casres">' + casMsg + '</p>' : '') + '<button class="casgo" data-cashl="start"' + (coins >= casBet ? '' : ' disabled') + '>' + casBet.toLocaleString() + ' かけて始める</button>';
     else { const c = casHL.c, hu = hlMul(c, true), lo = hlMul(c, false);
       h += '<div class="hlrow"><div class="hlcard' + (casHL.deal ? ' deal' : '') + '">' + hlFace(c) + '</div><div class="hlvs">？</div><div class="hlflip" id="hlNext"><div class="hlin"><div class="hlback"></div><div class="hlcard hlfront"></div></div></div></div>' +
@@ -12400,7 +12405,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
       if (draw) { casHL.deal = true; casTick(800, .05); drawTown(); const r = $('hlRes'); if (r) { r.className = 'casres'; r.textContent = 'ドロー（同じ ' + hlName(nx) + '）そのまま続けられる　いま ' + casHL.pot.toLocaleString(); } casHL.deal = false; return; }
       if (!ok) { casMsg = '次は ' + hlName(nx) + '…はずれ（' + casHL.pot.toLocaleString() + ' なくなった）'; casHL = null; casLoseSnd(); drawTown(); return; }
       casHL.pot = Math.floor(casHL.pot * mul); casHL.n++; casHL.c = nx; casHL.deal = true; casWinSnd(casHL.n >= 5);
-      if (casHL.n >= 5) { const v = hlTake(); addCoins(v); casMsg = '🎉 5連続！ +' + v.toLocaleString() + '（ボーナス ×' + HL_BONUS[5] + '）'; casTopSend('hl', v, '5連続'); casHL = null; refreshCoins(); }
+      if (casHL.n >= 5) { const v = hlTake(); addCoins(v); casMsg = '5連続！ +' + v.toLocaleString() + '（ボーナス ×' + HL_BONUS[5] + '）'; casTopSend('hl', v, '5連続'); casHL = null; refreshCoins(); }
       drawTown(); if (casHL) casHL.deal = false; };
     const card = $('hlNext'); if (!card) return fin();
     casAnim = true; document.querySelectorAll('[data-cashl]').forEach(b => b.disabled = true);
@@ -12435,11 +12440,11 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   const rentCost = pow => Math.round((200 + pow / 2) / 10) * 10, rentMax = L => 1 + Math.floor((L - 1) / 2);
   async function rentLoad(){ if (rentBusy || !rankTok()) return; rentBusy = true; try { rentData = await api('/api/rent', {tok: rankTok()}); } catch (e) { rentData = {err: 'サーバーにつながりませんでした'}; } rentBusy = false; drawTown(); }
   function rentHTML(L){
-    if (!rankTok()) return '<h5>🍺 キャラの貸し借り</h5><p class="twd">ログインすると、ほかの人とキャラの貸し借りができます</p>';
-    if (!rentData) { setTimeout(rentLoad, 0); return '<h5>🍺 キャラの貸し借り</h5><p class="twd">読みこみ中…</p>'; }
-    if (rentData.err) return '<h5>🍺 キャラの貸し借り</h5><p class="twd">' + rentData.err + ' <button class="twmini" data-rent="reload">もう一度</button></p>';
+    if (!rankTok()) return '<h5>' + ic('tavern') + ' キャラの貸し借り</h5><p class="twd">ログインすると、ほかの人とキャラの貸し借りができます</p>';
+    if (!rentData) { setTimeout(rentLoad, 0); return '<h5>' + ic('tavern') + ' キャラの貸し借り</h5><p class="twd">読みこみ中…</p>'; }
+    if (rentData.err) return '<h5>' + ic('tavern') + ' キャラの貸し借り</h5><p class="twd">' + rentData.err + ' <button class="twmini" data-rent="reload">もう一度</button></p>';
     rentPrune(); const now = Date.now(), mx = rentMax(L);
-    let h = '<h5>🍺 借りているキャラ ' + rentU.length + ' / ' + mx + ' <small>24時間・成長しない・チームに入れられる</small></h5><div class="trn">' +
+    let h = '<h5>' + ic('tavern') + ' 借りているキャラ ' + rentU.length + ' / ' + mx + ' <small>24時間・成長しない・チームに入れられる</small></h5><div class="trn">' +
       (rentU.length ? rentU.map(u => '<div class="trs"><span class="tic" data-ci="' + ciOf(u) + '"></span><div><b>' + fullName(ALLC[ciOf(u)]) + '</b><small>LV' + u.lv + (u.star ? ' ★' + u.star : '') + '・' + esc2(u.rent.name || '？') + 'さんから</small><small>あと' + fmtLeft(u.rent.until - now) + '</small></div>' +
         (curTeam().includes(u.u) ? '<small>チーム' + (teamNo + 1) + 'に入っている</small>' : '<button data-rent="team:' + u.u + '">チーム' + (teamNo + 1) + 'に入れる</button>') + '</div>').join('') : '<p class="twd">まだ借りていません</p>') + '</div>';
     h += '<h5>借りる <small>今日 ' + (rentData.today || 0) + ' / ' + rentData.dayMax + '回・同じキャラは1日1回</small></h5><div class="rentl">' + ((rentData.list || []).length ? rentData.list.map(r => { const ci = ALLC_IDX.get(r.cid); if (ci == null) return '';
@@ -12473,7 +12478,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   function casinoHTML(L){
     const today = dmKey(), used = town.spin && town.spin.day === today ? town.spin.n : 0, left = Math.max(0, L - used);
-    return '<h5>🎡 ルーレット <small>きょうはあと' + left + '回（毎日0時にもどる）</small></h5><div class="twspin"><div class="wheel" id="twWheel">🎡</div><button data-spin="1"' + (left ? '' : ' disabled') + '>回す</button></div>' +
+    return '<h5>ルーレット <small>きょうはあと' + left + '回（毎日0時にもどる）</small></h5><div class="twspin"><div class="wheel" id="twWheel"></div><button data-spin="1"' + (left ? '' : ' disabled') + '>回す</button></div>' +
       '<p class="twd">街コイン・肉・素材が当たる。超大当たりは「進化の結晶」</p>';
   }
   function casinoSpin(L){

@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>わたしの街 3D</title>
 <style>
-  html,body{margin:0;height:100%;overflow:hidden;background:#7fc8e8;font-family:system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:#fff;-webkit-user-select:none;user-select:none;touch-action:none}
+  html,body{margin:0;height:100%;overflow:hidden;background:#1f1236;font-family:system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;color:#fff;-webkit-user-select:none;user-select:none;touch-action:none}
   canvas{display:block}
   .bar{position:fixed;left:0;right:0;top:0;display:flex;align-items:center;gap:6px;padding:10px 10px;padding-top:max(10px,env(safe-area-inset-top));background:linear-gradient(rgba(20,12,40,.6),rgba(20,12,40,0));pointer-events:none}
   .bar b{font-size:15px;flex:1;min-width:0;overflow:hidden;text-overflow:clip;text-shadow:0 1px 3px rgba(0,0,0,.5);white-space:nowrap}
@@ -29,7 +29,7 @@
   .bl .it{display:flex;gap:8px;align-items:flex-start;text-align:left;border:2px solid transparent;border-radius:12px;background:rgba(255,255,255,.08);color:#fff;font:inherit;padding:6px 8px;cursor:pointer}
   .bl .it img{flex:0 0 56px;width:56px;height:56px;object-fit:contain}
   .bl .it div{flex:1;min-width:0} .bl .it b{font-size:14px} .bl .it .sz{margin-left:6px;font-size:11px;color:#cfc6e6;font-weight:700}
-  .bl .it .tg{display:flex;flex-wrap:wrap;gap:3px;margin:3px 0} .bl .it .tg span{font-size:10.5px;font-weight:800;padding:1px 6px;border-radius:999px;background:rgba(255,211,77,.22);color:#ffe9a8}
+  .bl .it .tg{display:flex;flex-wrap:wrap;gap:3px;margin:3px 0} .bl .it .tg span{font-size:10.5px;font-weight:800;padding:1px 6px;border-radius:999px;background:rgba(255,211,77,.22);color:#ffe9a8} .bl .it .tg span{display:inline-flex;align-items:center;gap:2px} .bl .it .tg .ic{width:15px;height:15px;object-fit:contain;margin:0;vertical-align:middle;border-radius:0;box-shadow:none;background:none}
   .bl .it .d{font-size:11px;line-height:1.5;color:#e8e1f8} .bl .it .c{font-size:11.5px;font-weight:900;color:#ffd34d;margin-top:2px} .bl .it.ng{opacity:.55} .bl .it.ng .c{color:#ff9aa8}
   .bl .mini{display:none;align-items:center;gap:8px;padding:8px 10px} .bl.min .list,.bl.min > p{display:none} .bl.min .mini{display:flex}
   .bl .mini span{flex:1;font-size:12.5px;font-weight:800;color:#ffe9a8} .bl .mini button{border:0;border-radius:999px;padding:7px 10px;font:inherit;font-weight:800;font-size:12px;background:rgba(255,255,255,.92);color:#3a2a00}
@@ -48,14 +48,19 @@
   .maps .row{display:flex;gap:6px;overflow-x:auto} .maps .row button{flex:0 0 auto;border:2px solid transparent;border-radius:12px;padding:8px 10px;font:inherit;font-size:12.5px;font-weight:900;color:#fff;background:rgba(255,255,255,.12);cursor:pointer}
   .maps .row button.sel{border-color:#ffd34d;background:rgba(255,211,77,.25)}
   .maps .ok{display:block;width:100%;margin-top:10px;border:0;border-radius:12px;padding:11px;font:inherit;font-weight:900;font-size:15px;color:#3a2a00;background:linear-gradient(#ffe27a,#ffbf1f);box-shadow:0 3px 0 #c98a00;cursor:pointer}
-</style></head><body>
-<div class="bar"><button class="w" id="back">‹ もどる</button><b id="tnm">わたしの街</b><button id="ag" class="w">📐</button><button id="tm">🕒</button></div>
+.sw{display:block;width:34px;height:34px;margin:0 auto 2px;border-radius:8px;box-shadow:inset 0 0 0 2px rgba(0,0,0,.25)} .sw.road{background:#a7794a} .sw.br1{background:repeating-linear-gradient(90deg,#b07a42 0 6px,#8a5a2b 6px 8px)} .sw.br2{background:repeating-linear-gradient(90deg,#b9b4ab 0 8px,#8f8a82 8px 10px)} .sw.er{background:#fff;position:relative} .sw.er::before,.sw.er::after{content:'';position:absolute;left:6px;right:6px;top:15px;height:4px;border-radius:2px;background:#e2445c;transform:rotate(45deg)} .sw.er::after{transform:rotate(-45deg)}
+  /* 2026-11-28 本人「街に入ると2秒くらいブルーバックになってから街が表示される」：絵がそろうまで読みこみ画面を出す */
+  .ld{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:radial-gradient(circle at 50% 40%,#3b2566,#1f1236);transition:opacity .35s}
+  .ld.out{opacity:0;pointer-events:none} .ld img{width:120px;height:120px;object-fit:contain;animation:ldb 1.2s ease-in-out infinite alternate} .ld b{font-size:15px;color:#ffe9a8;letter-spacing:1px}
+  @keyframes ldb{from{transform:translateY(0)}to{transform:translateY(-8px)}}
+</style></head><body><div class="ld" id="ld"><img alt="" src="img/town3d/home_2.webp"><b>街を読みこみ中…</b></div>
+<div class="bar"><button class="w" id="back">‹ もどる</button><b id="tnm">わたしの街</b><button id="ag" class="w"></button><button id="tm"></button></div>
 <div class="side"><button id="cl" class="claim">受け取る<small id="clv">0</small></button><button id="bd" class="w">建てる</button><button id="ed" class="w">かざる</button><span class="coins" id="cn">0</span></div>
 <div class="hint" id="hint">2本指で広げると全体が見える／建物をタップで育てる／長押しでうごかせる／「建てる」で建物、「かざる」で木や道を置ける</div>
 <div class="pal" id="pal"><p id="palp">置きたいものをえらんで、島をタップ</p><div class="row" id="palrow"></div></div>
-<div class="bl" id="bl"><p id="blp"></p><div class="list" id="blist"></div><div class="mini"><span id="blm"></span><button id="blre">📋 えらびなおす</button></div></div>
-<div class="ask" id="ask"><button id="askok">✔ ここに建てる</button><button class="w" id="askno">✖ やめる</button></div>
-<div class="maps" id="maps"><div class="box"><h3>🗺 島をえらぶ</h3><p id="mapsp">5つの島から、好きな形をえらべます。川の場所や島の形がちがいます。</p><div class="row" id="maprow"></div><button class="ok" id="mapok">この島にする</button></div></div>
+<div class="bl" id="bl"><p id="blp"></p><div class="list" id="blist"></div><div class="mini"><span id="blm"></span><button id="blre"><img class="ic" alt="" src="img/town3d/ic/list.webp"> えらびなおす</button></div></div>
+<div class="ask" id="ask"><button id="askok">ここに建てる</button><button class="w" id="askno">やめる</button></div>
+<div class="maps" id="maps"><div class="box"><h3><img class="ic" alt="" src="img/town3d/ic/island.webp"> 島をえらぶ</h3><p id="mapsp">5つの島から、好きな形をえらべます。川の場所や島の形がちがいます。</p><div class="row" id="maprow"></div><button class="ok" id="mapok">この島にする</button></div></div>
 <div class="toast" id="toast"></div><div class="got" id="got"></div>
 <script type="importmap">{"imports":{"three":"./lib/three.module.min.js"}}</script>
 <script type="module">
@@ -136,12 +141,19 @@ function unclaim(o){ occ.forEach((v, k) => { if (v === o) occ.delete(k); }); }
 let world = null, DATA = null, PRICE = {}, oTex = null, oCan = null;
 const sprites = [], walkers = [], decoS = [], blds = [];
 const lam = o => bend(new THREE.MeshLambertMaterial(o));
+let ldWait = 0, ldStarted = false, ldHid = false;
+function ldHide(){ if (ldHid) return; ldHid = true; const e = document.getElementById('ld'); if (e) { e.classList.add('out'); setTimeout(() => e.remove(), 400); } }
+function ldDone(){ ldWait = Math.max(0, ldWait - 1); ldCheck(); }
+function ldCheck(){ if (ldStarted && ldWait <= 0 && !THREE.DefaultLoadingManager.__busy) requestAnimationFrame(() => requestAnimationFrame(ldHide)); }
+THREE.DefaultLoadingManager.onStart = () => { THREE.DefaultLoadingManager.__busy = true; };
+THREE.DefaultLoadingManager.onLoad = () => { THREE.DefaultLoadingManager.__busy = false; ldCheck(); };
+setTimeout(ldHide, 8000);   // 読めない絵があっても8秒で出す
 const loader = new THREE.TextureLoader(), TEX = {};
 function tex(url, paper){ if (typeof url !== 'string') return url; const key = url + (paper ? '#p' : ''); if (TEX[key]) return TEX[key];
   if (!paper) { const t = loader.load(url); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return TEX[key] = t; }
   // 紙の切り抜き（2026-11-26 ペーパーマリオ風）：絵のまわりに白いふち＋うすい紙の影
   const c = document.createElement('canvas'); c.width = c.height = 8; const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
-  const im = new Image(); im.onload = () => { const W = im.naturalWidth, H = im.naturalHeight, p = Math.max(2, Math.round(W * .02)); c.width = W; c.height = H; const g = c.getContext('2d');
+  ldWait++; const im = new Image(); im.onerror = ldDone; im.onload = () => { ldDone(); const W = im.naturalWidth, H = im.naturalHeight, p = Math.max(2, Math.round(W * .02)); c.width = W; c.height = H; const g = c.getContext('2d');
     const k = document.createElement('canvas'); k.width = W; k.height = H; const kg = k.getContext('2d');
     for (let i = 0; i < 24; i++) { const a = i / 24 * Math.PI * 2; kg.drawImage(im, Math.cos(a) * p, Math.sin(a) * p); }
     kg.globalCompositeOperation = 'source-in'; kg.fillStyle = '#fffdf6'; kg.fillRect(0, 0, W, H);
@@ -396,30 +408,30 @@ function groundAt(cx, cy){
 const cellFor = (x, z, w, d) => [Math.round(x - w / 2), Math.round(z - d / 2)];
 
 // ---- かざる（木・飾り・道を置く／けす／うごかす）
-const TOOLS = [{k: 'road', n: '道', i: '🟫'},
+const TOOLS = [{k: 'road', n: '道', i: '<b class="sw road"></b>'},
   {k: 'tree3', n: 'もみ'}, {k: 'bush1', n: 'しげみ'}, {k: 'flower1', n: '花だん'}, {k: 'lamp1', n: '街灯'}, {k: 'bench1', n: 'ベンチ'}, {k: 'fence1', n: '柵'},
   {k: 'tree4', n: 'みかん'}, {k: 'rock1', n: '岩'}, {k: 'fountain1', n: '噴水'}, {k: 'tree1', n: 'りんごの大木'}, {k: 'tree2', n: 'さくら'},
   // 2026-11-26 本人「将来、敵が攻めてくる。街の壁や城壁も建てたい」：絵ができたものから出る（img/town3d/○○.webp があるもの）
   {k: 'wall1', n: '木の壁', opt: 1}, {k: 'wall2', n: '石の壁', opt: 1}, {k: 'wall3', n: '城壁', opt: 1}, {k: 'gate1', n: '門', opt: 1}, {k: 'tower1', n: '見張り塔', opt: 1},
-  {k: 'bridge1', n: '木の橋', i: '🌉'}, {k: 'bridge2', n: '石の橋', i: '🌁'},
-  {k: 'erase', n: 'とりのぞく', i: '🧹'}, {k: 'map', n: '島をかえる', i: '🗺'}];
+  {k: 'bridge1', n: '木の橋', i: '<b class="sw br1"></b>'}, {k: 'bridge2', n: '石の橋', i: '<b class="sw br2"></b>'},
+  {k: 'erase', n: 'とりのぞく', i: '<b class="sw er"></b>'}, {k: 'map', n: '島をかえる', i: '<img alt="" src="img/town3d/ic/island.webp">'}];
 TOOLS.forEach(t => { if (!t.opt) return; t.hide = 1; const im = new Image(); im.onload = () => { t.hide = 0; if (edit) drawPal(); }; im.src = 'img/town3d/' + t.k + '.webp'; });
 let edit = false, tool = 'road', coins = 0, moving = null, placing = null, blist = null;
 const szTxt = k => DSZ[k] ? DSZ[k][0] + '×' + DSZ[k][1] : '';
 function drawPal(){
-  $('palrow').innerHTML = TOOLS.filter(t => !t.hide).map(t => '<button data-k="' + t.k + '"' + (t.k === tool ? ' class="sel"' : '') + '>' + (t.i ? '<i>' + t.i + '</i>' : '<img alt="" src="img/town3d/' + t.k + '.webp">') + t.n +
+  $('palrow').innerHTML = TOOLS.filter(t => !t.hide).map(t => '<button data-k="' + t.k + '"' + (t.k === tool ? ' class="sel"' : '') + '>' + (t.i ? t.i : '<img alt="" src="img/town3d/' + t.k + '.webp">') + t.n +
     (szTxt(t.k) ? '<em>' + szTxt(t.k) + 'マス</em>' : '') + (PRICE[t.k] ? '<small>' + IC('silver') + PRICE[t.k].toLocaleString() + '</small>' : '') + '</button>').join('');
   $('palp').textContent = tool === 'road' ? '島をタップ・なぞると土の道ができる（1マス 街コイン' + (PRICE.road || 0) + '・川には橋を置いてね）' : tool === 'erase' ? '木・飾り・道をタップするとなくなる（お金はもどらない）' :  '置きたい場所をタップ'; }
 $('palrow').onclick = e => { const b = e.target.closest('[data-k]'); if (!b) return;
   if (b.dataset.k === 'map') { openMaps(true); return; } tool = b.dataset.k; if (moving) { moving.mat.opacity = 1; moving = null; } drawPal(); };
-const setEdit = on => { edit = on; $('pal').classList.toggle('on', on); $('ed').textContent = on ? '✔ おわる' : 'かざる'; $('hint').style.opacity = 0; if (moving) { moving.mat.opacity = 1; moving = null; } if (on) { endBuild(); drawPal(); if (cam.dist > 50) cam.dist = 34; } };
+const setEdit = on => { edit = on; $('pal').classList.toggle('on', on); $('ed').textContent = on ? 'おわる' : 'かざる'; $('hint').style.opacity = 0; if (moving) { moving.mat.opacity = 1; moving = null; } if (on) { endBuild(); drawPal(); if (cam.dist > 50) cam.dist = 34; } };
 $('ed').onclick = () => setEdit(!edit);
 
 // ---- 建てる（2026-11-26 マス目）：建物をえらぶ → 島をタップ（緑なら置ける）→「ここに建てる」
 async function openBuild(){
   if (blist) { endBuild(); return; } setEdit(false); const r = await req('blist', {});
   if (!r.ok || !r.list) return toast(r.msg || 'できませんでした');
-  blist = r; placing = null; $('bd').textContent = '✖ やめる'; drawBPal(); if (cam.dist > 50) cam.dist = 40; }
+  blist = r; placing = null; $('bd').textContent = 'やめる'; drawBPal(); if (cam.dist > 50) cam.dist = 40; }
 // 建てる一覧（2026-11-26 本人「選択が横だとちゃんと見えないので縦に」）：絵・名前・広さ・何に効くか・説明・費用
 const esc = t => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
 function drawBPal(){
@@ -427,7 +439,7 @@ function drawBPal(){
   $('blp').textContent = blist.free > 0 ? '建てたいものをえらんでね（あと' + blist.free + 'こ建てられる）' : '今は建てられる数がいっぱい（家のレベルを上げるとふえる）';
   $('blist').innerHTML = blist.list.map(it => { const s = bsz(it.k, 1), s5 = bsz(it.k, 5);
     return '<button class="it' + (it.ok ? '' : ' ng') + '" data-b="' + it.k + '"><img alt="" src="img/town3d/' + it.k + '_1.webp"><div><b>' + esc(it.n) + '</b><span class="sz">' + s + '×' + s + 'マス' + (s5 > s ? '（Lv5で' + s5 + '×' + s5 + '）' : '') + '</span>' +
-      '<div class="tg">' + (it.tags || []).map(t => '<span>' + esc(t) + '</span>').join('') + '</div><div class="d">' + esc(it.d) + '</div><div class="c">' + esc(it.ok ? it.cost : it.why) + '</div></div></button>'; }).join('');
+      '<div class="tg">' + (it.tagsH || []).map(t => '<span>' + t + '</span>').join('') + '</div><div class="d">' + esc(it.d) + '</div><div class="c">' + esc(it.ok ? it.cost : it.why) + '</div></div></button>'; }).join('');
   if (placing) $('blm').textContent = '「' + placing.it.n + '」を建てる場所をタップ（' + placing.s + '×' + placing.s + 'マス・緑なら建てられる）'; }
 $('blist').onclick = e => { const b = e.target.closest('[data-b]'); if (!b) return; const it = blist.list.find(x => x.k === b.dataset.b); if (!it) return;
   if (!it.ok) return toast(it.why || '今は建てられません'); placing = {b: it.k, s: bsz(it.k, 1), it}; ghost.visible = false; $('ask').classList.remove('on'); drawBPal(); };
@@ -539,7 +551,7 @@ $('cl').onclick = () => send({type: 'claim'});
 loop();
 
 // ---- ゲームから
-function start(D){ const first = D.map == null; const mv = build(D, first ? 0 : D.map); DATA.roadsSaved = [...roads];
+function start(D){ const first = D.map == null; const mv = build(D, first ? 0 : D.map); DATA.roadsSaved = [...roads]; ldStarted = true; setTimeout(ldCheck, 50);
   if (first) openMaps(false); else { focusHome(); if (mv) saveLayout(); else send({type: 'room', room: roomAll()}); } }
 addEventListener('message', e => { if (e.origin !== location.origin || !e.data || e.data.src !== 'game') return; const d = e.data;
   if (d.type === 'town' && d.town.name) $('tnm').textContent = d.town.name;
