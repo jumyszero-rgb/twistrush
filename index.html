@@ -2439,7 +2439,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
           <label class="volrow"><span>効果音</span><input type="range" min="0" max="100" step="5" data-vol="se"><b data-volv="se"></b></label>
           <label class="volrow"><span>ボイス</span><input type="range" min="0" max="100" step="5" data-vol="voice"><b data-volv="voice"></b></label>
           <button class="btn gray" id="volReset">初期値（50）に戻す</button>
-          <p>初期値はどれも50です。100にすると50の2倍の大きさになります。ここで決めた音量は保存され、次に起動したときもこの音量で始まります。</p>
+          <p>初期値はBGM 20・効果音 40・ボイス 40です。数字が2倍になると、音も2倍の大きさになります。ここで決めた音量は保存され、次に起動したときもこの音量で始まります。</p>
         </section>
         <section>
           <h3>背景</h3>
@@ -3502,7 +3502,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   let actx = null, master = null, muted = false; try { muted = localStorage.getItem('twistrush.mute') === '1'; } catch(_) {}
   // 音量（設定画面で変えられる。0〜100、初期値はどれも50）。50で今までと同じ大きさ、100でその2倍
   //   BGM・効果音・ボイスは別々の通り道で master へ
-  const VOL_DEF = {bgm: 50, se: 50, voice: 50}, VOL_UNIT = 50;
+  // 2026-11-28 本人「BGMは初期20くらい、ボイスも40、効果音も40」
+  const VOL_DEF = {bgm: 20, se: 40, voice: 40}, VOL_UNIT = 50;
   const vols = {};
   let volV2 = false; try { volV2 = localStorage.getItem('twistrush.vol_v2') === '1'; } catch(_) {}
   Object.keys(VOL_DEF).forEach(k => {
@@ -3512,6 +3513,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     try { localStorage.setItem('twistrush.vol_' + k, String(vols[k])); } catch(_) {}
   });
   try { localStorage.setItem('twistrush.vol_v2', '1'); } catch(_) {}
+  // 初期値を変えたので、1回だけ新しい初期値にそろえる（そのあと設定で変えた値はそのまま）
+  try { if (localStorage.getItem('twistrush.vol_v3') !== '1') { Object.keys(VOL_DEF).forEach(k => { vols[k] = VOL_DEF[k]; localStorage.setItem('twistrush.vol_' + k, String(VOL_DEF[k])); }); localStorage.setItem('twistrush.vol_v3', '1'); } } catch(_) {}
   const bus = {};
   function audio(){
     if (!actx) {
@@ -3607,7 +3610,9 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   const seBuf = {}, seLoading = {};
   function playSeFile(name, vol){
     const a = audio(), f = SE_FILES[name]; if (!a || !f) return false;
-    const go = buf => { try { const src = a.createBufferSource(); src.buffer = buf; const g = a.createGain(); g.gain.value = vol || 1;
+    // 2026-11-28 本人「鍛冶屋やミケのボイスの音が変更できない。戦闘ボイスと同じにして」：キャラの声（sv_・dj_）は戦闘の登場・勝ち負けの声と同じ大きさ（VOICE_VOL×0.5）にそろえる
+    const isV = name.startsWith('dj_') || name.startsWith('sv_'), base = isV ? 0.45 : 1;
+    const go = buf => { try { const src = a.createBufferSource(); src.buffer = buf; const g = a.createGain(); g.gain.value = (vol || 1) * base;
       src.connect(g); g.connect((name.startsWith('dj_') || name.startsWith('sv_') ? bus.voice : bus.se) || master); src.start(); } catch(e) {} };
     if (seBuf[name]) { go(seBuf[name]); return true; }
     if (!seLoading[name]) seLoading[name] = fetch(LOCAL_ART ? f[1] : blobU(f[0])).then(r => r.arrayBuffer()).then(b => a.decodeAudioData(b)).then(buf => { seBuf[name] = buf; return buf; }).catch(() => null);
@@ -8149,7 +8154,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.389';
+  const APP_VER = '0.9.390';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
