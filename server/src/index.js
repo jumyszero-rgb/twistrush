@@ -1,5 +1,6 @@
 import { arenaHome, arenaSetDefense, arenaFight } from './arena.js';
 import { RENT_SCHEMA, rentHome, rentAct } from './rent.js';
+import { CASINO_SCHEMA, casinoLuck, casinoLog, casinoTopPost } from './casino.js';
 import { FRIEND_SCHEMA, friendHome, friendAct, friendForget, friendPoll, friendAnswer, friendInviteCancel } from './friends.js';
 import { Lobby, Room, MEDAL, MEDAL_SHOP, VS_KINDS, medalOf, medalDaily, medalTake, medalMonthLeft, medalGive, vsTop, vsRewards, vsClaim, vsCpuDone } from './vs.js';
 export { Lobby, Room };
@@ -639,6 +640,10 @@ async function api(env, req, url) {
     return json(env, req, { ok: true, k: it.k, balance: m ? m.balance : 0 });
   }
   // ---- CPU戦の結果（レート・勝ち負けの数は変わらない。メダルだけ） ----
+  // ---- カジノ：全員の戻りで調整（2026-11-28）----
+  if (p === '/api/casino' && M === 'GET') return json(env, req, await casinoLuck(env, nowSec()));
+  if (p === '/api/casino/top' && M === 'POST') { const r = await casinoTopPost(env, me, await req.json().catch(() => ({})), nowSec()); return r.error ? fail(env, req, r.error) : json(env, req, r); }
+  if (p === '/api/casino/log' && M === 'POST') { const r = await casinoLog(env, me, await req.json().catch(() => ({})), nowSec()); return r.error ? fail(env, req, r.error) : json(env, req, r); }
   // ---- 酒場のキャラ貸し借り（2026-11-28）----
   if (p === '/api/rent' && M === 'GET') return json(env, req, await rentHome(env, me, nowSec()));
   if (p.startsWith('/api/rent/') && M === 'POST') {
@@ -1181,7 +1186,7 @@ async function dummyRank(env) {
 }
 function prepared(env) {
   if (!ready) ready = (async () => {
-    await env.DB.batch(SCHEMA.concat(FRIEND_SCHEMA, RENT_SCHEMA).map(q => env.DB.prepare(q)));
+    await env.DB.batch(SCHEMA.concat(FRIEND_SCHEMA, RENT_SCHEMA, CASINO_SCHEMA).map(q => env.DB.prepare(q)));
     // あとから足した列（すでにあればエラーになるので無視）
     for (const q of ["ALTER TABLE accounts ADD COLUMN country TEXT NOT NULL DEFAULT ''", "ALTER TABLE ents ADD COLUMN pass_tier TEXT NOT NULL DEFAULT 'silver'"]) { try { await env.DB.prepare(q).run(); } catch (e) {} }
     let secret = env.SESSION_SECRET;
