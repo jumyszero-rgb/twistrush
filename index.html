@@ -6257,7 +6257,9 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   // 記録ができる前にクリアしていたステージは、オート・スキップOKにする（1回だけ移行）
   if (load('ncmig1', '') !== '1') { storyNC = storyNC.map((v, i) => v || storyClr[i] ? 1 : 0); save('nc16', JSON.stringify(storyNC)); save('ncmig1', '1'); }
   const saveStars = () => { storyStars = storyMask.map(bits); save('clears16', JSON.stringify(storyClr)); save('mask16', JSON.stringify(storyMask)); save('nc16', JSON.stringify(storyNC)); };
-  const openAll = () => load('openall', '0') === '1';                 // テスト用：全部開放
+  // 2026-11-28 本番化：テスト用の機能（全部開放・コインを増やす・決済なしで買える動き）は、テスト用サイトとPCの確認用だけ
+  const TEST_HOST = /^(staging\.|localhost$|127\.0\.0\.1$)/.test(location.hostname);
+  const openAll = () => TEST_HOST && load('openall', '0') === '1';                 // テスト用：全部開放
   const starTotal = () => storyStars.reduce((s, v) => s + v, 0);      // 集めた★（合計・減らない）
   const bossesBeaten = () => AREAS.filter((_, a) => storyClr[a * PER + PER - 1] > 0).length;
   // 使えるキャラ＝最初の1人＋倒したボスの数
@@ -8126,7 +8128,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.382';
+  const APP_VER = '0.9.383';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -8800,6 +8802,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   // テスト用：全ステージ・全キャラを開放する（公開前に消す）。★は付かない
   $('storyOpenAll').addEventListener('click', () => {
+    if (!TEST_HOST) return;
     save('openall', '1');                      // 押しても閉じない（もう一度押してロックされるのを防ぐ）。戻すときは「最初からやり直す」
     refreshStoryState(); refreshStoryBtn();
     $('storyOpenAll').textContent = '全ステージ開放中（テスト用）';
@@ -9424,7 +9427,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (payOn) {
       if (!acctToken) { payAsk('購入には<b>ログイン</b>が必要です。<br>設定の「アカウント」からログインしてください。'); return; }
       payBuy(sku === 'gold' && passTier() === 'silver' ? Object.assign({}, p, {yen: Math.max(0, 4980 - (+load('pass_credit', '0') || 0)), name: 'ゴールドパスにアップグレード', price: '¥' + Math.max(0, 4980 - (+load('pass_credit', '0') || 0)).toLocaleString() + '（初月・シルバーの残りを引いたあと。2か月目から¥4,980）'}) : p); return; }
-    // テスト（決済なし）
+    // テスト（決済なし）。本番サイトで決済が入っていないときは「準備中」
+    if (!TEST_HOST) { payAsk('購入は、ただいま準備中です。'); return; }
     payAsk('【テスト】' + p.name + '（' + p.price + '・30日）を開始しますか？<br><small>本番では決済のあとに有効になります。</small>', () => {
       const up = sku === 'gold' && passTier() === 'silver';
       save('pass_tier', sku === 'gold' ? 'gold' : 'silver'); save('pass_end', String((up ? Date.now() : Math.max(Date.now(), passEnd())) + 30 * 86400000));
@@ -9437,6 +9441,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     if (!e.target.closest('[data-pass]')) return;
     if (IS_TWA) { e.preventDefault(); e.stopPropagation(); twaPay(); return; }
     if (payOn) return;
+    if (!TEST_HOST) { e.preventDefault(); e.stopPropagation(); payAsk('購入は、ただいま準備中です。'); return; }
     payAsk('【テスト】月パス（¥980・30日）を' + (passOn() ? '延長' : '開始') + 'しますか？ 本番では決済のあとに有効になります。', () => {
       save('pass_end', String(Math.max(Date.now(), passEnd()) + 30 * 86400000)); passNotify(); toast('月パスが有効になりました（のこり' + passLeft() + '日）'); try { drawShop(); } catch(_) {}
     });
@@ -9446,6 +9451,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   // 初回限定パック（テスト：決済なしで受け取れる。決済を入れたら購入完了後に呼ぶ）
   document.addEventListener('click', e => {
     if (!e.target.closest('[data-firstpack]') || load('firstpack', '0') === '1' || payOn) return;
+    if (!TEST_HOST) { payAsk('購入は、ただいま準備中です。'); return; }
     payAsk('【テスト】初回限定パック（¥480）を受け取りますか？ 本番では決済のあとに受け取ります。', () => {
       save('firstpack', '1'); giveItem('gticket_hi', 2); giveItem('gticket', 10); giveItem('stampot', 3);
       toast('初回限定パックを受け取りました'); try { drawShop(); } catch(_) {}
@@ -9605,7 +9611,8 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     const crew = ALLC.filter(c => c.id.startsWith('x_')); addCTicket(crew[Math.floor(Math.random() * crew.length)].id, 1);
     save('freeten', '0'); refreshCoins(); try { drawShop(); } catch(_) {} toast('シルバー・ゴールド +10,000、チケット +10・確定チケット +5・キャラ確定チケット +1');
   }
-  $('testCoin').addEventListener('click', devGrant);
+  $('testCoin').addEventListener('click', () => { if (TEST_HOST) devGrant(); });
+  if (!TEST_HOST) { ['testCoin', 'storyOpenAll'].forEach(id => { const b = $(id); if (b) b.style.display = 'none'; }); }
 
   // ----- ステージ選択：持っていくアイテム（2種類まで）-----
   let loadTip = '';
