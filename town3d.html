@@ -15,7 +15,7 @@
   .hint{position:fixed;left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));padding:8px 12px;border-radius:14px;background:rgba(20,12,40,.6);font-size:12px;line-height:1.6;text-align:center;pointer-events:none;transition:opacity 1s}
   .say{position:fixed;transform:translate(-50%,-100%);padding:4px 10px;border-radius:12px;background:#fff;color:#4a3520;font-size:12px;font-weight:800;white-space:nowrap;pointer-events:none;box-shadow:0 2px 6px rgba(0,0,0,.25)}
   .tag{position:fixed;transform:translate(-50%,0);padding:1px 7px;border-radius:8px;background:rgba(20,12,40,.72);font-size:11px;font-weight:900;white-space:nowrap;pointer-events:none}
-  .tag.bld{background:rgba(255,140,0,.9)}
+  .tag.bld{background:rgba(255,140,0,.92);text-align:center;padding:2px 8px 3px} .tag .gb{display:block;width:84px;height:7px;margin:3px auto 1px;border-radius:4px;background:rgba(0,0,0,.35);overflow:hidden} .tag .gb i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,#fff36b,#7be06a)} .tag small{display:block;font-size:10px;font-weight:800} .tag.fin{background:rgba(60,170,80,.95)}
   .pal{position:fixed;z-index:5;left:0;right:0;bottom:0;padding:8px 8px max(8px,env(safe-area-inset-bottom));background:rgba(20,12,40,.82);display:none;flex-direction:column;gap:6px}
   .pal.on{display:flex} .pal p{margin:0;font-size:12px;text-align:center;color:#ffe9a8}
   .pal .row{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
@@ -235,7 +235,7 @@ const sun = new THREE.DirectionalLight(0xffffff, 1.5); sun.position.set(-10, 20,
 // ---- 建物（マスの上に立てる絵）
 function addBld(i, p){
   const s = bsz(p.b, p.lv), o = {kind: 'bld', i, p, cx: p.x, cz: p.z, w: s, d: s};
-  o.spr = billboard(p.img, p.x + s / 2, p.z + s * .78, s * 1.5, {sw: .62, kind: 'bld', plot: i}); o.spr.tag = p.tag; o.spr.busy = p.busy; o.spr.o = o;
+  o.spr = billboard(p.img, p.x + s / 2, p.z + s * .78, s * 1.5, {sw: .62, kind: 'bld', plot: i}); o.spr.tag = p.tag; o.spr.busy = p.busy; o.spr.done = p.done || 0; o.spr.tot = p.tot || 0; o.spr.o = o;
   claim(o); blds.push(o); return o; }
 // 管理事務所（2026-11-27）：3×3・島に1つ・なくせない。タップで管理人のところへ
 let office = null;
@@ -389,8 +389,13 @@ function loop(){
     if (scene.fog) { scene.fog.near = cam.dist * 1.1 + 30 + 60 * (1 - k); scene.fog.far = cam.dist * 2.2 + 90 + 260 * (1 - k);
       seaM.uniforms.fogC.value.copy(scene.fog.color); seaM.uniforms.fogN.value = scene.fog.near; seaM.uniforms.fogF.value = scene.fog.far; } }
   const showTag = cam.dist < 60;
+  const nowS = Math.floor(Date.now() / 1000);
   sprites.forEach(s => { if (!s.tag) return; if (!s.tagE) { s.tagE = document.createElement('div'); s.tagE.className = 'tag' + (s.busy ? ' bld' : ''); s.tagE.textContent = s.tag; document.body.appendChild(s.tagE); }
-    s.tagE.style.display = showTag ? '' : 'none'; const [sx, sy] = scr(s.x, GY - .1, s.z + .3); s.tagE.style.left = sx + 'px'; s.tagE.style.top = sy + 'px'; });
+    // 工事中：ゲージと残り時間（1秒ごとに書きかえ）
+    if (s.done && s.tagS !== nowS) { s.tagS = nowS; const left = s.done - Date.now(), r = Math.max(0, Math.min(1, 1 - left / s.tot));
+      s.tagE.innerHTML = left > 0 ? esc(s.tag) + '<span class="gb"><i style="width:' + (r * 100).toFixed(1) + '%"></i></span><small>工事中 のこり ' + leftTxt(left) + '</small>' : esc(s.tag) + '<small>完成！タップして確認</small>';
+      s.tagE.classList.toggle('fin', left <= 0); }
+    s.tagE.style.display = showTag || s.done ? '' : 'none'; const [sx, sy] = scr(s.x, GY - .1, s.z + .3); s.tagE.style.left = sx + 'px'; s.tagE.style.top = sy + 'px'; });
   post.material.uniforms.blur.value = Math.min(1, Math.max(0, (cam.dist - 18) / 24));
   renderer.setRenderTarget(rt); renderer.render(scene, camera); renderer.setRenderTarget(null); post.material.uniforms.tD.value = rt.texture; post.material.uniforms.res.value.set(innerWidth, innerHeight); renderer.render(postScene, postCam);
   requestAnimationFrame(loop);
@@ -433,6 +438,7 @@ async function openBuild(){
   if (!r.ok || !r.list) return toast(r.msg || 'できませんでした');
   blist = r; placing = null; $('bd').textContent = 'やめる'; drawBPal(); if (cam.dist > 50) cam.dist = 40; }
 // 建てる一覧（2026-11-26 本人「選択が横だとちゃんと見えないので縦に」）：絵・名前・広さ・何に効くか・説明・費用
+const leftTxt = ms => { const t = Math.ceil(ms / 1000), h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), sc = t % 60; return h ? h + '時間' + m + '分' : m ? m + '分' + String(sc).padStart(2, '0') + '秒' : sc + '秒'; };
 const esc = t => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
 function drawBPal(){
   const b = $('bl'); b.classList.add('on'); b.classList.toggle('min', !!placing);
