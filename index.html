@@ -797,7 +797,7 @@ body.on-menu .battlemain{opacity:0;}
   .tana .ic{width:34px;height:34px} .tana b{font-size:10.5px;line-height:1.3;min-height:2.6em} .tana em{position:absolute;top:2px;right:2px;font-style:normal;font-size:8.5px;background:#ff6b8a;color:#fff;border-radius:6px;padding:0 3px}
   .tana button{border:0;border-radius:7px;padding:4px 2px;width:100%;font:inherit;font-weight:800;font-size:10.5px;background:#ffd34d;color:#3a2a00} .tana button .ic{width:12px;height:12px} .tana .sold{opacity:.45} .tana button:disabled{opacity:.6}
   .tpet{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin:8px 0 2px;font-size:12.5px} .tpet>b{margin-right:4px} .tpet button{border:2px solid rgba(255,255,255,.25);border-radius:10px;padding:4px 8px;font:inherit;font-size:12px;font-weight:800;background:rgba(255,255,255,.08);color:#fff}
-  .tpet button.on{border-color:#ffd34d;background:rgba(255,211,77,.25)} .tpet small{display:block;font-size:10px;font-weight:700;opacity:.85}
+  .tpet button.on{border-color:#ffd34d;background:rgba(255,211,77,.25)} .tpet .ic{width:22px;height:22px} .tpet small{display:block;font-size:10px;font-weight:700;opacity:.85}
   .ofadv{margin:0;padding-left:20px;font-size:13px;line-height:1.7} .ofadv li{margin-bottom:6px} .ofgo{display:block;width:100%;margin-top:10px;border:0;border-radius:12px;padding:11px;font:inherit;font-weight:900;font-size:15px;color:#3a2a00;background:linear-gradient(#ffe27a,#ffbf1f)}
   .ofst{display:grid;grid-template-columns:1fr 1fr;gap:6px} .ofst div{background:rgba(255,255,255,.08);border-radius:10px;padding:7px 9px} .ofst span{display:block;font-size:11px;opacity:.8} .ofst b{font-size:15px}
   .ofh{margin:12px 0 6px;font-size:13px} .oflist div{display:flex;gap:8px;align-items:center;padding:5px 2px;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px} .oflist i{font-style:normal} .oflist span{margin-left:auto;font-size:12px;opacity:.85}
@@ -8078,7 +8078,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.354';
+  const APP_VER = '0.9.355';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -11732,7 +11732,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     {k: 'hane',   n: 'はねうさ',   i: '🐇', d: '小さな羽で飛ぶうさぎ',               fx: 'hunt',  t: 'ハンター協会の取れる量', need: 4, sv: 15000},
     {k: 'octan',  n: 'オクタン',   i: '🐙', d: 'オクタブロックから生まれた8本足の子', fx: 'luck',  t: 'カジノのもうけ・税金',   need: 5, sv: 25000},
   ];
-  const PET_ART = false, PET_MAX = 10, petMeat = lv => 5 * lv, petAdoptMeat = 10;
+  const PET_ART = true, PET_MAX = 10, petMeat = lv => 5 * lv, petAdoptMeat = 10;
   const petBonus = fx => PETS.reduce((a, p) => a + (p.fx === fx && town.pets && town.pets[p.k] ? town.pets[p.k] * 2 : 0), 0) / 100;
   const TAPT = {pol: '政治', biz: '商売', tec: '技術', cha: '魅力', pow: '力仕事'};
   const TYPE_APT = {atk: 'pow', spd: 'biz', hp: 'cha', def: 'tec'};
@@ -13277,7 +13277,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
         '<section class="teamsec"><h3>チーム編成（4つまで保存）</h3>' + teamTabs() + '<div class="tgrid">';
       t.forEach((uid, k) => { h += slotHTML(uid, k, boxSlot === k); });
       { const have = PETS.filter(p => petLvOf(p.k)), cur = teamPets[teamNo];
-        h += '</div><div class="tpet"><b>🐾 ペット</b>' + (have.length ? have.map(p => '<button data-tpet="' + p.k + '"' + (cur === p.k ? ' class="on"' : '') + '>' + p.i + ' ' + p.n + '<small>Lv' + petLvOf(p.k) + '・' + PET_BT[p.k][1] + '+' + petLvOf(p.k) + '%</small></button>').join('') : '<small>街のペットショップでお迎えすると、ここに入れられます（ストーリーで強くなる）</small>') + '</div>'; }
+        h += '</div><div class="tpet"><b>🐾 ペット</b>' + (have.length ? have.map(p => '<button data-tpet="' + p.k + '"' + (cur === p.k ? ' class="on"' : '') + '><img class="ic" alt="" src="img/pet/' + p.k + '.webp"> ' + p.n + '<small>Lv' + petLvOf(p.k) + '・' + PET_BT[p.k][1] + '+' + petLvOf(p.k) + '%</small></button>').join('') : '<small>街のペットショップでお迎えすると、ここに入れられます（ストーリーで強くなる）</small>') + '</div>'; }
       h += '<div class="tsum">' + ST_NAME.map((n, k) => n + ' <b>' + sum[k] + '</b>').join('　') + '</div>' +
            '<div class="tacts"><button data-tact="best">おすすめ</button><button data-tact="grow" class="grow">育成おすすめ</button><button data-tact="clear" class="gray"' + (t.some(Boolean) ? '' : ' disabled') + '>空にする</button></div>' +
            helpFold('team', '<b>枠をタップ</b>＝下の一覧から選んで入れる（入れかえ）　<b>ダブルタップ</b>＝外す　<b>長押し</b>＝詳細<br>持ちキャラ：<b>タップ</b>＝詳細　<b>ダブルタップ</b>＝ロック・解除　<b>長押し</b>＝かんたんステータス<br>①（メイン）は必殺技と奥義の両方。サブは枠の下の「必殺技」「奥義」から1つ選びます。', '操作の説明') + '<p class="thint">' + (boxPut ? '入れる枠を押してください（' + ALLC[ciOf(unitOf(boxPut))].name + '）' : boxSlot >= 0 ? '下の一覧から、入れるキャラを選んでください' + (boxSlot >= 0 && t[boxSlot] ? '（<button data-clear="1">外す</button>）' : '') : '') + '</p></section>';
