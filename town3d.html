@@ -27,9 +27,9 @@
   .bl.on{display:flex} .bl p{margin:0;padding:9px 12px 6px;font-size:12.5px;font-weight:800;color:#ffe9a8;text-align:center}
   .bl .list{overflow-y:auto;padding:0 8px 6px;display:flex;flex-direction:column;gap:6px}
   .bl .it{display:flex;gap:8px;align-items:flex-start;text-align:left;border:2px solid transparent;border-radius:12px;background:rgba(255,255,255,.08);color:#fff;font:inherit;padding:6px 8px;cursor:pointer}
-  .bl .it img{flex:0 0 56px;width:56px;height:56px;object-fit:contain}
+  .bl .it>img{flex:0 0 72px;width:72px;height:72px;object-fit:contain;transform:scale(1.25);transform-origin:center}   /* 建物の絵（まわりに余白があるので少し大きく） */
   .bl .it div{flex:1;min-width:0} .bl .it b{font-size:14px} .bl .it .sz{margin-left:6px;font-size:11px;color:#cfc6e6;font-weight:700}
-  .bl .it .tg{display:flex;flex-wrap:wrap;gap:3px;margin:3px 0} .bl .it .tg span{font-size:10.5px;font-weight:800;padding:1px 6px;border-radius:999px;background:rgba(255,211,77,.22);color:#ffe9a8} .bl .it .tg span{display:inline-flex;align-items:center;gap:2px} .bl .it .tg .ic{width:15px;height:15px;object-fit:contain;margin:0;vertical-align:middle;border-radius:0;box-shadow:none;background:none}
+  .bl .it .tg{display:flex;flex-wrap:wrap;gap:3px;margin:3px 0} .bl .it .tg span{font-size:10.5px;font-weight:800;padding:1px 6px;border-radius:999px;background:rgba(255,211,77,.22);color:#ffe9a8} .bl .it .tg span{display:inline-flex;align-items:center;gap:3px;white-space:nowrap;padding:2px 8px 2px 4px} .bl .it .tg .ic{flex:none;width:18px;height:18px;object-fit:contain;margin:0;vertical-align:middle;border-radius:0;box-shadow:none;background:none}
   .bl .it .d{font-size:11px;line-height:1.5;color:#e8e1f8} .bl .it .c{font-size:11.5px;font-weight:900;color:#ffd34d;margin-top:2px} .bl .it.ng{opacity:.55} .bl .it.ng .c{color:#ff9aa8}
   .bl .mini{display:none;align-items:center;gap:8px;padding:8px 10px} .bl.min .list,.bl.min > p{display:none} .bl.min .mini{display:flex}
   .bl .mini span{flex:1;font-size:12.5px;font-weight:800;color:#ffe9a8} .bl .mini button{border:0;border-radius:999px;padding:7px 10px;font:inherit;font-weight:800;font-size:12px;background:rgba(255,255,255,.92);color:#3a2a00}
