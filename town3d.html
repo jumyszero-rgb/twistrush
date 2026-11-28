@@ -40,7 +40,7 @@
   .ic.tcn{filter:sepia(1) saturate(2.6) hue-rotate(-18deg) brightness(.95)}
   .ic{width:1.25em;height:1.25em;object-fit:contain;vertical-align:-.25em;display:inline-block}
   .got{position:fixed;left:50%;top:30%;transform:translateX(-50%);min-width:200px;max-width:85%;padding:12px 18px;border-radius:14px;background:rgba(24,110,44,.94);color:#fff;font-size:14px;font-weight:800;line-height:1.7;text-align:center;pointer-events:none;opacity:0;transition:opacity .3s;z-index:60}
-  .got b{display:block;font-size:15px;color:#ffe27a;margin-bottom:2px} .got.on{opacity:1} .got .ic{width:22px;height:22px;object-fit:contain;vertical-align:-5px;margin-right:3px}
+  .got b{display:block;font-size:15px;color:#ffe27a;margin-bottom:2px} .got.on{opacity:1} .cli{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:3px;margin-top:-4px;max-width:56vw;pointer-events:none} .cli span{display:inline-flex;align-items:center;gap:3px;padding:2px 8px 2px 4px;border-radius:999px;background:rgba(20,12,40,.72);color:#fff;font-size:11.5px;font-weight:800;white-space:nowrap} .cli .ic{width:18px;height:18px;object-fit:contain} .got.err{pointer-events:auto;background:rgba(150,40,60,.95)} .got .gerr{display:block;margin-top:6px;font-size:11px;opacity:.9} .got .ic{width:22px;height:22px;object-fit:contain;vertical-align:-5px;margin-right:3px}
   .maps{position:fixed;inset:0;display:none;flex-direction:column;justify-content:flex-end;pointer-events:none}
   .maps.on{display:flex}
   .maps .box{pointer-events:auto;margin:0 10px max(10px,env(safe-area-inset-bottom));padding:12px;border-radius:16px;background:rgba(20,12,40,.88)}
@@ -55,7 +55,7 @@
   @keyframes ldb{from{transform:translateY(0)}to{transform:translateY(-8px)}}
 </style></head><body><div class="ld" id="ld"><img alt="" src="img/menu/town.webp"><b>街を読みこみ中…</b></div>
 <div class="bar"><button class="w" id="back">‹ もどる</button><b id="tnm">わたしの街</b><button id="ag" class="w"></button><button id="tm"></button></div>
-<div class="side"><button id="cl" class="claim">受け取る<small id="clv">0</small></button><button id="bd" class="w">建てる</button><button id="ed" class="w">かざる</button><span class="coins" id="cn">0</span></div>
+<div class="side"><button id="cl" class="claim">受け取る<small id="clv">0</small></button><div class="cli" id="cli"></div><button id="bd" class="w">建てる</button><button id="ed" class="w">かざる</button><span class="coins" id="cn">0</span></div>
 <div class="hint" id="hint">2本指で広げると全体が見える／建物をタップで育てる／長押しでうごかせる／「建てる」で建物、「かざる」で木や道を置ける</div>
 <div class="pal" id="pal"><p id="palp">置きたいものをえらんで、島をタップ</p><div class="row" id="palrow"></div></div>
 <div class="bl" id="bl"><p id="blp"></p><div class="list" id="blist"></div><div class="mini"><span id="blm"></span><button id="blre"><img class="ic" alt="" src="img/town3d/ic/list.webp"> えらびなおす</button></div></div>
@@ -446,6 +446,7 @@ async function openBuild(){
   blist = r; placing = null; $('bd').textContent = 'やめる'; drawBPal(); if (cam.dist > 50) cam.dist = 40; }
 // 建てる一覧（2026-11-26 本人「選択が横だとちゃんと見えないので縦に」）：絵・名前・広さ・何に効くか・説明・費用
 const leftTxt = ms => { const t = Math.ceil(ms / 1000), h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), sc = t % 60; return h ? h + '時間' + m + '分' : m ? m + '分' + String(sc).padStart(2, '0') + '秒' : sc + '秒'; };
+document.addEventListener('click', e => { const g = e.target.closest && e.target.closest('#got.err'); if (g) g.classList.remove('on', 'err'); });
 const gotHTML = g => String(g).split(/(<img [^>]*>)/).map(x => { if (!x.startsWith('<img ')) return esc(x);   // 受け取ったもの：ゲームの作ったアイコン（img）だけ絵で出す。ほかは文字のまま
   const cl = (/class="([\w -]*)"/.exec(x) || [])[1] || 'ic', src = (/src="([^"]*)"/.exec(x) || [])[1] || '';
   return /^(blob:https?:\/\/[\w.:\/-]+|[\w\/.-]+)$/.test(src) ? '<img class="' + cl + '" alt="" src="' + src + '">' : ''; }).join('');
@@ -574,9 +575,10 @@ addEventListener('message', e => { if (e.origin !== location.origin || !e.data |
   if (d.type === 'town' && d.town.name) $('tnm').textContent = d.town.name;
   if (d.type === 'town' && !DATA) { PRICE = d.town.price || {}; setCoins(d.town.coins); start(d.town); }
   else if (d.type === 'town' && d.upd && DATA && d.town.map != null) { const c = Object.assign({}, cam); PRICE = d.town.price || PRICE; setCoins(d.town.coins); build(d.town, d.town.map); DATA.roadsSaved = [...roads]; Object.assign(cam, c); send({type: 'room', room: roomAll()}); }   // 建物の画面からもどったとき：カメラはそのまま
-  if (d.type === 'hud') { const h = d.hud; $('clv').innerHTML = IC('silver') + h.silver.toLocaleString() + (h.n ? '・' + IC('box') + h.n : h.mats ? '・' + IC('xp') : ''); $('cl').classList.toggle('dot', h.silver > 0 || h.mats); setCoins(h.coins); }
+  if (d.type === 'hud') { const h = d.hud; { const it = h.items || [], e = $('cli'); e.innerHTML = it.slice(0, 8).map(g => '<span>' + gotHTML(g) + '</span>').join('') + (it.length > 8 ? '<span>ほか' + (it.length - 8) + '</span>' : ''); e.style.display = it.length ? '' : 'none'; } $('clv').innerHTML = IC('silver') + h.silver.toLocaleString() + (h.n ? '・' + IC('box') + h.n : h.mats ? '・' + IC('xp') : ''); $('cl').classList.toggle('dot', h.silver > 0 || h.mats); setCoins(h.coins); }
   if (d.type === 'openBuild' && DATA && !$('maps').classList.contains('on')) openBuild();
-  if (d.type === 'got') { const e = $('got'); e.innerHTML = d.list.length ? '<b>受け取りました</b>' + d.list.map(g => '<div>' + gotHTML(g) + '</div>').join('') : '<b>まだたまっていません</b>'; e.classList.add('on'); clearTimeout(e.k); e.k = setTimeout(() => e.classList.remove('on'), 2600 + d.list.length * 700); }
+  if (d.type === 'got') { const e = $('got'); e.innerHTML = (d.list.length ? '<b>受け取りました</b>' + d.list.map(g => '<div>' + gotHTML(g) + '</div>').join('') : '<b>まだたまっていません</b>') + (d.err ? '<small class="gerr">エラーの内容は自動で送りました。タップで閉じる</small>' : '');
+    e.classList.add('on'); e.classList.toggle('err', !!d.err); clearTimeout(e.k); if (!d.err) e.k = setTimeout(() => e.classList.remove('on'), 2600 + d.list.length * 700); }   // エラーのときは、タップするまで消さない
   if (d.type === 'res' && waits[d.id]) { const f = waits[d.id]; delete waits[d.id]; f(d); } });
 send({type: 'ready'});
 setTimeout(() => { $('hint').style.opacity = 0; }, 7000);
