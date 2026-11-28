@@ -177,7 +177,7 @@ function billboard(url, x, z, h, opt = {}){
   if (opt.sw) { const sw = h * opt.sw; sh = new THREE.Mesh(new THREE.PlaneGeometry(sw, sw * .45), shadowM); sh.rotation.x = -Math.PI / 2; sh.position.y = .03; grp.add(sh); }
   grp.add(mesh); grp.position.set(x, GY, z); if (opt.flip) mesh.scale.x = -1; world.add(grp);
   const s = Object.assign({grp, mesh, sh, mat: m, x, z, h}, opt); sprites.push(s); if (curT) m.color.set(curT.spr); return s; }
-function unbill(s){ world.remove(s.grp); s.mat.dispose(); s.mesh.geometry.dispose(); const i = sprites.indexOf(s); if (i >= 0) sprites.splice(i, 1); if (s.tagE) { s.tagE.remove(); } }
+function unbill(s){ world.remove(s.grp); s.mat.dispose(); s.mesh.geometry.dispose(); const i = sprites.indexOf(s); if (i >= 0) sprites.splice(i, 1); if (s.tagE) { s.tagE.remove(); } if (s.lab) { s.lab.material.dispose(); s.lab.geometry.dispose(); s.labT.dispose(); } }
 
 // ---- 地面：草（くり返しの絵でくっきり）＋川（島全体の絵）＋道（土の1×1マス）＋マス目の線（置くときだけ）
 const SPAN = 100, TS = 2048, U = TS / SPAN; const P = (x, z) => [(x / SPAN + .5) * TS, (z / SPAN + .5) * TS];
@@ -366,6 +366,26 @@ $('ag').onclick = () => { angI = (angI + 1) % ANGLES.length; agLabel(); try { lo
 const cam = {tx: 0, tz: 0, dist: 26}; const ZMIN = 12, ZMAX = 150;
 const clock = new THREE.Clock(); const v = new THREE.Vector3();
 function scr(x, y, z){ v.set(x, y, z).applyMatrix4(camera.matrixWorldInverse); v.y -= v.z * v.z * BEND.value; v.applyMatrix4(camera.projectionMatrix); return [(v.x * .5 + .5) * innerWidth, (-v.y * .5 + .5) * innerHeight]; }
+function drawLabel(s){ const c = s.labC, g = c.getContext('2d'), W = c.width, H = c.height; g.clearRect(0, 0, W, H);
+  const left = s.done ? s.done - Date.now() : 0, busy = s.done && left > 0, fin = s.done && left <= 0;
+  const sub = busy ? '工事中 のこり ' + leftTxt(left) : fin ? '完成！タップして確認' : '';
+  const r = H * .22; g.fillStyle = fin ? 'rgba(60,170,80,.95)' : busy ? 'rgba(255,140,0,.93)' : 'rgba(20,12,40,.78)';
+  g.beginPath(); g.roundRect ? g.roundRect(2, 2, W - 4, H - 4, r) : g.rect(2, 2, W - 4, H - 4); g.fill();
+  g.fillStyle = '#fff'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = '900 ' + Math.round(H * (sub ? .3 : .5)) + 'px system-ui,"Hiragino Sans","Noto Sans JP",sans-serif';
+  g.fillText(s.tag, W / 2, sub ? H * .26 : H * .52);
+  if (sub) { if (busy) { const pr = Math.max(0, Math.min(1, 1 - left / s.tot)); g.fillStyle = 'rgba(0,0,0,.35)'; g.fillRect(W * .12, H * .48, W * .76, H * .12); g.fillStyle = '#9be36a'; g.fillRect(W * .12, H * .48, W * .76 * pr, H * .12); }
+    g.fillStyle = '#fff'; g.font = '800 ' + Math.round(H * .22) + 'px system-ui,"Hiragino Sans","Noto Sans JP",sans-serif'; g.fillText(sub, W / 2, H * .79); }
+  s.labT.needsUpdate = true; }
+function makeLabel(s){ const big = !!s.done, c = document.createElement('canvas'), H = big ? 150 : 84, g0 = c.getContext('2d');
+  g0.font = '900 ' + Math.round(H * (big ? .3 : .5)) + 'px system-ui,"Hiragino Sans","Noto Sans JP",sans-serif'; let tw = g0.measureText(s.tag).width;
+  if (big) { g0.font = '800 ' + Math.round(H * .22) + 'px system-ui,"Hiragino Sans","Noto Sans JP",sans-serif'; tw = Math.max(tw, g0.measureText('工事中 のこり 00時間00分').width); }
+  c.width = Math.ceil(tw + H * .6); c.height = H; s.labC = c;
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; s.labT = t;
+  const m = bend(new THREE.MeshBasicMaterial({map: t, transparent: true, depthWrite: false, fog: false}));
+  const hh = Math.max(.3, s.h * (big ? .18 : .1)), w = hh * c.width / c.height;   // 看板の高さは建物の大きさに合わせる（文字の長さで横幅）
+  // 重なり順は、その建物のすぐあと（手前の建物には隠れる）
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, hh), m); mesh.position.set(0, 0, .02); if (s.mesh.scale.x < 0) mesh.scale.x = -1; s.labW = w; s.labH = hh; s.mesh.add(mesh); s.lab = mesh; labGeo(s, s.h * .64 + .1); drawLabel(s); return mesh; }
+function labGeo(s, y){ const g = new THREE.PlaneGeometry(s.labW, s.labH); g.translate(0, y + s.labH / 2, 0); s.lab.geometry.dispose(); s.lab.geometry = g; }
 let lastDraw = 0, paused = false; const tagV = new THREE.Vector3();
 function loop(now){
   if (paused) { requestAnimationFrame(loop); return; }   // ゲーム側で街の画面がかくれている間は描かない
@@ -383,7 +403,7 @@ function loop(now){
     if (w.sayT > 0) { if (!w.el) { w.el = document.createElement('div'); w.el.className = 'say'; w.el.textContent = w.say; document.body.appendChild(w.el); }
       const [sx, sy] = scr(w.x, GY + 1.8, w.z); w.el.style.left = sx + 'px'; w.el.style.top = sy + 'px'; }
   });
-  sprites.forEach(s => { const o = Math.round((s.grp.position.z + 80) * 100); s.mesh.renderOrder = 10000 + o; if (s.sh) s.sh.renderOrder = 3; });
+  sprites.forEach(s => { const o = Math.round((s.grp.position.z + 80) * 100); s.mesh.renderOrder = 10000 + o; if (s.lab) s.lab.renderOrder = 10000 + o + .5; if (s.sh) s.sh.renderOrder = 3; });
   sprites.forEach((s, i) => { if (s.kind === 'deco' && /tree|bush/.test(s.d.k)) s.mesh.rotation.z = Math.sin(t * 1.3 + i) * .01; });
   seaM.uniforms.t.value = t;
   gridM.uniforms.on.value += ((edit || placing ? 1 : 0) - gridM.uniforms.on.value) * Math.min(1, dt * 8);
@@ -398,12 +418,13 @@ function loop(now){
       seaM.uniforms.fogC.value.copy(scene.fog.color); seaM.uniforms.fogN.value = scene.fog.near; seaM.uniforms.fogF.value = scene.fog.far; } }
   const showTag = cam.dist < 60;
   const nowS = Math.floor(Date.now() / 1000);
-  sprites.forEach(s => { if (!s.tag) return; if (!s.tagE) { s.tagE = document.createElement('div'); s.tagE.className = 'tag' + (s.busy ? ' bld' : ''); s.tagE.textContent = s.tag; document.body.appendChild(s.tagE); }
-    // 工事中：ゲージと残り時間（1秒ごとに書きかえ）
-    if (s.done && s.tagS !== nowS) { s.tagS = nowS; const left = s.done - Date.now(), r = Math.max(0, Math.min(1, 1 - left / s.tot));
-      s.tagE.innerHTML = left > 0 ? esc(s.tag) + '<span class="gb"><i style="width:' + (r * 100).toFixed(1) + '%"></i></span><small>工事中 のこり ' + leftTxt(left) + '</small>' : esc(s.tag) + '<small>完成！タップして確認</small>';
-      s.tagE.classList.toggle('fin', left <= 0); }
-    s.tagE.style.display = showTag || s.done ? '' : 'none'; tagV.set(0, s.h * (s.mat.map && s.mat.map.userData.topFrac || .64) + .2, 0); s.mesh.localToWorld(tagV); const [sx, sy] = scr(tagV.x, tagV.y, tagV.z); s.tagE.style.left = sx + 'px'; s.tagE.style.top = sy + 'px'; });   // 2026-11-28 本人「名前は建物の上に。重なると見えない」
+  // 建物の名前（2026-11-28 本人「自分の家の表記が一番前に来てる。建物の一つ上に」）：画面の上にのせる文字ではなく、3Dの中の看板にする
+  //   → 手前の建物の絵の後ろにかくれる。看板は建物の絵の上端に、建物といっしょに傾く。工事中はゲージと残り時間（1秒ごとに描きなおす）
+  sprites.forEach(s => { if (!s.tag) return;
+    if (!s.lab) s.lab = makeLabel(s);
+    if (s.done && s.tagS !== nowS) { s.tagS = nowS; drawLabel(s); }
+    if (!s.labPos && s.mat.map && s.mat.map.userData.topFrac) { s.labPos = 1; labGeo(s, s.h * s.mat.map.userData.topFrac + .02); }
+    s.lab.visible = showTag || !!s.done; });
   post.material.uniforms.blur.value = Math.min(1, Math.max(0, (cam.dist - 18) / 24));
   if (LITE) renderer.render(scene, camera);
   else { renderer.setRenderTarget(rt); renderer.render(scene, camera); renderer.setRenderTarget(null); post.material.uniforms.tD.value = rt.texture; post.material.uniforms.res.value.set(innerWidth, innerHeight); renderer.render(postScene, postCam); }
