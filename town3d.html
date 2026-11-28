@@ -40,7 +40,7 @@
   .ic.tcn{filter:sepia(1) saturate(2.6) hue-rotate(-18deg) brightness(.95)}
   .ic{width:1.25em;height:1.25em;object-fit:contain;vertical-align:-.25em;display:inline-block}
   .got{position:fixed;left:50%;top:30%;transform:translateX(-50%);min-width:200px;max-width:85%;padding:12px 18px;border-radius:14px;background:rgba(24,110,44,.94);color:#fff;font-size:14px;font-weight:800;line-height:1.7;text-align:center;pointer-events:none;opacity:0;transition:opacity .3s;z-index:60}
-  .got b{display:block;font-size:15px;color:#ffe27a;margin-bottom:2px} .got.on{opacity:1}
+  .got b{display:block;font-size:15px;color:#ffe27a;margin-bottom:2px} .got.on{opacity:1} .got .ic{width:22px;height:22px;object-fit:contain;vertical-align:-5px;margin-right:3px}
   .maps{position:fixed;inset:0;display:none;flex-direction:column;justify-content:flex-end;pointer-events:none}
   .maps.on{display:flex}
   .maps .box{pointer-events:auto;margin:0 10px max(10px,env(safe-area-inset-bottom));padding:12px;border-radius:16px;background:rgba(20,12,40,.88)}
@@ -439,6 +439,9 @@ async function openBuild(){
   blist = r; placing = null; $('bd').textContent = 'やめる'; drawBPal(); if (cam.dist > 50) cam.dist = 40; }
 // 建てる一覧（2026-11-26 本人「選択が横だとちゃんと見えないので縦に」）：絵・名前・広さ・何に効くか・説明・費用
 const leftTxt = ms => { const t = Math.ceil(ms / 1000), h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), sc = t % 60; return h ? h + '時間' + m + '分' : m ? m + '分' + String(sc).padStart(2, '0') + '秒' : sc + '秒'; };
+const gotHTML = g => String(g).split(/(<img [^>]*>)/).map(x => { if (!x.startsWith('<img ')) return esc(x);   // 受け取ったもの：ゲームの作ったアイコン（img）だけ絵で出す。ほかは文字のまま
+  const cl = (/class="([\w -]*)"/.exec(x) || [])[1] || 'ic', src = (/src="([^"]*)"/.exec(x) || [])[1] || '';
+  return /^(blob:https?:\/\/[\w.:\/-]+|[\w\/.-]+)$/.test(src) ? '<img class="' + cl + '" alt="" src="' + src + '">' : ''; }).join('');
 const esc = t => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
 function drawBPal(){
   const b = $('bl'); b.classList.add('on'); b.classList.toggle('min', !!placing);
@@ -565,7 +568,7 @@ addEventListener('message', e => { if (e.origin !== location.origin || !e.data |
   else if (d.type === 'town' && d.upd && DATA && d.town.map != null) { const c = Object.assign({}, cam); PRICE = d.town.price || PRICE; setCoins(d.town.coins); build(d.town, d.town.map); DATA.roadsSaved = [...roads]; Object.assign(cam, c); send({type: 'room', room: roomAll()}); }   // 建物の画面からもどったとき：カメラはそのまま
   if (d.type === 'hud') { const h = d.hud; $('clv').innerHTML = IC('silver') + h.silver.toLocaleString() + (h.n ? '・' + IC('box') + h.n : h.mats ? '・' + IC('xp') : ''); $('cl').classList.toggle('dot', h.silver > 0 || h.mats); setCoins(h.coins); }
   if (d.type === 'openBuild' && DATA && !$('maps').classList.contains('on')) openBuild();
-  if (d.type === 'got') { const e = $('got'); e.innerHTML = d.list.length ? '<b>受け取りました</b>' + d.list.map(g => '<div>' + esc(g) + '</div>').join('') : '<b>まだたまっていません</b>'; e.classList.add('on'); clearTimeout(e.k); e.k = setTimeout(() => e.classList.remove('on'), 2600 + d.list.length * 700); }
+  if (d.type === 'got') { const e = $('got'); e.innerHTML = d.list.length ? '<b>受け取りました</b>' + d.list.map(g => '<div>' + gotHTML(g) + '</div>').join('') : '<b>まだたまっていません</b>'; e.classList.add('on'); clearTimeout(e.k); e.k = setTimeout(() => e.classList.remove('on'), 2600 + d.list.length * 700); }
   if (d.type === 'res' && waits[d.id]) { const f = waits[d.id]; delete waits[d.id]; f(d); } });
 send({type: 'ready'});
 setTimeout(() => { $('hint').style.opacity = 0; }, 7000);
