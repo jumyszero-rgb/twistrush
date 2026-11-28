@@ -8096,7 +8096,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   }
   const ZFACE_KEYS = 'a1_01,a1_02,a1_03,a1_04,a1_05,a1_06,a1_07,a1_08,a1_09,a1_10,a2_01,a2_02,a2_03,a2_04,a2_05,a2_06,a2_07,a2_08,a2_09,a2_10,a3_01,a3_02,a3_03,a3_04,a3_05,a3_06,a3_07,a3_08,a3_09,a3_10,a4_01,a4_02,a4_03,a4_04,a4_05,a4_06,a4_07,a4_08,a4_09,a4_10,a5_01,a5_02,a5_03,a5_04,a5_05,a5_06,a5_07,a5_08,a5_09,a5_10,a6_01,a6_02,a6_03,a6_04,a6_05,a6_06,a6_07,a6_08,a6_09,a6_10,a7_01,a7_02,a7_03,a7_04,a7_05,a7_06,a7_07,a7_08,a7_09,a7_10,a8_01,a8_02,a8_03,a8_04,a8_05,a8_06,a8_07,a8_08,a8_09,a8_10,a9_01,a9_02,a9_03,a9_04,a9_05,a9_06,a9_07,a9_08,a9_09,a9_10,black,blue,g01,g02,g03,g04,g05,g06,g07,g08,g09,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20,g21,g22,g23,g24,g25,g26,g27,g28,g29,g30,g31,g32,g33,g34,g35,g36,g37,g38,g39,g40,g41,g42,g43,g44,g45,g46,g47,g48,g49,g50,g51,g52,g53,g54,g55,g56,g57,g58,g59,g60,g61,g62,g63,g64,g65,g66,g67,green,orange,pink,purple,red,sky,white,yellow,g68,g69,g70,g71,g72,g73,g74,g75,g76,g77,g78,g79,g80,g81,g82,g83,g84,g85,g86,g87,g88,g89,g90,g91,g92,g93,g94,g95,g96,g97,g98,g99,g100,g101,g102'.split(','), ZFACE_ROWS = Math.ceil(ZFACE_KEYS.length / 16);
   // ===== アプリのバージョン（更新して公開するたびに上げる）=====
-  const APP_VER = '0.9.357';
+  const APP_VER = '0.9.358';
   document.querySelectorAll('[data-ver]').forEach(e => e.textContent = 'v' + APP_VER);
   function charIcon(charIdx, h){
     const el = document.createElement('div');
@@ -11715,7 +11715,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     castle: {n: '城', i: '🏰', apt: 'pol', d: '人口に合わせて税金（街コイン）が入る', silver: 'tax', one: true},
     house:  {n: '民家', i: '🏘', apt: 'cha', d: '住める人がふえる（1レベルで20人）。人口がふえるのは民家だけ', pop: 20},
     farm:   {n: '農場', i: '🌾', apt: 'pow', d: '食べものを作る。食べものが足りないと人が出ていく（1レベルで25人分）', food: 25},
-    shop:   {n: '商店', i: '🏪', apt: 'biz', d: 'もうけ（街コイン）が入る。「今日の5タナ」でシルバーの買い物ができる（ここだけの品も）', silver: 60},
+    shop:   {n: '商店', i: '🏪', apt: 'biz', d: 'もうけ（街コイン）が入る。「今日の5タナ」で街コインの買い物ができる（ここだけの品も）', silver: 60},
     tavern: {n: '酒場', i: '🍺', apt: 'cha', d: 'もうけ（街コイン）が少し入る。ほかの人とキャラの貸し借りができる（ログインがいる）', silver: 30},
     lumber: {n: '伐採所', i: '🪓', apt: 'pow', d: '木材が取れる（Lvでグレードが上がる）', raw: 'wood'},
     quarry: {n: '採石場', i: '⛏', apt: 'pow', d: '石材が取れる（Lvでグレードが上がる）', raw: 'stone'},
@@ -11743,6 +11743,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   //   上の段ほど時間がかかる（1段目の 1/3・1/8）
   //   → 2026-11-28 作りなおし：えらぶのではなく、建物のLv（段階）でグレードの出かたが決まる
   //   本人「生産1段階目で1と2が生産でき、1が90%程度、2が5〜10%、2段階目は1が45%、2が45%、3が5〜10%」
+  const RAW_H = 1.5;                                          // 2026-11-28 本人「肉しか回収がない」：素材 0.5→1.5／時間（肉と同じくらい）
   const GRADE_P = [null, {1: .9, 2: .1}, {1: .45, 2: .45, 3: .1}, {2: .45, 3: .45, 4: .1}, {3: .45, 4: .45, 5: .1}, {4: .5, 5: .5}];
   const rawFams = b => [].concat(TB[b].raw || []);
   // ペット（このゲームだけの子）：お迎え＝シルバー＋肉、肉をあげて Lv1〜10。ボーナスは Lv×2%（全部のペットが効く）
@@ -11870,8 +11871,9 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     let silver = 0; if (b.silver === 'tax') silver = townPop() * 0.6 * (1 + 0.25 * (L - 1)) * m * (1 + petBonus('luck')); else if (b.silver) silver = b.silver * L * m;
     if (x.b === 'shop' || x.b === 'tavern') silver *= 1 + petBonus('biz'); if (x.b === 'casino') silver *= 1 + petBonus('luck');
     const pm = x.b === 'hunter' ? 1 + petBonus('hunt') : 1 + petBonus('mat');
-    const w = JOBS[x.b] ? workRate() : 1; silver *= w;   // 人手が足りないと生産が下がる
-    return {silver, raw: b.raw ? 0.5 * L * m * pm * w : 0, mat: b.raw ? 0.5 * L * m * pm * w : 0, meat: b.meat ? b.meat * L * m * pm * w : 0, evo: b.evo ? b.evo * L * m : 0, evog: b.evo && L >= 5 ? b.evo * .25 * m : 0, xp: 0, tr: 0};
+    const w = JOBS[x.b] ? .4 + .6 * workRate() : 1; silver *= w;   // 人手が足りないと生産が下がる（2026-11-28 人手0でも4割は動く：本人「肉しか回収がない」）
+    const rw = b.raw ? RAW_H * L * m * pm * w * [].concat(b.raw).length : 0;   // 素材は1種類あたり RAW_H×Lv／時間（ハンター協会は皮・魔物素材それぞれ）
+    return {silver, raw: rw, mat: rw, meat: b.meat ? b.meat * L * m * pm * w : 0, evo: b.evo ? b.evo * L * m : 0, evog: b.evo && L >= 5 ? b.evo * .25 * m : 0, xp: 0, tr: 0};
   }
   function townPending(){                                    // まだ受け取っていない分（8時間まで）
     const bk = town.bank || {silver: 0, mats: {}}; let silver = bk.silver || 0; const mats = Object.assign({}, bk.mats || {}), now = Date.now();
@@ -12329,6 +12331,7 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
     setTimeout(fin, 1900); }
   // ===== 商店の5タナ（2026-11-28 本人「シルバーで買えるものと同じものや、ここでしか買えないものを設置する。5タナ限定でランダムでも良い」）
   //   毎日0時に並びが変わる。ゴールド20ですぐ並べかえ（早く進める＝ゴールド）。グレードは商店のLvまで
+  //   2026-11-28 本人「ショップってシルバーじゃない？ lv1の建物を建てる、カジノをやる以外は全て街コインにしなよ」→ 街コインで買う（値段は街コインで2倍）
   const SHOP_POOL = [
     {k: 'stampot', n: 1, p: 500, w: 10}, {k: 'gticket', n: 1, p: 100, w: 10}, {k: 'gticket', n: 3, p: 280, w: 6, only: 1},
     {k: 'r_wood', n: 5, p: 120, w: 8, g: 1}, {k: 'r_stone', n: 5, p: 120, w: 8, g: 1}, {k: 'r_metal', n: 5, p: 120, w: 8, g: 1}, {k: 'r_meat', n: 5, p: 100, w: 5, g: 1},
@@ -12337,15 +12340,15 @@ body.tight .controls:has(> .itembar:not(.hidden)) .botrow .skbtn{width:min(52px,
   function shopGen(){ const L = Math.max(1, shopLvMax()), out = [], tw = SHOP_POOL.reduce((a, o) => a + o.w, 0);
     for (let i = 0; i < 5; i++) { let r = Math.random() * tw, o = SHOP_POOL[0]; for (const q of SHOP_POOL) { if (r < q.w) { o = q; break; } r -= q.w; }
       let k = o.k, p = o.p; if (o.g) { const g = 1 + Math.floor(Math.random() * L); k = o.k + '_' + g; p = o.p * g; } if (k === 'st') k = 'st_' + Object.keys(STONE_N)[Math.floor(Math.random() * 8)] + '_0';
-      out.push({k, n: o.n, p, only: !!o.only, sold: false}); }
+      out.push({k, n: o.n, p: p * 2, tc: 1, only: !!o.only, sold: false}); }
     town.shop = {day: dmKey(), it: out}; saveTown(); }
   const shopLabel = k => EX_MAT[k] ? EX_MAT[k][0] : itemLabel(k);
   const shopImg = k => EX_MAT[k] ? icMat(k) : k.startsWith('pot_') ? '<img class="ic" alt="" src="' + potImg(k.slice(4)) + '">' : '<img class="ic" alt="" src="' + tkImg(k) + '">';
-  function shopHTML(){ if (!town.shop || town.shop.day !== dmKey()) shopGen();
-    return '<h5>' + ic('box') + ' 今日の5タナ <small>毎日0時に入れかわる・シルバーで買える・1つ1回</small></h5><div class="tana">' + town.shop.it.map((o, i) => '<div' + (o.sold ? ' class="sold"' : '') + '>' + shopImg(o.k) +
-      '<b>' + shopLabel(o.k) + (o.n > 1 ? ' ×' + o.n : '') + '</b>' + (o.only ? '<em>ここだけ</em>' : '') + '<button data-tana="' + i + '"' + (o.sold || coins < o.p ? ' disabled' : '') + '>' + (o.sold ? '売り切れ' : ic('silver') + o.p.toLocaleString()) + '</button></div>').join('') + '</div>' +
+  function shopHTML(){ if (!town.shop || town.shop.day !== dmKey() || !town.shop.it.every(o => o.tc)) shopGen();
+    return '<h5>' + ic('box') + ' 今日の5タナ <small>毎日0時に入れかわる・街コインで買える・1つ1回</small></h5><div class="tana">' + town.shop.it.map((o, i) => '<div' + (o.sold ? ' class="sold"' : '') + '>' + shopImg(o.k) +
+      '<b>' + shopLabel(o.k) + (o.n > 1 ? ' ×' + o.n : '') + '</b>' + (o.only ? '<em>ここだけ</em>' : '') + '<button data-tana="' + i + '"' + (o.sold || tcN() < o.p ? ' disabled' : '') + '>' + (o.sold ? '売り切れ' : ic('tc') + o.p.toLocaleString()) + '</button></div>').join('') + '</div>' +
       '<button class="twbuy" data-tanare="1">' + ic('gold') + '20 ですぐ並べかえる</button>'; }
-  function shopBuy(i){ const o = town.shop && town.shop.it[i]; if (!o || o.sold || coins < o.p) return; addCoins(-o.p); giveItem(o.k, o.n); o.sold = true; saveTown(); refreshCoins(); toast(shopLabel(o.k) + ' ×' + o.n + ' を買いました'); drawTown(); }
+  function shopBuy(i){ const o = town.shop && town.shop.it[i]; if (!o || o.sold || tcN() < o.p) return; addTc(-o.p); giveItem(o.k, o.n); o.sold = true; saveTown(); refreshCoins(); toast(shopLabel(o.k) + ' ×' + o.n + ' を買いました'); drawTown(); }
   // ===== 酒場の貸し借り（2026-11-28 本人「強さによって必要な街コインが必要。貸し出ししてても自分でも使える。使ってもらった回数に応じて経験値ポッド。
   //   借りたものはチームに編成可能。成長はしない。貸し出し登録した時のステータスが有効」）
   //   貸す枠＝酒場のLv（3まで）。借りられる数＝同時に1人（Lv3で2人・Lv5で3人）・24時間。借りるのに街コイン＝(200＋強さ÷2)。1回使ってもらうと経験値ポット小1つ

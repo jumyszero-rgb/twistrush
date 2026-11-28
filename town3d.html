@@ -369,7 +369,8 @@ function loop(){
   gridM.uniforms.on.value += ((edit || placing ? 1 : 0) - gridM.uniforms.on.value) * Math.min(1, dt * 8);
   const pt = ANGLES[angI].p; if (Math.abs(PITCH - pt) > 1e-4) { PITCH += (pt - PITCH) * Math.min(1, dt * 5); sprites.forEach(s => s.mesh.rotation.x = -PITCH * .35); }
   camera.position.set(cam.tx, Math.sin(PITCH) * cam.dist, cam.tz + Math.cos(PITCH) * cam.dist); camera.lookAt(cam.tx, 0, cam.tz); camera.updateMatrixWorld();
-  if (scene.fog) { scene.fog.near = cam.dist * 1.1 + 30; scene.fog.far = cam.dist * 2.2 + 90; }
+  // 2026-11-28 本人「マップの地平線の位置がおかしい」：低い角度だと島のはし（まっすぐな線）が地平線に見えていた → 角度が低いほど霧を手前にして、はしを空の色にとかす
+  if (scene.fog) { const k = Math.max(0, Math.min(1, (PITCH - Math.PI / 10) / (Math.PI / 4 - Math.PI / 10))); scene.fog.near = cam.dist * (1.1 + .1 * (1 - k)) + 30 * k; scene.fog.far = cam.dist * (3.2 - k) + 90 * k; }
   const showTag = cam.dist < 60;
   sprites.forEach(s => { if (!s.tag) return; if (!s.tagE) { s.tagE = document.createElement('div'); s.tagE.className = 'tag' + (s.busy ? ' bld' : ''); s.tagE.textContent = s.tag; document.body.appendChild(s.tagE); }
     s.tagE.style.display = showTag ? '' : 'none'; const [sx, sy] = scr(s.x, GY - .1, s.z + .3); s.tagE.style.left = sx + 'px'; s.tagE.style.top = sy + 'px'; });
